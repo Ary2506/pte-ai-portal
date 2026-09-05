@@ -83,6 +83,40 @@ describe("mock session question-set integrity", () => {
     expect(stored.questionIds.length).toBe(res.body.questions.length);
   });
 
+  it("rejects a test-session submission that omits questionId, instead of letting it slip past the belongs/duplicate checks", async () => {
+    // Both the belongs-check and the duplicate-submission guard only run `if (question)` — before
+    // this fix, omitting questionId entirely skipped both, letting a student attach unlimited
+    // freeform, AI/heuristic-scored "submissions" (any section/type string) to their own
+    // in-progress session, each one counted into that section's score total at /complete.
+    await createUser({ username: "qset6", password: "password123" });
+    await seedOnePerSection();
+    const token = await login("qset6");
+    const { sessionId } = await startMock(token);
+
+    const res = await request(app).post("/api/submissions").set("Authorization", `Bearer ${token}`)
+      .field("section", "reading").field("type", "mcq-single").field("answer", JSON.stringify("free credit"))
+      .field("testSessionId", sessionId); // deliberately no questionId
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("still rejects an attacker submitting to another user's session (with no questionId) as FORBIDDEN, not the questionId-missing 400", async () => {
+    await createUser({ username: "qset7a", password: "password123" });
+    await createUser({ username: "qset7b", password: "password123" });
+    await seedOnePerSection();
+    const tokenOwner = await login("qset7a");
+    const tokenAttacker = await login("qset7b");
+    const { sessionId } = await startMock(tokenOwner);
+
+    const res = await request(app).post("/api/submissions").set("Authorization", `Bearer ${tokenAttacker}`)
+      .field("section", "reading").field("type", "mcq-single").field("answer", JSON.stringify(0))
+      .field("testSessionId", sessionId);
+
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe("FORBIDDEN");
+  });
+
   it("standalone practice (no testSessionId) is unaffected by question-set enforcement", async () => {
     await createUser({ username: "qset5", password: "password123" });
     const q = await createQuestion({ section: "reading", type: "mcq-single", options: ["A", "B"], answer: 1 });

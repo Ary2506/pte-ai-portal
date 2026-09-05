@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Routes, Route, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Routes, Route, Link, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
@@ -12,6 +12,12 @@ import { AdminQuestionsPanel } from "./AdminQuestions.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor, taskInfo } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
+const SECTION_DESCRIPTIONS = {
+  speaking: "Read aloud, describe images and answer spoken prompts with instant AI feedback.",
+  writing: "Summarize text and write essays scored on structure, grammar and content.",
+  reading: "Fill blanks, reorder paragraphs and answer questions with objective scoring.",
+  listening: "Summarize, transcribe and answer questions from real audio passages."
+};
 const PRACTICE_PATHS = new Set(["/practice", "/speaking", "/writing", "/reading", "/listening"]);
 const MORE_PATHS = new Set(MORE_ITEMS.filter(m => m.to).map(m => m.to));
 
@@ -125,13 +131,18 @@ function Auth({ save, theme, toggleTheme }) {
   return <div className="auth-page">
     <div className="auth-theme-control"><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
     <div className="auth-visual">
-      <div className="brand large"><span>PTE</span> AI</div>
+      <div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
       <h1>Practice smarter.<br/>Reach your target score.</h1>
       <p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p>
+      <div className="auth-features">
+        <div className="auth-feature"><CheckCircle2 size={16}/> All four PTE sections, one practice library</div>
+        <div className="auth-feature"><CheckCircle2 size={16}/> Objective scoring for every reading/listening task</div>
+        <div className="auth-feature"><CheckCircle2 size={16}/> Full-length mock tests with a real practice report</div>
+      </div>
       <div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div>
     </div>
     <div className="auth-card">
-      <div className="brand"><span>PTE</span> AI</div>
+      <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
       <h2>Welcome back</h2>
       <p className="muted">Sign in with the User ID and password provided by your administrator.</p>
       <div className="alert notice">
@@ -279,19 +290,139 @@ function MoreMenu({ onNavigate }) {
 // the admin one has no PTE Practice mega-menu / More menu at all (those are student concerns),
 // and the student one's Admin Panel link — only ever shown to an actual admin — is a normal,
 // visible top-level nav item rather than buried at the bottom next to Logout.
+// Reads the admin tab straight from the URL (Admin() itself keeps the two in sync — see its own
+// useSearchParams wiring) so a sidebar link and a browser back/forward action always agree on
+// which tab is "active", without prop-drilling tab state down from Admin(). Distinct labels from
+// the in-page tab strip ("Manage Users" vs "Users", "Question Library" vs "Questions", "Mock
+// Attempts" vs "Test Sessions") are deliberate — both are real, working destinations, just named
+// for their different context (quick sidebar access vs. the page's own tab strip).
 function AdminSidebarNav({ onNavigate }) {
+  const [searchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "dashboard";
+  const cls = key => currentTab === key ? "nav-item active" : "nav-item";
+  // Plain <Link>, not <NavLink>, for the three tab shortcuts: they all share the /admin
+  // pathname and differ only by ?tab=, and NavLink's own active-matching ignores search params
+  // entirely — it would mark all three "active" at once regardless of which tab is actually
+  // selected. <Link> never auto-applies an active class, so cls() above is the only source of
+  // truth for which one is highlighted.
   return <>
-    <NavLink to="/admin" end className={({isActive})=>isActive?"nav-item active":"nav-item"} onClick={onNavigate}><Shield size={18}/><span>Admin Dashboard</span></NavLink>
+    <div className="nav-group-label">Overview</div>
+    <NavLink to="/admin" end className={({isActive})=>isActive && currentTab==="dashboard" ?"nav-item active":"nav-item"} onClick={onNavigate}><Shield size={18}/><span>Admin Dashboard</span></NavLink>
+    <div className="nav-group-label">Administration</div>
+    <Link to="/admin?tab=users" className={cls("users")} onClick={onNavigate}><UserRound size={18}/><span>Manage Users</span></Link>
+    <Link to="/admin?tab=questions" className={cls("questions")} onClick={onNavigate}><BookOpen size={18}/><span>Content Library</span></Link>
+    <Link to="/admin?tab=testSessions" className={cls("testSessions")} onClick={onNavigate}><Trophy size={18}/><span>Mock Attempts</span></Link>
+    <div className="nav-group-label">Other</div>
     <NavLink to="/dashboard" className="nav-item" onClick={onNavigate}><Home size={18}/><span>Student Site</span></NavLink>
   </>;
 }
+// Mock Tests and Practice History already exist inside the More menu (unchanged below) — these
+// two are additional, directly-visible shortcuts to the same real routes (Part 4/Step 4), given
+// deliberately distinct labels ("Take Mock Test", "My Results") so they never collide with the
+// More menu's own "Mock Tests"/"Practice History" entries in the DOM at the same time.
 function StudentSidebarNav({ user, onNavigate }) {
+  const cls = ({isActive}) => isActive ? "nav-item active" : "nav-item";
   return <>
-    <NavLink to="/dashboard" className={({isActive})=>isActive?"nav-item active":"nav-item"} onClick={onNavigate}><Home size={18}/><span>Dashboard</span></NavLink>
+    <div className="nav-group-label">Main</div>
+    <NavLink to="/dashboard" className={cls} onClick={onNavigate}><Home size={18}/><span>Dashboard</span></NavLink>
+    <div className="nav-group-label">Practice</div>
     <PteMegaMenu onNavigate={onNavigate}/>
+    <NavLink to="/mock" className={cls} onClick={onNavigate}><Trophy size={18}/><span>Take Mock Test</span></NavLink>
+    <NavLink to="/history" className={cls} onClick={onNavigate}><BarChart3 size={18}/><span>My Results</span></NavLink>
     <MoreMenu onNavigate={onNavigate}/>
+    {user?.role === "admin" && <div className="nav-group-label">Admin</div>}
     {user?.role === "admin" && <NavLink to="/admin" className="nav-item admin-panel-link" onClick={onNavigate}><Shield size={18}/><span>Admin Panel</span></NavLink>}
   </>;
+}
+
+// Real destinations only — every entry navigates somewhere that actually exists and works
+// (Part 33: no decorative search). Practice tasks are pulled from the same registry the mega-menu
+// and Practice Hub already use, so this can never list a task that isn't genuinely supported.
+function useSearchDestinations(user) {
+  return useMemo(() => {
+    const pages = [
+      { label: "Dashboard", group: "Pages", to: "/dashboard" },
+      { label: "PTE Practice", group: "Pages", to: "/practice" },
+      { label: "Mock Tests", group: "Pages", to: "/mock" },
+      { label: "Practice History", group: "Pages", to: "/history" },
+      { label: "AI Study Plan", group: "Pages", to: "/plan" },
+      { label: "Profile", group: "Pages", to: "/profile" }
+    ];
+    const tasks = PRACTICE_SECTIONS.flatMap(section =>
+      supportedTasksFor(section).map(t => ({ label: `${t.label} — ${SECTION_LABELS[section]}`, group: "Practice tasks", to: `/${section}?type=${t.slug}` }))
+    );
+    const admin = user?.role === "admin" ? [
+      { label: "Admin Dashboard", group: "Admin", to: "/admin" },
+      { label: "Manage Users", group: "Admin", to: "/admin?tab=users" },
+      { label: "Manage Questions", group: "Admin", to: "/admin?tab=questions" },
+      { label: "Test Sessions", group: "Admin", to: "/admin?tab=sessions" }
+    ] : [];
+    return [...pages, ...tasks, ...admin];
+  }, [user?.role]);
+}
+
+function HeaderSearch({ user }) {
+  const [term, setTerm] = useState("");
+  const [highlight, setHighlight] = useState(0);
+  const { open, setOpen, panelRef, triggerRef } = useDropdown();
+  const navigate = useNavigate();
+  const destinations = useSearchDestinations(user);
+
+  const results = term.trim()
+    ? destinations.filter(d => d.label.toLowerCase().includes(term.trim().toLowerCase())).slice(0, 8)
+    : [];
+  const grouped = results.reduce((acc, r) => { (acc[r.group] ||= []).push(r); return acc; }, {});
+
+  function go(to) {
+    if (!to) return;
+    setTerm(""); setOpen(false);
+    navigate(to);
+  }
+  function onKeyDown(e) {
+    if (!results.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlight(h => Math.min(results.length - 1, h + 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === "Enter") { e.preventDefault(); go(results[highlight]?.to); }
+  }
+
+  return <div className="search" ref={triggerRef}>
+    <span aria-hidden="true">⌕</span>
+    <input
+      placeholder="Search anything..."
+      value={term}
+      onChange={e => { setTerm(e.target.value); setOpen(true); setHighlight(0); }}
+      onFocus={() => setOpen(true)}
+      onKeyDown={onKeyDown}
+      role="combobox"
+      aria-expanded={open && !!term.trim()}
+      aria-controls="header-search-results"
+      aria-label="Search anything"
+    />
+    {open && term.trim() && <div className="search-results" id="header-search-results" ref={panelRef} role="listbox">
+      {results.length
+        ? Object.entries(grouped).map(([group, items]) => <div key={group}>
+            <div className="search-result-group">{group}</div>
+            {items.map(r => {
+              const idx = results.indexOf(r);
+              return <button key={r.to} type="button" role="option" aria-selected={idx === highlight}
+                className={idx === highlight ? "search-result active" : "search-result"}
+                onMouseEnter={() => setHighlight(idx)} onClick={() => go(r.to)}>{r.label}</button>;
+            })}
+          </div>)
+        : <div className="search-empty">No matches for "{term}"</div>}
+    </div>}
+  </div>;
+}
+
+function topbarLabel(pathname) {
+  if (pathname === "/dashboard") return "Dashboard";
+  if (pathname === "/mock") return "Mock Tests";
+  if (pathname === "/history") return "Practice History";
+  if (pathname === "/plan") return "AI Study Plan";
+  if (pathname === "/profile") return "Profile";
+  if (pathname.startsWith("/admin")) return "Admin";
+  if (["/speaking", "/writing", "/reading", "/listening", "/practice"].some(p => pathname.startsWith(p))) return "PTE Practice";
+  return "";
 }
 
 function Layout({ user, logout, children, theme, toggleTheme }) {
@@ -306,8 +437,8 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
             heading already owns that exact string; two elements with identical text would make
             every existing screen.findByText("Admin Panel") test (and a real screen reader)
             ambiguous. */}
-        <div className="brand"><span>PTE</span> AI{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
-        <button className="icon-btn mobile-close" onClick={closeMobile}><X size={19}/></button>
+        <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span>{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
+        <button className="icon-btn mobile-close" onClick={closeMobile} aria-label="Close menu"><X size={19}/></button>
       </div>
       <nav>
         {inAdminSection ? <AdminSidebarNav onNavigate={closeMobile}/> : <StudentSidebarNav user={user} onNavigate={closeMobile}/>}
@@ -319,14 +450,27 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
     </aside>
     <main className="main">
       <header className="topbar">
-        <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)}><Menu size={21}/></button>
-        <div className="search"><span>⌕</span><input placeholder="Search anything..."/></div>
+        <div className="topbar-left">
+          <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)} aria-label="Open menu"><Menu size={21}/></button>
+          <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
+        </div>
+        <HeaderSearch user={user}/>
         <ThemeToggle theme={theme} onToggle={toggleTheme} compact/>
         <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
       </header>
       <div className="content">{children}</div>
     </main>
   </div>
+}
+
+// Real skeleton placeholders (Part 25) — shown while a request is actually in flight, replaced
+// the instant real data arrives. Never a substitute for real content, never shown once data (or
+// a genuine empty/error state) is known.
+function SkeletonCards({ count = 4, gridClass = "score-grid" }) {
+  return <div className={gridClass} aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-card"/>)}</div>;
+}
+function SkeletonRows({ count = 5 }) {
+  return <div aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-row"/>)}</div>;
 }
 
 function fmtLongDate(d) {
@@ -403,6 +547,7 @@ function WeeklyActivity({ days }) {
 
 function Dashboard({ user }) {
   const [data,setData]=useState(null);
+  const [loading,setLoading]=useState(true);
   // Read once and cleared immediately — set only by AdminRoute when a non-admin was just
   // redirected away from /admin, so the denial is visible instead of a silent bounce, but never
   // reappears on an ordinary visit to the dashboard.
@@ -411,10 +556,12 @@ function Dashboard({ user }) {
     sessionStorage.removeItem("pte_access_denied_notice");
     return n || "";
   });
-  useEffect(()=>{api.dashboard().then(setData).catch(()=>{});},[]);
+  useEffect(()=>{api.dashboard().then(setData).catch(()=>{}).finally(()=>setLoading(false));},[]);
   const stats=data?.stats;
+  const scoreBySection = Object.fromEntries((data?.bySection||[]).map(x=>[x.section,x.score]));
   return <Page title="Welcome back 👋" subtitle="Keep practicing to achieve your target PTE score.">
     {accessDenied && <div className="alert error"><AlertCircle size={17}/>{accessDenied}</div>}
+
     <SubscriptionCard user={user}/>
     <StreakCard streak={data?.streak}/>
     <WeeklyActivity days={data?.weeklyActivity}/>
@@ -423,21 +570,35 @@ function Dashboard({ user }) {
       <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average" featured/>
       {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
     </div>
-    <div className="two-col">
-      <section className="panel"><div className="panel-head"><div><h3>Your Progress</h3><p className="muted">Performance by section</p></div><span className="chip">Live</span></div><div className="bars">{(data?.bySection||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</div></section>
-      <section className="panel"><div className="panel-head"><div><h3>Recent Practice</h3><p className="muted">Latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>{(data?.recent||[]).length ? data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>) : <Empty text="Your practice attempts will appear here."/>}</section>
-    </div>
-    <h2 className="section-title">Recommended for you</h2>
-    <div className="feature-grid">
-      <Feature title="Practice Read Aloud" icon={<Mic/>} text="Improve your pronunciation and fluency." to="/speaking"/>
-      <Feature title="Write an Essay" icon={<PenLine/>} text="Improve structure and writing skills." to="/writing"/>
-      <Feature title="Full Mock Test" icon={<Trophy/>} text="Simulate the real test experience." to="/mock"/>
-      <Feature title="Personal Study Plan" icon={<Target/>} text="Focus on your weakest areas." to="/plan"/>
+
+    <section className="panel">
+      <div className="panel-head"><div><h3>Recent Results</h3><p className="muted">Your latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>
+      {loading ? <SkeletonRows count={3}/> : (data?.recent||[]).length ? <div className="recent-list">{data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>)}</div> : <Empty text="Your practice attempts will appear here."/>}
+    </section>
+
+    <div className="mock-cta-banner">
+      <div className="mock-cta-banner-icon"><Trophy size={22}/></div>
+      <div className="mock-cta-banner-text"><h3>Ready for the real thing?</h3><p className="muted">Take a full mock test and get a section-by-section practice report.</p></div>
+      <NavLink className="primary" to="/mock">Start Mock Test</NavLink>
     </div>
   </Page>
 }
 
 function ScoreCard({title,value,sub,featured=false}) { return <div className={featured ? "score-card featured" : "score-card"}><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
+
+// Real circular progress (Part 14) — driven entirely by the student's actual average score,
+// never a decorative or fixed fill.
+function ScoreRing({ value, max = 90, size = "sm" }) {
+  const pct = max ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
+  const r = 45, c = 2 * Math.PI * r;
+  return <div className={`progress-ring ${size}`.trim()} role="img" aria-label={`Score ${value} out of ${max}`}>
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
+      <circle className="track" cx="50" cy="50" r={r}/>
+      <circle className="fill" cx="50" cy="50" r={r} strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c}/>
+    </svg>
+    <div className="progress-ring-label" aria-hidden="true">{value}</div>
+  </div>;
+}
 
 // One task card (Part 4). `state` is derived purely from real data — never hardcoded — so a
 // task never claims to be practicable unless the backend both supports the type AND currently
@@ -490,10 +651,19 @@ function PracticeHub() {
       <div className="practice-columns">
         {PRACTICE_SECTIONS.map(section => {
           const SectionIcon = SECTION_ICONS[section];
-          return <div className="practice-column" key={section}>
-            <h3 className="practice-column-head"><span className="practice-column-icon"><SectionIcon size={15}/></span>{SECTION_LABELS[section]}</h3>
+          const tasks = PRACTICE_TASKS[section];
+          const readyCount = available ? tasks.filter(t => t.supported && available.has(`${section}:${t.slug}`)).length : null;
+          return <div className={`practice-column practice-${section}`} key={section}>
+            <div className="practice-column-header">
+              <div className="practice-column-icon"><SectionIcon size={24}/></div>
+              <div className="practice-column-heading">
+                <h3 className="practice-column-head">{SECTION_LABELS[section]}</h3>
+                <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
+              </div>
+              <span className="practice-column-count">{readyCount == null ? "…" : `${readyCount}/${tasks.length} ready`}</span>
+            </div>
             <div className="practice-column-list">
-              {PRACTICE_TASKS[section].map(task => <PracticeTaskRow
+              {tasks.map(task => <PracticeTaskRow
                 key={task.slug}
                 section={section}
                 task={task}
@@ -516,8 +686,6 @@ function PracticeHub() {
     </div>
   </Page>;
 }
-function Feature({title,text,icon,to}) { return <NavLink className="feature-card" to={to}><div className="feature-icon">{icon}</div><b>{title}</b><p>{text}</p><span>Start →</span></NavLink> }
-
 function Page({title,subtitle,children,actions}) { return <><div className="page-head"><div><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{actions}</div>{children}</> }
 
 // Reads the desired-type slug straight from the URL (?type=) so the Practice Hub and the
@@ -606,7 +774,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         {PROGRESS_FILTERS.map(f => <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
           className={filter === f.key ? "question-list-filter active" : "question-list-filter"} onClick={() => setFilter(f.key)}>{f.label}<span className="question-list-filter-count">{filterCounts[f.key]}</span></button>)}
       </div>
-      <div className="search question-list-search"><span>⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
+      <div className="search question-list-search"><span aria-hidden="true">⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
       <span className="muted">Done {doneCount}, Found {rows.length} question{rows.length === 1 ? "" : "s"}</span>
     </div>
     <div className="question-list">
@@ -615,6 +783,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         return <button key={q._id} type="button" className="question-list-row" onClick={() => onSelect(i)}>
           <span className="question-row-number">#{i + 1}</span>
           <span className="question-list-title">{q.title}</span>
+          {q.difficulty && <Badge tone={difficultyTone(q.difficulty)}>{q.difficulty}</Badge>}
           {attempt
             ? <span className="question-row-status">
                 {attempt.evaluationStatus === "FAILED"
@@ -622,6 +791,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
                   : <Badge tone="good"><CheckCircle2 size={12}/> Done · {attempt.score}/{attempt.maxScore}</Badge>}
               </span>
             : <Badge tone="neutral">Undone</Badge>}
+          <ChevronRight size={16} className="question-row-arrow" aria-hidden="true"/>
         </button>;
       })}
       {!rows.length && <p className="muted" style={{padding:"14px 6px"}}>No questions match {search.trim() ? "your search" : "this filter"}.</p>}
@@ -638,16 +808,21 @@ function PracticeTask({section,label,slug}) {
   const [questions,setQuestions]=useState([]);
   const [idx,setIdx]=useState(null); // null = showing the question list, not yet inside a question
   const [loading,setLoading]=useState(true);
+  // Real content genuinely being empty and the request itself failing look identical to a
+  // student unless tracked separately — this used to collapse both into the same "No practice
+  // questions available yet." message. `error` is only ever set when the request itself rejects
+  // (a real fetch/network failure), never for a normal response with zero items.
+  const [error,setError]=useState(false);
   // questionId -> the student's own most recent full Submission for that question (history() is
   // already sorted newest-first server-side, so the first match kept per id is the latest
   // attempt) — the whole stored document (score/feedback/transcript/answer/...), not just a
   // summary, so a completed question can be reopened to show its real stored result (Phase 19,
   // Part 10) instead of AI ever being re-run just to view it.
   const [progress,setProgress]=useState(new Map());
-  useEffect(()=>{
-    setLoading(true);
+  function load(){
+    setLoading(true); setError(false);
     Promise.all([
-      Promise.resolve(api.questions(section, slug)).catch(()=>({questions:[]})),
+      api.questions(section, slug),
       Promise.resolve(api.history()).catch(()=>({submissions:[]}))
     ]).then(([qData, hData])=>{
       const loadedQuestions = qData?.questions || [];
@@ -663,10 +838,18 @@ function PracticeTask({section,label,slug}) {
       // from. More than one always starts at the list, even if the student re-visits this exact
       // task later (browsing the list again is itself harmless and never re-triggers anything).
       setIdx(loadedQuestions.length === 1 ? 0 : null);
-    }).finally(()=>setLoading(false));
-  },[section,slug]);
+    }).catch(()=>setError(true))
+      .finally(()=>setLoading(false));
+  }
+  useEffect(load,[section,slug]);
 
-  if (loading) return <Empty text="Loading questions…"/>;
+  if (loading) return <div className="panel question-list-panel"><SkeletonRows count={6}/></div>;
+  if (error) return <div className="panel error-state">
+    <AlertCircle size={30}/>
+    <h4>Unable to load your questions</h4>
+    <p>Please check your connection and try again.</p>
+    <button className="secondary" onClick={load}>Retry</button>
+  </div>;
   if (!questions.length) return <Empty text="No practice questions available yet."/>;
 
   if (idx === null) return <QuestionListView questions={questions} progress={progress} onSelect={setIdx} section={section} label={label}/>;
@@ -679,14 +862,19 @@ function PracticeTask({section,label,slug}) {
     : <ListeningTask key={q?._id} question={q} existingResult={existingResult}/>;
 
   return <div>
-    {questions.length > 1 && <div className="mock-progress-bar" role="group" aria-label="Question navigation">
-      <button className="text-button" style={{marginTop:0}} onClick={()=>setIdx(null)}><ChevronLeft size={15}/> Back to list</button>
-      <span>Question {idx+1} / {questions.length}</span>
-      <div style={{display:"flex",gap:8}}>
-        <button className="secondary" onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}><ChevronLeft size={15}/> Previous</button>
-        <button className="secondary" onClick={()=>setIdx(i=>Math.min(questions.length-1,i+1))} disabled={idx===questions.length-1}>Next <ChevronRight size={15}/></button>
+    {questions.length > 1 && <>
+      <div className="mock-progress-bar" role="group" aria-label="Question navigation">
+        <button className="text-button" style={{marginTop:0}} onClick={()=>setIdx(null)}><ChevronLeft size={15}/> Back to list</button>
+        <span>Question {idx+1} / {questions.length}</span>
+        <div style={{display:"flex",gap:8}}>
+          <button className="secondary" onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}><ChevronLeft size={15}/> Previous</button>
+          <button className="secondary" onClick={()=>setIdx(i=>Math.min(questions.length-1,i+1))} disabled={idx===questions.length-1}>Next <ChevronRight size={15}/></button>
+        </div>
       </div>
-    </div>}
+      <div className="mock-progress-track" role="progressbar" aria-valuenow={idx+1} aria-valuemin={1} aria-valuemax={questions.length} aria-valuetext={`Question ${idx+1} of ${questions.length}`}>
+        <div className="mock-progress-fill" style={{width: `${((idx+1)/questions.length)*100}%`}}/>
+      </div>
+    </>}
     {body}
   </div>;
 }
@@ -736,7 +924,7 @@ function SpeakingTask({type,question,testSessionId,onAnswered,existingResult}) {
   async function submit(){if(!blob){setError("Record an answer first.");return} setBusy(true); setError(""); const f=new FormData();f.append("audio",blob,"speaking.webm");f.append("section","speaking");f.append("type",type);f.append("transcript",transcript);f.append("durationSeconds",seconds);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
   async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
   const durationLabel = recording ? `${formatMMSS(seconds*1000)} / ${formatMMSS(limit*1000)}` : `Ready · limit ${formatMMSS(limit*1000)}`;
-  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt="" style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
+  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt={question?.title||"Practice question image"} style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
 }
 
 // UI guidance only — the server's own MAX_TEXT_LENGTH (character-based) remains the sole
@@ -880,7 +1068,7 @@ function Mock() {
   if (result) {
     return <>{liveRegions}<Page title="Mock Test Complete" subtitle="Here is your practice report.">
       <div className="mock-result">
-        <div className="big-score">{result.totalScore}<small> / {result.totalMaxScore}</small></div>
+        <ScoreRing value={result.totalScore} max={result.totalMaxScore} size="lg"/>
         <h2>Practice Score</h2>
         <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
         <div className="score-grid">{result.sectionScores.map(s=><ScoreCard key={s.section} title={s.section} value={`${s.score}/${s.maxScore}`} sub="Section score"/>)}</div>
@@ -892,7 +1080,8 @@ function Mock() {
   if (terminal === "EXPIRED") {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal expired">
-        <Clock3 size={40}/><h2>Mock Test Expired</h2>
+        <div className="mock-icon-badge tone-danger"><Clock3 size={30}/></div>
+        <h2>Mock Test Expired</h2>
         <p>Your allotted test time has ended. Your test can no longer accept answers.</p>
         <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
       </div>
@@ -902,7 +1091,8 @@ function Mock() {
   if (terminal === "ALREADY_COMPLETED") {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal">
-        <CheckCircle2 size={40}/><h2>This Test Was Already Completed</h2>
+        <div className="mock-icon-badge tone-success"><CheckCircle2 size={30}/></div>
+        <h2>This Test Was Already Completed</h2>
         <p>This mock attempt has already been submitted and scored.</p>
         <NavLink className="primary" to="/history">View History</NavLink>
       </div>
@@ -912,9 +1102,12 @@ function Mock() {
   if (!session) {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel">
-        <Trophy size={40}/><h2>Full PTE Practice Mock</h2>
+        <div className="mock-icon-badge"><Trophy size={30}/></div>
+        <h2>Full PTE Practice Mock</h2>
         <p>One question per section, scored from your actual answers — not a preset result.</p>
-        <ul><li>Speaking</li><li>Writing</li><li>Reading</li><li>Listening</li></ul>
+        <div className="mock-section-chips">
+          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}><Icon size={14}/>{SECTION_LABELS[s]}</span>; })}
+        </div>
         <p className="muted">20 minutes total for this compact mock.</p>
         {error && <div className="alert error">{error}</div>}
         <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
@@ -925,7 +1118,8 @@ function Mock() {
   if (timeUp) {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal">
-        <Clock3 size={40}/><h2>Time's Up</h2>
+        <div className="mock-icon-badge tone-warning"><Clock3 size={30}/></div>
+        <h2>Time's Up</h2>
         <p>Submitting your test now…</p>
       </div>
     </Page></>;
@@ -1015,11 +1209,16 @@ function MockAttemptDetail({ id, onClose }) {
     setLoading(true); setError("");
     api.testSessions.details(id).then(setData).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   },[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const s = data?.testSession;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>Mock Test Details</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label="Mock Test Details" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>Mock Test Details</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading attempt..."/> : !s ? <div className="alert error">{error}</div> : <>
         <div className="mock-detail-summary">
           <span className="score-pill">{s.totalScore}/{s.totalMaxScore}</span>
@@ -1047,14 +1246,20 @@ function fmtRelativeDateTime(d) {
   return date.toLocaleString();
 }
 
+const HISTORY_SECTION_FILTERS = ["all", ...PRACTICE_SECTIONS];
+
 function History() {
   const [rows,setRows]=useState([]);
   const [mocks,setMocks]=useState([]);
   const [detailId,setDetailId]=useState(null);
+  const [sectionFilter,setSectionFilter]=useState("all");
   useEffect(()=>{
     api.history().then(d=>setRows(d.submissions)).catch(()=>{});
     api.testSessions.list().then(d=>setMocks(d.testSessions)).catch(()=>{});
   },[]);
+  // Client-side only — the full list is already fetched, and this is real data already on the
+  // page, not a second source of truth that could drift from it.
+  const filteredRows = sectionFilter === "all" ? rows : rows.filter(r => r.section === sectionFilter);
   return <Page title="Practice History" subtitle="Review your recent attempts and scores.">
     <h2 className="section-title" style={{marginTop:0}}>Mock test attempts</h2>
     <div className="panel table-wrap">
@@ -1070,8 +1275,15 @@ function History() {
       </tr>)}</tbody></table>
       {!mocks.length && <Empty text="No completed mock tests yet."/>}
     </div>
-    <h2 className="section-title">Practice attempts</h2>
-    <div className="panel table-wrap"><table><thead><tr><th>Task</th><th>Section</th><th>Evaluation</th><th>Score</th><th>Date</th></tr></thead><tbody>{rows.map(r=><tr key={r._id}><td><b>{r.type}</b></td><td>{r.section}</td><td>{r.evaluationType==="subjective" ? <Badge tone="info">AI Evaluation</Badge> : <Badge tone="neutral">Objective</Badge>}</td><td>{historyScoreCell(r)}</td><td>{fmtRelativeDateTime(r.createdAt)}</td></tr>)}</tbody></table>{!rows.length&&<Empty text="No practice submissions yet. Start a task from the sidebar."/>}</div>
+    <div className="panel-head" style={{marginTop:30,marginBottom:0}}>
+      <h2 className="section-title" style={{margin:0}}>Practice attempts</h2>
+      <div className="question-list-filters" role="tablist" aria-label="Filter by section">
+        {HISTORY_SECTION_FILTERS.map(s => <button key={s} type="button" role="tab" aria-selected={sectionFilter===s}
+          className={sectionFilter===s ? "question-list-filter active" : "question-list-filter"}
+          onClick={()=>setSectionFilter(s)} style={{textTransform:"capitalize"}}>{s === "all" ? "All" : SECTION_LABELS[s]}</button>)}
+      </div>
+    </div>
+    <div className="panel table-wrap" style={{marginTop:14}}><table><thead><tr><th>Task</th><th>Section</th><th>Evaluation</th><th>Score</th><th>Date</th></tr></thead><tbody>{filteredRows.map(r=><tr key={r._id}><td><b>{r.type}</b></td><td style={{textTransform:"capitalize"}}>{r.section}</td><td>{r.evaluationType==="subjective" ? <Badge tone="info">AI Evaluation</Badge> : <Badge tone="neutral">Objective</Badge>}</td><td>{historyScoreCell(r)}</td><td>{fmtRelativeDateTime(r.createdAt)}</td></tr>)}</tbody></table>{!filteredRows.length&&<Empty text={rows.length ? "No practice attempts match this filter." : "No practice submissions yet. Start a task from the sidebar."}/>}</div>
     {detailId && <MockAttemptDetail id={detailId} onClose={()=>setDetailId(null)}/>}
   </Page>
 }
@@ -1083,14 +1295,44 @@ function historyScoreCell(r) {
 }
 
 function Profile({user}) {
-  const start = user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toLocaleDateString() : "—";
-  const end = user.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString() : "—";
-  const status = user.role === "admin" ? "Admin access" : user.subscriptionStatus === "ACTIVE" ? "Active" : user.subscriptionStatus === "EXPIRED" ? "Expired" : "Not activated";
-  return <Page title="Profile" subtitle="Manage your account."><div className="profile-card panel"><div className="profile-avatar">{user.name.slice(0,1).toUpperCase()}</div><h2>{user.name}</h2><p>User ID: {user.username}</p><div className="profile-grid"><div><span>Role</span><b>{user.role}</b></div><div><span>Target score</span><b>{user.targetScore}</b></div><div><span>Subscription</span><b>{status}</b></div>{user.role!=="admin"&&<div><span>Access until</span><b>{end}</b></div>}</div><p className="muted">{user.role==="admin" ? "Administrator accounts are not subject to subscription limits." : `Started ${start}. To change your password or extend access, contact your administrator.`}</p></div></Page>
+  const isAdmin = user.role === "admin";
+  return <Page title="Profile" subtitle="Manage your account.">
+    <div className="profile-card panel">
+      <div className="profile-header">
+        <div className="profile-avatar">{user.name.slice(0,1).toUpperCase()}</div>
+        <div><h2>{user.name}</h2><p className="muted">User ID: {user.username}</p></div>
+      </div>
+      <div className="detail-grid cols-2">
+        <section>
+          <h4>Account information</h4>
+          <dl>
+            <dt>Role</dt><dd style={{textTransform:"capitalize"}}>{user.role}</dd>
+            <dt>Email</dt><dd>{user.email || "—"}</dd>
+            <dt>Target score</dt><dd>{user.targetScore ?? "—"}</dd>
+            <dt>Member since</dt><dd>{fmtDate(user.createdAt)}</dd>
+            <dt>Last login</dt><dd>{fmtDateTime(user.lastLoginAt)}</dd>
+          </dl>
+        </section>
+        <section>
+          <h4>Subscription</h4>
+          {isAdmin
+            ? <p className="muted">Administrator accounts are not subject to subscription limits.</p>
+            : <dl>
+                <dt>Status</dt><dd><Badge tone={subscriptionTone(user.subscriptionStatus)}>{(user.subscriptionStatus||"").replace("_"," ")}</Badge></dd>
+                <dt>Started</dt><dd>{fmtDate(user.subscriptionStartDate)}</dd>
+                <dt>Access until</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
+                <dt>Days remaining</dt><dd>{daysRemaining(user)}</dd>
+              </dl>}
+        </section>
+      </div>
+      {!isAdmin && <p className="muted profile-footnote">To change your password or extend access, contact your administrator.</p>}
+    </div>
+  </Page>;
 }
 
 function Badge({tone,children}) { return <span className={`badge badge-${tone}`}>{children}</span> }
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
+function difficultyTone(d){ return d==="easy"?"good":d==="hard"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
 function subscriptionTone(s){ return s==="ACTIVE"?"good":s==="EXPIRED"?"bad":"neutral" }
 function fmtDate(d){ return d ? new Date(d).toLocaleDateString() : "—" }
@@ -1117,13 +1359,19 @@ function daysRemaining(u){
 
 function ToastHost({toasts,dismiss}) {
   if(!toasts.length) return null;
-  return <div className="toast-host">{toasts.map(t=><div key={t.id} className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}</div>)}</div>
+  return <div className="toast-host" role="status" aria-live="polite">{toasts.map(t=><button key={t.id} type="button" className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}<span className="sr-only"> — dismiss</span></button>)}</div>
 }
 
 function ConfirmDialog({open,title,message,confirmLabel,danger,busy,onConfirm,onCancel}) {
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e) { if (e.key === "Escape") onCancel(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onCancel]);
   if(!open) return null;
   return <div className="modal-overlay confirm-overlay" onClick={e=>{e.stopPropagation();onCancel()}}>
-    <div className="modal-panel confirm-panel" onClick={e=>e.stopPropagation()}>
+    <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e=>e.stopPropagation()}>
       <h3>{title}</h3>
       <p className="muted">{message}</p>
       <div className="modal-actions">
@@ -1154,16 +1402,21 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
 
-  useEffect(()=>{
+  useEffect(()=>{ load(); },[]);
+
+  function load() {
     setLoading(true); setError("");
     Promise.all([api.admin.getStats(), api.admin.getAuditLog(8), api.admin.questions.stats()])
       .then(([s,a,q])=>{setStats(s);setActivity(a.logs);setQuestionStats(q)})
       .catch(e=>{setError(e.message);notify("error",e.message)})
       .finally(()=>setLoading(false));
-  },[]);
+  }
 
-  if (loading) return <Empty text="Loading dashboard..."/>;
-  if (error) return <div className="alert error">{error}</div>;
+  if (loading) return <div className="admin-dashboard">
+    <SkeletonCards count={8} gridClass="stat-grid"/>
+    <SkeletonRows count={4}/>
+  </div>;
+  if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><button className="secondary" onClick={load}>Retry</button></div>;
 
   return <div className="admin-dashboard">
     <section className="admin-hero">
@@ -1189,7 +1442,7 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
       <StatTile label="Expired subscriptions" value={stats.subscription.expired} tone="bad" onClick={()=>goToUsers({subscription:"EXPIRED"})}/>
     </div>
     {questionStats && <>
-      <h2 className="section-title">Question bank</h2>
+      <h2 className="section-title">Question library</h2>
       <div className="stat-grid mini-grid">
         <StatTile label="Total questions" value={questionStats.total} onClick={goToQuestions}/>
         <StatTile label="Active" value={questionStats.active} tone="good" onClick={goToQuestions}/>
@@ -1273,12 +1526,17 @@ If you need any help, please contact the administrator.`;
 
 function CredentialMessageModal({ title, description, message, onClose }) {
   const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   function copy() {
     navigator.clipboard?.writeText(message).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   }
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel" onClick={e => e.stopPropagation()}>
-      <div className="modal-head"><h3>{title}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
+      <div className="modal-head"><h3>{title}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       <p className="muted" style={{marginTop:-6}}>{description}</p>
       <textarea readOnly className="answer-area" style={{height:360,fontFamily:"monospace",fontSize:12}} value={message} onClick={e => e.target.select()}/>
       <div className="modal-actions">
@@ -1378,7 +1636,7 @@ function AdminUsers({notify, initialFilters, onFiltersApplied}) {
       <button className="primary" disabled={creating}>{creating ? "Creating..." : "Create user"}</button>
     </form>}
     <div className="filter-bar">
-      <div className="search admin-search"><span>⌕</span><input placeholder="Search by User ID, name or email..." value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
+      <div className="search admin-search"><span aria-hidden="true">⌕</span><input placeholder="Search by User ID, name or email..." aria-label="Search users" value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
       <select value={status} onChange={e=>setStatus(e.target.value)} aria-label="Filter by account status">
         <option value="">All statuses</option><option value="ACTIVE">Active</option><option value="BLOCKED">Blocked</option><option value="SUSPENDED">Suspended</option>
       </select>
@@ -1389,7 +1647,7 @@ function AdminUsers({notify, initialFilters, onFiltersApplied}) {
         {SUBSCRIPTION_FILTERS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
       </select>
     </div>
-    {loading ? <Empty text="Loading users..."/> : !users.length ? <Empty text="No users match these filters."/> : <>
+    {loading ? <SkeletonRows count={8}/> : !users.length ? <Empty text="No users match these filters."/> : <>
       <div className="table-wrap"><table><thead><tr>
         <th>User ID</th><th>Name</th><th>Email</th><th>Status</th><th>Payment</th><th>Subscription</th><th>Days left</th><th>Last login</th><th>Session</th><th>Created</th><th>Actions</th>
       </tr></thead><tbody>
@@ -1440,6 +1698,11 @@ function AdminUserDetail({id, notify, onClose}) {
     }).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   }
   useEffect(()=>{load()},[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   async function act(fn, successMsg) {
     setBusy(true); setError("");
@@ -1459,8 +1722,8 @@ function AdminUserDetail({id, notify, onClose}) {
   const u = data?.user;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>{u ? u.name : "User details"}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label={u ? u.name : "User details"} onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>{u ? u.name : "User details"}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading user..."/> : !u ? <div className="alert error">{error}</div> : <>
         {error && <div className="alert error">{error}</div>}
         <div className="detail-grid">
@@ -1524,7 +1787,7 @@ function AdminUserDetail({id, notify, onClose}) {
         <h4>Renew subscription</h4>
         <div className="renew-row">
           {[30,60,90].map(d=><button key={d} className="secondary" disabled={busy} onClick={()=>act(()=>api.admin.renew(u.id,d), `Renewed for ${d} days`)}>+{d} days</button>)}
-          <input type="number" min="1" placeholder="Custom days" value={customDays} onChange={e=>setCustomDays(e.target.value)}/>
+          <input type="number" min="1" placeholder="Custom days" aria-label="Custom number of days" value={customDays} onChange={e=>setCustomDays(e.target.value)}/>
           <button className="secondary" disabled={busy||!customDays} onClick={()=>act(()=>api.admin.renew(u.id,Number(customDays)), `Renewed for ${customDays} days`)}>Apply</button>
         </div>
 
@@ -1579,7 +1842,7 @@ function AdminTestSessions() {
         <option value="ABANDONED">Abandoned</option>
       </select>
     </div>
-    {loading ? <Empty text="Loading test sessions..."/> : !sessions.length ? <Empty text="No mock test attempts match these filters."/> : <>
+    {loading ? <SkeletonRows count={8}/> : !sessions.length ? <Empty text="No mock test attempts match these filters."/> : <>
       <div className="table-wrap"><table><thead><tr>
         <th>Student</th><th>Status</th><th>Score</th><th>Pending AI</th><th>Started</th><th>Submitted</th><th>Expires</th><th>Actions</th>
       </tr></thead><tbody>
@@ -1612,11 +1875,16 @@ function AdminTestSessionDetail({id, onClose}) {
     setLoading(true); setError("");
     api.admin.testSessions.get(id).then(setData).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   },[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const s = data?.testSession;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>{s ? `${s.user?.username}'s mock attempt` : "Mock attempt"}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label={s ? `${s.user?.username}'s mock attempt` : "Mock attempt"} onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>{s ? `${s.user?.username}'s mock attempt` : "Mock attempt"}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading attempt..."/> : !s ? <div className="alert error">{error}</div> : <>
         <div className="mock-detail-summary">
           <Badge tone={testSessionStatusTone(s.status)}>{s.status}</Badge>
@@ -1632,9 +1900,23 @@ function AdminTestSessionDetail({id, onClose}) {
 }
 
 function Admin() {
-  const [tab,setTab]=useState("dashboard");
+  // Kept in sync with ?tab= (both directions) so a sidebar link, the header search's admin
+  // destinations, and browser back/forward all land on the right tab — not just the tab strip's
+  // own clicks.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab,setTabState]=useState(() => searchParams.get("tab") || "dashboard");
   const [toasts,setToasts]=useState([]);
   const [usersFilter,setUsersFilter]=useState(null);
+
+  useEffect(() => {
+    const urlTab = searchParams.get("tab") || "dashboard";
+    setTabState(current => current === urlTab ? current : urlTab);
+  }, [searchParams]);
+
+  function setTab(next) {
+    setTabState(next);
+    setSearchParams(next === "dashboard" ? {} : { tab: next });
+  }
 
   function notify(type, message) {
     const id = Date.now()+Math.random();

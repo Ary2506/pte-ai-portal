@@ -64,7 +64,7 @@ beforeEach(() => {
 async function openQuestionsTab() {
   renderAdminQuestions();
   fireEvent.click(await screen.findByText("Questions"));
-  await screen.findByText("Question bank");
+  await screen.findByText("Question Library");
 }
 
 describe("admin question table", () => {

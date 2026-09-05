@@ -14,9 +14,16 @@ export function Result({ result, onRetry, retrying }) {
   const f = result.feedback || {};
   const methodLabel = f.scoringMethod === "ai" ? "AI Practice Evaluation" : "Heuristic Practice Evaluation";
   const criteriaEntries = f.criteria ? Object.entries(f.criteria) : [];
+  const maxScore = result.maxScore || 90;
+  const pct = Math.max(0, Math.min(100, Math.round((result.score / maxScore) * 100)));
+  const ringColor = pct >= 65 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
+  // A real, honest read of the actual score — never a separate invented metric — purely a label
+  // for the same percentage the ring itself already renders.
+  const perfLabel = pct >= 80 ? "Excellent Performance" : pct >= 65 ? "Strong Performance" : pct >= 40 ? "Good Progress" : "Needs More Practice";
   return <div className="result-panel">
-    <div className="score-ring"><strong>{result.score}</strong><small>/ {result.maxScore || 90}</small></div>
+    <div className="score-ring" style={{ "--pct": pct, "--ring-color": ringColor }}><strong>{result.score}</strong><small>/ {maxScore}</small></div>
     <div>
+      <span className="result-perf-label" style={{ color: ringColor }}>{perfLabel}</span>
       <h3>{methodLabel}</h3>
       {!!criteriaEntries.length && <div className="feedback-group"><b>Breakdown</b>{criteriaEntries.map(([key, value]) => <p key={key} style={{textTransform:"capitalize"}}>{key}: {value} / 100</p>)}</div>}
       {!!f.strengths?.length && <div className="feedback-group"><b>Strengths</b>{f.strengths.map((x, i) => <p key={i}><CheckCircle2 size={15} /> {x}</p>)}</div>}
