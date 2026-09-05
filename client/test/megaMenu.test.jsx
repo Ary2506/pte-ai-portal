@@ -94,12 +94,20 @@ describe("PTE Practice mega-menu", () => {
     expect(core).toHaveAttribute("title", expect.stringContaining("isn't split by exam variant"));
   });
 
-  it("marks an unsupported task (Respond to a Situation) as Coming Soon, not clickable", async () => {
+  it("Phase 20: every PTE Practice task is now genuinely supported — none show as Coming Soon here", async () => {
     renderAt("/dashboard", studentAuthUser());
     fireEvent.click(await screen.findByText("PTE Practice"));
-    const item = screen.getByText("Respond to a Situation").closest("span");
-    expect(item).toHaveClass("disabled");
-    expect(screen.getAllByText("Coming Soon").length).toBeGreaterThan(0);
+    // Respond to a Situation, Write Email, Fill in the Blanks (Drag and Drop), Select Missing
+    // Word, and Highlight Incorrect Words were the last unsupported task types — now real,
+    // clickable mega-menu entries, not disabled "Coming Soon" spans.
+    for (const label of ["Respond to a Situation", "Write Email", "Fill in the Blanks Drag/Drop", "Select Missing Word", "Highlight Incorrect Words"]) {
+      const item = screen.getByText(label).closest("button, span");
+      expect(item.tagName).toBe("BUTTON");
+      expect(item).not.toHaveClass("disabled");
+    }
+    // "Coming Soon" still exists as a mechanism (unrelated More-menu features like Vocabulary
+    // remain genuinely unbuilt) — just not for any PTE Practice task type any more.
+    expect(screen.queryByText("Respond to a Situation")?.closest("span")).toBeNull();
   });
 });
 

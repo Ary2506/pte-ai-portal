@@ -71,13 +71,20 @@ describe("Practice Hub", () => {
     expect(screen.getAllByText("No content yet").length).toBeGreaterThan(0);
   });
 
-  it("shows Coming Soon for a task type the backend doesn't support at all (e.g. Write Email), and it is not clickable", async () => {
+  it("Phase 20: Write Email is now genuinely supported — shows 'No content yet' (a content gap), never 'Coming Soon' (a functionality gap)", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     const row = screen.getByText("Write Email").closest(".practice-row");
-    expect(row).toHaveClass("disabled");
+    expect(row).toHaveClass("disabled"); // still not clickable — there's zero active content, not zero support
     expect(row.tagName).toBe("SPAN");
-    expect(row).toHaveTextContent("Coming Soon");
+    expect(row).toHaveTextContent("No content yet");
+    expect(row).not.toHaveTextContent("Coming Soon");
+  });
+
+  it("Phase 20: no task type in the PTE Practice menu shows 'Coming Soon' any more — every listed type is genuinely supported", async () => {
+    renderAt("/practice", studentAuthUser());
+    await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
+    expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
   });
 
   it("does not show an AI Score badge on a purely objective task", async () => {

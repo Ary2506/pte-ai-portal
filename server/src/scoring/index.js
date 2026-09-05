@@ -1,4 +1,4 @@
-import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation } from "./objective.js";
+import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag } from "./objective.js";
 import { evaluateSubjective } from "../services/ai/index.js";
 
 const OBJECTIVE_SCORERS = {
@@ -6,7 +6,14 @@ const OBJECTIVE_SCORERS = {
   "fill-blanks": scoreSingleChoice,
   "mcq-multiple": scoreMultipleChoice,
   reorder: scoreReorder,
-  "write-dictation": scoreDictation
+  "write-dictation": scoreDictation,
+  // Phase 20: select-missing-word is mechanically identical to mcq-single (audio + one correct
+  // option); highlight-incorrect-words is mechanically identical to mcq-multiple (the displayed
+  // words are the options, the wrong ones are the "correct" selections) — both reuse the
+  // existing, already-tested scorers rather than duplicating the same logic under a new name.
+  "select-missing-word": scoreSingleChoice,
+  "highlight-incorrect-words": scoreMultipleChoice,
+  "fill-blanks-dragdrop": scoreFillDrag
 };
 
 function subjectiveFeedback(result) {

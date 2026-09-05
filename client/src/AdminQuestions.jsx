@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { api } from "./api.js";
 
@@ -27,19 +27,21 @@ function emptyFormFor(types, section) {
   const firstType = types.find(t => t.sections.includes(section)) || types[0];
   return {
     section, type: firstType?.type || "", title: "", prompt: "", passage: "",
-    options: ["", ""], answer: "", multiAnswer: [], reorderOrder: null,
+    options: ["", ""], answer: "", multiAnswer: [], reorderOrder: null, dragAnswer: null,
     explanation: "", difficulty: "medium", active: true, audioUrl: "", imageUrl: ""
   };
 }
 
 function questionToForm(q) {
   const isReorder = q.type === "reorder";
+  const isDragFill = q.type === "fill-blanks-dragdrop";
   return {
     section: q.section, type: q.type, title: q.title || "", prompt: q.prompt || "", passage: q.passage || "",
     options: q.options?.length ? q.options : ["", ""],
     answer: typeof q.answer === "number" ? q.answer : "",
-    multiAnswer: Array.isArray(q.answer) && !isReorder ? q.answer : [],
+    multiAnswer: Array.isArray(q.answer) && !isReorder && !isDragFill ? q.answer : [],
     reorderOrder: isReorder && Array.isArray(q.answer) ? q.answer : null,
+    dragAnswer: isDragFill && Array.isArray(q.answer) ? q.answer : null,
     explanation: q.explanation || "", difficulty: q.difficulty || "medium", active: q.active !== false,
     audioUrl: q.audioUrl || "", imageUrl: q.imageUrl || ""
   };
@@ -80,6 +82,19 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
     // eslint-disable-next-line
   }, [shape, form.options.length]);
 
+  // Keeps dragAnswer's length in sync with the number of "____" blanks actually present in the
+  // passage — recomputed whenever the passage text or the option pool changes, defaulting any
+  // newly-added blank to option 0 rather than leaving it unset.
+  useEffect(() => {
+    if (shape !== "drag-fill") return;
+    const blankCount = (form.passage.match(/____/g) || []).length;
+    if (!form.dragAnswer || form.dragAnswer.length !== blankCount) {
+      const prev = form.dragAnswer || [];
+      update({ dragAnswer: Array.from({ length: blankCount }, (_, i) => prev[i] ?? 0) });
+    }
+    // eslint-disable-next-line
+  }, [shape, form.passage, form.options.length]);
+
   function update(patch) { setForm(f => ({ ...f, ...patch })); }
   function updateOption(i, value) {
     const options = [...form.options]; options[i] = value; update({ options });
@@ -118,6 +133,12 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
     if (shape === "dictation") {
       payload.answer = form.answer;
     }
+    if (shape === "drag-fill") {
+      payload.passage = form.passage.trim();
+      payload.options = form.options.map(o => o.trim());
+      payload.answer = form.dragAnswer;
+      payload.explanation = form.explanation.trim();
+    }
     onSave(payload);
   }
 
@@ -154,9 +175,11 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
     {(shape === "prompt-audio" || shape === "dictation" || form.type === "repeat-sentence"
       || ((shape === "choice-single" || shape === "choice-multiple") && form.section === "listening"))
       && <label>Audio URL<input required value={form.audioUrl} onChange={e => update({ audioUrl: e.target.value })} placeholder="https://..."/></label>}
+    {shape === "drag-fill" && <label>Passage (mark each blank with ____)<textarea required className="answer-area compact" value={form.passage} onChange={e => update({ passage: e.target.value })} placeholder="The ____ sat on the ____."/></label>}
 
-    {(shape === "choice-single" || shape === "choice-multiple" || shape === "reorder") && <>
-      <h4 className="form-subheading">{shape === "reorder" ? "Items (in their scrambled/displayed order)" : "Options"}</h4>
+    {(shape === "choice-single" || shape === "choice-multiple" || shape === "reorder" || shape === "drag-fill") && <>
+      <h4 className="form-subheading">{shape === "reorder" ? "Items (in their scrambled/displayed order)" : shape === "drag-fill" ? "Word pool (decoy words allowed — not every word needs a blank)" : "Options"}</h4>
+      {form.type === "highlight-incorrect-words" && <p className="muted" style={{fontSize:12,marginTop:-4,marginBottom:8}}>Enter the displayed transcript one word per option, in reading order — then check the boxes for the word(s) that are wrong.</p>}
       <div className="option-editor">
         {form.options.map((opt, i) => <div className="option-editor-row" key={i}>
           {shape === "choice-single" && <input type="radio" checked={Number(form.answer) === i} onChange={() => update({ answer: i })} aria-label={`Mark option ${i + 1} correct`}/>}
@@ -175,9 +198,22 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
       <OrderPicker options={form.options} order={form.reorderOrder} setOrder={order => update({ reorderOrder: order })}/>
     </>}
 
+    {shape === "drag-fill" && form.dragAnswer && <>
+      <h4 className="form-subheading">Correct word for each blank</h4>
+      {!form.dragAnswer.length && <p className="muted" style={{fontSize:12}}>Add at least one ____ blank to the passage above first.</p>}
+      <div className="option-editor">
+        {form.dragAnswer.map((optIdx, blankIdx) => <div className="option-editor-row" key={blankIdx}>
+          <span className="reorder-pos">{blankIdx + 1}</span>
+          <select value={optIdx} onChange={e => { const next = [...form.dragAnswer]; next[blankIdx] = Number(e.target.value); update({ dragAnswer: next }); }}>
+            {form.options.map((opt, i) => <option key={i} value={i}>{opt || `Item ${i + 1}`}</option>)}
+          </select>
+        </div>)}
+      </div>
+    </>}
+
     {shape === "dictation" && <label>Exact sentence (the answer)<input required value={form.answer} onChange={e => update({ answer: e.target.value })} placeholder="The sentence the student must type exactly"/></label>}
 
-    {(shape === "choice-single" || shape === "choice-multiple" || shape === "reorder") &&
+    {(shape === "choice-single" || shape === "choice-multiple" || shape === "reorder" || shape === "drag-fill") &&
       <label>Explanation (shown to the student after they answer)<textarea className="answer-area compact" value={form.explanation} onChange={e => update({ explanation: e.target.value })} placeholder="Why this is the correct answer"/></label>}
 
     <div className="modal-actions">

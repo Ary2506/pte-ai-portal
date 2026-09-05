@@ -83,6 +83,41 @@ export function scoreReorder(question, answer) {
   };
 }
 
+// fill-blanks-dragdrop: `question.answer` is one option-index per blank, in passage order.
+// `answer` (the submission) must be the same shape — one option-index per blank. Unlike
+// scoreReorder, there is no "every item used exactly once" constraint (the same word can
+// legitimately fill two blanks, and decoy words are expected to go unused), so this scores each
+// blank position independently rather than checking a permutation.
+export function scoreFillDrag(question, answer) {
+  const correct = Array.isArray(question.answer) ? question.answer : [];
+  const submitted = Array.isArray(answer) ? answer.map(Number) : null;
+  const maxScore = Math.max(1, correct.length);
+
+  const validShape = submitted && submitted.length === correct.length;
+  if (!validShape) {
+    return {
+      score: 0,
+      maxScore,
+      correct: false,
+      invalid: true,
+      feedback: ["Submitted answer was invalid — every blank must have a word assigned."]
+    };
+  }
+
+  let matches = 0;
+  for (let i = 0; i < correct.length; i++) if (submitted[i] === correct[i]) matches++;
+  const exact = matches === correct.length;
+  const wordsText = arr => arr.map(i => optionText(question.options, i)).filter(Boolean).join(", ") || null;
+  return {
+    score: matches,
+    maxScore,
+    correct: exact,
+    feedback: [exact ? "All blanks filled correctly!" : `${matches} of ${correct.length} blanks were filled correctly.`, question.explanation].filter(Boolean),
+    studentAnswerText: wordsText(submitted),
+    correctAnswerText: wordsText(correct)
+  };
+}
+
 function normalizeText(text) {
   return (text || "")
     .toLowerCase()

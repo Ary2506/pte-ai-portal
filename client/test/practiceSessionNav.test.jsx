@@ -102,6 +102,51 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     await screen.findByText("Done 0, Found 2 questions");
   });
 
+  it("Phase 21: shows a [icon] task-name header banner above the question list", async () => {
+    api.questions.mockResolvedValue({ questions: TWO_MCQ });
+    api.history.mockResolvedValue({ submissions: [] });
+    renderAt("/reading", studentAuthUser());
+    await screen.findByText("Done 0, Found 2 questions");
+    const banner = screen.getByRole("heading", { name: "Fill in the Blanks" }).closest(".question-list-banner");
+    expect(banner).toBeInTheDocument();
+    expect(banner.querySelector(".question-list-banner-icon svg")).toBeInTheDocument();
+  });
+
+  it("Phase 21: searching filters the list by title and updates the Found count, without hiding the real per-status counts on the filter tabs", async () => {
+    api.questions.mockResolvedValue({ questions: TWO_MCQ });
+    api.history.mockResolvedValue({ submissions: [] });
+    renderAt("/reading", studentAuthUser());
+    await screen.findByText("Done 0, Found 2 questions");
+
+    fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "Two" } });
+    await screen.findByText("Done 0, Found 1 question");
+    expect(screen.queryByText("Question One")).not.toBeInTheDocument();
+    expect(screen.getByText("Question Two")).toBeInTheDocument();
+    // The status-filter tabs still show the true unfiltered counts, unaffected by the search term.
+    expect(screen.getByText("All").closest("button")).toHaveTextContent("All2");
+  });
+
+  it("Phase 21: searching by question number (position) also matches", async () => {
+    api.questions.mockResolvedValue({ questions: TWO_MCQ });
+    api.history.mockResolvedValue({ submissions: [] });
+    renderAt("/reading", studentAuthUser());
+    await screen.findByText("Done 0, Found 2 questions");
+
+    fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "2" } });
+    await screen.findByText("Done 0, Found 1 question");
+    expect(screen.getByText("Question Two")).toBeInTheDocument();
+  });
+
+  it("Phase 21: an unmatched search shows a real empty state, not a fabricated result", async () => {
+    api.questions.mockResolvedValue({ questions: TWO_MCQ });
+    api.history.mockResolvedValue({ submissions: [] });
+    renderAt("/reading", studentAuthUser());
+    await screen.findByText("Done 0, Found 2 questions");
+
+    fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "zzz-no-match" } });
+    await screen.findByText("No questions match your search.");
+  });
+
   it("does not show question-navigation chrome when only one question exists", async () => {
     api.questions.mockResolvedValue({ questions: [TWO_MCQ[0]] });
     renderAt("/reading", studentAuthUser());
@@ -151,6 +196,72 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
     renderAt("/reading?type=mcq-multiple", studentAuthUser());
     await screen.findByText("Pick two");
     expect(screen.getByText("Multiple Choice Multiple").closest("button")).toHaveClass("active");
+  });
+});
+
+describe("Reopening a completed question shows its stored result (Phase 19, Part 10)", () => {
+  const TWO_MCQ = [
+    { _id: "q1", section: "reading", type: "mcq-single", title: "Question One", prompt: "Pick one.", options: ["A", "B"] },
+    { _id: "q2", section: "reading", type: "mcq-single", title: "Question Two", prompt: "Pick one.", options: ["C", "D"] }
+  ];
+
+  it("shows the stored objective result immediately (with the actually-submitted option selected) and never calls submit again", async () => {
+    api.questions.mockResolvedValue({ questions: TWO_MCQ });
+    api.history.mockResolvedValue({
+      submissions: [{
+        _id: "sub1", question: { _id: "q1" }, section: "reading", type: "mcq-single",
+        answer: 1, score: 1, maxScore: 1, evaluationType: "objective", evaluationStatus: "COMPLETED",
+        feedback: { correct: true, feedback: ["You selected the correct option."], correctAnswerText: null }
+      }]
+    });
+    renderAt("/reading", studentAuthUser());
+
+    await screen.findByText("Done 1, Found 2 questions");
+    fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
+
+    // The stored result renders immediately — no "Submit Answer" click, no new network call.
+    expect(await screen.findByText("Correct!")).toBeInTheDocument();
+    expect(api.submit).not.toHaveBeenCalled();
+
+    // The option the student actually chose (index 1 = "B") is shown selected and disabled.
+    const bOption = screen.getByText("B").closest("label");
+    expect(bOption.querySelector("input")).toBeChecked();
+    expect(bOption.querySelector("input")).toBeDisabled();
+  });
+
+  it("shows a FAILED subjective result (with its retry option) when reopened, never a fabricated score", async () => {
+    const READ_ALOUD = [{ _id: "ra1", section: "speaking", type: "read-aloud", title: "Passage One", prompt: "Read this aloud." }];
+    api.questions.mockResolvedValue({ questions: READ_ALOUD });
+    api.history.mockResolvedValue({
+      submissions: [{
+        _id: "sub2", question: { _id: "ra1" }, section: "speaking", type: "read-aloud",
+        transcript: "Some transcript.", score: 0, maxScore: 90, evaluationType: "subjective", evaluationStatus: "FAILED",
+        feedback: { overall: "AI feedback is temporarily unavailable. Your objective score (if any) is still valid." }
+      }]
+    });
+    renderAt("/speaking?type=read-aloud", studentAuthUser());
+
+    await screen.findByText("AI feedback is temporarily unavailable. Your objective score (if any) is still valid.");
+    expect(screen.getByText("Retry Evaluation")).toBeInTheDocument();
+    expect(api.submit).not.toHaveBeenCalled();
+  });
+});
+
+describe("Speaking task media rendering (Phase 19, Part 2/9)", () => {
+  it("renders the question image for Describe Image and the question audio for Repeat Sentence", async () => {
+    api.questions
+      .mockResolvedValueOnce({ questions: [{ _id: "di1", section: "speaking", type: "describe-image", title: "Chart", prompt: "Describe the image.", imageUrl: "https://example.com/chart.png" }] })
+      .mockResolvedValueOnce({ questions: [{ _id: "rs1", section: "speaking", type: "repeat-sentence", title: "Sentence", prompt: "Repeat the sentence.", audioUrl: "https://example.com/clip.mp3" }] });
+    api.history.mockResolvedValue({ submissions: [] });
+
+    const { unmount } = renderAt("/speaking?type=describe-image", studentAuthUser());
+    await screen.findByText("Chart");
+    expect(document.querySelector('img[src="https://example.com/chart.png"]')).toBeInTheDocument();
+    unmount();
+
+    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
+    await screen.findByText("Sentence");
+    expect(document.querySelector('audio[src="https://example.com/clip.mp3"]')).toBeInTheDocument();
   });
 });
 

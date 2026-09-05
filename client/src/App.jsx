@@ -457,18 +457,21 @@ function PracticeHub() {
         <span className="exam-variant-tab" role="tab" aria-selected="false" title="This portal's practice library isn't split by exam variant yet — the same available questions are shown for both.">PTE Academic / UKVI</span>
       </div>
       <div className="practice-columns">
-        {PRACTICE_SECTIONS.map(section => <div className="practice-column" key={section}>
-          <h3 className="practice-column-head">{SECTION_LABELS[section]}</h3>
-          <div className="practice-column-list">
-            {PRACTICE_TASKS[section].map(task => <PracticeTaskRow
-              key={task.slug}
-              section={section}
-              task={task}
-              hasContent={available ? available.has(`${section}:${task.slug}`) : false}
-              onStart={start}
-            />)}
-          </div>
-        </div>)}
+        {PRACTICE_SECTIONS.map(section => {
+          const SectionIcon = SECTION_ICONS[section];
+          return <div className="practice-column" key={section}>
+            <h3 className="practice-column-head"><span className="practice-column-icon"><SectionIcon size={15}/></span>{SECTION_LABELS[section]}</h3>
+            <div className="practice-column-list">
+              {PRACTICE_TASKS[section].map(task => <PracticeTaskRow
+                key={task.slug}
+                section={section}
+                task={task}
+                hasContent={available ? available.has(`${section}:${task.slug}`) : false}
+                onStart={start}
+              />)}
+            </div>
+          </div>;
+        })}
       </div>
       <div className="practice-more-section">
         <h3 className="practice-column-head">More</h3>
@@ -538,20 +541,42 @@ const PROGRESS_FILTERS = [
   { key: "done", label: "Done" }
 ];
 
-function QuestionListView({ questions, progress, onSelect }) {
+// Search matches the same fields APEUni's own question search covers (title, and the question's
+// own identifier) — never a fabricated "relevance" ranking, just a real case-insensitive
+// substring match against real data already in memory (the full list was already fetched, so
+// this needs no extra request). Matching the position number too (e.g. typing "4" finds "#4")
+// mirrors how a student would actually try to jump to a specific numbered question.
+function matchesSearch(q, i, term) {
+  if (!term) return true;
+  const needle = term.trim().toLowerCase();
+  if (!needle) return true;
+  return q.title.toLowerCase().includes(needle) || q._id.toLowerCase().includes(needle) || String(i + 1) === needle;
+}
+
+function QuestionListView({ questions, progress, onSelect, section, label }) {
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
   const doneCount = questions.filter(q => progress.has(q._id)).length;
+  const undoneCount = questions.length - doneCount;
+  const filterCounts = { all: questions.length, undone: undoneCount, done: doneCount };
   const rows = questions
     .map((q, i) => ({ q, i }))
-    .filter(({ q }) => filter === "all" || (filter === "done") === progress.has(q._id));
+    .filter(({ q }) => filter === "all" || (filter === "done") === progress.has(q._id))
+    .filter(({ q, i }) => matchesSearch(q, i, search));
+  const TaskIcon = SECTION_ICONS[section];
 
   return <div className="panel question-list-panel">
+    {TaskIcon && <div className="question-list-banner">
+      <span className="question-list-banner-icon"><TaskIcon size={18}/></span>
+      <h2>{label}</h2>
+    </div>}
     <div className="question-list-head">
       <div className="question-list-filters" role="tablist" aria-label="Filter by practice status">
         {PROGRESS_FILTERS.map(f => <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
-          className={filter === f.key ? "question-list-filter active" : "question-list-filter"} onClick={() => setFilter(f.key)}>{f.label}</button>)}
+          className={filter === f.key ? "question-list-filter active" : "question-list-filter"} onClick={() => setFilter(f.key)}>{f.label}<span className="question-list-filter-count">{filterCounts[f.key]}</span></button>)}
       </div>
-      <span className="muted">Done {doneCount}, Found {questions.length} question{questions.length === 1 ? "" : "s"}</span>
+      <div className="search question-list-search"><span>⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
+      <span className="muted">Done {doneCount}, Found {rows.length} question{rows.length === 1 ? "" : "s"}</span>
     </div>
     <div className="question-list">
       {rows.map(({ q, i }) => {
@@ -563,12 +588,12 @@ function QuestionListView({ questions, progress, onSelect }) {
             ? <span className="question-row-status">
                 {attempt.evaluationStatus === "FAILED"
                   ? <Badge tone="warn">Evaluation failed</Badge>
-                  : <Badge tone="good">Done · {attempt.score}/{attempt.maxScore}</Badge>}
+                  : <Badge tone="good"><CheckCircle2 size={12}/> Done · {attempt.score}/{attempt.maxScore}</Badge>}
               </span>
             : <Badge tone="neutral">Undone</Badge>}
         </button>;
       })}
-      {!rows.length && <p className="muted" style={{padding:"14px 6px"}}>No questions match this filter.</p>}
+      {!rows.length && <p className="muted" style={{padding:"14px 6px"}}>No questions match {search.trim() ? "your search" : "this filter"}.</p>}
     </div>
   </div>;
 }
@@ -582,9 +607,11 @@ function PracticeTask({section,label,slug}) {
   const [questions,setQuestions]=useState([]);
   const [idx,setIdx]=useState(null); // null = showing the question list, not yet inside a question
   const [loading,setLoading]=useState(true);
-  // questionId -> { score, maxScore, evaluationStatus } from the student's own most recent
-  // submission for that question (history() is already sorted newest-first server-side, so the
-  // first match kept per id is the latest attempt) — real data, never a placeholder.
+  // questionId -> the student's own most recent full Submission for that question (history() is
+  // already sorted newest-first server-side, so the first match kept per id is the latest
+  // attempt) — the whole stored document (score/feedback/transcript/answer/...), not just a
+  // summary, so a completed question can be reopened to show its real stored result (Phase 19,
+  // Part 10) instead of AI ever being re-run just to view it.
   const [progress,setProgress]=useState(new Map());
   useEffect(()=>{
     setLoading(true);
@@ -597,7 +624,7 @@ function PracticeTask({section,label,slug}) {
       const map = new Map();
       for (const s of loadedSubmissions) {
         const qid = s.question?._id;
-        if (qid && !map.has(qid)) map.set(qid, { score: s.score, maxScore: s.maxScore, evaluationStatus: s.evaluationStatus });
+        if (qid && !map.has(qid)) map.set(qid, s);
       }
       setQuestions(loadedQuestions);
       setProgress(map);
@@ -611,13 +638,14 @@ function PracticeTask({section,label,slug}) {
   if (loading) return <Empty text="Loading questions…"/>;
   if (!questions.length) return <Empty text="No practice questions available yet."/>;
 
-  if (idx === null) return <QuestionListView questions={questions} progress={progress} onSelect={setIdx}/>;
+  if (idx === null) return <QuestionListView questions={questions} progress={progress} onSelect={setIdx} section={section} label={label}/>;
 
   const q=questions[idx];
-  const body = section==="speaking" ? <SpeakingTask key={q?._id} type={label} question={q}/>
-    : section==="writing" ? <WritingTask key={q?._id} type={label} question={q}/>
-    : section==="reading" ? <ReadingTask key={q?._id} question={q}/>
-    : <ListeningTask key={q?._id} question={q}/>;
+  const existingResult = q ? progress.get(q._id) : null;
+  const body = section==="speaking" ? <SpeakingTask key={q?._id} type={label} question={q} existingResult={existingResult}/>
+    : section==="writing" ? <WritingTask key={q?._id} type={label} question={q} existingResult={existingResult}/>
+    : section==="reading" ? <ReadingTask key={q?._id} question={q} existingResult={existingResult}/>
+    : <ListeningTask key={q?._id} question={q} existingResult={existingResult}/>;
 
   return <div>
     {questions.length > 1 && <div className="mock-progress-bar" role="group" aria-label="Question navigation">
@@ -639,8 +667,8 @@ function PracticeTask({section,label,slug}) {
 const SPEAKING_DURATION_LIMITS = { "read-aloud": 40, "repeat-sentence": 15, "describe-image": 40, "answer-short-question": 10 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
 
-function SpeakingTask({type,question,testSessionId,onAnswered}) {
-  const [recording,setRecording]=useState(false), [seconds,setSeconds]=useState(0), [blob,setBlob]=useState(null), [transcript,setTranscript]=useState(""), [result,setResult]=useState(null), [error,setError]=useState(""), [busy,setBusy]=useState(false), [retrying,setRetrying]=useState(false);
+function SpeakingTask({type,question,testSessionId,onAnswered,existingResult}) {
+  const [recording,setRecording]=useState(false), [seconds,setSeconds]=useState(0), [blob,setBlob]=useState(null), [transcript,setTranscript]=useState(""), [result,setResult]=useState(()=>existingResult||null), [error,setError]=useState(""), [busy,setBusy]=useState(false), [retrying,setRetrying]=useState(false);
   const recorder=useRef(null), chunks=useRef([]), timer=useRef(null), recognition=useRef(null), elapsedRef=useRef(0);
   const limit = SPEAKING_DURATION_LIMITS[question?.type] || DEFAULT_SPEAKING_DURATION_LIMIT;
   useEffect(()=>()=>clearInterval(timer.current),[]);
@@ -677,7 +705,7 @@ function SpeakingTask({type,question,testSessionId,onAnswered}) {
   async function submit(){if(!blob){setError("Record an answer first.");return} setBusy(true); setError(""); const f=new FormData();f.append("audio",blob,"speaking.webm");f.append("section","speaking");f.append("type",type);f.append("transcript",transcript);f.append("durationSeconds",seconds);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
   async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
   const durationLabel = recording ? `${formatMMSS(seconds*1000)} / ${formatMMSS(limit*1000)}` : `Ready · limit ${formatMMSS(limit*1000)}`;
-  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p><div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
+  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt="" style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
 }
 
 // UI guidance only — the server's own MAX_TEXT_LENGTH (character-based) remains the sole
@@ -692,8 +720,8 @@ function WordCountBadge({ count, range }) {
   return <span className={`word-count ${tone}`}>{count} / {min}–{max} words</span>;
 }
 
-function WritingTask({type,question,testSessionId,onAnswered}) {
-  const [text,setText]=useState(""),[result,setResult]=useState(null),[error,setError]=useState(""),[busy,setBusy]=useState(false),[retrying,setRetrying]=useState(false);
+function WritingTask({type,question,testSessionId,onAnswered,existingResult}) {
+  const [text,setText]=useState(()=>existingResult?.transcript||(typeof existingResult?.answer==="string"?existingResult.answer:"")),[result,setResult]=useState(()=>existingResult||null),[error,setError]=useState(""),[busy,setBusy]=useState(false),[retrying,setRetrying]=useState(false);
   async function submit(){if(!text.trim()){setError("Write a response before submitting.");return} setBusy(true); setError(""); const f=new FormData();f.append("section","writing");f.append("type",type);f.append("answer",JSON.stringify(text));f.append("transcript",text);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
   async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
   const wordCount = text.trim()?text.trim().split(/\s+/).length:0;

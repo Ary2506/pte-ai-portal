@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { api } from "./api.js";
 
@@ -78,24 +78,137 @@ function MultiChoiceOptions({ options, selected, toggle, disabled }) {
   </label>)}</div>;
 }
 
-export function ReadingTask({ question, testSessionId, onAnswered }) {
+// Highlight Incorrect Words (Phase 20): the transcript's individual words ARE question.options
+// (in reading order); the student clicks each word that doesn't match what they heard. Reuses the
+// exact same selected-indices array and toggle() the checkbox-based MultiChoiceOptions uses — only
+// the rendering differs (inline flowing words, not a vertical list) — so it submits and scores
+// (scoreMultipleChoice) identically to mcq-multiple, with zero new backend logic.
+function HighlightWords({ options, selected, toggle, disabled }) {
+  return <p className="highlight-words" role="group" aria-label="Click every word that does not match what you heard">
+    {(options || []).map((word, i) => <button type="button" key={i}
+      className={selected.includes(i) ? "highlight-word selected" : "highlight-word"}
+      onClick={() => toggle(i)} disabled={disabled} aria-pressed={selected.includes(i)}>{word}</button>)}
+  </p>;
+}
+
+// Fill in the Blanks — inline dropdown (Phase 20, Part 6): question.passage carries the sentence
+// with a single "____" blank; renders it as real prose with a native <select> standing in for the
+// blank, instead of listing the options as a separate generic choice list below the passage.
+// fill-blanks only ever has one blank (a single answer index) — see FillBlanksDragDrop below for
+// the multi-blank drag-and-drop variant.
+function FillBlankInline({ passage, options, value, onChange, disabled }) {
+  const [before, after] = passage.split("____");
+  return <p className="passage fill-blank-inline">
+    {before}
+    <select value={value} onChange={e => onChange(e.target.value === "" ? "" : Number(e.target.value))} disabled={disabled} aria-label="Choose the word that completes the sentence">
+      <option value="">— choose —</option>
+      {(options || []).map((o, i) => <option key={i} value={i}>{o}</option>)}
+    </select>
+    {after}
+  </p>;
+}
+
+// Fill in the Blanks — Drag and Drop (Phase 20, Part 6): question.passage carries the text with
+// N "____" blanks; question.options is the draggable word pool (may include decoy words never
+// used). `placement` is an array of length N — placement[i] is the pool index filling blank i, or
+// null if empty. Real HTML5 drag-and-drop is layered on top of a click-to-select-then-click-to-
+// place interaction that is the primary path — every blank and every word is a native <button>,
+// so the whole thing is keyboard-operable (Tab + Enter/Space) without a separate code path.
+function DragFillBlanks({ passage, options, placement, setPlacement, disabled }) {
+  const [selectedPool, setSelectedPool] = useState(null);
+  const segments = passage.split("____");
+  const blankCount = segments.length - 1;
+  const usedPoolIdx = new Set(placement.filter(v => v !== null && v !== undefined));
+  const poolIndices = options.map((_, i) => i).filter(i => !usedPoolIdx.has(i));
+
+  function placeAt(blankIdx, poolIdx) {
+    if (disabled) return;
+    const next = [...placement];
+    next[blankIdx] = poolIdx;
+    setPlacement(next);
+    setSelectedPool(null);
+  }
+  function clearBlank(blankIdx) {
+    if (disabled) return;
+    const next = [...placement];
+    next[blankIdx] = null;
+    setPlacement(next);
+  }
+  function onBlankActivate(blankIdx) {
+    if (disabled) return;
+    if (placement[blankIdx] !== null && placement[blankIdx] !== undefined) { clearBlank(blankIdx); return; }
+    if (selectedPool !== null) placeAt(blankIdx, selectedPool);
+  }
+  function onWordActivate(poolIdx) {
+    if (disabled) return;
+    setSelectedPool(prev => (prev === poolIdx ? null : poolIdx));
+  }
+  function onDrop(e, blankIdx) {
+    e.preventDefault();
+    if (disabled) return;
+    const poolIdx = Number(e.dataTransfer.getData("text/plain"));
+    if (Number.isInteger(poolIdx)) placeAt(blankIdx, poolIdx);
+  }
+
+  return <div className="drag-fill">
+    <p className="passage drag-fill-passage">
+      {segments.map((seg, i) => <Fragment key={i}>
+        {seg}
+        {i < blankCount && <button type="button"
+          className={placement[i] !== null && placement[i] !== undefined ? "drag-fill-blank filled" : "drag-fill-blank"}
+          onClick={() => onBlankActivate(i)} onDragOver={e => e.preventDefault()} onDrop={e => onDrop(e, i)} disabled={disabled}
+          aria-label={placement[i] !== null && placement[i] !== undefined
+            ? `Blank ${i + 1}: ${options[placement[i]]}. Activate to clear it.`
+            : `Blank ${i + 1}: empty. Select a word below, then activate this blank to place it.`}>
+          {placement[i] !== null && placement[i] !== undefined ? options[placement[i]] : "＿＿＿＿"}
+        </button>}
+      </Fragment>)}
+    </p>
+    <div className="drag-fill-pool" role="listbox" aria-label="Available words">
+      {poolIndices.map(i => <button type="button" key={i} draggable={!disabled}
+        onDragStart={e => e.dataTransfer.setData("text/plain", String(i))}
+        className={selectedPool === i ? "drag-fill-chip selected" : "drag-fill-chip"}
+        onClick={() => onWordActivate(i)} disabled={disabled} aria-pressed={selectedPool === i}>{options[i]}</button>)}
+      {!poolIndices.length && <span className="muted" style={{fontSize:12}}>All words placed.</span>}
+    </div>
+  </div>;
+}
+
+export function ReadingTask({ question, testSessionId, onAnswered, existingResult }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
   const [order, setOrder] = useState(null);
-  const [result, setResult] = useState(null);
+  const [dragPlacement, setDragPlacement] = useState(null);
+  const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    setChoice(""); setMulti([]);
-    setOrder(question?.type === "reorder" ? (question.options || []).map((_, i) => i) : null);
-    setResult(null);
+    const isReorderQ = question?.type === "reorder";
+    const isMultiQ = question?.type === "mcq-multiple";
+    const isDragFillQ = question?.type === "fill-blanks-dragdrop";
+    const blankCount = isDragFillQ ? (question.passage?.match(/____/g) || []).length : 0;
+    const submittedAnswer = existingResult?.answer;
+    // Reopening an already-answered question (Phase 19, Part 10) shows its real stored result —
+    // never re-scored, never re-sent to AI — instead of a blank form, with the selection/order
+    // seeded from what was actually submitted so the disabled options visually show the real
+    // answer (same convention ObjectiveResult already relies on for a fresh submission).
+    // existingResult is only ever set by the standalone practice flow (PracticeTask), which
+    // already remounts this component fresh per question; Mock never passes it, so this is a
+    // no-op there, exactly as before.
+    setChoice(existingResult && !isReorderQ && !isMultiQ && !isDragFillQ && submittedAnswer !== undefined ? submittedAnswer : "");
+    setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
+    setOrder(isReorderQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : (question.options || []).map((_, i) => i)) : null);
+    setDragPlacement(isDragFillQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : Array(blankCount).fill(null)) : null);
+    setResult(existingResult || null);
     setError("");
   }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No reading question is available in the library for this task yet." /></div>;
   const isReorder = question.type === "reorder";
   const isMulti = question.type === "mcq-multiple";
+  const isInlineFillBlank = question.type === "fill-blanks" && question.passage?.includes("____");
+  const isDragFill = question.type === "fill-blanks-dragdrop";
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
@@ -104,7 +217,7 @@ export function ReadingTask({ question, testSessionId, onAnswered }) {
     const f = new FormData();
     f.append("section", "reading");
     f.append("type", question.type);
-    f.append("answer", JSON.stringify(isReorder ? order : isMulti ? multi : choice));
+    f.append("answer", JSON.stringify(isReorder ? order : isMulti ? multi : isDragFill ? dragPlacement : choice));
     if (question._id) f.append("questionId", question._id);
     if (testSessionId) f.append("testSessionId", testSessionId);
     try {
@@ -114,17 +227,23 @@ export function ReadingTask({ question, testSessionId, onAnswered }) {
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
 
-  const canSubmit = isReorder ? !!order : isMulti ? multi.length > 0 : choice !== "";
+  const canSubmit = isReorder ? !!order : isMulti ? multi.length > 0
+    : isDragFill ? !!dragPlacement && dragPlacement.every(v => v !== null && v !== undefined)
+    : choice !== "";
 
   return <div className="panel task-main narrow">
     <div className="task-meta"><span className="chip">Reading</span><span>Timed practice</span></div>
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
-    {question.passage && <div className="passage">{question.passage}</div>}
+    {question.passage && !isInlineFillBlank && !isDragFill && <div className="passage">{question.passage}</div>}
     {isReorder
       ? <ReorderList options={question.options} order={order} setOrder={setOrder} disabled={!!result} />
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
+      : isDragFill
+      ? (dragPlacement && <DragFillBlanks passage={question.passage} options={question.options} placement={dragPlacement} setPlacement={setDragPlacement} disabled={!!result} />)
+      : isInlineFillBlank
+      ? <FillBlankInline passage={question.passage} options={question.options} value={choice} onChange={setChoice} disabled={!!result} />
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>}
@@ -135,20 +254,35 @@ export function ReadingTask({ question, testSessionId, onAnswered }) {
   </div>;
 }
 
-export function ListeningTask({ question, testSessionId, onAnswered }) {
+export function ListeningTask({ question, testSessionId, onAnswered, existingResult }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
   const [text, setText] = useState("");
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
 
-  useEffect(() => { setChoice(""); setMulti([]); setText(""); setResult(null); setError(""); }, [question?._id]);
+  useEffect(() => {
+    // mcq-single, fill-blanks, and select-missing-word are all mechanically the same "pick one
+    // option" shape for listening — only the task framing differs, which the prompt/instructions
+    // already convey.
+    const isChoiceQ = ["mcq-single", "fill-blanks", "select-missing-word"].includes(question?.type);
+    const isMultiQ = ["mcq-multiple", "highlight-incorrect-words"].includes(question?.type);
+    const submittedAnswer = existingResult?.answer;
+    // Same reopened-completed-question behavior as ReadingTask (Phase 19, Part 10) — seeded from
+    // the stored submission, never re-evaluated.
+    setChoice(existingResult && isChoiceQ && submittedAnswer !== undefined ? submittedAnswer : "");
+    setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
+    setText(existingResult && !isChoiceQ && !isMultiQ ? (existingResult.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
+    setResult(existingResult || null);
+    setError("");
+  }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No listening question is available in the library for this task yet." /></div>;
-  const isChoice = question.type === "mcq-single";
-  const isMulti = question.type === "mcq-multiple";
+  const isChoice = ["mcq-single", "fill-blanks", "select-missing-word"].includes(question.type);
+  const isHighlight = question.type === "highlight-incorrect-words";
+  const isMulti = question.type === "mcq-multiple" || isHighlight;
   const isFreeText = !isChoice && !isMulti;
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
@@ -183,10 +317,16 @@ export function ListeningTask({ question, testSessionId, onAnswered }) {
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
     {question.audioUrl && <audio className="audio" controls src={question.audioUrl} />}
+    {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
+        the audio — ReadingTask has always shown its passage; this was the one place Listening
+        never did. Harmless no-op for every other listening type, which never sets a passage. */}
+    {question.passage && <div className="passage">{question.passage}</div>}
     {isChoice
       ? <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>
+      : isHighlight
+      ? <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : <textarea className="answer-area compact" value={text} onChange={e => setText(e.target.value)} placeholder="Type your response..." disabled={!!result} />}

@@ -143,6 +143,32 @@ describe("create form", () => {
     fireEvent.click(screen.getByText("Save question"));
     await waitFor(() => expect(api.admin.questions.create).toHaveBeenCalled());
   });
+
+  it("Phase 20: shows the passage/word-pool/blank-assignment fields for Fill in the Blanks (Drag and Drop), and submits the right payload shape", async () => {
+    api.admin.questions.types.mockResolvedValue({
+      types: [...TYPES, { type: "fill-blanks-dragdrop", label: "Fill in the Blanks (Drag and Drop)", evaluationType: "objective", shape: "drag-fill", sections: ["reading"] }]
+    });
+    api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "Drag Fill Q", type: "fill-blanks-dragdrop" }) });
+    await openQuestionsTab();
+    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "fill-blanks-dragdrop" } });
+
+    const passageField = await screen.findByPlaceholderText("The ____ sat on the ____.");
+    fireEvent.change(passageField, { target: { value: "The ____ sat on the mat." } });
+    expect(screen.getByText("Word pool (decoy words allowed — not every word needs a blank)")).toBeInTheDocument();
+    expect(screen.getByText("Correct word for each blank")).toBeInTheDocument();
+
+    fireEvent.change(await screen.findByPlaceholderText("Short internal name for this question"), { target: { value: "Drag Fill Q" } });
+    fireEvent.change(screen.getByPlaceholderText("What the student is asked to do"), { target: { value: "Drag the word into the blank." } });
+    const optionInputs = screen.getAllByPlaceholderText(/Item \d/);
+    fireEvent.change(optionInputs[0], { target: { value: "cat" } });
+    fireEvent.change(optionInputs[1], { target: { value: "dog" } });
+
+    fireEvent.click(screen.getByText("Save question"));
+    await waitFor(() => expect(api.admin.questions.create).toHaveBeenCalledWith(expect.objectContaining({
+      type: "fill-blanks-dragdrop", passage: "The ____ sat on the mat.", options: ["cat", "dog"], answer: [0]
+    })));
+  });
 });
 
 describe("edit and deactivate", () => {

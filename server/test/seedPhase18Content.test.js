@@ -48,7 +48,7 @@ describe("seedPhase18Content (Phase 18 idempotent content seeder)", () => {
       expect(["easy", "medium", "hard"]).toContain(q.difficulty);
       expect(q.prompt?.trim()).toBeTruthy();
       expect(q.active).toBe(true);
-      if (["mcq-single", "mcq-multiple", "fill-blanks", "reorder"].includes(q.type)) {
+      if (["mcq-single", "mcq-multiple", "fill-blanks", "reorder", "fill-blanks-dragdrop", "select-missing-word", "highlight-incorrect-words"].includes(q.type)) {
         expect(q.evaluationType).toBe("objective");
       } else {
         expect(q.evaluationType).toBe("subjective");

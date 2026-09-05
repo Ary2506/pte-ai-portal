@@ -16,27 +16,27 @@ export const PRACTICE_TASKS = {
     { slug: "repeat-sentence", label: "Repeat Sentence", supported: true, hasAI: true },
     { slug: "describe-image", label: "Describe Image", supported: true, hasAI: true },
     { slug: "answer-short-question", label: "Answer Short Question", supported: true, hasAI: true },
-    { slug: "respond-to-situation", label: "Respond to a Situation", supported: false, hasAI: false }
+    { slug: "respond-to-situation", label: "Respond to a Situation", supported: true, hasAI: true }
   ],
   writing: [
     { slug: "swt", label: "Summarize Written Text", supported: true, hasAI: true },
-    { slug: "write-email", label: "Write Email", supported: false, hasAI: false },
+    { slug: "write-email", label: "Write Email", supported: true, hasAI: true },
     { slug: "essay", label: "Write Essay", supported: true, hasAI: true }
   ],
   reading: [
     { slug: "fill-blanks", label: "Fill in the Blanks", supported: true, hasAI: false },
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },
     { slug: "reorder", label: "Reorder Paragraph", supported: true, hasAI: false },
-    { slug: "fill-blanks-dragdrop", label: "Fill in the Blanks Drag/Drop", supported: false, hasAI: false },
+    { slug: "fill-blanks-dragdrop", label: "Fill in the Blanks Drag/Drop", supported: true, hasAI: false },
     { slug: "mcq-single", label: "Multiple Choice Single", supported: true, hasAI: false }
   ],
   listening: [
     { slug: "summarize-spoken-text", label: "Summarize Spoken Text", supported: true, hasAI: true },
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },
-    { slug: "fill-blanks", label: "Fill in the Blanks", supported: false, hasAI: false },
+    { slug: "fill-blanks", label: "Fill in the Blanks", supported: true, hasAI: false },
     { slug: "mcq-single", label: "Multiple Choice Single", supported: true, hasAI: false },
-    { slug: "select-missing-word", label: "Select Missing Word", supported: false, hasAI: false },
-    { slug: "highlight-incorrect-words", label: "Highlight Incorrect Words", supported: false, hasAI: false },
+    { slug: "select-missing-word", label: "Select Missing Word", supported: true, hasAI: false },
+    { slug: "highlight-incorrect-words", label: "Highlight Incorrect Words", supported: true, hasAI: false },
     { slug: "write-dictation", label: "Write From Dictation", supported: true, hasAI: false }
   ]
 };

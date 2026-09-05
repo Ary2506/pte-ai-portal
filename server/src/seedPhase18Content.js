@@ -323,7 +323,92 @@ const listeningMcqSingle = [
 
 const PHASE18_MEDIA_CANDIDATES = [...describeImage, ...repeatSentence, ...sstListening, ...listeningMcqSingle];
 
-const PHASE18_ALL_CANDIDATES = [...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES];
+// ---------------------------------------------------------------------------
+// Phase 20 — original, text-only content for the two new task types that need no media
+// (Write Email, Fill in the Blanks Drag-and-Drop). The three remaining new types this phase adds
+// (Respond to a Situation, Select Missing Word, Highlight Incorrect Words) all require audio and
+// are deliberately left with zero seeded content here — see the Phase 20 report for why.
+// ---------------------------------------------------------------------------
+const writeEmail = [
+  ["You recently purchased a product online that arrived damaged. Write an email to the company's customer service team explaining the problem and requesting a replacement or refund.", "easy"],
+  ["You are unable to attend a scheduled meeting at work due to a personal emergency. Write an email to your manager explaining the situation and requesting to reschedule.", "easy"],
+  ["You would like to apply for a part-time position advertised by a local company. Write an email to the hiring manager introducing yourself and expressing your interest in the role.", "medium"],
+  ["Your neighbor's frequent late-night noise has been disturbing your sleep. Write a polite email to your neighbor explaining the issue and asking them to be more considerate.", "medium"],
+  ["You recently completed a course and would like to request a copy of your certificate, which you have not yet received. Write an email to the course administrator explaining your request.", "medium"]
+].map(([prompt, difficulty], i) => ({
+  section: "writing", type: "write-email", title: `Write Email ${i + 1}`, prompt, difficulty
+}));
+
+const dragFillPrompt = "Drag each word from the word bank into the correct blank.";
+const dragFill = [
+  ["Solar panels convert sunlight directly into ____ through a process called the photovoltaic effect, while wind turbines generate power by capturing the ____ energy of moving air.", ["electricity", "kinetic", "chemical", "static"], [0, 1], "easy"],
+  ["Scientists begin by making an ____ about a phenomenon, then propose a testable ____ to explain it, and finally design an experiment to test their prediction.", ["observation", "hypothesis", "conclusion", "opinion"], [0, 1], "medium"],
+  ["Many cities are investing in public ____ to reduce traffic congestion, while also expanding ____ space to improve air quality and resident wellbeing.", ["transportation", "green", "parking", "commercial"], [0, 1], "easy"],
+  ["A balanced diet typically includes adequate ____ for muscle repair, along with sufficient ____ to provide the body with lasting energy throughout the day.", ["protein", "carbohydrates", "sugar", "caffeine"], [0, 1], "medium"],
+  ["When demand for a product increases while supply remains limited, prices tend to ____; conversely, when supply exceeds demand, prices generally ____.", ["rise", "fall", "stabilize", "double"], [0, 1], "medium"]
+].map(([passage, options, answer, difficulty], i) => ({
+  section: "reading", type: "fill-blanks-dragdrop", title: `Fill in the Blanks Drag and Drop ${i + 1}`,
+  prompt: dragFillPrompt, passage, options, answer, difficulty
+}));
+
+const PHASE20_TEXT_CANDIDATES = [...writeEmail, ...dragFill];
+
+// ---------------------------------------------------------------------------
+// Phase 23 — the client's own curated Read Aloud set (client-confirmed as content they have the
+// rights to use). Replaces the Phase 18 batch as the *active* Read Aloud content — see
+// migrateQuestions.js's deactivateSupersededReadAloud() for the one-time deactivation of the
+// prior 21 questions this set replaces. Text is used exactly as supplied, unmodified.
+// ---------------------------------------------------------------------------
+const clientReadAloud = [
+  ["The best time to visit Canada is during fall months, when mild temperatures and vibrant fall foliage make scenic drives, hiking, and outdoor exploration especially enjoyable. Travel guides often highlight autumn — especially from late September through November — as a peak season for color changes in Ontario, Quebec, and other regions of the country.", "medium"],
+  ["We bring together people, resources, and education to benefit lives and neighborhoods through community gardening. From our beginnings, American Community Gardening Association has encouraged networking among members to share community gardening information, experience, and best practices. We also offer formal educational opportunities, such as local and regional workshops, webinars, publications, and online resources.", "medium"],
+  ["You don't have to spend a lot of time in the kitchen on weekends, say nutrition experts and home chefs who promote smart cooking habits. The trend, which has taken off on social media and in lifestyle magazines this year, encourages simple meal prep, batch cooking, and the use of time-saving appliances to reduce stress.", "medium"],
+  ["Schools host parent teacher conferences four times a year and it is important for families to attend. This is your chance to meet with teachers and ask questions about your child's progress. It can be helpful to write down questions ahead of time.", "easy"],
+  ["Your body is nearly two-thirds water. And so it is really important that you consume enough fluid to stay hydrated and healthy. If you don't get enough fluid you may feel tired, get headaches, and not perform at your best.", "easy"]
+].map(([prompt, difficulty], i) => ({
+  section: "speaking", type: "read-aloud", title: `Read Aloud (Client Set) ${i + 1}`, prompt, difficulty
+}));
+
+const PHASE23_TEXT_CANDIDATES = [...clientReadAloud];
+
+// ---------------------------------------------------------------------------
+// Phase 22 — original AI-generated audio (Higgsfield seed_audio) for two of the six
+// previously-audio-blocked types. Every clip was verified live before being used here: HTTP 200,
+// Content-Type audio/x-wav, a genuine RIFF/WAVE file signature, and a byte size consistent with
+// real spoken audio (~460-480KB) — not an HTML error page, not empty, not a placeholder.
+// Budget was extremely limited (this workspace had ~1 AI-generation credit remaining), which is
+// exactly why this batch is only 2 questions, covering only 2 of the 6 blocked types — see the
+// Phase 22 report for the other 4, which remain genuinely blocked by the same constraint.
+// ---------------------------------------------------------------------------
+const selectMissingWord = [
+  {
+    section: "listening", type: "select-missing-word", title: "Select Missing Word 1 — Business Expansion",
+    prompt: "Listen to the recording. Which word correctly completes the sentence you heard?",
+    options: ["markets", "weather", "recipes", "holidays"], answer: 0,
+    explanation: "The recording states that the company decided to expand its operations into new international markets.",
+    audioUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260904_112941_1394221f-dcad-4c5a-898a-3c50f53464c7.wav",
+    difficulty: "medium"
+  }
+];
+
+const listeningFillBlanks = [
+  {
+    section: "listening", type: "fill-blanks", title: "Listening Fill in the Blanks 1 — Library Hours",
+    prompt: "Listen to the recording, then choose the word that correctly completes the sentence.",
+    passage: "The library closes early on ____.",
+    options: ["Sundays", "Mondays", "Wednesdays", "Fridays"], answer: 0,
+    explanation: "The recording states that the library closes early on Sundays.",
+    audioUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260904_113050_6bdcccc8-d4e8-4f72-a0dc-2c23f8a7e907.wav",
+    difficulty: "easy"
+  }
+];
+
+const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
+
+const PHASE18_ALL_CANDIDATES = [
+  ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
+  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES
+];
 
 // Guards against two overlapping calls *within this same process* racing each other's
 // read-then-insert (both would see the same "existing" snapshot and both insert everything).
@@ -369,4 +454,7 @@ async function runSeed(candidates) {
   return { inserted, skippedDuplicate, skippedInvalid, invalidReport };
 }
 
-export { PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE18_ALL_CANDIDATES, signature };
+export {
+  PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE20_TEXT_CANDIDATES,
+  PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
+};

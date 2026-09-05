@@ -48,6 +48,18 @@ const TASK_INFO = {
     instructions: "The student answered a short factual question. Only a transcript of their speech (not the audio) is available.",
     criteria: "correctness and relevance of the answer content",
     criteriaKeys: ["content"]
+  },
+  "respond-to-situation": {
+    label: "Respond to a Situation",
+    instructions: "The student heard a spoken situation and gave an appropriate verbal response. Only a transcript of their speech (not the audio) is available.",
+    criteria: "appropriateness of the response to the situation, content relevance, fluency signals inferable from the transcript (never pronunciation — no audio is analyzed)",
+    criteriaKeys: ["content", "fluency"]
+  },
+  "write-email": {
+    label: "Write Email",
+    instructions: "The student wrote an email responding to a given prompt/scenario, including appropriate tone and structure for email correspondence.",
+    criteria: "content relevance and completeness, appropriate tone and register, organization/structure, grammar, vocabulary",
+    criteriaKeys: ["content", "form", "grammar", "vocabulary"]
   }
 };
 

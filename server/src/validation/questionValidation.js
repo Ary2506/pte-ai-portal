@@ -67,6 +67,27 @@ export function validateAndNormalizeQuestion(input) {
   } else if (meta.shape === "prompt-audio") {
     if (!input.audioUrl?.trim()) errors.push("An audio URL is required for this listening task.");
     normalized.maxScore = 90;
+  } else if (meta.shape === "drag-fill") {
+    // fill-blanks-dragdrop: `passage` carries the text with each blank marked "____"; `options`
+    // is the draggable word pool (may include decoy words never used — real PTE drag-drop
+    // questions commonly do); `answer` is one option-index per blank, in the order the blanks
+    // appear in the passage (left to right). Deliberately NOT the reorder shape's semantics —
+    // reorder requires every option used exactly once, but a decoy pool means options.length can
+    // exceed the blank count, and the same word could legitimately be the answer for two blanks.
+    const blankCount = (input.passage?.match(/____/g) || []).length;
+    if (!input.passage?.trim()) errors.push("A passage with blanks is required.");
+    else if (blankCount < 1) errors.push("The passage must contain at least one blank, marked with ____.");
+    const options = input.options;
+    if (!Array.isArray(options) || options.length < Math.max(2, blankCount)) {
+      errors.push("There must be at least as many word options as blanks (at least 2 total).");
+    }
+    const answer = input.answer;
+    if (!Array.isArray(answer) || answer.length !== blankCount) {
+      errors.push("Exactly one correct word must be assigned to each blank.");
+    } else if (Array.isArray(options) && answer.some(a => !Number.isInteger(a) || a < 0 || a >= options.length)) {
+      errors.push("Each blank's answer must reference a valid word option.");
+    }
+    normalized.maxScore = Math.max(1, blankCount);
   } else if (meta.shape === "prompt-passage") {
     if (!input.passage?.trim()) errors.push("A source passage is required for this task.");
     normalized.maxScore = 90;
