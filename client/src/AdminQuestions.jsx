@@ -360,7 +360,7 @@ export function AdminQuestionsPanel({ notify }) {
 
   return <div>
     <div className="panel-head">
-      <div><h3>Question bank</h3><p className="muted">{total} total</p></div>
+      <div><span className="eyebrow">Content management</span><h3>Question Library</h3><p className="muted">{total} total</p></div>
       <button className="primary" onClick={() => setShowCreate(s => !s)}>{showCreate ? "Cancel" : "+ Create question"}</button>
     </div>
     {error && <div className="alert error">{error}<button type="button" className="text-button" style={{marginTop:0,marginLeft:"auto"}} onClick={() => load()}>Retry</button></div>}

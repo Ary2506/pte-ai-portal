@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Routes, Route, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { Routes, Route, Link, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
@@ -101,7 +101,7 @@ function Auth({ save }) {
 
   return <div className="auth-page">
     <div className="auth-visual">
-      <div className="brand large"><span>PTE</span> AI</div>
+      <div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
       <h1>Practice smarter.<br/>Reach your target score.</h1>
       <p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p>
       <div className="auth-features">
@@ -112,7 +112,7 @@ function Auth({ save }) {
       <div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div>
     </div>
     <div className="auth-card">
-      <div className="brand"><span>PTE</span> AI</div>
+      <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
       <h2>Welcome back</h2>
       <p className="muted">Sign in with the User ID and password provided by your administrator.</p>
       <div className="alert notice">
@@ -260,17 +260,47 @@ function MoreMenu({ onNavigate }) {
 // the admin one has no PTE Practice mega-menu / More menu at all (those are student concerns),
 // and the student one's Admin Panel link — only ever shown to an actual admin — is a normal,
 // visible top-level nav item rather than buried at the bottom next to Logout.
+// Reads the admin tab straight from the URL (Admin() itself keeps the two in sync — see its own
+// useSearchParams wiring) so a sidebar link and a browser back/forward action always agree on
+// which tab is "active", without prop-drilling tab state down from Admin(). Distinct labels from
+// the in-page tab strip ("Manage Users" vs "Users", "Question Library" vs "Questions", "Mock
+// Attempts" vs "Test Sessions") are deliberate — both are real, working destinations, just named
+// for their different context (quick sidebar access vs. the page's own tab strip).
 function AdminSidebarNav({ onNavigate }) {
+  const [searchParams] = useSearchParams();
+  const currentTab = searchParams.get("tab") || "dashboard";
+  const cls = key => currentTab === key ? "nav-item active" : "nav-item";
+  // Plain <Link>, not <NavLink>, for the three tab shortcuts: they all share the /admin
+  // pathname and differ only by ?tab=, and NavLink's own active-matching ignores search params
+  // entirely — it would mark all three "active" at once regardless of which tab is actually
+  // selected. <Link> never auto-applies an active class, so cls() above is the only source of
+  // truth for which one is highlighted.
   return <>
-    <NavLink to="/admin" end className={({isActive})=>isActive?"nav-item active":"nav-item"} onClick={onNavigate}><Shield size={18}/><span>Admin Dashboard</span></NavLink>
+    <div className="nav-group-label">Overview</div>
+    <NavLink to="/admin" end className={({isActive})=>isActive && currentTab==="dashboard" ?"nav-item active":"nav-item"} onClick={onNavigate}><Shield size={18}/><span>Admin Dashboard</span></NavLink>
+    <div className="nav-group-label">Administration</div>
+    <Link to="/admin?tab=users" className={cls("users")} onClick={onNavigate}><UserRound size={18}/><span>Manage Users</span></Link>
+    <Link to="/admin?tab=questions" className={cls("questions")} onClick={onNavigate}><BookOpen size={18}/><span>Content Library</span></Link>
+    <Link to="/admin?tab=testSessions" className={cls("testSessions")} onClick={onNavigate}><Trophy size={18}/><span>Mock Attempts</span></Link>
+    <div className="nav-group-label">Other</div>
     <NavLink to="/dashboard" className="nav-item" onClick={onNavigate}><Home size={18}/><span>Student Site</span></NavLink>
   </>;
 }
+// Mock Tests and Practice History already exist inside the More menu (unchanged below) — these
+// two are additional, directly-visible shortcuts to the same real routes (Part 4/Step 4), given
+// deliberately distinct labels ("Take Mock Test", "My Results") so they never collide with the
+// More menu's own "Mock Tests"/"Practice History" entries in the DOM at the same time.
 function StudentSidebarNav({ user, onNavigate }) {
+  const cls = ({isActive}) => isActive ? "nav-item active" : "nav-item";
   return <>
-    <NavLink to="/dashboard" className={({isActive})=>isActive?"nav-item active":"nav-item"} onClick={onNavigate}><Home size={18}/><span>Dashboard</span></NavLink>
+    <div className="nav-group-label">Main</div>
+    <NavLink to="/dashboard" className={cls} onClick={onNavigate}><Home size={18}/><span>Dashboard</span></NavLink>
+    <div className="nav-group-label">Practice</div>
     <PteMegaMenu onNavigate={onNavigate}/>
+    <NavLink to="/mock" className={cls} onClick={onNavigate}><Trophy size={18}/><span>Take Mock Test</span></NavLink>
+    <NavLink to="/history" className={cls} onClick={onNavigate}><BarChart3 size={18}/><span>My Results</span></NavLink>
     <MoreMenu onNavigate={onNavigate}/>
+    {user?.role === "admin" && <div className="nav-group-label">Admin</div>}
     {user?.role === "admin" && <NavLink to="/admin" className="nav-item admin-panel-link" onClick={onNavigate}><Shield size={18}/><span>Admin Panel</span></NavLink>}
   </>;
 }
@@ -377,7 +407,7 @@ function Layout({ user, logout, children }) {
             heading already owns that exact string; two elements with identical text would make
             every existing screen.findByText("Admin Panel") test (and a real screen reader)
             ambiguous. */}
-        <div className="brand"><span>PTE</span> AI{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
+        <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span>{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
         <button className="icon-btn mobile-close" onClick={closeMobile} aria-label="Close menu"><X size={19}/></button>
       </div>
       <nav>
@@ -495,37 +525,89 @@ function Dashboard({ user }) {
     sessionStorage.removeItem("pte_access_denied_notice");
     return n || "";
   });
+  const [skillCounts,setSkillCounts]=useState(null);
   useEffect(()=>{api.dashboard().then(setData).catch(()=>{}).finally(()=>setLoading(false));},[]);
+  // Real per-section content counts (Part 6/10) — the exact same defensive
+  // Promise.resolve(...) wrapping PracticeTask already uses for api.history(), so a test that
+  // never configures api.questions() can't crash this: it just resolves to zero counts.
+  useEffect(()=>{
+    Promise.all(PRACTICE_SECTIONS.map(section =>
+      Promise.resolve(api.questions(section)).then(d => ({ section, count: (d?.questions || []).length })).catch(() => ({ section, count: 0 }))
+    )).then(results => {
+      const map = {};
+      results.forEach(({ section, count }) => { map[section] = count; });
+      setSkillCounts(map);
+    });
+  },[]);
   const stats=data?.stats;
+  const scoreBySection = Object.fromEntries((data?.bySection||[]).map(x=>[x.section,x.score]));
   return <Page title="Welcome back 👋" subtitle="Keep practicing to achieve your target PTE score.">
     {accessDenied && <div className="alert error"><AlertCircle size={17}/>{accessDenied}</div>}
+
+    <div className="dash-hero">
+      <div className="dash-hero-text">
+        <span className="eyebrow">Target score {stats?.targetScore || 79}</span>
+        <h2>Ready to improve your PTE score?</h2>
+        <p>Keep practicing every section — every attempt is scored and tracked toward your target.</p>
+        <div className="dash-hero-actions">
+          <NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink>
+          <NavLink className="secondary" to="/mock"><Trophy size={17}/> Take Mock Test</NavLink>
+        </div>
+      </div>
+    </div>
+
     <SubscriptionCard user={user}/>
     <StreakCard streak={data?.streak}/>
     <WeeklyActivity days={data?.weeklyActivity}/>
-    <div className="hero-row"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
-    {loading ? <SkeletonCards count={5}/> : <div className="score-grid">
-      <div className="score-card score-card-ring">
-        <span>Overall Score</span>
-        <ScoreRing value={stats?.overall || 0} max={90}/>
-        <small>Practice average</small>
-      </div>
-      {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
-    </div>}
-    <div className="two-col">
-      <section className="panel"><div className="panel-head"><div><h3>Your Progress</h3><p className="muted">Performance by section</p></div><span className="chip">Live</span></div>{loading ? <SkeletonRows count={4}/> : <div className="bars">{(data?.bySection||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</div>}</section>
-      <section className="panel"><div className="panel-head"><div><h3>Recent Practice</h3><p className="muted">Latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>{loading ? <SkeletonRows count={3}/> : (data?.recent||[]).length ? data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>) : <Empty text="Your practice attempts will appear here."/>}</section>
+
+    <section className="panel overall-progress-panel">
+      <div className="panel-head"><div><h3>Overall Progress</h3><p className="muted">Your practice performance across sections</p></div></div>
+      {loading ? <SkeletonRows count={4}/> : <div className="overall-progress-body">
+        <div className="overall-progress-ring"><ScoreRing value={stats?.overall||0} max={90} size="lg"/><span>Current Score</span></div>
+        <div className="overall-progress-bars">
+          {PRACTICE_SECTIONS.map(section => <div className="bar-row" key={section}><span>{SECTION_LABELS[section]}</span><div><i style={{width:`${Math.min(100,scoreBySection[section]||0)}%`}}/></div><b>{scoreBySection[section] ?? "—"}</b></div>)}
+        </div>
+      </div>}
+    </section>
+
+    <h2 className="section-title">Practice by Skill</h2>
+    <div className="skill-grid">
+      {PRACTICE_SECTIONS.map(section => <SkillCard key={section} section={section} score={scoreBySection[section]} count={skillCounts ? skillCounts[section] : null}/>)}
     </div>
-    <h2 className="section-title">Recommended for you</h2>
-    <div className="feature-grid">
-      <Feature title="Practice Read Aloud" icon={<Mic/>} text="Improve your pronunciation and fluency." to="/speaking"/>
-      <Feature title="Write an Essay" icon={<PenLine/>} text="Improve structure and writing skills." to="/writing"/>
-      <Feature title="Full Mock Test" icon={<Trophy/>} text="Simulate the real test experience." to="/mock"/>
-      <Feature title="Personal Study Plan" icon={<Target/>} text="Focus on your weakest areas." to="/plan"/>
+
+    <section className="panel">
+      <div className="panel-head"><div><h3>Recent Results</h3><p className="muted">Your latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>
+      {loading ? <SkeletonRows count={3}/> : (data?.recent||[]).length ? <div className="recent-list">{data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>)}</div> : <Empty text="Your practice attempts will appear here."/>}
+    </section>
+
+    <div className="mock-cta-banner">
+      <div className="mock-cta-banner-icon"><Trophy size={22}/></div>
+      <div className="mock-cta-banner-text"><h3>Ready for the real thing?</h3><p className="muted">Take a full mock test and get a section-by-section practice report.</p></div>
+      <NavLink className="primary" to="/mock">Start Mock Test</NavLink>
     </div>
   </Page>
 }
 
 function ScoreCard({title,value,sub}) { return <div className="score-card"><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
+
+// "Practice by Skill" (Part 6/10) — a real, signature-colored category card per PTE section.
+// count is null only while its own fetch is still in flight (never fabricated); score comes
+// straight from the same bySection data the progress panel above already renders.
+function SkillCard({ section, score, count }) {
+  const Icon = SECTION_ICONS[section];
+  const pct = Math.max(0, Math.min(100, score || 0));
+  return <div className={`skill-card skill-${section}`}>
+    <div className="skill-card-icon"><Icon size={22}/></div>
+    <h3>{SECTION_LABELS[section]}</h3>
+    <p>{SECTION_DESCRIPTIONS[section]}</p>
+    <div className="skill-card-meta">
+      <span>{count == null ? "Loading…" : `${count} question${count === 1 ? "" : "s"}`}</span>
+      {score != null && <span className="skill-card-score">{score}/90 avg</span>}
+    </div>
+    <div className="skill-card-progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${SECTION_LABELS[section]} average score`}><i style={{width:`${pct}%`}}/></div>
+    <NavLink className="skill-card-cta" to={`/${section}`}>{score ? "Continue" : "Start"} {SECTION_LABELS[section]} <ChevronRight size={15}/></NavLink>
+  </div>;
+}
 
 // Real circular progress (Part 14) — driven entirely by the student's actual average score,
 // never a decorative or fixed fill.
@@ -592,11 +674,19 @@ function PracticeHub() {
       <div className="practice-columns">
         {PRACTICE_SECTIONS.map(section => {
           const SectionIcon = SECTION_ICONS[section];
-          return <div className="practice-column" key={section}>
-            <h3 className="practice-column-head"><span className="practice-column-icon"><SectionIcon size={15}/></span>{SECTION_LABELS[section]}</h3>
-            <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
+          const tasks = PRACTICE_TASKS[section];
+          const readyCount = available ? tasks.filter(t => t.supported && available.has(`${section}:${t.slug}`)).length : null;
+          return <div className={`practice-column practice-${section}`} key={section}>
+            <div className="practice-column-header">
+              <div className="practice-column-icon"><SectionIcon size={24}/></div>
+              <div className="practice-column-heading">
+                <h3 className="practice-column-head">{SECTION_LABELS[section]}</h3>
+                <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
+              </div>
+              <span className="practice-column-count">{readyCount == null ? "…" : `${readyCount}/${tasks.length} ready`}</span>
+            </div>
             <div className="practice-column-list">
-              {PRACTICE_TASKS[section].map(task => <PracticeTaskRow
+              {tasks.map(task => <PracticeTaskRow
                 key={task.slug}
                 section={section}
                 task={task}
@@ -619,8 +709,6 @@ function PracticeHub() {
     </div>
   </Page>;
 }
-function Feature({title,text,icon,to}) { return <NavLink className="feature-card" to={to}><div className="feature-icon">{icon}</div><b>{title}</b><p>{text}</p><span>Start →</span></NavLink> }
-
 function Page({title,subtitle,children,actions}) { return <><div className="page-head"><div><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{actions}</div>{children}</> }
 
 // Reads the desired-type slug straight from the URL (?type=) so the Practice Hub and the
@@ -718,6 +806,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         return <button key={q._id} type="button" className="question-list-row" onClick={() => onSelect(i)}>
           <span className="question-row-number">#{i + 1}</span>
           <span className="question-list-title">{q.title}</span>
+          {q.difficulty && <Badge tone={difficultyTone(q.difficulty)}>{q.difficulty}</Badge>}
           {attempt
             ? <span className="question-row-status">
                 {attempt.evaluationStatus === "FAILED"
@@ -725,6 +814,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
                   : <Badge tone="good"><CheckCircle2 size={12}/> Done · {attempt.score}/{attempt.maxScore}</Badge>}
               </span>
             : <Badge tone="neutral">Undone</Badge>}
+          <ChevronRight size={16} className="question-row-arrow" aria-hidden="true"/>
         </button>;
       })}
       {!rows.length && <p className="muted" style={{padding:"14px 6px"}}>No questions match {search.trim() ? "your search" : "this filter"}.</p>}
@@ -795,14 +885,19 @@ function PracticeTask({section,label,slug}) {
     : <ListeningTask key={q?._id} question={q} existingResult={existingResult}/>;
 
   return <div>
-    {questions.length > 1 && <div className="mock-progress-bar" role="group" aria-label="Question navigation">
-      <button className="text-button" style={{marginTop:0}} onClick={()=>setIdx(null)}><ChevronLeft size={15}/> Back to list</button>
-      <span>Question {idx+1} / {questions.length}</span>
-      <div style={{display:"flex",gap:8}}>
-        <button className="secondary" onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}><ChevronLeft size={15}/> Previous</button>
-        <button className="secondary" onClick={()=>setIdx(i=>Math.min(questions.length-1,i+1))} disabled={idx===questions.length-1}>Next <ChevronRight size={15}/></button>
+    {questions.length > 1 && <>
+      <div className="mock-progress-bar" role="group" aria-label="Question navigation">
+        <button className="text-button" style={{marginTop:0}} onClick={()=>setIdx(null)}><ChevronLeft size={15}/> Back to list</button>
+        <span>Question {idx+1} / {questions.length}</span>
+        <div style={{display:"flex",gap:8}}>
+          <button className="secondary" onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}><ChevronLeft size={15}/> Previous</button>
+          <button className="secondary" onClick={()=>setIdx(i=>Math.min(questions.length-1,i+1))} disabled={idx===questions.length-1}>Next <ChevronRight size={15}/></button>
+        </div>
       </div>
-    </div>}
+      <div className="mock-progress-track" role="progressbar" aria-valuenow={idx+1} aria-valuemin={1} aria-valuemax={questions.length} aria-valuetext={`Question ${idx+1} of ${questions.length}`}>
+        <div className="mock-progress-fill" style={{width: `${((idx+1)/questions.length)*100}%`}}/>
+      </div>
+    </>}
     {body}
   </div>;
 }
@@ -1260,6 +1355,7 @@ function Profile({user}) {
 
 function Badge({tone,children}) { return <span className={`badge badge-${tone}`}>{children}</span> }
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
+function difficultyTone(d){ return d==="easy"?"good":d==="hard"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
 function subscriptionTone(s){ return s==="ACTIVE"?"good":s==="EXPIRED"?"bad":"neutral" }
 function fmtDate(d){ return d ? new Date(d).toLocaleDateString() : "—" }
@@ -1346,6 +1442,13 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
   if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><button className="secondary" onClick={load}>Retry</button></div>;
 
   return <div className="admin-dashboard">
+    <div className="kpi-grid">
+      <div className="kpi-card"><div className="kpi-icon"><UserRound size={20}/></div><div><span>Total Students</span><strong>{stats.totalUsers}</strong></div></div>
+      <div className="kpi-card"><div className="kpi-icon kpi-good"><CheckCircle2 size={20}/></div><div><span>Active Subscriptions</span><strong>{stats.subscription.active}</strong></div></div>
+      <div className="kpi-card"><div className="kpi-icon kpi-violet"><BookOpen size={20}/></div><div><span>Total Questions</span><strong>{questionStats?.total ?? "—"}</strong></div></div>
+      <div className="kpi-card"><div className="kpi-icon kpi-warn"><Clock3 size={20}/></div><div><span>Expiring Within 7 Days</span><strong>{stats.subscription.expiringWithin7Days}</strong></div></div>
+    </div>
+    <h2 className="section-title">Account status</h2>
     <div className="stat-grid">
       <StatTile label="Total users" value={stats.totalUsers}/>
       <StatTile label="Active accounts" value={stats.accountStatus.active} tone="good" onClick={()=>goToUsers({status:"ACTIVE"})}/>
@@ -1357,7 +1460,7 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
       <StatTile label="Expired subscriptions" value={stats.subscription.expired} tone="bad" onClick={()=>goToUsers({subscription:"EXPIRED"})}/>
     </div>
     {questionStats && <>
-      <h2 className="section-title">Question bank</h2>
+      <h2 className="section-title">Question library</h2>
       <div className="stat-grid mini-grid">
         <StatTile label="Total questions" value={questionStats.total} onClick={goToQuestions}/>
         <StatTile label="Active" value={questionStats.active} tone="good" onClick={goToQuestions}/>
@@ -1772,9 +1875,23 @@ function AdminTestSessionDetail({id, onClose}) {
 }
 
 function Admin() {
-  const [tab,setTab]=useState("dashboard");
+  // Kept in sync with ?tab= (both directions) so a sidebar link, the header search's admin
+  // destinations, and browser back/forward all land on the right tab — not just the tab strip's
+  // own clicks.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab,setTabState]=useState(() => searchParams.get("tab") || "dashboard");
   const [toasts,setToasts]=useState([]);
   const [usersFilter,setUsersFilter]=useState(null);
+
+  useEffect(() => {
+    const urlTab = searchParams.get("tab") || "dashboard";
+    setTabState(current => current === urlTab ? current : urlTab);
+  }, [searchParams]);
+
+  function setTab(next) {
+    setTabState(next);
+    setSearchParams(next === "dashboard" ? {} : { tab: next });
+  }
 
   function notify(type, message) {
     const id = Date.now()+Math.random();
