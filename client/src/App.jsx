@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
@@ -12,6 +12,12 @@ import { AdminQuestionsPanel } from "./AdminQuestions.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor, taskInfo } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
+const SECTION_DESCRIPTIONS = {
+  speaking: "Read aloud, describe images and answer spoken prompts with instant AI feedback.",
+  writing: "Summarize text and write essays scored on structure, grammar and content.",
+  reading: "Fill blanks, reorder paragraphs and answer questions with objective scoring.",
+  listening: "Summarize, transcribe and answer questions from real audio passages."
+};
 const PRACTICE_PATHS = new Set(["/practice", "/speaking", "/writing", "/reading", "/listening"]);
 const MORE_PATHS = new Set(MORE_ITEMS.filter(m => m.to).map(m => m.to));
 
@@ -98,6 +104,11 @@ function Auth({ save }) {
       <div className="brand large"><span>PTE</span> AI</div>
       <h1>Practice smarter.<br/>Reach your target score.</h1>
       <p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p>
+      <div className="auth-features">
+        <div className="auth-feature"><CheckCircle2 size={16}/> All four PTE sections, one practice library</div>
+        <div className="auth-feature"><CheckCircle2 size={16}/> Objective scoring for every reading/listening task</div>
+        <div className="auth-feature"><CheckCircle2 size={16}/> Full-length mock tests with a real practice report</div>
+      </div>
       <div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div>
     </div>
     <div className="auth-card">
@@ -264,6 +275,96 @@ function StudentSidebarNav({ user, onNavigate }) {
   </>;
 }
 
+// Real destinations only — every entry navigates somewhere that actually exists and works
+// (Part 33: no decorative search). Practice tasks are pulled from the same registry the mega-menu
+// and Practice Hub already use, so this can never list a task that isn't genuinely supported.
+function useSearchDestinations(user) {
+  return useMemo(() => {
+    const pages = [
+      { label: "Dashboard", group: "Pages", to: "/dashboard" },
+      { label: "PTE Practice", group: "Pages", to: "/practice" },
+      { label: "Mock Tests", group: "Pages", to: "/mock" },
+      { label: "Practice History", group: "Pages", to: "/history" },
+      { label: "AI Study Plan", group: "Pages", to: "/plan" },
+      { label: "Profile", group: "Pages", to: "/profile" }
+    ];
+    const tasks = PRACTICE_SECTIONS.flatMap(section =>
+      supportedTasksFor(section).map(t => ({ label: `${t.label} — ${SECTION_LABELS[section]}`, group: "Practice tasks", to: `/${section}?type=${t.slug}` }))
+    );
+    const admin = user?.role === "admin" ? [
+      { label: "Admin Dashboard", group: "Admin", to: "/admin" },
+      { label: "Manage Users", group: "Admin", to: "/admin?tab=users" },
+      { label: "Manage Questions", group: "Admin", to: "/admin?tab=questions" },
+      { label: "Test Sessions", group: "Admin", to: "/admin?tab=sessions" }
+    ] : [];
+    return [...pages, ...tasks, ...admin];
+  }, [user?.role]);
+}
+
+function HeaderSearch({ user }) {
+  const [term, setTerm] = useState("");
+  const [highlight, setHighlight] = useState(0);
+  const { open, setOpen, panelRef, triggerRef } = useDropdown();
+  const navigate = useNavigate();
+  const destinations = useSearchDestinations(user);
+
+  const results = term.trim()
+    ? destinations.filter(d => d.label.toLowerCase().includes(term.trim().toLowerCase())).slice(0, 8)
+    : [];
+  const grouped = results.reduce((acc, r) => { (acc[r.group] ||= []).push(r); return acc; }, {});
+
+  function go(to) {
+    if (!to) return;
+    setTerm(""); setOpen(false);
+    navigate(to);
+  }
+  function onKeyDown(e) {
+    if (!results.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlight(h => Math.min(results.length - 1, h + 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
+    else if (e.key === "Enter") { e.preventDefault(); go(results[highlight]?.to); }
+  }
+
+  return <div className="search" ref={triggerRef}>
+    <span>⌕</span>
+    <input
+      placeholder="Search anything..."
+      value={term}
+      onChange={e => { setTerm(e.target.value); setOpen(true); setHighlight(0); }}
+      onFocus={() => setOpen(true)}
+      onKeyDown={onKeyDown}
+      role="combobox"
+      aria-expanded={open && !!term.trim()}
+      aria-controls="header-search-results"
+      aria-label="Search anything"
+    />
+    {open && term.trim() && <div className="search-results" id="header-search-results" ref={panelRef} role="listbox">
+      {results.length
+        ? Object.entries(grouped).map(([group, items]) => <div key={group}>
+            <div className="search-result-group">{group}</div>
+            {items.map(r => {
+              const idx = results.indexOf(r);
+              return <button key={r.to} type="button" role="option" aria-selected={idx === highlight}
+                className={idx === highlight ? "search-result active" : "search-result"}
+                onMouseEnter={() => setHighlight(idx)} onClick={() => go(r.to)}>{r.label}</button>;
+            })}
+          </div>)
+        : <div className="search-empty">No matches for "{term}"</div>}
+    </div>}
+  </div>;
+}
+
+function topbarLabel(pathname) {
+  if (pathname === "/dashboard") return "Dashboard";
+  if (pathname === "/mock") return "Mock Tests";
+  if (pathname === "/history") return "Practice History";
+  if (pathname === "/plan") return "AI Study Plan";
+  if (pathname === "/profile") return "Profile";
+  if (pathname.startsWith("/admin")) return "Admin";
+  if (["/speaking", "/writing", "/reading", "/listening", "/practice"].some(p => pathname.startsWith(p))) return "PTE Practice";
+  return "";
+}
+
 function Layout({ user, logout, children }) {
   const [mobile, setMobile] = useState(false);
   const location = useLocation();
@@ -289,13 +390,26 @@ function Layout({ user, logout, children }) {
     </aside>
     <main className="main">
       <header className="topbar">
-        <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)}><Menu size={21}/></button>
-        <div className="search"><span>⌕</span><input placeholder="Search anything..."/></div>
+        <div className="topbar-left">
+          <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)}><Menu size={21}/></button>
+          <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
+        </div>
+        <HeaderSearch user={user}/>
         <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
       </header>
       <div className="content">{children}</div>
     </main>
   </div>
+}
+
+// Real skeleton placeholders (Part 25) — shown while a request is actually in flight, replaced
+// the instant real data arrives. Never a substitute for real content, never shown once data (or
+// a genuine empty/error state) is known.
+function SkeletonCards({ count = 4, gridClass = "score-grid" }) {
+  return <div className={gridClass} aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-card"/>)}</div>;
+}
+function SkeletonRows({ count = 5 }) {
+  return <div aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-row"/>)}</div>;
 }
 
 function fmtLongDate(d) {
@@ -372,6 +486,7 @@ function WeeklyActivity({ days }) {
 
 function Dashboard({ user }) {
   const [data,setData]=useState(null);
+  const [loading,setLoading]=useState(true);
   // Read once and cleared immediately — set only by AdminRoute when a non-admin was just
   // redirected away from /admin, so the denial is visible instead of a silent bounce, but never
   // reappears on an ordinary visit to the dashboard.
@@ -380,7 +495,7 @@ function Dashboard({ user }) {
     sessionStorage.removeItem("pte_access_denied_notice");
     return n || "";
   });
-  useEffect(()=>{api.dashboard().then(setData).catch(()=>{});},[]);
+  useEffect(()=>{api.dashboard().then(setData).catch(()=>{}).finally(()=>setLoading(false));},[]);
   const stats=data?.stats;
   return <Page title="Welcome back 👋" subtitle="Keep practicing to achieve your target PTE score.">
     {accessDenied && <div className="alert error"><AlertCircle size={17}/>{accessDenied}</div>}
@@ -388,13 +503,17 @@ function Dashboard({ user }) {
     <StreakCard streak={data?.streak}/>
     <WeeklyActivity days={data?.weeklyActivity}/>
     <div className="hero-row"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
-    <div className="score-grid">
-      <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average"/>
+    {loading ? <SkeletonCards count={5}/> : <div className="score-grid">
+      <div className="score-card score-card-ring">
+        <span>Overall Score</span>
+        <ScoreRing value={stats?.overall || 0} max={90}/>
+        <small>Practice average</small>
+      </div>
       {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
-    </div>
+    </div>}
     <div className="two-col">
-      <section className="panel"><div className="panel-head"><div><h3>Your Progress</h3><p className="muted">Performance by section</p></div><span className="chip">Live</span></div><div className="bars">{(data?.bySection||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</div></section>
-      <section className="panel"><div className="panel-head"><div><h3>Recent Practice</h3><p className="muted">Latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>{(data?.recent||[]).length ? data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>) : <Empty text="Your practice attempts will appear here."/>}</section>
+      <section className="panel"><div className="panel-head"><div><h3>Your Progress</h3><p className="muted">Performance by section</p></div><span className="chip">Live</span></div>{loading ? <SkeletonRows count={4}/> : <div className="bars">{(data?.bySection||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</div>}</section>
+      <section className="panel"><div className="panel-head"><div><h3>Recent Practice</h3><p className="muted">Latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>{loading ? <SkeletonRows count={3}/> : (data?.recent||[]).length ? data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>) : <Empty text="Your practice attempts will appear here."/>}</section>
     </div>
     <h2 className="section-title">Recommended for you</h2>
     <div className="feature-grid">
@@ -407,6 +526,20 @@ function Dashboard({ user }) {
 }
 
 function ScoreCard({title,value,sub}) { return <div className="score-card"><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
+
+// Real circular progress (Part 14) — driven entirely by the student's actual average score,
+// never a decorative or fixed fill.
+function ScoreRing({ value, max = 90 }) {
+  const pct = max ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
+  const r = 45, c = 2 * Math.PI * r;
+  return <div className="progress-ring sm">
+    <svg viewBox="0 0 100 100" width="100%" height="100%">
+      <circle className="track" cx="50" cy="50" r={r}/>
+      <circle className="fill" cx="50" cy="50" r={r} strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c}/>
+    </svg>
+    <div className="progress-ring-label">{value}</div>
+  </div>;
+}
 
 // One task card (Part 4). `state` is derived purely from real data — never hardcoded — so a
 // task never claims to be practicable unless the backend both supports the type AND currently
@@ -461,6 +594,7 @@ function PracticeHub() {
           const SectionIcon = SECTION_ICONS[section];
           return <div className="practice-column" key={section}>
             <h3 className="practice-column-head"><span className="practice-column-icon"><SectionIcon size={15}/></span>{SECTION_LABELS[section]}</h3>
+            <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
             <div className="practice-column-list">
               {PRACTICE_TASKS[section].map(task => <PracticeTaskRow
                 key={task.slug}
@@ -607,16 +741,21 @@ function PracticeTask({section,label,slug}) {
   const [questions,setQuestions]=useState([]);
   const [idx,setIdx]=useState(null); // null = showing the question list, not yet inside a question
   const [loading,setLoading]=useState(true);
+  // Real content genuinely being empty and the request itself failing look identical to a
+  // student unless tracked separately — this used to collapse both into the same "No practice
+  // questions available yet." message. `error` is only ever set when the request itself rejects
+  // (a real fetch/network failure), never for a normal response with zero items.
+  const [error,setError]=useState(false);
   // questionId -> the student's own most recent full Submission for that question (history() is
   // already sorted newest-first server-side, so the first match kept per id is the latest
   // attempt) — the whole stored document (score/feedback/transcript/answer/...), not just a
   // summary, so a completed question can be reopened to show its real stored result (Phase 19,
   // Part 10) instead of AI ever being re-run just to view it.
   const [progress,setProgress]=useState(new Map());
-  useEffect(()=>{
-    setLoading(true);
+  function load(){
+    setLoading(true); setError(false);
     Promise.all([
-      Promise.resolve(api.questions(section, slug)).catch(()=>({questions:[]})),
+      api.questions(section, slug),
       Promise.resolve(api.history()).catch(()=>({submissions:[]}))
     ]).then(([qData, hData])=>{
       const loadedQuestions = qData?.questions || [];
@@ -632,10 +771,18 @@ function PracticeTask({section,label,slug}) {
       // from. More than one always starts at the list, even if the student re-visits this exact
       // task later (browsing the list again is itself harmless and never re-triggers anything).
       setIdx(loadedQuestions.length === 1 ? 0 : null);
-    }).finally(()=>setLoading(false));
-  },[section,slug]);
+    }).catch(()=>setError(true))
+      .finally(()=>setLoading(false));
+  }
+  useEffect(load,[section,slug]);
 
-  if (loading) return <Empty text="Loading questions…"/>;
+  if (loading) return <div className="panel question-list-panel"><SkeletonRows count={6}/></div>;
+  if (error) return <div className="panel error-state">
+    <AlertCircle size={30}/>
+    <h4>Unable to load your questions</h4>
+    <p>Please check your connection and try again.</p>
+    <button className="secondary" onClick={load}>Retry</button>
+  </div>;
   if (!questions.length) return <Empty text="No practice questions available yet."/>;
 
   if (idx === null) return <QuestionListView questions={questions} progress={progress} onSelect={setIdx} section={section} label={label}/>;
@@ -1016,14 +1163,20 @@ function fmtRelativeDateTime(d) {
   return date.toLocaleString();
 }
 
+const HISTORY_SECTION_FILTERS = ["all", ...PRACTICE_SECTIONS];
+
 function History() {
   const [rows,setRows]=useState([]);
   const [mocks,setMocks]=useState([]);
   const [detailId,setDetailId]=useState(null);
+  const [sectionFilter,setSectionFilter]=useState("all");
   useEffect(()=>{
     api.history().then(d=>setRows(d.submissions)).catch(()=>{});
     api.testSessions.list().then(d=>setMocks(d.testSessions)).catch(()=>{});
   },[]);
+  // Client-side only — the full list is already fetched, and this is real data already on the
+  // page, not a second source of truth that could drift from it.
+  const filteredRows = sectionFilter === "all" ? rows : rows.filter(r => r.section === sectionFilter);
   return <Page title="Practice History" subtitle="Review your recent attempts and scores.">
     <h2 className="section-title" style={{marginTop:0}}>Mock test attempts</h2>
     <div className="panel table-wrap">
@@ -1039,8 +1192,15 @@ function History() {
       </tr>)}</tbody></table>
       {!mocks.length && <Empty text="No completed mock tests yet."/>}
     </div>
-    <h2 className="section-title">Practice attempts</h2>
-    <div className="panel table-wrap"><table><thead><tr><th>Task</th><th>Section</th><th>Evaluation</th><th>Score</th><th>Date</th></tr></thead><tbody>{rows.map(r=><tr key={r._id}><td><b>{r.type}</b></td><td>{r.section}</td><td>{r.evaluationType==="subjective" ? <Badge tone="info">AI Evaluation</Badge> : <Badge tone="neutral">Objective</Badge>}</td><td>{historyScoreCell(r)}</td><td>{fmtRelativeDateTime(r.createdAt)}</td></tr>)}</tbody></table>{!rows.length&&<Empty text="No practice submissions yet. Start a task from the sidebar."/>}</div>
+    <div className="panel-head" style={{marginTop:30,marginBottom:0}}>
+      <h2 className="section-title" style={{margin:0}}>Practice attempts</h2>
+      <div className="question-list-filters" role="tablist" aria-label="Filter by section">
+        {HISTORY_SECTION_FILTERS.map(s => <button key={s} type="button" role="tab" aria-selected={sectionFilter===s}
+          className={sectionFilter===s ? "question-list-filter active" : "question-list-filter"}
+          onClick={()=>setSectionFilter(s)} style={{textTransform:"capitalize"}}>{s === "all" ? "All" : SECTION_LABELS[s]}</button>)}
+      </div>
+    </div>
+    <div className="panel table-wrap" style={{marginTop:14}}><table><thead><tr><th>Task</th><th>Section</th><th>Evaluation</th><th>Score</th><th>Date</th></tr></thead><tbody>{filteredRows.map(r=><tr key={r._id}><td><b>{r.type}</b></td><td style={{textTransform:"capitalize"}}>{r.section}</td><td>{r.evaluationType==="subjective" ? <Badge tone="info">AI Evaluation</Badge> : <Badge tone="neutral">Objective</Badge>}</td><td>{historyScoreCell(r)}</td><td>{fmtRelativeDateTime(r.createdAt)}</td></tr>)}</tbody></table>{!filteredRows.length&&<Empty text={rows.length ? "No practice attempts match this filter." : "No practice submissions yet. Start a task from the sidebar."}/>}</div>
     {detailId && <MockAttemptDetail id={detailId} onClose={()=>setDetailId(null)}/>}
   </Page>
 }
@@ -1123,16 +1283,21 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
 
-  useEffect(()=>{
+  useEffect(()=>{ load(); },[]);
+
+  function load() {
     setLoading(true); setError("");
     Promise.all([api.admin.getStats(), api.admin.getAuditLog(8), api.admin.questions.stats()])
       .then(([s,a,q])=>{setStats(s);setActivity(a.logs);setQuestionStats(q)})
       .catch(e=>{setError(e.message);notify("error",e.message)})
       .finally(()=>setLoading(false));
-  },[]);
+  }
 
-  if (loading) return <Empty text="Loading dashboard..."/>;
-  if (error) return <div className="alert error">{error}</div>;
+  if (loading) return <div className="admin-dashboard">
+    <SkeletonCards count={8} gridClass="stat-grid"/>
+    <SkeletonRows count={4}/>
+  </div>;
+  if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><button className="secondary" onClick={load}>Retry</button></div>;
 
   return <div className="admin-dashboard">
     <div className="stat-grid">
@@ -1305,7 +1470,7 @@ function AdminUsers({notify, initialFilters, onFiltersApplied}) {
         {SUBSCRIPTION_FILTERS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
       </select>
     </div>
-    {loading ? <Empty text="Loading users..."/> : !users.length ? <Empty text="No users match these filters."/> : <>
+    {loading ? <SkeletonRows count={8}/> : !users.length ? <Empty text="No users match these filters."/> : <>
       <div className="table-wrap"><table><thead><tr>
         <th>User ID</th><th>Name</th><th>Email</th><th>Status</th><th>Payment</th><th>Subscription</th><th>Days left</th><th>Last login</th><th>Session</th><th>Created</th><th>Actions</th>
       </tr></thead><tbody>
@@ -1493,7 +1658,7 @@ function AdminTestSessions() {
         <option value="ABANDONED">Abandoned</option>
       </select>
     </div>
-    {loading ? <Empty text="Loading test sessions..."/> : !sessions.length ? <Empty text="No mock test attempts match these filters."/> : <>
+    {loading ? <SkeletonRows count={8}/> : !sessions.length ? <Empty text="No mock test attempts match these filters."/> : <>
       <div className="table-wrap"><table><thead><tr>
         <th>Student</th><th>Status</th><th>Score</th><th>Pending AI</th><th>Started</th><th>Submitted</th><th>Expires</th><th>Actions</th>
       </tr></thead><tbody>

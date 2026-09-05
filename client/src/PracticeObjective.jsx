@@ -14,8 +14,11 @@ export function Result({ result, onRetry, retrying }) {
   const f = result.feedback || {};
   const methodLabel = f.scoringMethod === "ai" ? "AI Practice Evaluation" : "Heuristic Practice Evaluation";
   const criteriaEntries = f.criteria ? Object.entries(f.criteria) : [];
+  const maxScore = result.maxScore || 90;
+  const pct = Math.max(0, Math.min(100, Math.round((result.score / maxScore) * 100)));
+  const ringColor = pct >= 65 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
   return <div className="result-panel">
-    <div className="score-ring"><strong>{result.score}</strong><small>/ {result.maxScore || 90}</small></div>
+    <div className="score-ring" style={{ "--pct": pct, "--ring-color": ringColor }}><strong>{result.score}</strong><small>/ {maxScore}</small></div>
     <div>
       <h3>{methodLabel}</h3>
       {!!criteriaEntries.length && <div className="feedback-group"><b>Breakdown</b>{criteriaEntries.map(([key, value]) => <p key={key} style={{textTransform:"capitalize"}}>{key}: {value} / 100</p>)}</div>}
