@@ -326,7 +326,7 @@ function HeaderSearch({ user }) {
   }
 
   return <div className="search" ref={triggerRef}>
-    <span>⌕</span>
+    <span aria-hidden="true">⌕</span>
     <input
       placeholder="Search anything..."
       value={term}
@@ -378,7 +378,7 @@ function Layout({ user, logout, children }) {
             every existing screen.findByText("Admin Panel") test (and a real screen reader)
             ambiguous. */}
         <div className="brand"><span>PTE</span> AI{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
-        <button className="icon-btn mobile-close" onClick={closeMobile}><X size={19}/></button>
+        <button className="icon-btn mobile-close" onClick={closeMobile} aria-label="Close menu"><X size={19}/></button>
       </div>
       <nav>
         {inAdminSection ? <AdminSidebarNav onNavigate={closeMobile}/> : <StudentSidebarNav user={user} onNavigate={closeMobile}/>}
@@ -391,7 +391,7 @@ function Layout({ user, logout, children }) {
     <main className="main">
       <header className="topbar">
         <div className="topbar-left">
-          <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)}><Menu size={21}/></button>
+          <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)} aria-label="Open menu"><Menu size={21}/></button>
           <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
         </div>
         <HeaderSearch user={user}/>
@@ -529,15 +529,15 @@ function ScoreCard({title,value,sub}) { return <div className="score-card"><span
 
 // Real circular progress (Part 14) — driven entirely by the student's actual average score,
 // never a decorative or fixed fill.
-function ScoreRing({ value, max = 90 }) {
+function ScoreRing({ value, max = 90, size = "sm" }) {
   const pct = max ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
   const r = 45, c = 2 * Math.PI * r;
-  return <div className="progress-ring sm">
-    <svg viewBox="0 0 100 100" width="100%" height="100%">
+  return <div className={`progress-ring ${size}`.trim()} role="img" aria-label={`Score ${value} out of ${max}`}>
+    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
       <circle className="track" cx="50" cy="50" r={r}/>
       <circle className="fill" cx="50" cy="50" r={r} strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c}/>
     </svg>
-    <div className="progress-ring-label">{value}</div>
+    <div className="progress-ring-label" aria-hidden="true">{value}</div>
   </div>;
 }
 
@@ -709,7 +709,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         {PROGRESS_FILTERS.map(f => <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
           className={filter === f.key ? "question-list-filter active" : "question-list-filter"} onClick={() => setFilter(f.key)}>{f.label}<span className="question-list-filter-count">{filterCounts[f.key]}</span></button>)}
       </div>
-      <div className="search question-list-search"><span>⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
+      <div className="search question-list-search"><span aria-hidden="true">⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
       <span className="muted">Done {doneCount}, Found {rows.length} question{rows.length === 1 ? "" : "s"}</span>
     </div>
     <div className="question-list">
@@ -852,7 +852,7 @@ function SpeakingTask({type,question,testSessionId,onAnswered,existingResult}) {
   async function submit(){if(!blob){setError("Record an answer first.");return} setBusy(true); setError(""); const f=new FormData();f.append("audio",blob,"speaking.webm");f.append("section","speaking");f.append("type",type);f.append("transcript",transcript);f.append("durationSeconds",seconds);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
   async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
   const durationLabel = recording ? `${formatMMSS(seconds*1000)} / ${formatMMSS(limit*1000)}` : `Ready · limit ${formatMMSS(limit*1000)}`;
-  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt="" style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
+  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt={question?.title||"Practice question image"} style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
 }
 
 // UI guidance only — the server's own MAX_TEXT_LENGTH (character-based) remains the sole
@@ -996,7 +996,7 @@ function Mock() {
   if (result) {
     return <>{liveRegions}<Page title="Mock Test Complete" subtitle="Here is your practice report.">
       <div className="mock-result">
-        <div className="big-score">{result.totalScore}<small> / {result.totalMaxScore}</small></div>
+        <ScoreRing value={result.totalScore} max={result.totalMaxScore} size="lg"/>
         <h2>Practice Score</h2>
         <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
         <div className="score-grid">{result.sectionScores.map(s=><ScoreCard key={s.section} title={s.section} value={`${s.score}/${s.maxScore}`} sub="Section score"/>)}</div>
@@ -1008,7 +1008,8 @@ function Mock() {
   if (terminal === "EXPIRED") {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal expired">
-        <Clock3 size={40}/><h2>Mock Test Expired</h2>
+        <div className="mock-icon-badge tone-danger"><Clock3 size={30}/></div>
+        <h2>Mock Test Expired</h2>
         <p>Your allotted test time has ended. Your test can no longer accept answers.</p>
         <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
       </div>
@@ -1018,7 +1019,8 @@ function Mock() {
   if (terminal === "ALREADY_COMPLETED") {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal">
-        <CheckCircle2 size={40}/><h2>This Test Was Already Completed</h2>
+        <div className="mock-icon-badge tone-success"><CheckCircle2 size={30}/></div>
+        <h2>This Test Was Already Completed</h2>
         <p>This mock attempt has already been submitted and scored.</p>
         <NavLink className="primary" to="/history">View History</NavLink>
       </div>
@@ -1028,9 +1030,12 @@ function Mock() {
   if (!session) {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel">
-        <Trophy size={40}/><h2>Full PTE Practice Mock</h2>
+        <div className="mock-icon-badge"><Trophy size={30}/></div>
+        <h2>Full PTE Practice Mock</h2>
         <p>One question per section, scored from your actual answers — not a preset result.</p>
-        <ul><li>Speaking</li><li>Writing</li><li>Reading</li><li>Listening</li></ul>
+        <div className="mock-section-chips">
+          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}><Icon size={14}/>{SECTION_LABELS[s]}</span>; })}
+        </div>
         <p className="muted">20 minutes total for this compact mock.</p>
         {error && <div className="alert error">{error}</div>}
         <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
@@ -1041,7 +1046,8 @@ function Mock() {
   if (timeUp) {
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
       <div className="mock-card panel mock-terminal">
-        <Clock3 size={40}/><h2>Time's Up</h2>
+        <div className="mock-icon-badge tone-warning"><Clock3 size={30}/></div>
+        <h2>Time's Up</h2>
         <p>Submitting your test now…</p>
       </div>
     </Page></>;
@@ -1131,11 +1137,16 @@ function MockAttemptDetail({ id, onClose }) {
     setLoading(true); setError("");
     api.testSessions.details(id).then(setData).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   },[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const s = data?.testSession;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>Mock Test Details</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label="Mock Test Details" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>Mock Test Details</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading attempt..."/> : !s ? <div className="alert error">{error}</div> : <>
         <div className="mock-detail-summary">
           <span className="score-pill">{s.totalScore}/{s.totalMaxScore}</span>
@@ -1212,10 +1223,39 @@ function historyScoreCell(r) {
 }
 
 function Profile({user}) {
-  const start = user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toLocaleDateString() : "—";
-  const end = user.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString() : "—";
-  const status = user.role === "admin" ? "Admin access" : user.subscriptionStatus === "ACTIVE" ? "Active" : user.subscriptionStatus === "EXPIRED" ? "Expired" : "Not activated";
-  return <Page title="Profile" subtitle="Manage your account."><div className="profile-card panel"><div className="profile-avatar">{user.name.slice(0,1).toUpperCase()}</div><h2>{user.name}</h2><p>User ID: {user.username}</p><div className="profile-grid"><div><span>Role</span><b>{user.role}</b></div><div><span>Target score</span><b>{user.targetScore}</b></div><div><span>Subscription</span><b>{status}</b></div>{user.role!=="admin"&&<div><span>Access until</span><b>{end}</b></div>}</div><p className="muted">{user.role==="admin" ? "Administrator accounts are not subject to subscription limits." : `Started ${start}. To change your password or extend access, contact your administrator.`}</p></div></Page>
+  const isAdmin = user.role === "admin";
+  return <Page title="Profile" subtitle="Manage your account.">
+    <div className="profile-card panel">
+      <div className="profile-header">
+        <div className="profile-avatar">{user.name.slice(0,1).toUpperCase()}</div>
+        <div><h2>{user.name}</h2><p className="muted">User ID: {user.username}</p></div>
+      </div>
+      <div className="detail-grid cols-2">
+        <section>
+          <h4>Account information</h4>
+          <dl>
+            <dt>Role</dt><dd style={{textTransform:"capitalize"}}>{user.role}</dd>
+            <dt>Email</dt><dd>{user.email || "—"}</dd>
+            <dt>Target score</dt><dd>{user.targetScore ?? "—"}</dd>
+            <dt>Member since</dt><dd>{fmtDate(user.createdAt)}</dd>
+            <dt>Last login</dt><dd>{fmtDateTime(user.lastLoginAt)}</dd>
+          </dl>
+        </section>
+        <section>
+          <h4>Subscription</h4>
+          {isAdmin
+            ? <p className="muted">Administrator accounts are not subject to subscription limits.</p>
+            : <dl>
+                <dt>Status</dt><dd><Badge tone={subscriptionTone(user.subscriptionStatus)}>{(user.subscriptionStatus||"").replace("_"," ")}</Badge></dd>
+                <dt>Started</dt><dd>{fmtDate(user.subscriptionStartDate)}</dd>
+                <dt>Access until</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
+                <dt>Days remaining</dt><dd>{daysRemaining(user)}</dd>
+              </dl>}
+        </section>
+      </div>
+      {!isAdmin && <p className="muted profile-footnote">To change your password or extend access, contact your administrator.</p>}
+    </div>
+  </Page>;
 }
 
 function Badge({tone,children}) { return <span className={`badge badge-${tone}`}>{children}</span> }
@@ -1246,13 +1286,19 @@ function daysRemaining(u){
 
 function ToastHost({toasts,dismiss}) {
   if(!toasts.length) return null;
-  return <div className="toast-host">{toasts.map(t=><div key={t.id} className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}</div>)}</div>
+  return <div className="toast-host" role="status" aria-live="polite">{toasts.map(t=><button key={t.id} type="button" className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}<span className="sr-only"> — dismiss</span></button>)}</div>
 }
 
 function ConfirmDialog({open,title,message,confirmLabel,danger,busy,onConfirm,onCancel}) {
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e) { if (e.key === "Escape") onCancel(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onCancel]);
   if(!open) return null;
   return <div className="modal-overlay confirm-overlay" onClick={e=>{e.stopPropagation();onCancel()}}>
-    <div className="modal-panel confirm-panel" onClick={e=>e.stopPropagation()}>
+    <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e=>e.stopPropagation()}>
       <h3>{title}</h3>
       <p className="muted">{message}</p>
       <div className="modal-actions">
@@ -1372,12 +1418,17 @@ Please log in and start practicing. Feel free to reach out if you need any help!
 function AccountCreatedModal({ account, onClose }) {
   const [copied, setCopied] = useState(false);
   const message = buildAccountCreatedMessage(account);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   function copy() {
     navigator.clipboard?.writeText(message).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   }
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel" onClick={e => e.stopPropagation()}>
-      <div className="modal-head"><h3>Account created</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel" role="dialog" aria-modal="true" aria-label="Account created" onClick={e => e.stopPropagation()}>
+      <div className="modal-head"><h3>Account created</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       <p className="muted" style={{marginTop:-6}}>Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy.</p>
       <textarea readOnly className="answer-area" style={{height:360,fontFamily:"monospace",fontSize:12}} value={message} onClick={e => e.target.select()}/>
       <div className="modal-actions">
@@ -1459,7 +1510,7 @@ function AdminUsers({notify, initialFilters, onFiltersApplied}) {
       <button className="primary" disabled={creating}>{creating ? "Creating..." : "Create user"}</button>
     </form>}
     <div className="filter-bar">
-      <div className="search admin-search"><span>⌕</span><input placeholder="Search by User ID, name or email..." value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
+      <div className="search admin-search"><span aria-hidden="true">⌕</span><input placeholder="Search by User ID, name or email..." aria-label="Search users" value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
       <select value={status} onChange={e=>setStatus(e.target.value)} aria-label="Filter by account status">
         <option value="">All statuses</option><option value="ACTIVE">Active</option><option value="BLOCKED">Blocked</option><option value="SUSPENDED">Suspended</option>
       </select>
@@ -1520,6 +1571,11 @@ function AdminUserDetail({id, notify, onClose}) {
     }).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   }
   useEffect(()=>{load()},[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   async function act(fn, successMsg) {
     setBusy(true); setError("");
@@ -1539,8 +1595,8 @@ function AdminUserDetail({id, notify, onClose}) {
   const u = data?.user;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>{u ? u.name : "User details"}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label={u ? u.name : "User details"} onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>{u ? u.name : "User details"}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading user..."/> : !u ? <div className="alert error">{error}</div> : <>
         {error && <div className="alert error">{error}</div>}
         <div className="detail-grid">
@@ -1604,7 +1660,7 @@ function AdminUserDetail({id, notify, onClose}) {
         <h4>Renew subscription</h4>
         <div className="renew-row">
           {[30,60,90].map(d=><button key={d} className="secondary" disabled={busy} onClick={()=>act(()=>api.admin.renew(u.id,d), `Renewed for ${d} days`)}>+{d} days</button>)}
-          <input type="number" min="1" placeholder="Custom days" value={customDays} onChange={e=>setCustomDays(e.target.value)}/>
+          <input type="number" min="1" placeholder="Custom days" aria-label="Custom number of days" value={customDays} onChange={e=>setCustomDays(e.target.value)}/>
           <button className="secondary" disabled={busy||!customDays} onClick={()=>act(()=>api.admin.renew(u.id,Number(customDays)), `Renewed for ${customDays} days`)}>Apply</button>
         </div>
 
@@ -1691,11 +1747,16 @@ function AdminTestSessionDetail({id, onClose}) {
     setLoading(true); setError("");
     api.admin.testSessions.get(id).then(setData).catch(e=>setError(e.message)).finally(()=>setLoading(false));
   },[id]);
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const s = data?.testSession;
 
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>{s ? `${s.user?.username}'s mock attempt` : "Mock attempt"}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label={s ? `${s.user?.username}'s mock attempt` : "Mock attempt"} onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h3>{s ? `${s.user?.username}'s mock attempt` : "Mock attempt"}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       {loading ? <Empty text="Loading attempt..."/> : !s ? <div className="alert error">{error}</div> : <>
         <div className="mock-detail-summary">
           <Badge tone={testSessionStatusTone(s.status)}>{s.status}</Badge>

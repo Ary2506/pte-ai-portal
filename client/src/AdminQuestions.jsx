@@ -5,9 +5,15 @@ import { api } from "./api.js";
 function Badge({ tone, children }) { return <span className={`badge badge-${tone}`}>{children}</span>; }
 
 function ConfirmDialog({ open, title, message, confirmLabel, danger, busy, onConfirm, onCancel }) {
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e) { if (e.key === "Escape") onCancel(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onCancel]);
   if (!open) return null;
   return <div className="modal-overlay confirm-overlay" onClick={e => { e.stopPropagation(); onCancel(); }}>
-    <div className="modal-panel confirm-panel" onClick={e => e.stopPropagation()}>
+    <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
       <h3>{title}</h3>
       <p className="muted">{message}</p>
       <div className="modal-actions">
@@ -204,7 +210,7 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
           {form.options.map((opt, i) => <div className="option-editor-row" key={i}>
             {shape === "choice-single" && <input type="radio" checked={Number(form.answer) === i} onChange={() => update({ answer: i })} aria-label={`Mark option ${i + 1} correct`}/>}
             {shape === "choice-multiple" && <input type="checkbox" checked={form.multiAnswer.includes(i)} onChange={() => toggleMulti(i)} aria-label={`Mark option ${i + 1} correct`}/>}
-            <input value={opt} onChange={e => updateOption(i, e.target.value)} placeholder={`Item ${i + 1}`}/>
+            <input value={opt} onChange={e => updateOption(i, e.target.value)} placeholder={`Item ${i + 1}`} aria-label={`Option ${i + 1} text`}/>
             <button type="button" className="text-button" onClick={() => removeOption(i)} disabled={form.options.length <= 2}>Remove</button>
           </div>)}
         </div>
@@ -224,7 +230,7 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
         <div className="option-editor">
           {form.dragAnswer.map((optIdx, blankIdx) => <div className="option-editor-row" key={blankIdx}>
             <span className="reorder-pos">{blankIdx + 1}</span>
-            <select value={optIdx} onChange={e => { const next = [...form.dragAnswer]; next[blankIdx] = Number(e.target.value); update({ dragAnswer: next }); }}>
+            <select value={optIdx} aria-label={`Correct word for blank ${blankIdx + 1}`} onChange={e => { const next = [...form.dragAnswer]; next[blankIdx] = Number(e.target.value); update({ dragAnswer: next }); }}>
               {form.options.map((opt, i) => <option key={i} value={i}>{opt || `Item ${i + 1}`}</option>)}
             </select>
           </div>)}
@@ -247,16 +253,21 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
 function QuestionPreview({ question, onClose }) {
   // Deliberately renders only what a student would receive from the API — answer/explanation
   // are never read here, even though the admin's own fetch included them.
+  useEffect(() => {
+    function onKey(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel" onClick={e => e.stopPropagation()}>
-      <div className="modal-head"><h3>Student preview</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+    <div className="modal-panel" role="dialog" aria-modal="true" aria-label="Student preview" onClick={e => e.stopPropagation()}>
+      <div className="modal-head"><h3>Student preview</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
       <p className="muted" style={{marginTop:-6}}>This simulates exactly what a student sees — no answer key, no explanation.</p>
       <div className="panel" style={{marginTop:14}}>
         <div className="task-meta"><span className="chip">{question.section}</span><span>{question.difficulty}</span></div>
         <h2>{question.title}</h2>
         <p className="instruction">{question.prompt}</p>
         {question.passage && <div className="passage">{question.passage}</div>}
-        {question.imageUrl && <img src={question.imageUrl} alt="" style={{maxWidth:"100%",borderRadius:9,marginTop:12}}/>}
+        {question.imageUrl && <img src={question.imageUrl} alt={question.title||"Question image"} style={{maxWidth:"100%",borderRadius:9,marginTop:12}}/>}
         {question.audioUrl && <audio className="audio" controls src={question.audioUrl}/>}
         {!!question.options?.length && <div className="options">{question.options.map((o, i) => <label className="option" key={i}><input type="radio" disabled/>{o}</label>)}</div>}
       </div>
@@ -298,6 +309,13 @@ export function AdminQuestionsPanel({ notify }) {
       .finally(() => setLoading(false));
   }
   useEffect(() => { load(1); }, [section, type, difficulty, status]);
+
+  useEffect(() => {
+    if (!editId) return;
+    function onKey(e) { if (e.key === "Escape") setEditId(null); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [editId]);
 
   useEffect(() => {
     if (editId) {
@@ -349,7 +367,7 @@ export function AdminQuestionsPanel({ notify }) {
     {showCreate && types.length > 0 && <QuestionForm types={types} onCancel={() => setShowCreate(false)} onSave={createQuestion} saving={saving} error={formError}/>}
 
     <div className="filter-bar">
-      <div className="search admin-search"><span>⌕</span><input placeholder="Search by title, prompt, or question ID..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === "Enter" && load(1)}/></div>
+      <div className="search admin-search"><span aria-hidden="true">⌕</span><input placeholder="Search by title, prompt, or question ID..." aria-label="Search questions" value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === "Enter" && load(1)}/></div>
       <select value={section} onChange={e => setSection(e.target.value)} aria-label="Filter by section">
         <option value="">All sections</option>
         {SECTIONS.map(s => <option key={s} value={s}>{s[0].toUpperCase() + s.slice(1)}</option>)}
@@ -397,8 +415,8 @@ export function AdminQuestionsPanel({ notify }) {
     </>}
 
     {editId && editQuestion && types.length > 0 && <div className="modal-overlay" onClick={() => setEditId(null)}>
-      <div className="modal-panel" onClick={e => e.stopPropagation()}>
-        <div className="modal-head"><h3>Edit question</h3><button className="icon-btn" onClick={() => setEditId(null)}><X size={18}/></button></div>
+      <div className="modal-panel" role="dialog" aria-modal="true" aria-label="Edit question" onClick={e => e.stopPropagation()}>
+        <div className="modal-head"><h3>Edit question</h3><button className="icon-btn" onClick={() => setEditId(null)} aria-label="Close"><X size={18}/></button></div>
         <QuestionForm types={types} initial={editQuestion} onCancel={() => setEditId(null)} onSave={updateQuestion} saving={saving} error={formError}/>
       </div>
     </div>}
