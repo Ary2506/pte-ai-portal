@@ -135,6 +135,19 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       if (!testSession || String(testSession.user) !== String(req.user._id)) {
         return res.status(403).json({ message: "You can only submit to your own test session", code: "FORBIDDEN" });
       }
+      // A mock-test submission always references one of the real questions the session issued —
+      // every legitimate caller (Mock's SpeakingTask/WritingTask/ReadingTask/ListeningTask) always
+      // has a real question._id in hand and sends it. Without this, the belongs-check and the
+      // duplicate-submission guard just below both only run `if (question)` — omitting questionId
+      // would skip both entirely, letting a student attach an arbitrary number of freeform,
+      // AI/heuristic-scored "submissions" (any section/type string) to their own in-progress
+      // session, each one counted into that section's total at /complete. Rejecting here closes
+      // that gap without affecting any real client flow. Checked after the ownership lookup so an
+      // attacker probing someone else's session still gets 403 FORBIDDEN, not a 400 that would
+      // leak "this session exists" information via a different status code.
+      if (!question) {
+        return res.status(400).json({ message: "A test session submission must reference a real question.", code: "VALIDATION_ERROR" });
+      }
       await expireIfNeeded(testSession);
       if (testSession.status === "EXPIRED") {
         return res.status(409).json({ message: "Your allotted test time has ended. This test can no longer accept answers.", code: "TEST_SESSION_EXPIRED" });
@@ -145,17 +158,15 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       // A session created before Phase 7 has no recorded question set — it keeps behaving
       // exactly as it did before this check existed, rather than locking the student out of an
       // attempt that was legitimately already in progress.
-      if (question && testSession.questionIds?.length) {
+      if (testSession.questionIds?.length) {
         const belongs = testSession.questionIds.some(id => String(id) === String(question._id));
         if (!belongs) {
           return res.status(403).json({ message: "This question is not part of your current test session.", code: "QUESTION_NOT_IN_SESSION" });
         }
       }
-      if (question) {
-        const existing = await Submission.findOne({ testSession: testSession._id, question: question._id });
-        if (existing) {
-          return res.status(409).json({ message: "You have already answered this question in this test attempt.", code: "DUPLICATE_SUBMISSION" });
-        }
+      const existing = await Submission.findOne({ testSession: testSession._id, question: question._id });
+      if (existing) {
+        return res.status(409).json({ message: "You have already answered this question in this test attempt.", code: "DUPLICATE_SUBMISSION" });
       }
     }
 

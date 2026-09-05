@@ -763,8 +763,10 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
   .auth-card{min-height:100vh;padding:40px 25px}
 }
 @media(max-width:500px){
+  .toast-host{left:12px;right:12px;max-width:none}
   .practice-hub-panel{padding:18px}
   .practice-column{padding:18px}
+  .question-list-panel{padding:16px}
   .score-grid,.skill-grid,.kpi-grid{grid-template-columns:1fr}
   .top-user div:not(.avatar){display:none}
   .page-head{align-items:flex-start;flex-direction:column}
