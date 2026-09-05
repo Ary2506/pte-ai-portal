@@ -4,7 +4,7 @@ import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
-  Eye, EyeOff
+  Eye, EyeOff, Moon, Sun
 } from "lucide-react";
 import { api, forceLogout } from "./api.js";
 import { Result, ObjectiveResult, ReadingTask, ListeningTask } from "./PracticeObjective.jsx";
@@ -20,6 +20,35 @@ const SUBSCRIPTION_EXPIRED_MESSAGE = "Your 30-day subscription has expired. Plea
 // immediately instead of waiting. A subscription is realistically never more than ~24 days
 // out from this cap, so a single timer is enough; no rescheduling loop is needed.
 const MAX_TIMEOUT_MS = 2_147_483_647;
+
+function getInitialTheme() {
+  const saved = localStorage.getItem("pte_theme");
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(getInitialTheme);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#12182b" : "#f4f7fc");
+    localStorage.setItem("pte_theme", theme);
+  }, [theme]);
+  return { theme, toggleTheme: () => setTheme(current => current === "dark" ? "light" : "dark") };
+}
+
+function ThemeToggle({ theme, onToggle, compact = false }) {
+  const isDark = theme === "dark";
+  return <button
+    type="button"
+    className={compact ? "theme-toggle theme-toggle-compact" : "theme-toggle"}
+    onClick={onToggle}
+    aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+    title={`Switch to ${isDark ? "light" : "dark"} mode`}
+  >
+    {isDark ? <Sun size={17}/> : <Moon size={17}/>}<span>{isDark ? "Light mode" : "Dark mode"}</span>
+  </button>;
+}
 
 function useAuth() {
   const [user, setUser] = useState(() => {
@@ -69,7 +98,7 @@ function subscriptionLabel(user) {
   return `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 }
 
-function Auth({ save }) {
+function Auth({ save, theme, toggleTheme }) {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [notice] = useState(() => {
@@ -94,6 +123,7 @@ function Auth({ save }) {
   }
 
   return <div className="auth-page">
+    <div className="auth-theme-control"><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
     <div className="auth-visual">
       <div className="brand large"><span>PTE</span> AI</div>
       <h1>Practice smarter.<br/>Reach your target score.</h1>
@@ -264,7 +294,7 @@ function StudentSidebarNav({ user, onNavigate }) {
   </>;
 }
 
-function Layout({ user, logout, children }) {
+function Layout({ user, logout, children, theme, toggleTheme }) {
   const [mobile, setMobile] = useState(false);
   const location = useLocation();
   const inAdminSection = user?.role === "admin" && location.pathname === "/admin";
@@ -291,6 +321,7 @@ function Layout({ user, logout, children }) {
       <header className="topbar">
         <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)}><Menu size={21}/></button>
         <div className="search"><span>⌕</span><input placeholder="Search anything..."/></div>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} compact/>
         <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
       </header>
       <div className="content">{children}</div>
@@ -1633,8 +1664,9 @@ function AdminRoute({ user, children }) {
 
 export default function App() {
   const auth=useAuth();
-  if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save}/>}/></Routes>;
-  return <Layout user={auth.user} logout={auth.logout}><Routes>
+  const { theme, toggleTheme } = useTheme();
+  if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
+  return <Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<Dashboard user={auth.user}/>}/>
     <Route path="/practice" element={<PracticeHub/>}/>
