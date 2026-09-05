@@ -5,6 +5,21 @@
    is a token — component rules consume tokens, not literals, so the whole
    product re-skins from one place.
    ========================================================================== */
+/* Prevent light-theme surfaces from flashing during dark-theme rendering */
+html[data-theme="dark"] {
+  --surface: #1a2236;
+  --surface-soft: #202a40;
+  --bg: #12182b;
+  --bg-soft: #1c2539;
+
+  --ink: #edf1fb;
+  --ink-soft: #c2cada;
+  --muted: #a7b0c2;
+  --muted-soft: #8490a8;
+
+  --line: #29324a;
+}
+
 
 :root{
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -812,7 +827,13 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
 html{background:#f4f7fc}
 body{background:radial-gradient(circle at 100% 0%,#e7edff 0,transparent 28rem),#f4f7fc;color:var(--ink);letter-spacing:-.01em}
 button,input,textarea,select{font-family:inherit}
-button{transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,border-color .18s ease,color .18s ease}
+button{
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    color .18s ease;
+}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(99,91,255,.27);outline-offset:2px}
 
 .sidebar{width:264px;background:rgba(255,255,255,.9);backdrop-filter:blur(18px);border-right:1px solid rgba(224,229,240,.9);box-shadow:8px 0 30px rgba(33,45,78,.025)}
@@ -844,6 +865,95 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Theme controls and dark mode. The selected mode is stored locally and applied before React
    mounts, preventing a flash of the opposite theme on page load. */
 .theme-toggle{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #e1e5f0;border-radius:11px;background:rgba(255,255,255,.82);color:#556078;padding:8px 12px;font-size:12px;font-weight:750;white-space:nowrap}.theme-toggle:hover{border-color:#bdb8ff;background:#f4f3ff;color:#554ae2;transform:translateY(-1px)}.theme-toggle-compact{width:42px;padding:0}.theme-toggle-compact span{display:none}.auth-theme-control{position:fixed;top:24px;right:26px;z-index:2}
+
+/* =========================================================
+   Question Lists — Dark Mode
+   Shared by Speaking / Writing / Reading / Listening
+   ========================================================= */
+
+html[data-theme="dark"] .question-list-panel {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+html[data-theme="dark"] .question-list-filters {
+  background: #151d30;
+}
+
+html[data-theme="dark"] .question-list-filter {
+  background: transparent;
+  color: #aeb8ca;
+}
+
+html[data-theme="dark"] .question-list-filter:hover {
+  background: #252d45;
+  color: #dce3f1;
+}
+
+html[data-theme="dark"] .question-list-filter.active {
+  background: #302d5d;
+  color: #d1ceff;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .question-list-filter-count {
+  background: #30394f;
+  color: #aeb8ca;
+}
+
+html[data-theme="dark"] .question-list-filter.active .question-list-filter-count {
+  background: #454078;
+  color: #d1ceff;
+}
+
+/* Question rows */
+html[data-theme="dark"] .question-list-row {
+  background: transparent;
+  color: #dce3f1;
+  border-top-color: #2a344d;
+}
+
+html[data-theme="dark"] .question-list-row:hover {
+  background: #252d45;
+}
+
+html[data-theme="dark"] .question-list-row:focus {
+  background: #252d45;
+}
+
+html[data-theme="dark"] .question-list-row:active {
+  background: #252d45;
+}
+
+html[data-theme="dark"] .question-list-title {
+  color: #dce3f1;
+}
+
+html[data-theme="dark"] .question-list-row:hover .question-list-title {
+  color: #bdb9ff;
+}
+
+html[data-theme="dark"] .question-row-number {
+  color: #8490a8;
+}
+
+html[data-theme="dark"] .question-row-arrow {
+  color: #8490a8;
+}
+
+/* Search box inside question list */
+html[data-theme="dark"] .question-list-search {
+  background: #1c2539;
+  border-color: #35405a;
+}
+
+html[data-theme="dark"] .question-list-search input {
+  color: #edf1fb;
+}
+
+html[data-theme="dark"] .question-list-search input::placeholder {
+  color: #78849a;
+}
 
 html[data-theme="dark"] .mock-cta-banner{
   background:#1a2236;
@@ -877,6 +987,164 @@ html[data-theme="dark"] .admin-create-form,html[data-theme="dark"] .question-for
 html[data-theme="dark"] .modal-overlay{background:rgba(4,8,20,.7)}html[data-theme="dark"] .modal-panel{background:#1a2236;border-color:#35405b;color:#edf1fb}html[data-theme="dark"] .session-row{background:#202a40;border-color:#303a52}html[data-theme="dark"] .theme-toggle{background:#202940;border-color:#35405a;color:#d1d9e9}html[data-theme="dark"] .theme-toggle:hover{background:#302d5d;border-color:#625bbb;color:#d6d3ff}
 html[data-theme="dark"] .auth-page{background:#12182b}html[data-theme="dark"] .auth-card{background:#1a2236;color:#edf1fb}html[data-theme="dark"] .auth-card input{background:#202a40;border-color:#35405a;color:#edf1fb}html[data-theme="dark"] .auth-card label{color:#d5ddef}html[data-theme="dark"] .auth-theme-control .theme-toggle{background:rgba(25,33,54,.82);border-color:#3b4561;color:#d8ddf0}
 html[data-theme="dark"] .badge-neutral{background:#30394e;color:#c4cddd}html[data-theme="dark"] .badge-info{background:#302d5e;color:#cdcaff}html[data-theme="dark"] .badge-good{background:#173e35;color:#8de3bd}html[data-theme="dark"] .badge-warn{background:#493b1e;color:#ffd77d}html[data-theme="dark"] .badge-bad{background:#4b2932;color:#ffadb8}
+/* =========================================================
+   GLOBAL DARK MODE FIXES
+   Dropdowns / Practice / Question Lists
+   ========================================================= */
+
+/* ---------- More + PTE Practice dropdown ---------- */
+
+html[data-theme="dark"] .mega-menu {
+  background: #1a2236;
+  border-color: #303a52;
+  color: #edf1fb;
+}
+
+html[data-theme="dark"] .mega-menu-head .tab {
+  background: #1d263a;
+  border-color: #303a52;
+  color: #b3bdcf;
+}
+
+html[data-theme="dark"] .mega-menu-head .tab.active {
+  background: #302d5d;
+  border-color: #615bb3;
+  color: #d1ceff;
+}
+
+html[data-theme="dark"] .mega-menu-col-head {
+  color: #8490a8;
+}
+
+html[data-theme="dark"] .mega-menu-link {
+  background: transparent;
+  color: #c2cada;
+}
+
+html[data-theme="dark"] .mega-menu-link:hover:not(.disabled),
+html[data-theme="dark"] .mega-menu-link:focus,
+html[data-theme="dark"] .mega-menu-link:active {
+  background: #252d45;
+  color: #bdb9ff;
+}
+
+html[data-theme="dark"] .mega-menu-link.disabled {
+  background: transparent;
+  color: #69758c;
+}
+
+html[data-theme="dark"] .mega-menu-foot {
+  border-top-color: #303a52;
+}
+
+
+/* ---------- PTE Practice page ---------- */
+
+html[data-theme="dark"] .exam-variant-toggle {
+  background: #151d30;
+}
+
+html[data-theme="dark"] .exam-variant-tab {
+  color: #9da8bc;
+}
+
+html[data-theme="dark"] .exam-variant-tab.active {
+  background: #302d5d;
+  color: #d1ceff;
+}
+
+html[data-theme="dark"] .practice-column {
+  background: #1a2236;
+  border-color: #303a52;
+}
+
+html[data-theme="dark"] .practice-column-list {
+  border-color: #303a52;
+}
+
+html[data-theme="dark"] .practice-row {
+  background: transparent;
+  color: #cbd4e4;
+}
+
+html[data-theme="dark"] button.practice-row:hover,
+html[data-theme="dark"] button.practice-row:focus,
+html[data-theme="dark"] button.practice-row:active {
+  background: #252d45;
+  color: #bdb9ff;
+}
+
+html[data-theme="dark"] .practice-row-badge {
+  background: #30394f;
+  color: #b9c2d3;
+}
+
+
+/* ---------- Question list ---------- */
+
+html[data-theme="dark"] .question-list-filters {
+  background: #151d30;
+}
+
+html[data-theme="dark"] .question-list-filter {
+  background: transparent;
+  color: #aeb8ca;
+}
+
+html[data-theme="dark"] .question-list-filter:hover {
+  background: #252d45;
+  color: #dce3f1;
+}
+
+html[data-theme="dark"] .question-list-filter.active {
+  background: #302d5d;
+  color: #d1ceff;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .question-list-filter-count {
+  background: #30394f;
+  color: #aeb8ca;
+}
+
+html[data-theme="dark"] .question-list-filter.active .question-list-filter-count {
+  background: #454078;
+  color: #d1ceff;
+}
+
+html[data-theme="dark"] .question-list-row {
+  background: transparent;
+  color: #dce3f1;
+  border-top-color: #2a344d;
+}
+
+html[data-theme="dark"] .question-list-row:hover,
+html[data-theme="dark"] .question-list-row:focus,
+html[data-theme="dark"] .question-list-row:active {
+  background: #252d45;
+}
+
+html[data-theme="dark"] .question-list-title {
+  color: #cbd4e4;
+}
+
+
+/* ---------- Search inside question list ---------- */
+
+html[data-theme="dark"] .question-list-search {
+  background: #1c2539;
+  border-color: #35405a;
+}
+
+html[data-theme="dark"] .question-list-search input {
+  background: transparent;
+  color: #edf1fb;
+}
+
+html[data-theme="dark"] .question-list-search input::placeholder {
+  color: #78849a;
+}
+
 @media(max-width:500px){.auth-theme-control{top:14px;right:14px}.theme-toggle{min-height:38px;padding:7px 10px}.theme-toggle-compact{width:38px}}
 
 /* Signature product moments: live-data dashboards with a more editorial, premium hierarchy. */
@@ -885,3 +1153,7 @@ html[data-theme="dark"] .badge-neutral{background:#30394e;color:#c4cddd}html[dat
 html[data-theme="dark"] .dashboard-hero-copy p{color:#bac4d8}html[data-theme="dark"] .hero-status{background:rgba(42,40,91,.75);border-color:#605ab3;color:#d1ceff}html[data-theme="dark"] .score-card.featured{background:linear-gradient(145deg,#312b86,#5f54ea 58%,#8479ff)}html[data-theme="dark"] .admin-hero{background:linear-gradient(130deg,#11162e,#242253 58%,#4541a6);box-shadow:0 20px 42px rgba(0,0,0,.35)}
 @media(max-width:900px){.dashboard-hero{grid-template-columns:1fr auto}.dashboard-hero-copy{grid-column:1/-1;grid-row:2}.dashboard-hero .primary{grid-column:2;grid-row:1}.admin-hero h2{font-size:25px}}
 @media(max-width:600px){.dashboard-hero{display:flex;flex-direction:column;align-items:flex-start;gap:16px}.dashboard-hero-copy{order:1}.dashboard-hero .primary{order:2;width:100%}.admin-hero{align-items:flex-start;flex-direction:column;padding:24px}.admin-hero h2{font-size:24px}.admin-hero-metric{width:100%}}
+/* Prevent browser default white flash while clicking */
+html[data-theme="dark"] button:active {
+  color: inherit;
+}
