@@ -1204,16 +1204,39 @@ If you need to change your device or browser, please contact the administrator f
 Please log in and start practicing. Feel free to reach out if you need any help! 😊`;
 }
 
-function AccountCreatedModal({ account, onClose }) {
+function buildPasswordResetMessage({ username, password }) {
+  const loginUrl = window.location.origin;
+  return `MyPTEScore – Your Path to PTE Success
+
+Hello! 👋
+
+Your MyPTEScore password has been reset.
+
+🔐 Updated Login Details
+
+👤 Username: ${username}
+🔑 Your new password: ${password}
+
+🌐 Login here: ${loginUrl}
+
+⚠️ IMPORTANT NOTE
+
+For your security, you have been signed out from any active session. Please sign in again using your new password.
+
+Your account is device restricted. Please log in from the device and browser you plan to use every day.
+
+If you need any help, please contact the administrator.`;
+}
+
+function CredentialMessageModal({ title, description, message, onClose }) {
   const [copied, setCopied] = useState(false);
-  const message = buildAccountCreatedMessage(account);
   function copy() {
     navigator.clipboard?.writeText(message).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   }
   return <div className="modal-overlay" onClick={onClose}>
     <div className="modal-panel" onClick={e => e.stopPropagation()}>
-      <div className="modal-head"><h3>Account created</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
-      <p className="muted" style={{marginTop:-6}}>Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy.</p>
+      <div className="modal-head"><h3>{title}</h3><button className="icon-btn" onClick={onClose}><X size={18}/></button></div>
+      <p className="muted" style={{marginTop:-6}}>{description}</p>
       <textarea readOnly className="answer-area" style={{height:360,fontFamily:"monospace",fontSize:12}} value={message} onClick={e => e.target.select()}/>
       <div className="modal-actions">
         <button className="secondary" onClick={onClose}>Close</button>
@@ -1221,6 +1244,24 @@ function AccountCreatedModal({ account, onClose }) {
       </div>
     </div>
   </div>;
+}
+
+function AccountCreatedModal({ account, onClose }) {
+  return <CredentialMessageModal
+    title="Account created"
+    description="Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy."
+    message={buildAccountCreatedMessage(account)}
+    onClose={onClose}
+  />;
+}
+
+function PasswordResetModal({ account, onClose }) {
+  return <CredentialMessageModal
+    title="Password reset"
+    description="Copy this message and send it to the student — it clearly includes their new password and explains that they must sign in again."
+    message={buildPasswordResetMessage(account)}
+    onClose={onClose}
+  />;
 }
 
 function AdminUsers({notify, initialFilters, onFiltersApplied}) {
@@ -1342,6 +1383,7 @@ function AdminUserDetail({id, notify, onClose}) {
   const [customDays,setCustomDays]=useState("");
   const [subForm,setSubForm]=useState({paymentStatus:"PENDING",subscriptionStartDate:"",subscriptionEndDate:""});
   const [busy,setBusy]=useState(false);
+  const [resetAccount,setResetAccount]=useState(null);
 
   function load(){
     setLoading(true); setError("");
@@ -1433,7 +1475,7 @@ function AdminUserDetail({id, notify, onClose}) {
           {u.accountStatus!=="BLOCKED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Block this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Block user",danger:true,successMsg:"User blocked",run:()=>api.admin.setStatus(u.id,"BLOCKED")})}>Block</button>}
           {u.accountStatus!=="SUSPENDED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Suspend this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Suspend user",danger:true,successMsg:"User suspended",run:()=>api.admin.setStatus(u.id,"SUSPENDED")})}>Suspend</button>}
           <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Force logout?",message:`Any active session for ${u.username} will be revoked immediately.`,label:"Force logout now",danger:true,successMsg:"Sessions revoked",run:()=>api.admin.revokeSessions(u.id)})}>Force logout</button>
-          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");notify("success",`New password for ${u.username}: ${d.temporaryPassword}`)}})}>Reset password</button>
+          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");setResetAccount({username:u.username,password:d.temporaryPassword})}})}>Reset password</button>
         </div>
 
         <h4>Renew subscription</h4>
@@ -1455,6 +1497,7 @@ function AdminUserDetail({id, notify, onClose}) {
       </>}
     </div>
     <ConfirmDialog open={!!confirmAction} title={confirmAction?.title} message={confirmAction?.message} confirmLabel={confirmAction?.label} danger={confirmAction?.danger} busy={busy} onConfirm={runConfirm} onCancel={()=>setConfirmAction(null)}/>
+    {resetAccount && <PasswordResetModal account={resetAccount} onClose={()=>setResetAccount(null)}/>}
   </div>
 }
 
