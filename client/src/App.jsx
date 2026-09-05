@@ -418,9 +418,9 @@ function Dashboard({ user }) {
     <SubscriptionCard user={user}/>
     <StreakCard streak={data?.streak}/>
     <WeeklyActivity days={data?.weeklyActivity}/>
-    <div className="hero-row"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
+    <div className="hero-row dashboard-hero"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><div className="dashboard-hero-copy"><span className="hero-status"><Sparkles size={14}/> Your next score is built today</span><p>Choose a focused practice task and turn your progress into a stronger PTE result.</p></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
     <div className="score-grid">
-      <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average"/>
+      <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average" featured/>
       {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
     </div>
     <div className="two-col">
@@ -437,7 +437,7 @@ function Dashboard({ user }) {
   </Page>
 }
 
-function ScoreCard({title,value,sub}) { return <div className="score-card"><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
+function ScoreCard({title,value,sub,featured=false}) { return <div className={featured ? "score-card featured" : "score-card"}><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
 
 // One task card (Part 4). `state` is derived purely from real data — never hardcoded — so a
 // task never claims to be practicable unless the backend both supports the type AND currently
@@ -1166,6 +1166,18 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
   if (error) return <div className="alert error">{error}</div>;
 
   return <div className="admin-dashboard">
+    <section className="admin-hero">
+      <div>
+        <span className="eyebrow">ADMIN COMMAND CENTER</span>
+        <h2>Run your learning portal with clarity.</h2>
+        <p>Manage student access, subscriptions, and practice content from one focused workspace.</p>
+      </div>
+      <div className="admin-hero-metric">
+        <span>Active learners</span>
+        <strong>{stats.accountStatus.active}</strong>
+        <small><span className="live-dot"/> Live account status</small>
+      </div>
+    </section>
     <div className="stat-grid">
       <StatTile label="Total users" value={stats.totalUsers}/>
       <StatTile label="Active accounts" value={stats.accountStatus.active} tone="good" onClick={()=>goToUsers({status:"ACTIVE"})}/>
