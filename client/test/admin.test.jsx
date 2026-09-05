@@ -196,6 +196,12 @@ describe("user detail actions", () => {
     fireEvent.click(screen.getByText("Reset password"));
     fireEvent.click(await screen.findByText("Reset password now"));
     await waitFor(() => expect(api.admin.resetPassword).toHaveBeenCalledWith("u1", ""));
-    expect(await screen.findByText(/New password for pte001: newpass1/)).toBeInTheDocument();
+    // The reset password shows up in a copyable message modal, not a toast (a friend's later
+    // upstream change generalized the account-created modal into CredentialMessageModal, reused
+    // here as PasswordResetModal). Scoped to the heading role since a success toast with the same
+    // "Password reset" text also appears at the same time.
+    expect(await screen.findByRole("heading", { name: "Password reset" })).toBeInTheDocument();
+    const messageBox = document.querySelector("textarea[readonly]");
+    expect(messageBox.value).toContain("Your new password: newpass1");
   });
 });

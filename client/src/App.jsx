@@ -4,7 +4,7 @@ import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
-  Eye, EyeOff
+  Eye, EyeOff, Moon, Sun
 } from "lucide-react";
 import { api, forceLogout } from "./api.js";
 import { Result, ObjectiveResult, ReadingTask, ListeningTask } from "./PracticeObjective.jsx";
@@ -26,6 +26,35 @@ const SUBSCRIPTION_EXPIRED_MESSAGE = "Your 30-day subscription has expired. Plea
 // immediately instead of waiting. A subscription is realistically never more than ~24 days
 // out from this cap, so a single timer is enough; no rescheduling loop is needed.
 const MAX_TIMEOUT_MS = 2_147_483_647;
+
+function getInitialTheme() {
+  const saved = localStorage.getItem("pte_theme");
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(getInitialTheme);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#12182b" : "#f4f7fc");
+    localStorage.setItem("pte_theme", theme);
+  }, [theme]);
+  return { theme, toggleTheme: () => setTheme(current => current === "dark" ? "light" : "dark") };
+}
+
+function ThemeToggle({ theme, onToggle, compact = false }) {
+  const isDark = theme === "dark";
+  return <button
+    type="button"
+    className={compact ? "theme-toggle theme-toggle-compact" : "theme-toggle"}
+    onClick={onToggle}
+    aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+    title={`Switch to ${isDark ? "light" : "dark"} mode`}
+  >
+    {isDark ? <Sun size={17}/> : <Moon size={17}/>}<span>{isDark ? "Light mode" : "Dark mode"}</span>
+  </button>;
+}
 
 function useAuth() {
   const [user, setUser] = useState(() => {
@@ -75,7 +104,7 @@ function subscriptionLabel(user) {
   return `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 }
 
-function Auth({ save }) {
+function Auth({ save, theme, toggleTheme }) {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [notice] = useState(() => {
@@ -100,6 +129,7 @@ function Auth({ save }) {
   }
 
   return <div className="auth-page">
+    <div className="auth-theme-control"><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
     <div className="auth-visual">
       <div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
       <h1>Practice smarter.<br/>Reach your target score.</h1>
@@ -395,7 +425,7 @@ function topbarLabel(pathname) {
   return "";
 }
 
-function Layout({ user, logout, children }) {
+function Layout({ user, logout, children, theme, toggleTheme }) {
   const [mobile, setMobile] = useState(false);
   const location = useLocation();
   const inAdminSection = user?.role === "admin" && location.pathname === "/admin";
@@ -425,6 +455,7 @@ function Layout({ user, logout, children }) {
           <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
         </div>
         <HeaderSearch user={user}/>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} compact/>
         <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
       </header>
       <div className="content">{children}</div>
@@ -525,54 +556,19 @@ function Dashboard({ user }) {
     sessionStorage.removeItem("pte_access_denied_notice");
     return n || "";
   });
-  const [skillCounts,setSkillCounts]=useState(null);
   useEffect(()=>{api.dashboard().then(setData).catch(()=>{}).finally(()=>setLoading(false));},[]);
-  // Real per-section content counts (Part 6/10) — the exact same defensive
-  // Promise.resolve(...) wrapping PracticeTask already uses for api.history(), so a test that
-  // never configures api.questions() can't crash this: it just resolves to zero counts.
-  useEffect(()=>{
-    Promise.all(PRACTICE_SECTIONS.map(section =>
-      Promise.resolve(api.questions(section)).then(d => ({ section, count: (d?.questions || []).length })).catch(() => ({ section, count: 0 }))
-    )).then(results => {
-      const map = {};
-      results.forEach(({ section, count }) => { map[section] = count; });
-      setSkillCounts(map);
-    });
-  },[]);
   const stats=data?.stats;
   const scoreBySection = Object.fromEntries((data?.bySection||[]).map(x=>[x.section,x.score]));
   return <Page title="Welcome back 👋" subtitle="Keep practicing to achieve your target PTE score.">
     {accessDenied && <div className="alert error"><AlertCircle size={17}/>{accessDenied}</div>}
 
-    <div className="dash-hero">
-      <div className="dash-hero-text">
-        <span className="eyebrow">Target score {stats?.targetScore || 79}</span>
-        <h2>Ready to improve your PTE score?</h2>
-        <p>Keep practicing every section — every attempt is scored and tracked toward your target.</p>
-        <div className="dash-hero-actions">
-          <NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink>
-          <NavLink className="secondary" to="/mock"><Trophy size={17}/> Take Mock Test</NavLink>
-        </div>
-      </div>
-    </div>
-
     <SubscriptionCard user={user}/>
     <StreakCard streak={data?.streak}/>
     <WeeklyActivity days={data?.weeklyActivity}/>
-
-    <section className="panel overall-progress-panel">
-      <div className="panel-head"><div><h3>Overall Progress</h3><p className="muted">Your practice performance across sections</p></div></div>
-      {loading ? <SkeletonRows count={4}/> : <div className="overall-progress-body">
-        <div className="overall-progress-ring"><ScoreRing value={stats?.overall||0} max={90} size="lg"/><span>Current Score</span></div>
-        <div className="overall-progress-bars">
-          {PRACTICE_SECTIONS.map(section => <div className="bar-row" key={section}><span>{SECTION_LABELS[section]}</span><div><i style={{width:`${Math.min(100,scoreBySection[section]||0)}%`}}/></div><b>{scoreBySection[section] ?? "—"}</b></div>)}
-        </div>
-      </div>}
-    </section>
-
-    <h2 className="section-title">Practice by Skill</h2>
-    <div className="skill-grid">
-      {PRACTICE_SECTIONS.map(section => <SkillCard key={section} section={section} score={scoreBySection[section]} count={skillCounts ? skillCounts[section] : null}/>)}
+    <div className="hero-row dashboard-hero"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><div className="dashboard-hero-copy"><span className="hero-status"><Sparkles size={14}/> Your next score is built today</span><p>Choose a focused practice task and turn your progress into a stronger PTE result.</p></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
+    <div className="score-grid">
+      <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average" featured/>
+      {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
     </div>
 
     <section className="panel">
@@ -588,26 +584,7 @@ function Dashboard({ user }) {
   </Page>
 }
 
-function ScoreCard({title,value,sub}) { return <div className="score-card"><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
-
-// "Practice by Skill" (Part 6/10) — a real, signature-colored category card per PTE section.
-// count is null only while its own fetch is still in flight (never fabricated); score comes
-// straight from the same bySection data the progress panel above already renders.
-function SkillCard({ section, score, count }) {
-  const Icon = SECTION_ICONS[section];
-  const pct = Math.max(0, Math.min(100, score || 0));
-  return <div className={`skill-card skill-${section}`}>
-    <div className="skill-card-icon"><Icon size={22}/></div>
-    <h3>{SECTION_LABELS[section]}</h3>
-    <p>{SECTION_DESCRIPTIONS[section]}</p>
-    <div className="skill-card-meta">
-      <span>{count == null ? "Loading…" : `${count} question${count === 1 ? "" : "s"}`}</span>
-      {score != null && <span className="skill-card-score">{score}/90 avg</span>}
-    </div>
-    <div className="skill-card-progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`${SECTION_LABELS[section]} average score`}><i style={{width:`${pct}%`}}/></div>
-    <NavLink className="skill-card-cta" to={`/${section}`}>{score ? "Continue" : "Start"} {SECTION_LABELS[section]} <ChevronRight size={15}/></NavLink>
-  </div>;
-}
+function ScoreCard({title,value,sub,featured=false}) { return <div className={featured ? "score-card featured" : "score-card"}><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
 
 // Real circular progress (Part 14) — driven entirely by the student's actual average score,
 // never a decorative or fixed fill.
@@ -1442,13 +1419,18 @@ function AdminDashboard({notify, goToUsers, goToQuestions}) {
   if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><button className="secondary" onClick={load}>Retry</button></div>;
 
   return <div className="admin-dashboard">
-    <div className="kpi-grid">
-      <div className="kpi-card"><div className="kpi-icon"><UserRound size={20}/></div><div><span>Total Students</span><strong>{stats.totalUsers}</strong></div></div>
-      <div className="kpi-card"><div className="kpi-icon kpi-good"><CheckCircle2 size={20}/></div><div><span>Active Subscriptions</span><strong>{stats.subscription.active}</strong></div></div>
-      <div className="kpi-card"><div className="kpi-icon kpi-violet"><BookOpen size={20}/></div><div><span>Total Questions</span><strong>{questionStats?.total ?? "—"}</strong></div></div>
-      <div className="kpi-card"><div className="kpi-icon kpi-warn"><Clock3 size={20}/></div><div><span>Expiring Within 7 Days</span><strong>{stats.subscription.expiringWithin7Days}</strong></div></div>
-    </div>
-    <h2 className="section-title">Account status</h2>
+    <section className="admin-hero">
+      <div>
+        <span className="eyebrow">ADMIN COMMAND CENTER</span>
+        <h2>Run your learning portal with clarity.</h2>
+        <p>Manage student access, subscriptions, and practice content from one focused workspace.</p>
+      </div>
+      <div className="admin-hero-metric">
+        <span>Active learners</span>
+        <strong>{stats.accountStatus.active}</strong>
+        <small><span className="live-dot"/> Live account status</small>
+      </div>
+    </section>
     <div className="stat-grid">
       <StatTile label="Total users" value={stats.totalUsers}/>
       <StatTile label="Active accounts" value={stats.accountStatus.active} tone="good" onClick={()=>goToUsers({status:"ACTIVE"})}/>
@@ -1518,9 +1500,32 @@ If you need to change your device or browser, please contact the administrator f
 Please log in and start practicing. Feel free to reach out if you need any help! 😊`;
 }
 
-function AccountCreatedModal({ account, onClose }) {
+function buildPasswordResetMessage({ username, password }) {
+  const loginUrl = window.location.origin;
+  return `MyPTEScore – Your Path to PTE Success
+
+Hello! 👋
+
+Your MyPTEScore password has been reset.
+
+🔐 Updated Login Details
+
+👤 Username: ${username}
+🔑 Your new password: ${password}
+
+🌐 Login here: ${loginUrl}
+
+⚠️ IMPORTANT NOTE
+
+For your security, you have been signed out from any active session. Please sign in again using your new password.
+
+Your account is device restricted. Please log in from the device and browser you plan to use every day.
+
+If you need any help, please contact the administrator.`;
+}
+
+function CredentialMessageModal({ title, description, message, onClose }) {
   const [copied, setCopied] = useState(false);
-  const message = buildAccountCreatedMessage(account);
   useEffect(() => {
     function onKey(e) { if (e.key === "Escape") onClose(); }
     document.addEventListener("keydown", onKey);
@@ -1530,9 +1535,9 @@ function AccountCreatedModal({ account, onClose }) {
     navigator.clipboard?.writeText(message).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   }
   return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel" role="dialog" aria-modal="true" aria-label="Account created" onClick={e => e.stopPropagation()}>
-      <div className="modal-head"><h3>Account created</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
-      <p className="muted" style={{marginTop:-6}}>Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy.</p>
+    <div className="modal-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
+      <div className="modal-head"><h3>{title}</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
+      <p className="muted" style={{marginTop:-6}}>{description}</p>
       <textarea readOnly className="answer-area" style={{height:360,fontFamily:"monospace",fontSize:12}} value={message} onClick={e => e.target.select()}/>
       <div className="modal-actions">
         <button className="secondary" onClick={onClose}>Close</button>
@@ -1540,6 +1545,24 @@ function AccountCreatedModal({ account, onClose }) {
       </div>
     </div>
   </div>;
+}
+
+function AccountCreatedModal({ account, onClose }) {
+  return <CredentialMessageModal
+    title="Account created"
+    description="Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy."
+    message={buildAccountCreatedMessage(account)}
+    onClose={onClose}
+  />;
+}
+
+function PasswordResetModal({ account, onClose }) {
+  return <CredentialMessageModal
+    title="Password reset"
+    description="Copy this message and send it to the student — it clearly includes their new password and explains that they must sign in again."
+    message={buildPasswordResetMessage(account)}
+    onClose={onClose}
+  />;
 }
 
 function AdminUsers({notify, initialFilters, onFiltersApplied}) {
@@ -1661,6 +1684,7 @@ function AdminUserDetail({id, notify, onClose}) {
   const [customDays,setCustomDays]=useState("");
   const [subForm,setSubForm]=useState({paymentStatus:"PENDING",subscriptionStartDate:"",subscriptionEndDate:""});
   const [busy,setBusy]=useState(false);
+  const [resetAccount,setResetAccount]=useState(null);
 
   function load(){
     setLoading(true); setError("");
@@ -1757,7 +1781,7 @@ function AdminUserDetail({id, notify, onClose}) {
           {u.accountStatus!=="BLOCKED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Block this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Block user",danger:true,successMsg:"User blocked",run:()=>api.admin.setStatus(u.id,"BLOCKED")})}>Block</button>}
           {u.accountStatus!=="SUSPENDED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Suspend this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Suspend user",danger:true,successMsg:"User suspended",run:()=>api.admin.setStatus(u.id,"SUSPENDED")})}>Suspend</button>}
           <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Force logout?",message:`Any active session for ${u.username} will be revoked immediately.`,label:"Force logout now",danger:true,successMsg:"Sessions revoked",run:()=>api.admin.revokeSessions(u.id)})}>Force logout</button>
-          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");notify("success",`New password for ${u.username}: ${d.temporaryPassword}`)}})}>Reset password</button>
+          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");setResetAccount({username:u.username,password:d.temporaryPassword})}})}>Reset password</button>
         </div>
 
         <h4>Renew subscription</h4>
@@ -1779,6 +1803,7 @@ function AdminUserDetail({id, notify, onClose}) {
       </>}
     </div>
     <ConfirmDialog open={!!confirmAction} title={confirmAction?.title} message={confirmAction?.message} confirmLabel={confirmAction?.label} danger={confirmAction?.danger} busy={busy} onConfirm={runConfirm} onCancel={()=>setConfirmAction(null)}/>
+    {resetAccount && <PasswordResetModal account={resetAccount} onClose={()=>setResetAccount(null)}/>}
   </div>
 }
 
@@ -1933,8 +1958,9 @@ function AdminRoute({ user, children }) {
 
 export default function App() {
   const auth=useAuth();
-  if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save}/>}/></Routes>;
-  return <Layout user={auth.user} logout={auth.logout}><Routes>
+  const { theme, toggleTheme } = useTheme();
+  if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
+  return <Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<Dashboard user={auth.user}/>}/>
     <Route path="/practice" element={<PracticeHub/>}/>
