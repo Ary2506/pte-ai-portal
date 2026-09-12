@@ -1,0 +1,31 @@
+{
+    "id": "76",
+    "title": "Media",
+    "type": "multiple_choice",
+    "subtype": "core_corep",
+    "audio": {
+        "src": "76.mp3",
+        "transcript": "Now let's talk a video, video and audio as a tool for mobile and here is the thing. It also works wonderfully for social media and web too. It kills three birds in one stone. Do you know why TV does so well and films do so well? So really easy answer, we humans react best to seeing the picture, other human beings talking back to us, and playing all these stories or what not. Yet you will find that most of the web is texted, yet when I have a four-minute video, it does better or when I have the slide show that an audio track to it. They do so much better than all my other content because we need that. This is a flat screen, we need to Live it up somehow. This is a small screen, it's not easy to read lengthy text, but if I create a Lengthy article, and then I create a three-minute video or a set of three-minute videos about it. Then I am not re-purposed to the use, I have differentiated from all my competitors and I use a fancy QR code to Link to these, oh my god, we’re innovating at the spear. OK."
+    },
+    "question": "According to the speaker, the main reason why TV and films work so well is that ____.",
+    "options": [
+        {
+            "id": "A",
+            "text": "They integrate well with social media and web."
+        },
+        {
+            "id": "B",
+            "text": "We humans respond best to video and audio."
+        },
+        {
+            "id": "C",
+            "text": "They get more information across than texts."
+        },
+        {
+            "id": "D",
+            "text": "Their flat and small screens are easy to operate."
+        }
+    ],
+    "answer": "B",
+    "userAnswer": ""
+}

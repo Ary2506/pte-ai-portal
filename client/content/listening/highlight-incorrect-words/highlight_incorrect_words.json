@@ -1,0 +1,640 @@
+[
+    {
+        "id": "362",
+        "title": "Cats",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "362.mp3",
+            "transcript": "Cats are the most popular pets among Americans. So it is not surprising that there are many expressions about cats. Some cats like to catch small birds, like canaries. If someone looks very proud or satisfied with himself, we say he looks like the cat that ate the canary. Sometimes, a cat likes to play with a small animal it catches. So if you play cat and mouse with someone, you change between different kinds of behavior when dealing with another person. For example, a child might offer something sweet to her little brother and then take it away when he reaches for it. A cat will often catch a small animal and present it to its owner. The saying that looks like something the cat dragged in describes something in bad condition."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "Cats are the "
+            },
+            {
+                "type": "word",
+                "text": "must",
+                "isIncorrect": true,
+                "answer": "most",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " popular pets among Americans. So it is not surprising that there are many expressions about cats. Some cats like to "
+            },
+            {
+                "type": "word",
+                "text": "fly",
+                "isIncorrect": true,
+                "answer": "catch",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " small birds, like canaries. If someone looks very proud or satisfied with himself, we say he looks like the cat that ate the canary. Sometimes, a cat likes to "
+            },
+            {
+                "type": "word",
+                "text": "hold",
+                "isIncorrect": true,
+                "answer": "play",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " with a small animal it catches. So if you play cat and mouse with someone, you change between different kinds of behavior when dealing with another person. For example, a child might offer something sweet to her little brother and then take it away when he reaches for it. A cat will often catch a small animal and present it to its owner. The saying that looks like something the cat dragged in "
+            },
+            {
+                "type": "word",
+                "text": "draws",
+                "isIncorrect": true,
+                "answer": "describes",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " something in bad condition."
+            }
+        ],
+        "answer": [
+            "most",
+            "catch",
+            "play",
+            "describes"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "359",
+        "title": "Clock",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "359.mp3",
+            "transcript": "If you can read a clock, you can know the time of day. But no one knows what time itself is. We cannot see it. We cannot touch it. We cannot hear it. We know it only by the way we mark its passing. For all our success in measuring the smallest parts of time, time remains one of the great mysteries of the universe. One way to think about time is to imagine a world without time. There could be no movement because time and movement cannot be separated. A world without time could exist only as long as there were no changes. For time and change are linked. We know that time has passed when something changes."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "If you can read a clock, you can know the time of "
+            },
+            {
+                "type": "word",
+                "text": "day",
+                "isIncorrect": false,
+                "answer": "day",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". But no one "
+            },
+            {
+                "type": "word",
+                "text": "understands",
+                "isIncorrect": true,
+                "answer": "knows",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " what time itself is. We cannot see it. We cannot "
+            },
+            {
+                "type": "word",
+                "text": "touch",
+                "isIncorrect": false,
+                "answer": "touch",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " it. We cannot hear it. We know it only by the way we mark its passing. For all our success in measuring the smallest parts of time, time remains one of the "
+            },
+            {
+                "type": "word",
+                "text": "major",
+                "isIncorrect": true,
+                "answer": "great",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " "
+            },
+            {
+                "type": "word",
+                "text": "mysteries",
+                "isIncorrect": false,
+                "answer": "mysteries",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " of the universe. One way to think about time is to imagine a world without time. There could be no "
+            },
+            {
+                "type": "word",
+                "text": "movement",
+                "isIncorrect": false,
+                "answer": "movement",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " because time and movement cannot be "
+            },
+            {
+                "type": "word",
+                "text": "separated",
+                "isIncorrect": false,
+                "answer": "separated",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". A world without time could exist only as long as there were no changes. For time and change are linked. We know that time has passed when something changes."
+            }
+        ],
+        "answer": [
+            "day",
+            "touch",
+            "mysteries",
+            "movement",
+            "separated"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "360",
+        "title": "Winter",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "360.mp3",
+            "transcript": "Winter has returned to the northern parts of the world. In the northern United States, winter can mean the return of snow. Large amounts of snow fell in some American cities last month. One storm hit the East Coast, causing flight cancellations and temporarily stopping traffic in some areas. Snow is a subject of great interest to weather experts. They sometimes have difficulty estimating where, when, or how much snow will fall. One reason is that heavy amounts of snow fall in surprisingly small areas. Another reason is that a small change in temperature can mean the difference between snow and rain."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "Winter has "
+            },
+            {
+                "type": "word",
+                "text": "came",
+                "isIncorrect": true,
+                "answer": "returned",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " to the "
+            },
+            {
+                "type": "word",
+                "text": "northern",
+                "isIncorrect": false,
+                "answer": "northern",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " parts of the world. In the northern United States, winter can mean the return of snow. Large amounts of snow fell in some American cities "
+            },
+            {
+                "type": "word",
+                "text": "last",
+                "isIncorrect": false,
+                "answer": "last",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " month. One storm hit the East Coast, causing flight cancellations and temporarily stopping traffic in "
+            },
+            {
+                "type": "word",
+                "text": "some",
+                "isIncorrect": false,
+                "answer": "some",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " areas. Snow is a subject of "
+            },
+            {
+                "type": "word",
+                "text": "major",
+                "isIncorrect": true,
+                "answer": "great",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " interest to weather experts. They sometimes have difficulty estimating where, when, or how much "
+            },
+            {
+                "type": "word",
+                "text": "snow",
+                "isIncorrect": false,
+                "answer": "snow",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " will fall. One reason is that heavy amounts of snow fall in surprisingly small areas. Another reason is that a small "
+            },
+            {
+                "type": "word",
+                "text": "change",
+                "isIncorrect": false,
+                "answer": "change",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " in temperature can mean the difference between snow and rain."
+            }
+        ],
+        "answer": [
+            "northern",
+            "last",
+            "some",
+            "snow",
+            "change"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "361",
+        "title": "Allergy",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "361.mp3",
+            "transcript": "An allergy is an usually strong reaction to a substance. Many things can cause allergies. The most common cause is pollen. Trees usually produce pollen in the spring, grasses in the summer, and weeds in the fall as part of their reproductive process. Other causes include organisms such as dust mites and molds. Chemicals, plants and dead skin particles from dogs and cats can also cause allergic reactions. So can insect stings and some foods. The most common kind of allergic reaction is itchy, watery eyes, and a blocked or watery nose. Allergies can also cause red, itchy skin. Some reactions can be life-threatening—for example, when breathing passages become blocked."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "An allergy is an "
+            },
+            {
+                "type": "word",
+                "text": "usually",
+                "isIncorrect": false,
+                "answer": "usually",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " "
+            },
+            {
+                "type": "word",
+                "text": "powerful",
+                "isIncorrect": true,
+                "answer": "strong",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " reaction to a substance. Many things can cause allergies. The most "
+            },
+            {
+                "type": "word",
+                "text": "frequent",
+                "isIncorrect": true,
+                "answer": "common",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " cause is pollen. Trees usually produce pollen in the spring, grasses in the summer, and weeds in the "
+            },
+            {
+                "type": "word",
+                "text": "fall",
+                "isIncorrect": false,
+                "answer": "fall",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " as part of their reproductive process. Other causes include organisms such as dust mites and molds. Chemicals, plants and "
+            },
+            {
+                "type": "word",
+                "text": "dead",
+                "isIncorrect": false,
+                "answer": "dead",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " skin particles from dogs and cats can also cause allergic reactions. So can insect stings and some foods. The most common kind of allergic reaction is itchy, watery "
+            },
+            {
+                "type": "word",
+                "text": "eyes",
+                "isIncorrect": false,
+                "answer": "eyes",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ", and a blocked or watery nose. Allergies can also "
+            },
+            {
+                "type": "word",
+                "text": "cause",
+                "isIncorrect": false,
+                "answer": "cause",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " red, itchy skin. Some reactions can be life-threatening—for example, when breathing passages become blocked."
+            }
+        ],
+        "answer": [
+            "usually",
+            "fall",
+            "dead",
+            "eyes",
+            "cause"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "358",
+        "title": "Red Fruit",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "358.mp3",
+            "transcript": "There is something hard to resist about cherries. The small red fruit is a popular seasonal food around the world. In northern areas, cherry trees are just beginning to produce flowers. The cherry is a member of the same family of plants as the rose. It is closely related to the plum. Like cherry trees, plum trees also flower in early spring. Cherries are thought to be native to Western Asia. There are two major kinds of cherries harvested in the world: sweet and sour. Sour cherries are not eaten fresh because they contain little sugar. Instead, they are processed to start prepared foods like jellies and pies and to start alcoholic drinks. The United States is a major producer of sour cherries. Among the states, Michigan is the top producer."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "There is something hard to resist about "
+            },
+            {
+                "type": "word",
+                "text": "cherries",
+                "isIncorrect": false,
+                "answer": "cherries",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". The "
+            },
+            {
+                "type": "word",
+                "text": "tiny",
+                "isIncorrect": true,
+                "answer": "small",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " red fruit is a "
+            },
+            {
+                "type": "word",
+                "text": "well-known",
+                "isIncorrect": true,
+                "answer": "popular",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " seasonal food around the world. In northern areas, cherry trees are just beginning to produce flowers. The cherry is a member of the same family of plants as the rose. It is closely related to the plum. Like cherry trees, plum trees also flower in early spring. Cherries are thought to be native to "
+            },
+            {
+                "type": "word",
+                "text": "Western",
+                "isIncorrect": false,
+                "answer": "Western",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " Asia. There are two major kinds of cherries harvested in the world: sweet and sour. Sour cherries are not eaten fresh because they contain little sugar. Instead, they are processed to start prepared foods like jellies and pies and to "
+            },
+            {
+                "type": "word",
+                "text": "start",
+                "isIncorrect": false,
+                "answer": "start",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " alcoholic drinks. The United States is a major producer of sour cherries. Among the states, Michigan is the top producer."
+            }
+        ],
+        "answer": [
+            "cherries",
+            "world",
+            "Western",
+            "start"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "246",
+        "title": "Australia's Greenhouse Gas",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "246.mp3",
+            "transcript": "It's basically all the same thing. A complicated plan to cut back Australia's greenhouse gases. And we are, per capita the biggest carbon polluters on the planet. But it's not carbon trading that will make the first big cuts in our emissions. The first big cuts will come from the Governments renewable energy target. Melbourne-based analyst Carbon Market Economics says the Governments 20 percent target will not only cut pollution, it'll help the economy as well."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "It's "
+            },
+            {
+                "type": "word",
+                "text": "essentially",
+                "isIncorrect": true,
+                "answer": "basically",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " all the same thing. A "
+            },
+            {
+                "type": "word",
+                "text": "complicated",
+                "isIncorrect": false,
+                "answer": "complicated",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " plan to cut back Australia's greenhouse gases. And we are, per capita the "
+            },
+            {
+                "type": "word",
+                "text": "largest",
+                "isIncorrect": true,
+                "answer": "biggest",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " carbon polluters on the "
+            },
+            {
+                "type": "word",
+                "text": "planet",
+                "isIncorrect": false,
+                "answer": "planet",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". But it's not carbon trading that will make the first big cuts in our emissions. The first big cuts will come from the Governments "
+            },
+            {
+                "type": "word",
+                "text": "renewable",
+                "isIncorrect": false,
+                "answer": "renewable",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " energy "
+            },
+            {
+                "type": "word",
+                "text": "target",
+                "isIncorrect": false,
+                "answer": "target",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". Melbourne-based "
+            },
+            {
+                "type": "word",
+                "text": "analyst",
+                "isIncorrect": false,
+                "answer": "analyst",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " Carbon Market Economics says the Governments 20 percent target will not only cut pollution, it'll help the economy as well."
+            }
+        ],
+        "answer": [
+            "complicated",
+            "planet",
+            "renewable",
+            "target",
+            "analyst"
+        ],
+        "userAnswer": []
+    },
+    {
+        "id": "16",
+        "title": "Article",
+        "type": "highlight_incorrect_words",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "16.mp3",
+            "transcript": "What's an article? I was asking myself this very question in the post office yesterday, standing in line waiting to sign for, as it so happens, an article. A postal article. Not the postal article. Now before we get ahead of ourselves, an article in English is a word that precedes a noun, and simply indicates specificity. This sounds quite complicated, and to be honest, it's quite complicated to say without spraying everyone within 15 feet, but the concept's quite simple. The definite article in English is the word \"the\", and indicates a specific thing or type; for example, the train is an hour late. By contrast, the indefinite article in English is any of the words \"a\", \"an\" or \"some\", and the indefinite article indicates a non-specific thing; for example, would you please pass me an apple. We always precede a word with \"a\" if it doesn't start with a vowel sound. For example, take a hike; I'm spending a Weekend at Burnie's; or there's a Knight in Shining Armour. Similarly, we precede words with the indefinite article \"an\" if they do start with a vowel sound, for example, an ostrich, an enormous mess or an Occupational Health and Safety Policy."
+        },
+        "content": [
+            {
+                "type": "text",
+                "text": "What's an article? I was asking myself this very question in the post office "
+            },
+            {
+                "type": "word",
+                "text": "recently",
+                "isIncorrect": true,
+                "answer": "yesterday",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ", standing in line waiting to sign for, as it so happens, an article. A postal article. Not the postal article. Now before we get ahead of ourselves, an article in English is a "
+            },
+            {
+                "type": "word",
+                "text": "word",
+                "isIncorrect": false,
+                "answer": "word",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " that precedes a noun, and simply indicates specificity. This sounds quite complicated, and to be honest, it's quite complicated to say without spraying everyone within 15 feet, but the concept's quite "
+            },
+            {
+                "type": "word",
+                "text": "straightforward",
+                "isIncorrect": true,
+                "answer": "simple",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ". The definite article in English is the word \"the\", and indicates a specific thing or type; for example, the train is an hour late. By "
+            },
+            {
+                "type": "word",
+                "text": "contrast",
+                "isIncorrect": false,
+                "answer": "contrast",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": ", the indefinite article in English is any of the words \"a\", \"an\" or \"some\", and the indefinite article indicates a non-specific thing; for example, would you please pass me an apple. We always "
+            },
+            {
+                "type": "word",
+                "text": "precede",
+                "isIncorrect": false,
+                "answer": "precede",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " a word with \"a\" if it doesn't start with a vowel sound. For example, take a hike; I'm spending a Weekend at Burnie's; or there's a Knight in Shining Armour. Similarly, we precede words with the indefinite article \"an\" if they do start with a vowel sound, for example, an ostrich, an "
+            },
+            {
+                "type": "word",
+                "text": "enormous",
+                "isIncorrect": false,
+                "answer": "enormous",
+                "userSelected": false
+            },
+            {
+                "type": "text",
+                "text": " mess or an Occupational Health and Safety Policy."
+            }
+        ],
+        "answer": [
+            "word",
+            "contrast",
+            "precede",
+            "enormous"
+        ],
+        "userAnswer": []
+    }
+]

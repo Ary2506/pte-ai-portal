@@ -1,0 +1,1440 @@
+[
+    {
+        "id": "93",
+        "title": "Sugar and Health",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "93.mp3",
+            "transcript": "In Sri Lanka, as elsewhere, excess sugar, salt and fat in food and beverages are the primary culprits for the rise in the number of people that are overweight or obese. By ensuring clear and accurate nutritional information is provided on food and drink packaging, and by giving each product a green, orange or red label according to its sugar content, Sri Lanka's government is helping consumers understand risks and make healthier choices."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "In Sri Lanka, as elsewhere, excess "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "sugar",
+                "acceptedAnswers": [
+                    "sugar"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", salt and fat in food and beverages are the primary culprits for the rise in the number of people that are overweight or "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "obese",
+                "acceptedAnswers": [
+                    "obese"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". By ensuring clear and accurate "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "nutritional",
+                "acceptedAnswers": [
+                    "nutritional"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " information is provided on food and drink packaging, and by giving each product a green, orange or red label according to its sugar content, Sri Lanka's government is helping "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "consumers",
+                "acceptedAnswers": [
+                    "consumers"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " understand risks and make healthier choices."
+            }
+        ]
+    },
+    {
+        "id": "362",
+        "title": "Generosity and Human Behavior",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "362.mp3",
+            "transcript": "Are human beings inherently generous or selfish? A new study finds that when people have to make the choice instantly, their first impulse is cooperation—which indicates that generosity is innate. Only when they have more time to consider their choice do they behave more selfishly. The research is in the journal Nature. In the study, researchers ran several tests in which each participant in a small group received money, and then had to decide how much to invest in a shared group fund. The more time people had to choose how much to donate, the less they gave. Subjects told they had to make a decision within 10 seconds even gave more than others who were told they had to wait the same 10 seconds before deciding. Because snap decisions are based on intuition, the researchers concluded that generosity is the intuitive human response. But given time, we can reason our way to a more selfish decision. This intuitive cooperation might be either genetically hardwired, or a cultural construct. Either way, next time I run a fundraiser, I'm bringing a stopwatch."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Are human beings inherently "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "generous",
+                "acceptedAnswers": [
+                    "generous"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " or selfish? A new study finds that when people have to make the choice instantly, their first impulse is "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "cooperation",
+                "acceptedAnswers": [
+                    "cooperation"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "—which indicates that generosity is innate. Only when they have more time to consider their choice do they behave more selfishly. The research is in the journal Nature. In the study, researchers ran several tests in which each "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "participant",
+                "acceptedAnswers": [
+                    "participant"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in a small group received money, and then had to decide how much to "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "invest",
+                "acceptedAnswers": [
+                    "invest"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in a shared group fund. The more time people had to choose how much to donate, the less they gave. Subjects told they had to make a decision within 10 seconds even gave more than others who were told they had to wait the same 10 seconds before deciding. Because snap decisions are based on intuition, the researchers "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "concluded",
+                "acceptedAnswers": [
+                    "concluded"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that generosity is the intuitive human response. But given time, we can reason our way to a more selfish decision. This intuitive cooperation might be either genetically hardwired, or a "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "cultural",
+                "acceptedAnswers": [
+                    "cultural"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " construct. Either way, next time I run a fundraiser, I'm "
+            },
+            {
+                "type": "blank",
+                "id": "7",
+                "answer": "bringing",
+                "acceptedAnswers": [
+                    "bringing"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " a stopwatch."
+            }
+        ]
+    },
+    {
+        "id": "359",
+        "title": "Children and Social Interaction",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "359.mp3",
+            "transcript": "Some children are naturally more sociable and enjoy interacting with others from a young age. They often make friends easily in social settings. However, a few of them might be diagnosed with social anxiety as they grow older. This condition can make it harder for them to connect with people. Early support can help them overcome these challenges. Parents and teachers play a major role in this process."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Some children are naturally more "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "sociable",
+                "acceptedAnswers": [
+                    "sociable"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and enjoy interacting with others from a young age. They often make friends easily in social settings. However, a few of them might be "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "diagnosed",
+                "acceptedAnswers": [
+                    "diagnosed"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " with social anxiety as they grow older. This condition can make it harder for them to connect with people. Early support can help them overcome these challenges. Parents and teachers play a major role in this process."
+            }
+        ]
+    },
+    {
+        "id": "358",
+        "title": "Puffin Behavior and Conservation",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "358.mp3",
+            "transcript": "The puffin is a small seabird known for its colorful beak and distinctive behaviors. It lives in colonies on rocky cliffs near the ocean. This bird allows other species to share its habitat without much conflict. However, it must be cautious of predators like seagulls that might steal its food. The puffins collaborate with each other to protect their nests from danger. A corporate organization recently started a campaign to keep these birds safe by raising awareness. They introduced a new concept of wildlife protection to the public. This led to increased consumption of eco-friendly products to support the cause."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The puffin is a small seabird known for its colorful beak and "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "distinctive",
+                "acceptedAnswers": [
+                    "distinctive"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " behaviors. It lives in colonies on rocky cliffs near the ocean. This bird allows other species to share its habitat without much "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "conflict",
+                "acceptedAnswers": [
+                    "conflict"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". However, it must be cautious of "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "predators",
+                "acceptedAnswers": [
+                    "predators"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " like seagulls that might steal its food. The puffins collaborate with each other to protect their nests from danger. A corporate organization recently started a campaign to keep these birds safe by raising awareness. They introduced a new "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "concept",
+                "acceptedAnswers": [
+                    "concept"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of wildlife protection to the public. This led to increased consumption of eco-friendly products to support the cause."
+            }
+        ]
+    },
+    {
+        "id": "357",
+        "title": "Driving License Test Preparation",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "357.mp3",
+            "transcript": "The driving school is always crowded during the summer as many students sign up for lessons. They want to get their licenses before school starts. The instructor is responsible for teaching them how to drive safely. They are asking each student to demonstrate their ability to handle the car properly. This ensures everyone is ready for the road. Passing the test is a big achievement for new drivers."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The driving school is always "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "crowded",
+                "acceptedAnswers": [
+                    "crowded"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " during the summer as many students sign up for lessons. They want to get their licenses before school starts. The "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "instructor",
+                "acceptedAnswers": [
+                    "instructor"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " is responsible for teaching them how to drive safely. They are "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "asking",
+                "acceptedAnswers": [
+                    "asking"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " each student to demonstrate their "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "ability",
+                "acceptedAnswers": [
+                    "ability"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to handle the car properly. This ensures everyone is ready for the road. Passing the test is a big achievement for new drivers."
+            }
+        ]
+    },
+    {
+        "id": "356",
+        "title": "Team Dynamics in Sports",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "356.mp3",
+            "transcript": "A strong sports team often has a strong culture that unites its players. This shared identity helps them work together effectively. The team’s cooperation during practices and games is key to their performance. Everyone supports each other to achieve their goals. It’s expected that they will win the championship this year due to their hard work. Fans are excited to see the outcomes."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "A strong sports team often has a strong "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "culture",
+                "acceptedAnswers": [
+                    "culture"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that unites its players. This shared identity helps them work together effectively. The team’s "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "cooperation",
+                "acceptedAnswers": [
+                    "cooperation"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " during practices and games is key to their performance. Everyone supports each other to achieve their goals. It’s "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "expected",
+                "acceptedAnswers": [
+                    "expected"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that they will win the championship this year due to their hard work. Fans are excited to see the outcomes."
+            }
+        ]
+    },
+    {
+        "id": "355",
+        "title": "Active Careers in Infrastructure",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "355.mp3",
+            "transcript": "People who enjoy an energetic lifestyle often choose jobs that keep them on the move. They prefer roles that involve physical activity over sitting at a desk. These exciting jobs, like working as a tour guide, allow them to explore new places. Many of these roles also support the infrastructure of a city, such as transportation or tourism. Choosing such a career can be rewarding for those who love adventure. It keeps them engaged and motivated."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "People who enjoy an "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "energetic",
+                "acceptedAnswers": [
+                    "energetic"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " lifestyle often choose jobs that keep them on the move. They prefer roles that involve physical activity over sitting at a desk. These "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "exciting",
+                "acceptedAnswers": [
+                    "exciting"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " jobs, like working as a tour guide, allow them to explore new places. Many of these roles also support the "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "infrastructure",
+                "acceptedAnswers": [
+                    "infrastructure"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of a city, such as transportation or tourism. Choosing such a "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "career",
+                "acceptedAnswers": [
+                    "career"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " can be rewarding for those who love adventure. It keeps them engaged and motivated."
+            }
+        ]
+    },
+    {
+        "id": "354",
+        "title": "Exploring Ocean Structures",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "354.mp3",
+            "transcript": "Scientists are studying the ocean to learn more about its unseen ecosystems. They use advanced technology to explore underwater environments. In shallow areas, the water’s depth is easier to measure and study. These regions often reveal remarkable marine life. The infrastructure built on the ocean floor helps support research and conservation efforts. This work is crucial for protecting marine biodiversity."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Scientists are studying the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "ocean",
+                "acceptedAnswers": [
+                    "ocean"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to learn more about its unseen ecosystems. They use advanced technology to explore underwater environments. In "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "shallow",
+                "acceptedAnswers": [
+                    "shallow"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " areas, the water’s "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "depth",
+                "acceptedAnswers": [
+                    "depth"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " is easier to measure and study. These regions often reveal remarkable marine life. The "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "infrastructure",
+                "acceptedAnswers": [
+                    "infrastructure"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " built on the ocean "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "floor",
+                "acceptedAnswers": [
+                    "floor"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " helps support research and conservation efforts. This work is crucial for protecting marine biodiversity."
+            }
+        ]
+    },
+    {
+        "id": "353",
+        "title": "Art Gallery Exhibition",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "353.mp3",
+            "transcript": "At the art gallery, every painting on display captured the attention of visitors. The artist used vivid techniques to create dramatic effects. One piece featured a huge portrait of a person’s face that filled the entire canvas. The lighting in the artwork created a dramatic shadow across the image. This made the painting look more realistic and emotional. Many people admired the creativity."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "At the art gallery, "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "every",
+                "acceptedAnswers": [
+                    "every"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " painting on display captured the attention of visitors. The artist used vivid techniques to create dramatic effects. One piece featured a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "huge",
+                "acceptedAnswers": [
+                    "huge"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " portrait of a person’s "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "face",
+                "acceptedAnswers": [
+                    "face"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that filled the entire canvas. The lighting in the artwork created a dramatic "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "shadow",
+                "acceptedAnswers": [
+                    "shadow"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " across the image. This made the painting look more realistic and emotional. Many people admired the creativity."
+            }
+        ]
+    },
+    {
+        "id": "351",
+        "title": "Learning Statistics in Math Club",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "351.mp3",
+            "transcript": "Students in the math club are very active when it comes to solving difficult problems. They enjoy working on projects that involve data analysis. Their teacher makes the subject completely engaging by using real-world examples. One topic they find interesting is statistics, which helps them understand trends and patterns. They use this knowledge to predict outcomes in various scenarios. It’s a useful skill for their future studies."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Students in the math club are very "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "active",
+                "acceptedAnswers": [
+                    "active"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " when it comes to solving difficult problems. They enjoy working on projects that involve data analysis. Their teacher makes the subject "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "completely",
+                "acceptedAnswers": [
+                    "completely"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " engaging by using real-world examples. One topic they find "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "interesting",
+                "acceptedAnswers": [
+                    "interesting"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " is "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "statistics",
+                "acceptedAnswers": [
+                    "statistics"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", which helps them understand trends and patterns. They use this knowledge to predict outcomes in various scenarios. It’s a useful skill for their future studies."
+            }
+        ]
+    },
+    {
+        "id": "72",
+        "title": "Integrated Ticketing",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "72.mp3",
+            "transcript": "Back in 2004 we integrated ticketing in South East Queensland, so we have introduced a paper ticket that allowed you to travel across all the three modes in South East Queensland, so bus, train and ferry and the next stage of integrated ticketing is the introduction of a Smart Card, and the Smart Card will enable people to store value so to put value on the card, and then to use the card for traveling around the system."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Back in 2004 we integrated ticketing in South East Queensland, so we have "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "introduced",
+                "acceptedAnswers": [
+                    "introduced"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " a paper ticket that allowed you to travel across all the three "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "modes",
+                "acceptedAnswers": [
+                    "modes"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in South East Queensland, so bus, train and "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "ferry",
+                "acceptedAnswers": [
+                    "ferry"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and the next stage of integrated ticketing is the introduction of a Smart Card, and the Smart Card will enable people to "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "store",
+                "acceptedAnswers": [
+                    "store"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " value so to put value on the card, and then to use the card for "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "traveling",
+                "acceptedAnswers": [
+                    "traveling"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " around the system."
+            }
+        ]
+    },
+    {
+        "id": "79",
+        "title": "Dropping Out",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "79.mp3",
+            "transcript": "Most of U.S. high school students say they get bored in class every day, and more than one out of five has considered dropping out, according to a survey published on Wednesday. The survey of 81,000 students in twenty-six states found two-thirds of high school students complain of boredom, usually because the subject matter was irrelevant or their teachers didn't seem to care about them."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Most of U.S. high school students say they get "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "bored",
+                "acceptedAnswers": [
+                    "bored"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in class every day, and more than one out of "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "five",
+                "acceptedAnswers": [
+                    "five"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " has considered dropping out, according to a survey published on Wednesday. The survey of 81,000 students in "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "twenty-six",
+                "acceptedAnswers": [
+                    "twenty-six"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " states found two-thirds of high school students complain of boredom, usually because the subject matter was "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "irrelevant",
+                "acceptedAnswers": [
+                    "irrelevant"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " or their teachers didn't seem to care about them."
+            }
+        ]
+    },
+    {
+        "id": "86",
+        "title": "Shakespeare",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "86.mp3",
+            "transcript": "For all his fame and celebration, William Shakespeare remains a mysterious figure with regards to personal history. There are just two primary sources for information on the Bard: his works, and different legal and church documents that have survived from Elizabethan times. Of course, there are many gaps in this body of information, which tells us little about Shakespeare the man."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "For all his fame and celebration, William Shakespeare remains a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "mysterious",
+                "acceptedAnswers": [
+                    "mysterious"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " figure with regards to personal history. There are just two primary "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "sources",
+                "acceptedAnswers": [
+                    "sources"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for information on the Bard: his works, and different legal and "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "church",
+                "acceptedAnswers": [
+                    "church"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " documents that have survived from Elizabethan times. Of course, there are many "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "gaps",
+                "acceptedAnswers": [
+                    "gaps"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in this body of information, which tells us little about Shakespeare the man."
+            }
+        ]
+    },
+    {
+        "id": "87",
+        "title": "Warmer Ocean",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "87.mp3",
+            "transcript": "The ocean has been getting bluer, according to a research published in the journal Nature. But that's not really good news for the planet. It means that the plants that give the ocean its green tint aren't doing well. Researchers say that's because the ocean has been getting warmer."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The ocean has been getting bluer, according to a research published in the journal Nature. But that's not really good news for the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "planet",
+                "acceptedAnswers": [
+                    "planet"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". It means that the plants that give the ocean its "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "green",
+                "acceptedAnswers": [
+                    "green"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " tint aren't doing well. Researchers say that's because the ocean has been getting "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "warmer",
+                "acceptedAnswers": [
+                    "warmer"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "."
+            }
+        ]
+    },
+    {
+        "id": "89",
+        "title": "Laurence Stephen Lowry",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "89.mp3",
+            "transcript": "Laurence Stephen Lowry RBS RA was an English artist. Many of his drawings and paintings depict Pend Lebury, Lancashire, where he lived and worked for more than 40 years, and also Salford and its surrounding areas. Lowry is famous for painting scenes of life in the industrial districts of North West England in the mid-20th century. He developed a distinctive style of painting and is best known for his city landscapes peopled with human figures often referred to as matchstick man. He painted mysterious unpopulated landscapes, brooding portraits and the unpublished \"marionette\" works, which were only found after his death."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Laurence Stephen Lowry RBS RA was an English artist. Many of his drawings and paintings depict Pend Lebury, Lancashire, where he lived and worked for more than 40 years, and also Salford and its surrounding areas. Lowry is famous for painting scenes of life in the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "industrial",
+                "acceptedAnswers": [
+                    "industrial"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " districts of North West England in the mid-20th century. He developed a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "distinctive",
+                "acceptedAnswers": [
+                    "distinctive"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " style of painting and is best known for his "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "city",
+                "acceptedAnswers": [
+                    "city"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " landscapes peopled with human figures often referred to as "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "matchstick",
+                "acceptedAnswers": [
+                    "matchstick"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " man. He painted mysterious unpopulated landscapes, brooding "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "portraits",
+                "acceptedAnswers": [
+                    "portraits"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and the unpublished \"marionette\" works, which were only found after his death."
+            }
+        ]
+    },
+    {
+        "id": "106",
+        "title": "Media",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "106.mp3",
+            "transcript": "I think its quite important for young people not to feel restricted in their choices and also to be aware of the choices that are available to them and obviously the media has an incredibly important role to play in that. I think we tend to talk about science as this big kind of monolith but of course actually it's this wonderful multifaceted thing. You know, there's almost something for everybody there. And there are so many different aspects of it. You know, somebody that's going to be attracted to working in biology might be a very different person from somebody who's attracted to engineering. I suppose it's about knowing the breadth of opportunities that are out there and so anything that universities and broadcast media can do to make sure that those opportunities are visible."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "I think its quite important for young people not to feel "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "restricted",
+                "acceptedAnswers": [
+                    "restricted"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in their choices and also to be aware of the choices that are available to them and obviously the media has an "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "incredibly",
+                "acceptedAnswers": [
+                    "incredibly"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " important role to play in that. I think we tend to talk about science as this big kind of monolith but of course actually it's this wonderful multifaceted thing. You know, there's almost something for everybody there. And there are so many different "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "aspects",
+                "acceptedAnswers": [
+                    "aspects"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of it. You know, somebody that's going to be attracted to working in "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "biology",
+                "acceptedAnswers": [
+                    "biology"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " might be a very different person from somebody who's attracted to engineering. I suppose it's about knowing the breadth of opportunities that are out there and so anything that universities and broadcast media can do to make sure that those opportunities are "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "visible",
+                "acceptedAnswers": [
+                    "visible"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "."
+            }
+        ]
+    },
+    {
+        "id": "125",
+        "title": "Cars in America",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "125.mp3",
+            "transcript": "There are around 250 million cars in America, 250 million cars in the country with just over 300 million people. And most of those vehicles, of course, are gas powered. This poses a huge challenge given the limited supplies of oil and the growing urgency of the global warming crisis. But there is good news, according to our speakers today. And that is we have the know-how and the technology to build sleek, fast automobiles that don't use gasoline. These vehicles of tomorrow are powered by hydrogen, electricity, bio-fuels, and digital technology. And they already exist. So what's stopping us from putting them on the roads? Our speakers today will help answer that."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "There are around 250 million cars in America, 250 million cars in the country with just over 300 million people. And most of those vehicles, of course, are gas "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "powered",
+                "acceptedAnswers": [
+                    "powered"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". This poses a huge challenge given the limited supplies of oil and the growing "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "urgency",
+                "acceptedAnswers": [
+                    "urgency"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the global warming crisis. But there is good news, according to our speakers today. And that is we have the know-how and the technology to build "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "sleek",
+                "acceptedAnswers": [
+                    "sleek"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", fast automobiles that don't use gasoline. These vehicles of tomorrow are powered by "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "hydrogen",
+                "acceptedAnswers": [
+                    "hydrogen"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", electricity, bio-fuels, and digital technology. And they already exist. So what's stopping us from putting them on the roads? Our speakers today will help answer that."
+            }
+        ]
+    },
+    {
+        "id": "252",
+        "title": "Artist Competition",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "252.mp3",
+            "transcript": "The artist competition has no age limitation, allowing participants of all generations to apply. However, applicants must have a graduate level of education and possess experience in sculpture exhibitions. In recent years, the competition has shifted its focus towards real state, emphasizing artworks that reflect realistic themes and contemporary social issues. Judges strongly value pieces that showcase technical excellence while incorporating innovative concepts. This event is widely recognized as a based profession competition, meaning that only artists with a professional background in fine arts are eligible to participate. Winners often gain considerable recognition in the art community and receive opportunities for exhibitions and collaborations."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The artist competition has no age limitation, allowing participants of all generations to apply. However, applicants must have a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "graduate",
+                "acceptedAnswers": [
+                    "graduate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " level of education and possess experience in "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "sculpture",
+                "acceptedAnswers": [
+                    "sculpture"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " exhibitions. In recent years, the competition has shifted its focus towards "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "real",
+                "acceptedAnswers": [
+                    "real"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " state, emphasizing artworks that reflect realistic themes and contemporary social issues. Judges strongly value pieces that showcase technical excellence while "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "incorporating",
+                "acceptedAnswers": [
+                    "incorporating"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " innovative concepts. This event is widely recognized as a based "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "profession",
+                "acceptedAnswers": [
+                    "profession"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " competition, meaning that only artists with a professional background in fine arts are eligible to participate. Winners often gain considerable recognition in the art community and receive opportunities for exhibitions and collaborations."
+            }
+        ]
+    },
+    {
+        "id": "300",
+        "title": "Javelin Competition",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "300.mp3",
+            "transcript": "The biggest event at the sports gathering was the javelin competition. Athletes from all over the country came to participate. Many people were excited to show their skills in throwing the javelin as far as possible. They were organized into different teams to compete against each other. The biggest team, which had the most experienced members, took the lead. They started the competition with a remarkable throw."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "biggest",
+                "acceptedAnswers": [
+                    "biggest"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " event at the sports gathering was the javelin competition. Athletes from all over the country came to participate. Many "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "people",
+                "acceptedAnswers": [
+                    "people"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " were excited to show their skills in "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "throwing",
+                "acceptedAnswers": [
+                    "throwing"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " the javelin as far as possible. They were organized into different "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "teams",
+                "acceptedAnswers": [
+                    "teams"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to compete against each other. The biggest team, which had the most experienced members, took the lead. They "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "started",
+                "acceptedAnswers": [
+                    "started"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " the competition with a remarkable throw."
+            }
+        ]
+    },
+    {
+        "id": "301",
+        "title": "Local Farmers",
+        "type": "fill_in_the_blanks",
+        "subtype": "corep",
+        "audio": {
+            "src": "301.mp3",
+            "transcript": "Local farmers frequently experiment with new methods to grow their crops more effectively. They want to improve their harvests each season. Different styles of farming, such as organic or vertical farming, are becoming popular. Many farms now offer subscription services to deliver their produce directly to customers. They pack fresh vegetables into a box for families to enjoy weekly. This ensures people have access to nutritious food."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Local farmers "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "frequently",
+                "acceptedAnswers": [
+                    "frequently"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " experiment with new methods to grow their crops more effectively. They want to improve their harvests each season. Different "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "styles",
+                "acceptedAnswers": [
+                    "styles"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of farming, such as organic or vertical farming, are becoming popular. Many "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "farms",
+                "acceptedAnswers": [
+                    "farms"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " now offer subscription services to deliver their produce directly to customers. They pack "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "fresh",
+                "acceptedAnswers": [
+                    "fresh"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " vegetables into a "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "box",
+                "acceptedAnswers": [
+                    "box"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for families to enjoy weekly. This ensures people have access to nutritious food."
+            }
+        ]
+    }
+]

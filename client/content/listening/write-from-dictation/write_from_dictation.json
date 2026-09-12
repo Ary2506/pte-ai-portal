@@ -1,0 +1,362 @@
+[
+    {
+        "id": "3942",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "3942.mp3",
+            "transcript": "Her design includes the best aspects of traditional architecture."
+        },
+        "answer": "Her design incorporates the best aspects of vernacular architecture.",
+        "userAnswer": ""
+    },
+    {
+        "id": "3305",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "3305.mp3",
+            "transcript": "Your boss wants you to complete this report by Monday."
+        },
+        "answer": "Your boss wants you to finish this report by Monday.",
+        "userAnswer": ""
+    },
+    {
+        "id": "429",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "429.mp3",
+            "transcript": "All students are permitted to take the notes from the library."
+        },
+        "answer": "All students are allowed to take the notes from the library.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1386",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1386.mp3",
+            "transcript": "At this point experts are unable to analyze the effects of the new policy."
+        },
+        "answer": "At this time experts are not able to analyze the effects of the new policy.",
+        "userAnswer": ""
+    },
+    {
+        "id": "3299",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "3299.mp3",
+            "transcript": "The lecture will discuss the influence of technology on music."
+        },
+        "answer": "The lecture will deal with the influence of technology on music.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1127",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1127.mp3",
+            "transcript": "A university degree is necessary to enter many professions."
+        },
+        "answer": "A university degree is a requirement to enter many professions.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1184",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1184.mp3",
+            "transcript": "You should complete the job application form in order to get selected for the manager's position."
+        },
+        "answer": "You should complete the job application form in order to get called for the manager's position.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1455",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1455.mp3",
+            "transcript": "You must wear a safety hat on the construction site."
+        },
+        "answer": "You must wear a hard hat on the construction site.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1429",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1429.mp3",
+            "transcript": "When you attend a job interview, punctuality is very important."
+        },
+        "answer": "When you attend a job interview, punctuality is the key.",
+        "userAnswer": ""
+    },
+    {
+        "id": "448",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "448.mp3",
+            "transcript": "You are trained to become a specialized journalist."
+        },
+        "answer": "You are trained to be a specialized journalist.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1418",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1418.mp3",
+            "transcript": "Stock predictions can be quite capricious even for professionals."
+        },
+        "answer": "Stock predictions can be very capricious even for professionals.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1225",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1225.mp3",
+            "transcript": "There was a lot of traffic this afternoon."
+        },
+        "answer": "There was a lot of traffic this morning.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1208",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1208.mp3",
+            "transcript": "The new classrooms will be put into operation next month."
+        },
+        "answer": "The new classrooms will be put into use next month.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1182",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1182.mp3",
+            "transcript": "You need to pass the written test for the driver's license."
+        },
+        "answer": "You need to pass the written exam for the driver's license.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1026",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "core",
+        "audio": {
+            "src": "1026.mp3",
+            "transcript": "Football is played throughout the year at the university."
+        },
+        "answer": "Football is played all year at the university.",
+        "userAnswer": ""
+    },
+    {
+        "id": "427",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "427.mp3",
+            "transcript": "The nation gained prosperity by opening its ports for commerce."
+        },
+        "answer": "The nation achieved prosperity by opening its ports for trade.",
+        "userAnswer": ""
+    },
+    {
+        "id": "539",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "539.mp3",
+            "transcript": "Traffic is the primary cause of air pollution in many cities."
+        },
+        "answer": "Traffic is the main cause of air pollution in many cities.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1426",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1426.mp3",
+            "transcript": "The restaurants are down the corridor and to the right."
+        },
+        "answer": "The restaurants are down the hall and to the right.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1431",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1431.mp3",
+            "transcript": "You can get your coffee and tea in the cafeteria."
+        },
+        "answer": "You can get your coffee and tea in the lounge.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1469",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1469.mp3",
+            "transcript": "In my view, this car should be repaired soon."
+        },
+        "answer": "In my opinion, this car should be repaired soon.",
+        "userAnswer": ""
+    },
+    {
+        "id": "43",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "43.mp3",
+            "transcript": "All of the assignments must be submitted personally to the faculty office."
+        },
+        "answer": "All of the assignments must be submitted in person to the faculty office.",
+        "userAnswer": ""
+    },
+    {
+        "id": "274",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "274.mp3",
+            "transcript": "Sales figures for last year were higher than expected."
+        },
+        "answer": "Sales figures for last year were better than expected.",
+        "userAnswer": ""
+    },
+    {
+        "id": "835",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "835.mp3",
+            "transcript": "We can't consider an increase in our costs at this stage."
+        },
+        "answer": "We can't consider an increase in our price at this stage.",
+        "userAnswer": ""
+    },
+    {
+        "id": "978",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "978.mp3",
+            "transcript": "The bus to London will leave fifteen minutes later than planned."
+        },
+        "answer": "The bus to London will leave ten minutes later than planned.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1148",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1148.mp3",
+            "transcript": "Understanding visual media has never been more difficult."
+        },
+        "answer": "Understanding visual media has never been more challenging.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1210",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1210.mp3",
+            "transcript": "Online classes allow students to work at their own pace."
+        },
+        "answer": "Online courses allow students to work at their own pace.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1244",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1244.mp3",
+            "transcript": "Mechanical engineering first became important during the Industrial Revolution."
+        },
+        "answer": "Mechanical engineering first became prominent during the Industrial Revolution.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1249",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1249.mp3",
+            "transcript": "At that time, few people traveled from the town to the village."
+        },
+        "answer": "At that time, few people moved from the town to the village.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1271",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1271.mp3",
+            "transcript": "Rail transport is becoming increasingly popular."
+        },
+        "answer": "Rail transport is becoming more and more popular.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1277",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1277.mp3",
+            "transcript": "Before architecture was created, humans lived in underground houses."
+        },
+        "answer": "Before architecture was invented, humans lived in underground houses.",
+        "userAnswer": ""
+    }
+]

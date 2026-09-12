@@ -1,0 +1,31 @@
+{
+    "id": "72",
+    "title": "Flowers",
+    "subtype": "core",
+    "type": "select_missing_word",
+    "audio": {
+        "src": "72.mp3",
+        "transcript": "Earlier this year, I was driving through the countryside with a girl of six, and she pointed out some flowers by the wayside. I asked her what she thought flowers were for. She gave a very thoughtful answer. \"Two things,\" she said, \"to make the world pretty and to help the bees make honey for us.\" I thought that this was a very nice answer and I was very sorry to have to tell her that this wasn't ..."
+    },
+    "question": "At the end of the recording the lost word or group of words has been replaced by a beep. Select the correct option to complete the recording.",
+    "options": [
+        {
+            "id": "A",
+            "text": "wrong"
+        },
+        {
+            "id": "B",
+            "text": "true"
+        },
+        {
+            "id": "C",
+            "text": "worthy"
+        },
+        {
+            "id": "D",
+            "text": "changing"
+        }
+    ],
+    "answer": "B",
+    "userAnswer": ""
+}

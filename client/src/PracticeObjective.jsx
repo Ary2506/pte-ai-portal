@@ -1,6 +1,48 @@
-import { useEffect, useState, Fragment } from "react";
-import { CheckCircle2 } from "lucide-react";
+import React, { useEffect, useState, Fragment } from "react";
+import { CheckCircle2, FileText } from "lucide-react";
 import { api } from "./api.js";
+import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
+
+const LOCAL_SUMMARIZE_SPOKEN_TEXT = Array.isArray(summarizeSpokenTextContent) ? summarizeSpokenTextContent : [];
+
+function getLocalTranscript(question) {
+  if (!question) return "";
+  if (question.transcript) return question.transcript;
+  const titleMatch = LOCAL_SUMMARIZE_SPOKEN_TEXT.find(item => item.title === question.title || String(item.id) === String(question._id));
+  return titleMatch?.transcript || "";
+}
+
+function getLocalAudioUrl(question) {
+  if (question?.audioUrl) return question.audioUrl;
+  const match = LOCAL_SUMMARIZE_SPOKEN_TEXT.find(item => item.title === question?.title || String(item.id) === String(question?._id));
+  if (!match?.audio?.src) return null;
+  return new URL(`../content/listening/summarize-spoken-text/${match.audio.src}`, import.meta.url).href;
+}
+
+function TranscriptModal({ title, text, onClose }) {
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label="Question transcript" onClick={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <h3>{title}</h3>
+        <button className="icon-btn" onClick={onClose} aria-label="Close"><span aria-hidden="true">×</span></button>
+      </div>
+      <div className="transcript-panel-content">
+        <p>{text}</p>
+      </div>
+      <div className="modal-actions" style={{ justifyContent: "flex-end" }}>
+        <button className="primary" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  </div>;
+}
 
 export function Result({ result, onRetry, retrying }) {
   if (result.evaluationStatus === "FAILED") {
@@ -269,6 +311,9 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
+  const transcriptText = getLocalTranscript(question);
+  const audioUrl = getLocalAudioUrl(question);
 
   useEffect(() => {
     // mcq-single, fill-blanks, and select-missing-word are all mechanically the same "pick one
@@ -323,7 +368,11 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     <div className="task-meta"><span className="chip">Listening</span><span>Audio practice</span></div>
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
-    {question.audioUrl && <audio className="audio" controls src={question.audioUrl} />}
+    {audioUrl && <audio className="audio" controls src={audioUrl} />}
+    {transcriptText && <button type="button" className="secondary" onClick={() => setShowTranscript(true)} style={{ marginTop: 12 }}>
+      <FileText size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />
+      Transcript
+    </button>}
     {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
         the audio — ReadingTask has always shown its passage; this was the one place Listening
         never did. Harmless no-op for every other listening type, which never sets a passage. */}
@@ -341,6 +390,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     {result
       ? (question.evaluationType === "objective" ? <ObjectiveResult result={result} /> : <Result result={result} onRetry={retry} retrying={retrying} />)
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Evaluating..." : "Submit"}</button>}
+    {showTranscript && transcriptText && <TranscriptModal title={question.title} text={transcriptText} onClose={() => setShowTranscript(false)} />}
   </div>;
 }
 

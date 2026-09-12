@@ -10,6 +10,7 @@ import { api, forceLogout } from "./api.js";
 import { Result, ObjectiveResult, ReadingTask, ListeningTask } from "./PracticeObjective.jsx";
 import { AdminQuestionsPanel } from "./AdminQuestions.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor, taskInfo } from "./practiceTaskRegistry.js";
+import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
 const SECTION_DESCRIPTIONS = {
@@ -804,6 +805,20 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
 // lets the student page through what was already fetched, entirely client-side. Each question is
 // still submitted individually through the exact same existing task components/API, so nothing
 // about scoring, ownership, or duplicate protection changes — this is navigation chrome only.
+const LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS = Array.isArray(summarizeSpokenTextContent)
+  ? summarizeSpokenTextContent.map(item => ({
+      _id: String(item.id),
+      section: "listening",
+      type: "summarize-spoken-text",
+      title: item.title,
+      prompt: "Listen to the short practice audio and summarize the main idea in your own words.",
+      audioUrl: new URL(`../content/listening/summarize-spoken-text/${item.audio.src}`, import.meta.url).href,
+      transcript: item.transcript,
+      difficulty: item.subtype === "core" ? "medium" : "easy",
+      evaluationType: "subjective"
+    }))
+  : [];
+
 function PracticeTask({section,label,slug}) {
   const [questions,setQuestions]=useState([]);
   const [idx,setIdx]=useState(null); // null = showing the question list, not yet inside a question
@@ -825,11 +840,14 @@ function PracticeTask({section,label,slug}) {
       api.questions(section, slug),
       Promise.resolve(api.history()).catch(()=>({submissions:[]}))
     ]).then(([qData, hData])=>{
-      const loadedQuestions = qData?.questions || [];
+      const localQuestions = section === "listening" && slug === "summarize-spoken-text"
+        ? LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS
+        : [];
+      const loadedQuestions = localQuestions.length ? localQuestions : (qData?.questions || []);
       const loadedSubmissions = hData?.submissions || [];
       const map = new Map();
       for (const s of loadedSubmissions) {
-        const qid = s.question?._id;
+        const qid = s.question?._id || s.questionId;
         if (qid && !map.has(qid)) map.set(qid, s);
       }
       setQuestions(loadedQuestions);

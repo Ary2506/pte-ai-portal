@@ -197,3 +197,25 @@ describe("Phase 20 — Write Email (writing) reuses WritingTask", () => {
     expect(screen.getByPlaceholderText("Type your answer here...")).toBeInTheDocument();
   });
 });
+
+describe("Summarize Spoken Text transcript flow", () => {
+  it("shows a transcript modal when the student clicks the transcript button", () => {
+    const q = {
+      _id: "sst1",
+      section: "listening",
+      type: "summarize-spoken-text",
+      title: "Summarize Spoken Text",
+      prompt: "Listen to the audio and summarize the main idea.",
+      audioUrl: "https://example.com/sst.mp3",
+      transcript: "This is the transcript for the spoken passage. It explains the key idea in detail.",
+      evaluationType: "subjective"
+    };
+
+    render(<ListeningTask question={q} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /transcript/i }));
+
+    expect(screen.getByText(/This is the transcript for the spoken passage/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
+  });
+});
