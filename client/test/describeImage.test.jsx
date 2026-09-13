@@ -79,6 +79,40 @@ describe("Describe Image — all 8 client-supplied questions, image/answer mappi
   );
 });
 
+describe("Previous/Next navigation keeps image, answer, and answer-visibility in sync", () => {
+  it("revealing an answer on one question never leaks into the next or previous question", async () => {
+    api.questions.mockResolvedValue({ questions: DESCRIBE_IMAGE_QUESTIONS });
+    renderAt("/speaking?type=describe-image", studentAuthUser());
+    fireEvent.click(await screen.findByText(DESCRIBE_IMAGE_QUESTIONS[0].title));
+
+    let img = await screen.findByRole("img", { name: DESCRIBE_IMAGE_QUESTIONS[0].title });
+    expect(img).toHaveAttribute("src", DESCRIBE_IMAGE_QUESTIONS[0].imageUrl);
+    fireEvent.click(screen.getByText("Show Answer"));
+    expect(await screen.findByText(DESCRIBE_IMAGE_QUESTIONS[0].answer)).toBeInTheDocument();
+
+    // Next: question 2's own image loads, its answer starts hidden (reset, not carried over),
+    // and question 1's answer text is gone from the page entirely.
+    fireEvent.click(screen.getByText("Next"));
+    img = await screen.findByRole("img", { name: DESCRIBE_IMAGE_QUESTIONS[1].title });
+    expect(img).toHaveAttribute("src", DESCRIBE_IMAGE_QUESTIONS[1].imageUrl);
+    expect(screen.getByText("Show Answer")).toBeInTheDocument();
+    expect(screen.queryByText("Hide Answer")).not.toBeInTheDocument();
+    expect(screen.queryByText(DESCRIBE_IMAGE_QUESTIONS[0].answer)).not.toBeInTheDocument();
+    expect(screen.queryByText(DESCRIBE_IMAGE_QUESTIONS[1].answer)).not.toBeInTheDocument();
+
+    // Reveal question 2's own answer, then step back to question 1 with Previous.
+    fireEvent.click(screen.getByText("Show Answer"));
+    expect(await screen.findByText(DESCRIBE_IMAGE_QUESTIONS[1].answer)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Previous"));
+    img = await screen.findByRole("img", { name: DESCRIBE_IMAGE_QUESTIONS[0].title });
+    expect(img).toHaveAttribute("src", DESCRIBE_IMAGE_QUESTIONS[0].imageUrl);
+    expect(screen.getByText("Show Answer")).toBeInTheDocument(); // reset again, not left as "Hide Answer"
+    expect(screen.queryByText(DESCRIBE_IMAGE_QUESTIONS[1].answer)).not.toBeInTheDocument();
+    expect(screen.queryByText(DESCRIBE_IMAGE_QUESTIONS[0].answer)).not.toBeInTheDocument();
+  });
+});
+
 describe("Show Answer stays specific to Describe Image", () => {
   it("does not appear for Repeat Sentence, an unrelated Speaking type", async () => {
     api.questions.mockResolvedValue({

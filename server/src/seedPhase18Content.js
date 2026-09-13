@@ -386,6 +386,33 @@ const clientReadAloud = [
 const PHASE23_TEXT_CANDIDATES = [...clientReadAloud];
 
 // ---------------------------------------------------------------------------
+// Client-supplied Describe Image batch (8) — images are real files the client provided, copied
+// verbatim into client/public/question-images/describe-image/ (served at
+// /question-images/describe-image/... by Vite's default publicDir); `answer` text is copied
+// byte-for-byte from the client's pte_describe_images.json, never reworded. Continues the title
+// numbering after the 5 pre-existing Describe Image questions above. Recorded here (not only as a
+// one-off DB insert) so these 8 questions are reproducible on any fresh database/environment,
+// exactly like every other batch in this file — the idempotent signature check in runSeed() below
+// means this is a no-op against a database that already has them (matched on
+// type+prompt+imageUrl+answer, not title), and a real insert on one that doesn't.
+// ---------------------------------------------------------------------------
+const describeImagePrompt2 = "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing.";
+const clientDescribeImage = [
+  ["Describe Image 6", "/question-images/describe-image/describe_image_01.jpg", "The following graph gives information about the average rainfall in inches in New York, Dallas, Phoenix, and Honolulu. As we can see from the graph, New York has the largest amount, 47.25 inches, next to Dallas, 33.70 inches. When we look at the other two cities, they are significantly smaller than the first two, with Phoenix amounting to 7.66 and Honolulu, 22.02. In conclusion, the average rainfalls in the cities are largely affected by geographic locations."],
+  ["Describe Image 7", "/question-images/describe-image/describe_image_02.jpg", "The following picture gives information about instant coffee. You can see from this graph that hot water is poured from a kettle into the cup. What's more, a packet of instant coffee is added into the cup. Then, the third step is that creamer from a sachet is poured into the cup. After that, sugar is added and a spoon stirs the coffee until everything dissolves evenly. Finally, the coffee is ready and is enjoyed by drinking. To sum up, this graph tells about how coffee is processed."],
+  ["Describe Image 8", "/question-images/describe-image/describe_image_03.jpg", "The following picture gives information about shopping in a stationery store. In the left half of the picture we can see a white woman in pink sweater with her daughter in the arms. The mother and the daughter look at each other with smiles in their faces. And the daughter holds a new bag in the hand. In the right half of the picture the daughter carries the bag on the back. Also, she holds six colorful pencils in the hands in front of the chest. To sum up, this picture tells about how the two shop for stationery."],
+  ["Describe Image 9", "/question-images/describe-image/describe_image_04.jpg", "The following picture gives information about the number of US households keeping pets. According to the graph, I notice cats are forty-two point seven million. The value of dogs is higher, about sixty-three point four million. From the bar chart, we can see the highest one is for total, eighty-four point nine million. The lowest number is for horses and saltwater fish, which is one point six million. In the bar chart there are also other items, including freshwater fish and birds. In conclusion, this bar chart tells about US households keeping pets."],
+  ["Describe Image 10", "/question-images/describe-image/describe_image_05.jpg", "The following picture gives information about the numbers of cat owners in different countries. According to the graph, I notice the percentage of Italy is forty percent. The value of the United States is higher, about forty-three percent. From the bar chart, we can see the highest one is in Russia, fifty-nine percent. The lowest number is South Korea, which is nine percent. In the bar chart there are also other countries, including Turkey and Germany. In conclusion, this bar chart tells about cat owners in countries."],
+  ["Describe Image 11", "/question-images/describe-image/describe_image_06.jpg", "This pie chart gives information about travel time to work in Ontario. From the picture we can see thirty to forty-four minutes, the value is twenty-one percent. In less than fifteen minutes the proportion is higher, which is twenty-four percent. The highest number is fifteen to twenty-nine minutes, around thirty-two percent. And the lowest percentage is in forty-five to fifty-nine minutes, just 10 percent. To sum up, the graph tells about travel time to work in Ontario."],
+  ["Describe Image 12", "/question-images/describe-image/describe_image_07.jpg", "This bar chart tells about how many tourists visit Canada each year. From the picture we can see, in 2022 the number is twelve point eight million. In 2023 the value is higher, eighteen point three million. And the greatest quantity is in 2019, which is twenty-two point one million. But the smallest one is in 2020, only three million, followed by that in 2021, just three point one million. To sum up, the picture tells only about the numbers of visitors to Canada."],
+  ["Describe Image 13", "/question-images/describe-image/describe_image_08.jpg", "This chart gives information about average weekly household spending on goods and services. From the picture we can see transportation, the value is nearly two hundred. In food and non-alcoholic beverages the number is higher, which is two hundred and forty. The highest point is in current housing costs, around two hundred and seventy. And the lowest one is in tobacco products, just twenty. Other items include personal care and alcoholic beverages. To sum up, the graph tells about weekly household spending."]
+].map(([title, imageUrl, answer]) => ({
+  section: "speaking", type: "describe-image", title, prompt: describeImagePrompt2, imageUrl, answer, difficulty: "medium"
+}));
+
+const CLIENT_DESCRIBE_IMAGE_CANDIDATES = [...clientDescribeImage];
+
+// ---------------------------------------------------------------------------
 // Phase 22 — original AI-generated audio (Higgsfield seed_audio) for two of the six
 // previously-audio-blocked types. Every clip was verified live before being used here: HTTP 200,
 // Content-Type audio/x-wav, a genuine RIFF/WAVE file signature, and a byte size consistent with
@@ -421,7 +448,8 @@ const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
 
 const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
-  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES
+  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
+  ...CLIENT_DESCRIBE_IMAGE_CANDIDATES
 ];
 
 // Guards against two overlapping calls *within this same process* racing each other's
@@ -470,5 +498,6 @@ async function runSeed(candidates) {
 
 export {
   PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE20_TEXT_CANDIDATES,
-  PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
+  PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, CLIENT_DESCRIBE_IMAGE_CANDIDATES,
+  PHASE18_ALL_CANDIDATES, signature
 };
