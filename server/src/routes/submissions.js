@@ -94,6 +94,12 @@ const retryLimiter = rateLimit({
   message: { message: "Too many retry attempts. Please wait a moment.", code: "RATE_LIMITED" }
 });
 
+const MONGO_OBJECT_ID = /^[a-fA-F0-9]{24}$/;
+function mongoIdOrNull(value) {
+  const id = value == null ? "" : String(value);
+  return MONGO_OBJECT_ID.test(id) ? id : null;
+}
+
 // If the submission is linked to a real Question, the question's own evaluationType decides
 // objective vs subjective scoring. Only a submission with no linked question (legacy/freeform)
 // falls back to a purely subjective AI/heuristic read — there is no correct answer on file to
@@ -120,8 +126,21 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     // Only these named fields are ever read from the request body — a client cannot influence
     // score, scoringMethod, evaluationStatus, or feedback no matter what it sends; those are
     // always computed below, server-side.
-    const { section, type, answer, transcript, durationSeconds, questionId, testSessionId } = req.body;
+    const { section, type, answer, transcript, durationSeconds } = req.body;
     if (!section || !type) return res.status(400).json({ message: "Section and type are required", code: "VALIDATION_ERROR" });
+
+    const rawQuestionId = req.body.questionId;
+    const rawSessionId = req.body.testSessionId;
+    const questionId = mongoIdOrNull(rawQuestionId);
+    const testSessionId = mongoIdOrNull(rawSessionId);
+    // Bundled listening content uses short string ids. findById() would CastError those.
+    // Mock sessions always send real ObjectIds — a malformed id there is still invalid.
+    if (rawSessionId && !testSessionId) {
+      return res.status(400).json({ message: "Invalid identifier in request", code: "VALIDATION_ERROR" });
+    }
+    if (rawQuestionId && !questionId && testSessionId) {
+      return res.status(400).json({ message: "Invalid identifier in request", code: "VALIDATION_ERROR" });
+    }
 
     let question = null;
     if (questionId) {

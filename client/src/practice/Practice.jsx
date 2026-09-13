@@ -104,11 +104,12 @@ function localListeningQuestion(item, folder, type) {
 
   if (type === "highlight-incorrect-words") {
     question.options = (item.content || []).filter(part => part.type === "word").map(part => part.text);
-    question.localIncorrectIndexes = (item.content || []).reduce((indexes, part, index) => {
+    question.localIncorrectIndexes = (item.content || []).reduce((indexes, part) => {
       if (part.type === "word" && part.isIncorrect) indexes.push(indexes.wordCount || 0);
       if (part.type === "word") indexes.wordCount = (indexes.wordCount || 0) + 1;
       return indexes;
     }, []).filter(value => typeof value === "number");
+    question.answer = question.localIncorrectIndexes;
   }
 
   return question;

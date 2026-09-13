@@ -4,6 +4,84 @@ import { api } from "./api.js";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
 const LOCAL_SUMMARIZE_SPOKEN_TEXT = Array.isArray(summarizeSpokenTextContent) ? summarizeSpokenTextContent : [];
+const MONGO_OBJECT_ID = /^[a-fA-F0-9]{24}$/;
+
+function isPersistedQuestionId(id) {
+  return typeof id === "string" && MONGO_OBJECT_ID.test(id);
+}
+
+function normalizeDictation(text) {
+  return (text || "").toLowerCase().trim().replace(/[.,!?;:"'`]/g, "").replace(/\s+/g, " ");
+}
+
+function localObjectiveResult(score, maxScore, correct, messages, correctAnswerText) {
+  return {
+    evaluationType: "objective",
+    evaluationStatus: "COMPLETED",
+    score,
+    maxScore,
+    feedback: {
+      correct,
+      feedback: messages,
+      correctAnswerText: correctAnswerText ?? null
+    }
+  };
+}
+
+// Bundled listening JSON uses short content ids (e.g. "3942"), not Mongo ObjectIds. Posting those
+// as questionId makes the API throw CastError ("Invalid identifier in request"). Score them here
+// with the same practice rules as the server, and only hit /api/submissions for real DB questions
+// or subjective tasks that need AI/heuristic evaluation.
+function scoreLocalListeningQuestion(question, { choice, multi, text }) {
+  const type = question.type;
+  if (type === "mcq-single" || type === "select-missing-word") {
+    const selected = Number(choice);
+    const correctIndex = Number(question.answer);
+    if (!Number.isInteger(correctIndex)) return null;
+    const correct = Number.isInteger(selected) && selected === correctIndex;
+    return localObjectiveResult(
+      correct ? 1 : 0,
+      1,
+      correct,
+      [correct ? "Correct." : "Not quite the right answer."],
+      question.options?.[correctIndex]
+    );
+  }
+  if (type === "highlight-incorrect-words") {
+    const correctIndexes = question.localIncorrectIndexes || (Array.isArray(question.answer) ? question.answer : []);
+    if (!correctIndexes.length) return null;
+    const selected = [...new Set((multi || []).map(Number))];
+    const correctSet = new Set(correctIndexes);
+    let right = 0, wrong = 0;
+    for (const s of selected) (correctSet.has(s) ? right++ : wrong++);
+    const maxScore = correctSet.size || 1;
+    const exact = right === correctSet.size && wrong === 0;
+    return localObjectiveResult(
+      Math.max(0, right - wrong),
+      maxScore,
+      exact,
+      [`You selected ${right} correct and ${wrong} incorrect option(s).`],
+      [...correctSet].map(i => question.options?.[i]).filter(Boolean).join(", ")
+    );
+  }
+  if (type === "write-dictation" && typeof question.answer === "string") {
+    const correctWords = normalizeDictation(question.answer).split(" ").filter(Boolean);
+    if (!correctWords.length) return null;
+    const submittedWords = normalizeDictation(text).split(" ").filter(Boolean);
+    const maxScore = Math.max(1, correctWords.length);
+    let matches = 0;
+    for (let i = 0; i < correctWords.length; i++) if (submittedWords[i] === correctWords[i]) matches++;
+    const exact = matches === correctWords.length && submittedWords.length === correctWords.length;
+    return localObjectiveResult(
+      matches,
+      maxScore,
+      exact,
+      [`${matches} of ${correctWords.length} words matched exactly (case and punctuation are ignored).`],
+      question.answer
+    );
+  }
+  return null;
+}
 
 function getLocalTranscript(question) {
   if (!question) return "";
@@ -355,16 +433,26 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     if (isLocalFillBlanks) {
       const answers = question.localBlankAnswers;
       const correctCount = answers.reduce((count, answer, index) => count + (blankValues[index]?.trim().toLowerCase() === answer.trim().toLowerCase() ? 1 : 0), 0);
-      const localResult = {
-        score: correctCount,
-        maxScore: answers.length,
-        feedback: [correctCount === answers.length ? "All blanks are correct." : `${correctCount} of ${answers.length} blanks are correct.`],
-        correct: correctCount === answers.length,
-        correctAnswerText: answers.join(", ")
-      };
+      const exact = correctCount === answers.length;
+      const localResult = localObjectiveResult(
+        correctCount,
+        answers.length,
+        exact,
+        [exact ? "All blanks are correct." : `${correctCount} of ${answers.length} blanks are correct.`],
+        answers.join(", ")
+      );
       setResult(localResult);
       onAnswered?.(localResult);
       return;
+    }
+    const persisted = isPersistedQuestionId(question._id);
+    if (!persisted && !testSessionId) {
+      const localResult = scoreLocalListeningQuestion(question, { choice, multi, text });
+      if (localResult) {
+        setResult(localResult);
+        onAnswered?.(localResult);
+        return;
+      }
     }
     setBusy(true); setError("");
     const f = new FormData();
@@ -372,7 +460,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     f.append("type", question.type);
     f.append("answer", JSON.stringify(isChoice ? choice : isMulti ? multi : text));
     if (isFreeText) f.append("transcript", text);
-    if (question._id) f.append("questionId", question._id);
+    if (persisted) f.append("questionId", question._id);
     if (testSessionId) f.append("testSessionId", testSessionId);
     try {
       const d = await api.submit(f);
