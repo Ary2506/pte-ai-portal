@@ -16,12 +16,10 @@ import {
   SECTION_LABELS,
   supportedTasksFor,
 } from "../practiceTaskRegistry.js";
-import summarizeSpokenTextContent from "../../content/listening/summarize-spoken-text/summarize_spoken_text.json";
-import fillInTheBlanksContent from "../../content/listening/fill-in-the-blanks/fill_in_the_blanks.json";
-import multipleChoiceSingleContent from "../../content/listening/multiple-choice-single/multiple_choice_single.json";
-import selectMissingWordContent from "../../content/listening/select-missing-words/select_missing_words.json";
-import highlightIncorrectWordsContent from "../../content/listening/highlight-incorrect-words/highlight_incorrect_words.json";
-import writeFromDictationContent from "../../content/listening/write-from-dictation/write_from_dictation.json";
+import { Badge, Empty, SkeletonRows } from "../components/common.jsx";
+import ReadAloudPractice from "./ReadAloudPractice.jsx";
+import { LOCAL_LISTENING_QUESTIONS } from "./listeningData/index.js";
+import { normalizeSubtype } from "./listeningData/shared.js";
 
 const SECTION_ICONS = {
   speaking: Mic,
@@ -40,115 +38,12 @@ const SECTION_DESCRIPTIONS = {
     "Summarize, transcribe and answer questions from real audio passages.",
 };
 
-const LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS = Array.isArray(
-  summarizeSpokenTextContent,
-)
-  ? summarizeSpokenTextContent.map((item) => ({
-      _id: String(item.id),
-      section: "listening",
-      type: "summarize-spoken-text",
-      title: item.title,
-      prompt:
-        "Listen to the short practice audio and summarize the main idea in your own words.",
-      audioUrl: new URL(
-        `../../content/listening/summarize-spoken-text/${item.audio.src}`,
-        import.meta.url,
-      ).href,
-      transcript: item.transcript,
-      subtype: normalizeSubtype(item.subtype),
-      difficulty: item.subtype === "core" ? "medium" : "easy",
-      evaluationType: "subjective",
-    }))
-  : [];
-
-function audioUrl(folder, src) {
-  return new URL(`../../content/listening/${folder}/${src}`, import.meta.url).href;
-}
-
-function normalizeOptions(options) {
-  return (options || []).map(option => typeof option === "string" ? option : option.text);
-}
-
-function normalizeChoiceAnswer(options, answer) {
-  const index = (options || []).findIndex(option => option.id === answer);
-  return index >= 0 ? index : answer;
-}
-
-function normalizeSubtype(subtype) {
-  return String(subtype || "").toLowerCase().replace(/_/g, " ");
-}
-
-function localListeningQuestion(item, folder, type) {
-  const options = normalizeOptions(item.options);
-  const question = {
-    _id: String(item.id),
-    section: "listening",
-    type,
-    title: item.title,
-    prompt: item.question || item.prompt || "Listen to the recording and answer the question.",
-    audioUrl: audioUrl(folder, item.audio?.src),
-    transcript: item.audio?.transcript || "",
-    options,
-    answer: normalizeChoiceAnswer(item.options, item.answer),
-    subtype: normalizeSubtype(item.subtype),
-    difficulty: item.subtype === "core" ? "medium" : "easy",
-    evaluationType: type === "summarize-spoken-text" ? "subjective" : "objective",
-  };
-
-  if (type === "fill-blanks") {
-    const blanks = (item.content || []).filter(part => part.type === "blank");
-    question.passage = (item.content || []).map(part => part.type === "blank" ? "____" : (part.value || part.text || "")).join("");
-    question.options = blanks.map(blank => blank.answer);
-    question.localBlankAnswers = blanks.map(blank => blank.answer);
-  }
-
-  if (type === "highlight-incorrect-words") {
-    question.options = (item.content || []).filter(part => part.type === "word").map(part => part.text);
-    question.localIncorrectIndexes = (item.content || []).reduce((indexes, part) => {
-      if (part.type === "word" && part.isIncorrect) indexes.push(indexes.wordCount || 0);
-      if (part.type === "word") indexes.wordCount = (indexes.wordCount || 0) + 1;
-      return indexes;
-    }, []).filter(value => typeof value === "number");
-    question.answer = question.localIncorrectIndexes;
-  }
-
-  return question;
-}
-
-const LOCAL_LISTENING_QUESTIONS = [
-  ...LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS,
-  ...(Array.isArray(fillInTheBlanksContent) ? fillInTheBlanksContent.map(item => localListeningQuestion(item, "fill-in-the-blanks", "fill-blanks")) : []),
-  ...(Array.isArray(multipleChoiceSingleContent) ? multipleChoiceSingleContent.map(item => localListeningQuestion(item, "multiple-choice-single", "mcq-single")) : [localListeningQuestion(multipleChoiceSingleContent, "multiple-choice-single", "mcq-single")]),
-  ...(Array.isArray(selectMissingWordContent) ? selectMissingWordContent.map(item => localListeningQuestion(item, "select-missing-words", "select-missing-word")) : [localListeningQuestion(selectMissingWordContent, "select-missing-words", "select-missing-word")]),
-  ...(Array.isArray(highlightIncorrectWordsContent) ? highlightIncorrectWordsContent.map(item => localListeningQuestion(item, "highlight-incorrect-words", "highlight-incorrect-words")) : []),
-  ...(Array.isArray(writeFromDictationContent) ? writeFromDictationContent.map(item => ({
-    _id: String(item.id), section: "listening", type: "write-dictation", title: item.title,
-    prompt: "Listen to the recording and write the sentence you hear.", audioUrl: audioUrl("write-from-dictation", item.audio?.src),
-    transcript: item.audio?.transcript || "", answer: item.answer, subtype: normalizeSubtype(item.subtype), evaluationType: "objective", difficulty: "medium"
-  })) : []),
-];
-
 const PROGRESS_FILTERS = [
   { key: "all", label: "All" },
   { key: "undone", label: "Undone" },
   { key: "done", label: "Done" },
 ];
 
-function Empty({ text }) {
-  return <div className="empty">{text}</div>;
-}
-function SkeletonRows({ count = 5 }) {
-  return (
-    <div aria-hidden="true">
-      {Array.from({ length: count }, (_, i) => (
-        <div className="skeleton skeleton-row" key={i} />
-      ))}
-    </div>
-  );
-}
-function Badge({ tone, children }) {
-  return <span className={`badge badge-${tone}`}>{children}</span>;
-}
 function difficultyTone(difficulty) {
   return difficulty === "easy"
     ? "good"
@@ -483,12 +378,19 @@ export default function Practice({ section, taskComponents }) {
         ))}
       </div>
       {type ? (
-        <PracticeTask
-          section={section}
-          label={type.label}
-          slug={type.slug}
-          taskComponents={taskComponents}
-        />
+        section === "speaking" && type.slug === "read-aloud" ? (
+          // A fixed, client-curated 15-question set (see client/content/speaking/read-aloud) with
+          // its own counter/navigation/completion screen — bypasses the generic DB-backed
+          // PracticeTask flow used by every other task type, which is unaffected by this branch.
+          <ReadAloudPractice />
+        ) : (
+          <PracticeTask
+            section={section}
+            label={type.label}
+            slug={type.slug}
+            taskComponents={taskComponents}
+          />
+        )
       ) : (
         <Empty text="No practice questions available yet." />
       )}

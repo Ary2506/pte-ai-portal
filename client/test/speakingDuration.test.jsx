@@ -55,28 +55,34 @@ async function startRecording() {
   await screen.findByText("Stop Recording");
 }
 
+// None of these render bare "/speaking" any more: Read Aloud now has its own dedicated,
+// locally-curated practice flow (ReadAloudPractice) with its own fixed 40s limit, so it's no
+// longer the generic pass-through default tab these tests can rely on. Each test now requests
+// its actual type explicitly; "respond-to-situation" (no entry in SPEAKING_DURATION_LIMITS, so it
+// falls back to the 40s default) stands in wherever a prior test used "read-aloud" purely to
+// exercise the generic default-limit/manual-stop/unmount mechanics, not the Read Aloud feature.
 describe("Speaking duration cap — per-type limits", () => {
-  it("shows the 40s limit for Read Aloud before recording starts", async () => {
-    api.questions.mockResolvedValue({ questions: [speakingQuestion("read-aloud", "Read Aloud")] });
-    renderAt("/speaking", studentAuthUser());
+  it("shows the 40s default limit for a type with no explicit override", async () => {
+    api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
+    renderAt("/speaking?type=respond-to-situation", studentAuthUser());
     expect(await screen.findByText("Ready · limit 00:40")).toBeInTheDocument();
   });
 
   it("shows the 15s limit for Repeat Sentence", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("repeat-sentence", "Repeat Sentence")] });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
     expect(await screen.findByText("Ready · limit 00:15")).toBeInTheDocument();
   });
 
   it("shows the 40s limit for Describe Image", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("describe-image", "Describe Image")] });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=describe-image", studentAuthUser());
     expect(await screen.findByText("Ready · limit 00:40")).toBeInTheDocument();
   });
 
   it("shows the 10s limit for Answer Short Question", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("answer-short-question", "Answer Short Question")] });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     expect(await screen.findByText("Ready · limit 00:10")).toBeInTheDocument();
   });
 });
@@ -84,7 +90,7 @@ describe("Speaking duration cap — per-type limits", () => {
 describe("Speaking duration cap — auto-stop behavior", () => {
   it("automatically stops recording once the type-specific limit is reached (10s for Answer Short Question)", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("answer-short-question", "Answer Short Question")] });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await startRecording();
 
     await vi.advanceTimersByTimeAsync(10 * 1000);
@@ -96,7 +102,7 @@ describe("Speaking duration cap — auto-stop behavior", () => {
 
   it("does not call stop() a second time from a stale interval tick after auto-stop already fired", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("answer-short-question", "Answer Short Question")] });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await startRecording();
 
     await vi.advanceTimersByTimeAsync(30 * 1000); // well past the 10s limit
@@ -104,8 +110,8 @@ describe("Speaking duration cap — auto-stop behavior", () => {
   });
 
   it("a manual Stop Recording click before the limit does not later auto-fire a second stop", async () => {
-    api.questions.mockResolvedValue({ questions: [speakingQuestion("read-aloud", "Read Aloud")] });
-    renderAt("/speaking", studentAuthUser());
+    api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
+    renderAt("/speaking?type=respond-to-situation", studentAuthUser());
     await startRecording();
 
     await vi.advanceTimersByTimeAsync(5 * 1000);
@@ -117,8 +123,8 @@ describe("Speaking duration cap — auto-stop behavior", () => {
   });
 
   it("stops the interval on unmount instead of leaking it into the next render", async () => {
-    api.questions.mockResolvedValue({ questions: [speakingQuestion("read-aloud", "Read Aloud")] });
-    const { unmount } = renderAt("/speaking", studentAuthUser());
+    api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
+    const { unmount } = renderAt("/speaking?type=respond-to-situation", studentAuthUser());
     await startRecording();
 
     unmount();

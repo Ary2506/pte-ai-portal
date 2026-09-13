@@ -45,9 +45,10 @@ describe("Phase 23 — header search is real, not decorative", () => {
     const result = await screen.findByRole("option", { name: /Read Aloud/ });
     expect(result).toBeInTheDocument();
 
-    api.questions.mockResolvedValue({ questions: [] });
+    // Read Aloud is a real, always-populated destination (its own locally-curated 15-question
+    // set, not a DB fetch that could come back empty) — clicking it lands on real question 1.
     fireEvent.click(result);
-    await screen.findByText("No practice questions available yet.");
+    await screen.findByText("Question 1 of 15");
   });
 
   it("shows an honest 'no matches' state instead of fabricating results", async () => {

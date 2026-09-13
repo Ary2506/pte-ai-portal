@@ -49,6 +49,31 @@ describe("question access", () => {
     expect(JSON.stringify(res.body)).not.toMatch(/Secret reasoning/);
   });
 
+  it("still never returns the answer for an objective question, even one with a stored answer value on a different section/type", async () => {
+    await createUser({ username: "reader6", password: "password123" });
+    await createQuestion({ section: "listening", type: "write-dictation", answer: "The exact sentence.", evaluationType: "objective" });
+    const token = await login("reader6");
+
+    const res = await request(app).get("/api/questions?section=listening").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    for (const q of res.body.questions) expect(q.answer).toBeUndefined();
+  });
+
+  it("exposes a subjective question's stored answer as an optional model answer — no scoring exploit, since nothing auto-grades from it", async () => {
+    await createUser({ username: "reader7", password: "password123" });
+    await createQuestion({
+      section: "speaking", type: "describe-image", imageUrl: "https://example.com/chart.png",
+      answer: "This is the model answer.", evaluationType: "subjective"
+    });
+    const token = await login("reader7");
+
+    const res = await request(app).get("/api/questions?section=speaking&type=describe-image").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.questions[0].answer).toBe("This is the model answer.");
+    // explanation is still always hidden, regardless of evaluationType.
+    expect(res.body.questions[0].explanation).toBeUndefined();
+  });
+
   it("caps the response at 200 questions — a defensive scalability limit, not pagination", async () => {
     await createUser({ username: "reader5", password: "password123" });
     const bulk = Array.from({ length: 205 }, (_, i) => ({

@@ -29,7 +29,11 @@ function renderAt(path, user) {
   return render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
 }
 
-const SPEAKING_QUESTION = { _id: "q1", title: "Read Aloud", prompt: "Read the passage aloud.", type: "read-aloud", evaluationType: "subjective" };
+// Uses a non-"read-aloud" speaking type deliberately: Read Aloud now has its own dedicated,
+// locally-curated 15-question practice flow (ReadAloudPractice), so these tests — which exercise
+// the *generic* Speaking task component's recording/submit/evaluate mechanics against a mocked
+// DB question, not the Read Aloud feature specifically — target a type that still goes through it.
+const SPEAKING_QUESTION = { _id: "q1", title: "Answer Short Question", prompt: "Answer the question you hear.", type: "answer-short-question", evaluationType: "subjective" };
 
 function completedResult(overrides = {}) {
   return {
@@ -63,20 +67,20 @@ beforeEach(() => {
 
 describe("Speaking practice", () => {
   it("starts recording when the record button is clicked", async () => {
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     fireEvent.click(await screen.findByText("Start Recording"));
     expect(await screen.findByText("Stop Recording")).toBeInTheDocument();
   });
 
   it("stops recording and enables submission", async () => {
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled();
   });
 
   it("sends the recorded audio to the backend", async () => {
     api.submit.mockResolvedValue({ submission: completedResult() });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     await waitFor(() => expect(api.submit).toHaveBeenCalled());
@@ -89,7 +93,7 @@ describe("Speaking practice", () => {
   it("shows an evaluating state while the request is in flight", async () => {
     let resolveSubmit;
     api.submit.mockReturnValue(new Promise(res => { resolveSubmit = res; }));
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     expect(await screen.findByText("Evaluating...")).toBeInTheDocument();
@@ -98,7 +102,7 @@ describe("Speaking practice", () => {
 
   it("renders the evaluation result after submission", async () => {
     api.submit.mockResolvedValue({ submission: completedResult() });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     expect(await screen.findByText("Heuristic Practice Evaluation")).toBeInTheDocument();
@@ -107,7 +111,7 @@ describe("Speaking practice", () => {
 
   it("shows a failed evaluation with a retry option instead of a fake score", async () => {
     api.submit.mockResolvedValue({ submission: { _id: "s1", score: 0, maxScore: 90, evaluationType: "subjective", evaluationStatus: "FAILED", scoringMethod: null, feedback: { overall: "AI evaluation is temporarily unavailable. Please try again." } } });
-    renderAt("/speaking", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     expect(await screen.findByText("Evaluation failed.")).toBeInTheDocument();

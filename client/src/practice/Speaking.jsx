@@ -31,6 +31,10 @@ export default function Speaking({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  // Describe Image only — no other Speaking type has ever shown a reference answer. Resets to
+  // hidden automatically on every new question because PracticeTask remounts this component via
+  // key={question._id}, the same mechanism that already resets recording/result state.
+  const [showAnswer, setShowAnswer] = useState(false);
   const recorder = useRef(null);
   const chunks = useRef([]);
   const timer = useRef(null);
@@ -189,7 +193,8 @@ export default function Speaking({
               <h3>Record your answer</h3>
               <p className="muted">
                 Speak naturally and clearly. Your browser can transcribe speech
-                when supported.
+                when supported. Only your transcript is evaluated —
+                pronunciation and audio quality are not analyzed.
               </p>
             </>
           )}
@@ -220,6 +225,23 @@ export default function Speaking({
               {busy ? "Evaluating..." : "Submit for AI Feedback"}
             </button>
           </div>
+        )}
+        {question?.type === "describe-image" && question?.answer && (
+          <>
+            <button
+              type="button"
+              className="secondary answer-toggle"
+              onClick={() => setShowAnswer((value) => !value)}
+            >
+              {showAnswer ? "Hide Answer" : "Show Answer"}
+            </button>
+            {showAnswer && (
+              <div className="answer-reveal">
+                <b>Model Answer</b>
+                <p>{question.answer}</p>
+              </div>
+            )}
+          </>
         )}
       </section>
       <aside className="panel tips">

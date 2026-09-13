@@ -54,9 +54,12 @@ describe("Access control — Part 19/27 item 31", () => {
 
 describe("AI limitation disclosure — Part 7/27 item 30", () => {
   it("Speaking practice discloses that only the transcript is evaluated, never audio/pronunciation, before recording starts", async () => {
-    api.questions.mockResolvedValue({ questions: [{ _id: "q1", type: "read-aloud", title: "Read Aloud", prompt: "Read this." }] });
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Read Aloud", { selector: "h2" });
+    // Uses repeat-sentence, not read-aloud: Read Aloud now has its own dedicated, locally-curated
+    // 15-question practice flow (ReadAloudPractice) instead of the generic Speaking task this
+    // disclosure text lives on.
+    api.questions.mockResolvedValue({ questions: [{ _id: "q1", type: "repeat-sentence", title: "Repeat Sentence", prompt: "Repeat this." }] });
+    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
+    await screen.findByText("Repeat Sentence", { selector: "h2" });
     expect(screen.getByText(/Only your transcript is evaluated — pronunciation and audio quality are not analyzed\./)).toBeInTheDocument();
   });
 });

@@ -230,16 +230,19 @@ describe("Reopening a completed question shows its stored result (Phase 19, Part
   });
 
   it("shows a FAILED subjective result (with its retry option) when reopened, never a fabricated score", async () => {
-    const READ_ALOUD = [{ _id: "ra1", section: "speaking", type: "read-aloud", title: "Passage One", prompt: "Read this aloud." }];
-    api.questions.mockResolvedValue({ questions: READ_ALOUD });
+    // Uses repeat-sentence, not read-aloud: Read Aloud now has its own dedicated, locally-curated
+    // 15-question practice flow (ReadAloudPractice) instead of the generic DB-backed Speaking
+    // task this test is actually exercising (reopening a stored FAILED subjective result).
+    const REPEAT_SENTENCE = [{ _id: "ra1", section: "speaking", type: "repeat-sentence", title: "Passage One", prompt: "Repeat this sentence." }];
+    api.questions.mockResolvedValue({ questions: REPEAT_SENTENCE });
     api.history.mockResolvedValue({
       submissions: [{
-        _id: "sub2", question: { _id: "ra1" }, section: "speaking", type: "read-aloud",
+        _id: "sub2", question: { _id: "ra1" }, section: "speaking", type: "repeat-sentence",
         transcript: "Some transcript.", score: 0, maxScore: 90, evaluationType: "subjective", evaluationStatus: "FAILED",
         feedback: { overall: "AI feedback is temporarily unavailable. Your objective score (if any) is still valid." }
       }]
     });
-    renderAt("/speaking?type=read-aloud", studentAuthUser());
+    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
 
     await screen.findByText("AI feedback is temporarily unavailable. Your objective score (if any) is still valid.");
     expect(screen.getByText("Retry Evaluation")).toBeInTheDocument();
