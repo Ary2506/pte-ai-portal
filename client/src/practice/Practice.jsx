@@ -17,6 +17,11 @@ import {
   supportedTasksFor,
 } from "../practiceTaskRegistry.js";
 import summarizeSpokenTextContent from "../../content/listening/summarize-spoken-text/summarize_spoken_text.json";
+import fillInTheBlanksContent from "../../content/listening/fill-in-the-blanks/fill_in_the_blanks.json";
+import multipleChoiceSingleContent from "../../content/listening/multiple-choice-single/multiple_choice_single.json";
+import selectMissingWordContent from "../../content/listening/select-missing-words/select_missing_words.json";
+import highlightIncorrectWordsContent from "../../content/listening/highlight-incorrect-words/highlight_incorrect_words.json";
+import writeFromDictationContent from "../../content/listening/write-from-dictation/write_from_dictation.json";
 
 const SECTION_ICONS = {
   speaking: Mic,
@@ -50,10 +55,77 @@ const LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS = Array.isArray(
         import.meta.url,
       ).href,
       transcript: item.transcript,
+      subtype: normalizeSubtype(item.subtype),
       difficulty: item.subtype === "core" ? "medium" : "easy",
       evaluationType: "subjective",
     }))
   : [];
+
+function audioUrl(folder, src) {
+  return new URL(`../../content/listening/${folder}/${src}`, import.meta.url).href;
+}
+
+function normalizeOptions(options) {
+  return (options || []).map(option => typeof option === "string" ? option : option.text);
+}
+
+function normalizeChoiceAnswer(options, answer) {
+  const index = (options || []).findIndex(option => option.id === answer);
+  return index >= 0 ? index : answer;
+}
+
+function normalizeSubtype(subtype) {
+  return String(subtype || "").toLowerCase().replace(/_/g, " ");
+}
+
+function localListeningQuestion(item, folder, type) {
+  const options = normalizeOptions(item.options);
+  const question = {
+    _id: String(item.id),
+    section: "listening",
+    type,
+    title: item.title,
+    prompt: item.question || item.prompt || "Listen to the recording and answer the question.",
+    audioUrl: audioUrl(folder, item.audio?.src),
+    transcript: item.audio?.transcript || "",
+    options,
+    answer: normalizeChoiceAnswer(item.options, item.answer),
+    subtype: normalizeSubtype(item.subtype),
+    difficulty: item.subtype === "core" ? "medium" : "easy",
+    evaluationType: type === "summarize-spoken-text" ? "subjective" : "objective",
+  };
+
+  if (type === "fill-blanks") {
+    const blanks = (item.content || []).filter(part => part.type === "blank");
+    question.passage = (item.content || []).map(part => part.type === "blank" ? "____" : (part.value || part.text || "")).join("");
+    question.options = blanks.map(blank => blank.answer);
+    question.localBlankAnswers = blanks.map(blank => blank.answer);
+  }
+
+  if (type === "highlight-incorrect-words") {
+    question.options = (item.content || []).filter(part => part.type === "word").map(part => part.text);
+    question.localIncorrectIndexes = (item.content || []).reduce((indexes, part, index) => {
+      if (part.type === "word" && part.isIncorrect) indexes.push(indexes.wordCount || 0);
+      if (part.type === "word") indexes.wordCount = (indexes.wordCount || 0) + 1;
+      return indexes;
+    }, []).filter(value => typeof value === "number");
+  }
+
+  return question;
+}
+
+const LOCAL_LISTENING_QUESTIONS = [
+  ...LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS,
+  ...(Array.isArray(fillInTheBlanksContent) ? fillInTheBlanksContent.map(item => localListeningQuestion(item, "fill-in-the-blanks", "fill-blanks")) : []),
+  ...(Array.isArray(multipleChoiceSingleContent) ? multipleChoiceSingleContent.map(item => localListeningQuestion(item, "multiple-choice-single", "mcq-single")) : [localListeningQuestion(multipleChoiceSingleContent, "multiple-choice-single", "mcq-single")]),
+  ...(Array.isArray(selectMissingWordContent) ? selectMissingWordContent.map(item => localListeningQuestion(item, "select-missing-words", "select-missing-word")) : [localListeningQuestion(selectMissingWordContent, "select-missing-words", "select-missing-word")]),
+  ...(Array.isArray(highlightIncorrectWordsContent) ? highlightIncorrectWordsContent.map(item => localListeningQuestion(item, "highlight-incorrect-words", "highlight-incorrect-words")) : []),
+  ...(Array.isArray(writeFromDictationContent) ? writeFromDictationContent.map(item => ({
+    _id: String(item.id), section: "listening", type: "write-dictation", title: item.title,
+    prompt: "Listen to the recording and write the sentence you hear.", audioUrl: audioUrl("write-from-dictation", item.audio?.src),
+    transcript: item.audio?.transcript || "", answer: item.answer, subtype: normalizeSubtype(item.subtype), evaluationType: "objective", difficulty: "medium"
+  })) : []),
+];
 
 const PROGRESS_FILTERS = [
   { key: "all", label: "All" },
@@ -97,6 +169,7 @@ function matchesSearch(question, index, term) {
 
 function QuestionListView({ questions, progress, onSelect, section, label }) {
   const [filter, setFilter] = useState("all");
+  const [subtypeFilter, setSubtypeFilter] = useState("all");
   const [search, setSearch] = useState("");
   const doneCount = questions.filter((question) =>
     progress.has(question._id),
@@ -108,12 +181,24 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
     done: doneCount,
   };
   const SectionIcon = SECTION_ICONS[section];
+  const subtypeOptions = [
+    { key: "all", label: "All" },
+    { key: "core", label: "Core" },
+    { key: "corep", label: "Core P" },
+  ].filter(option => option.key === "all" || questions.some(question => {
+    const subtype = normalizeSubtype(question.subtype);
+    return subtype.includes(option.key);
+  }));
   const rows = questions
     .map((question, index) => ({ question, index }))
     .filter(
       ({ question }) =>
         filter === "all" || (filter === "done") === progress.has(question._id),
     )
+    .filter(({ question }) => {
+      if (subtypeFilter === "all") return true;
+      return normalizeSubtype(question.subtype).includes(subtypeFilter);
+    })
     .filter(({ question, index }) => matchesSearch(question, index, search));
 
   return (
@@ -127,6 +212,11 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         </div>
       )}
       <div className="question-list-head">
+        {subtypeOptions.length > 1 && <div className="question-list-filters" role="tablist" aria-label="Filter by question type">
+          {subtypeOptions.map(option => <button key={option.key} type="button" role="tab" aria-selected={subtypeFilter === option.key}
+            className={subtypeFilter === option.key ? "question-list-filter active" : "question-list-filter"}
+            onClick={() => setSubtypeFilter(option.key)}>{option.label}</button>)}
+        </div>}
         <div
           className="question-list-filters"
           role="tablist"
@@ -230,10 +320,9 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       Promise.resolve(api.history()).catch(() => ({ submissions: [] })),
     ])
       .then(([questionData, historyData]) => {
-        const localQuestions =
-          section === "listening" && slug === "summarize-spoken-text"
-            ? LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS
-            : [];
+        const localQuestions = section === "listening"
+          ? LOCAL_LISTENING_QUESTIONS.filter(question => question.type === slug)
+          : [];
         const loadedQuestions = localQuestions.length
           ? localQuestions
           : questionData?.questions || [];

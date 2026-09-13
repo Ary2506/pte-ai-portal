@@ -306,12 +306,14 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
 export function ListeningTask({ question, testSessionId, onAnswered, existingResult }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
+  const [blankValues, setBlankValues] = useState([]);
   const [text, setText] = useState("");
   const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
   const transcriptText = getLocalTranscript(question);
   const audioUrl = getLocalAudioUrl(question);
 
@@ -319,27 +321,51 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     // mcq-single, fill-blanks, and select-missing-word are all mechanically the same "pick one
     // option" shape for listening — only the task framing differs, which the prompt/instructions
     // already convey.
-    const isChoiceQ = ["mcq-single", "fill-blanks", "select-missing-word"].includes(question?.type);
+    const isChoiceQ = ["mcq-single", "select-missing-word"].includes(question?.type);
     const isMultiQ = ["mcq-multiple", "highlight-incorrect-words"].includes(question?.type);
     const submittedAnswer = existingResult?.answer;
     // Same reopened-completed-question behavior as ReadingTask (Phase 19, Part 10) — seeded from
     // the stored submission, never re-evaluated.
     setChoice(existingResult && isChoiceQ && submittedAnswer !== undefined ? submittedAnswer : "");
     setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
+    setBlankValues(question?.localBlankAnswers?.map((_, index) => Array.isArray(submittedAnswer) ? submittedAnswer[index] || "" : "") || []);
     setText(existingResult && !isChoiceQ && !isMultiQ ? (existingResult.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
     setResult(existingResult || null);
     setError("");
   }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No listening question is available in the library for this task yet." /></div>;
-  const isChoice = ["mcq-single", "fill-blanks", "select-missing-word"].includes(question.type);
+  const isLocalFillBlanks = question.type === "fill-blanks" && Array.isArray(question.localBlankAnswers);
+  const isChoice = ["mcq-single", "select-missing-word"].includes(question.type);
   const isHighlight = question.type === "highlight-incorrect-words";
   const isMulti = question.type === "mcq-multiple" || isHighlight;
   const isFreeText = !isChoice && !isMulti;
 
+  const answerText = question.localBlankAnswers?.length
+    ? question.localBlankAnswers.join(", ")
+    : question.localIncorrectIndexes?.length
+      ? question.localIncorrectIndexes.map(index => question.options?.[index]).join(", ")
+      : isChoice && question.options?.[question.answer] !== undefined
+        ? question.options[question.answer]
+        : question.answer || transcriptText;
+
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
   async function submit() {
+    if (isLocalFillBlanks) {
+      const answers = question.localBlankAnswers;
+      const correctCount = answers.reduce((count, answer, index) => count + (blankValues[index]?.trim().toLowerCase() === answer.trim().toLowerCase() ? 1 : 0), 0);
+      const localResult = {
+        score: correctCount,
+        maxScore: answers.length,
+        feedback: [correctCount === answers.length ? "All blanks are correct." : `${correctCount} of ${answers.length} blanks are correct.`],
+        correct: correctCount === answers.length,
+        correctAnswerText: answers.join(", ")
+      };
+      setResult(localResult);
+      onAnswered?.(localResult);
+      return;
+    }
     setBusy(true); setError("");
     const f = new FormData();
     f.append("section", "listening");
@@ -362,7 +388,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     finally { setRetrying(false); }
   }
 
-  const canSubmit = isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
+  const canSubmit = isLocalFillBlanks ? blankValues.every(value => value.trim()) : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
 
   return <div className="panel task-main narrow">
     <div className="task-meta"><span className="chip">Listening</span><span>Audio practice</span></div>
@@ -376,8 +402,10 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
         the audio — ReadingTask has always shown its passage; this was the one place Listening
         never did. Harmless no-op for every other listening type, which never sets a passage. */}
-    {question.passage && <div className="passage">{question.passage}</div>}
-    {isChoice
+    {isLocalFillBlanks
+      ? <ListeningFillBlanks passage={question.passage} values={blankValues} setValues={setBlankValues} disabled={!!result} />
+      : question.passage && <div className="passage">{question.passage}</div>}
+    {isLocalFillBlanks ? null : isChoice
       ? <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>
@@ -390,8 +418,30 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     {result
       ? (question.evaluationType === "objective" ? <ObjectiveResult result={result} /> : <Result result={result} onRetry={retry} retrying={retrying} />)
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Evaluating..." : "Submit"}</button>}
+    {answerText && <>
+      <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(value => !value)}>
+        {showAnswer ? "Hide Answer" : "Answer"}
+      </button>
+      {showAnswer && <div className="answer-reveal"><b>Answer</b><p>{answerText}</p></div>}
+    </>}
     {showTranscript && transcriptText && <TranscriptModal title={question.title} text={transcriptText} onClose={() => setShowTranscript(false)} />}
   </div>;
 }
 
 function Empty({ text }) { return <div className="empty">{text}</div>; }
+
+function ListeningFillBlanks({ passage, values, setValues, disabled }) {
+  const parts = passage.split("____");
+  return <p className="listening-fill-passage">
+    {parts.map((part, index) => <Fragment key={index}>
+      {part}
+      {index < parts.length - 1 && <input
+        className="listening-fill-input"
+        value={values[index] || ""}
+        onChange={event => setValues(current => current.map((value, position) => position === index ? event.target.value : value))}
+        disabled={disabled}
+        aria-label={`Blank ${index + 1}`}
+      />}
+    </Fragment>)}
+  </p>;
+}
