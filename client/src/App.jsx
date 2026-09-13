@@ -7,18 +7,24 @@ import {
   Eye, EyeOff, Moon, Sun
 } from "lucide-react";
 import { api, forceLogout } from "./api.js";
-import { Result, ObjectiveResult, ReadingTask, ListeningTask } from "./PracticeObjective.jsx";
+import { Result, ObjectiveResult } from "./PracticeObjective.jsx";
 import { AdminQuestionsPanel } from "./AdminQuestions.jsx";
-import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor, taskInfo } from "./practiceTaskRegistry.js";
-import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
+import PracticePage from "./practice/Practice.jsx";
+import PracticeHubPage from "./pages/PracticeHub.jsx";
+import DashboardPage from "./pages/Dashboard.jsx";
+import ProfilePage from "./pages/Profile.jsx";
+import MockPage from "./pages/Mock.jsx";
+import HistoryPage from "./pages/History.jsx";
+import AdminPage from "./pages/Admin.jsx";
+import { MockResultRow } from "./pages/History.jsx";
+import { ReadingTask } from "./practice/Reading.jsx";
+import { ListeningTask } from "./practice/Listening.jsx";
+import SpeakingTaskModule from "./practice/Speaking.jsx";
+import WritingTaskModule from "./practice/Writing.jsx";
+import { Badge, Empty, Page, SkeletonCards, SkeletonRows } from "./components/common.jsx";
+import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
-const SECTION_DESCRIPTIONS = {
-  speaking: "Read aloud, describe images and answer spoken prompts with instant AI feedback.",
-  writing: "Summarize text and write essays scored on structure, grammar and content.",
-  reading: "Fill blanks, reorder paragraphs and answer questions with objective scoring.",
-  listening: "Summarize, transcribe and answer questions from real audio passages."
-};
 const PRACTICE_PATHS = new Set(["/practice", "/speaking", "/writing", "/reading", "/listening"]);
 const MORE_PATHS = new Set(MORE_ITEMS.filter(m => m.to).map(m => m.to));
 
@@ -70,30 +76,16 @@ function useAuth() {
     api.auth.logout();
     localStorage.removeItem("pte_token"); localStorage.removeItem("pte_user"); setUser(null);
   };
-
-  // UX only: proactively signs a student out the instant their cached subscription end date
-  // passes, so a tab left open doesn't keep looking "logged in" after expiry. This can never
-  // grant or extend access — it only ever ends a session early, using the server-issued
-  // subscriptionEndDate as-is. The actual authorization boundary is the backend's
-  // requireActiveSubscription middleware, checked fresh on every request regardless of this
-  // timer. Admins are never subject to it. Reuses the exact same clear-and-redirect flow
-  // (forceLogout) that a rejected API response already triggers — not a second mechanism.
   useEffect(() => {
-    if (!user || user.role === "admin") return;
-    if (!user.subscriptionEndDate) return;
-
-    // EXPIRED (or already past its end date) means the cached copy is stale — sign out right
-    // away rather than only when a live ACTIVE session ticks past its own expiry.
+    if (!user || user.role === "admin" || !user.subscriptionEndDate) return;
     const msRemaining = new Date(user.subscriptionEndDate).getTime() - Date.now();
     if (user.subscriptionStatus !== "ACTIVE" || msRemaining <= 0) {
       forceLogout(SUBSCRIPTION_EXPIRED_MESSAGE);
       return;
     }
-
     const timer = setTimeout(() => forceLogout(SUBSCRIPTION_EXPIRED_MESSAGE), Math.min(msRemaining, MAX_TIMEOUT_MS));
     return () => clearTimeout(timer);
   }, [user?.id, user?.subscriptionEndDate, user?.subscriptionStatus, user?.role]);
-
   return { user, save, logout };
 }
 
@@ -116,125 +108,47 @@ function Auth({ save, theme, toggleTheme }) {
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
   async function submit(e) {
     e.preventDefault(); setError(""); setBusy(true);
     try {
       const data = await api.auth.signin({ username: form.username, password: form.password });
       save(data);
-      // The role used here is exactly what the server just returned in the signin response
-      // (server/src/utils/subscription.js's publicUser(), sourced from the User document) —
-      // never inferred from the submitted username or any other client-side guess.
       navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
-
   return <div className="auth-page">
     <div className="auth-theme-control"><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
-    <div className="auth-visual">
-      <div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
-      <h1>Practice smarter.<br/>Reach your target score.</h1>
-      <p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p>
-      <div className="auth-features">
-        <div className="auth-feature"><CheckCircle2 size={16}/> All four PTE sections, one practice library</div>
-        <div className="auth-feature"><CheckCircle2 size={16}/> Objective scoring for every reading/listening task</div>
-        <div className="auth-feature"><CheckCircle2 size={16}/> Full-length mock tests with a real practice report</div>
-      </div>
-      <div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div>
-    </div>
-    <div className="auth-card">
-      <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div>
-      <h2>Welcome back</h2>
-      <p className="muted">Sign in with the User ID and password provided by your administrator.</p>
-      <div className="alert notice">
-        <AlertCircle size={17}/>
-        <span><b>⚠️ One Device &amp; One Browser Policy</b><br/>Your account is restricted to one device and one browser. Please log in using the device and browser you intend to use for your regular PTE practice.</span>
-      </div>
-      {notice && <div className="alert error"><AlertCircle size={17}/>{notice}</div>}
-      {error && <div className="alert error"><AlertCircle size={17}/>{error}</div>}
-      <form onSubmit={submit}>
-        <label>User ID<input required autoCapitalize="none" autoCorrect="off" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="e.g. pte001"/></label>
-        <label>Password
-          <div className="password-field">
-            <input required type={showPassword ? "text" : "password"} value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Your password"/>
-            <button type="button" className="password-toggle" onClick={()=>setShowPassword(s=>!s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} tabIndex={-1}>
-              {showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}
-            </button>
-          </div>
-        </label>
-        <button className="primary full" disabled={busy}>{busy ? "Signing in..." : "Sign In"}</button>
-      </form>
-      <p className="muted" style={{marginTop:18}}>Don't have an account? Contact your administrator to get access.</p>
-    </div>
-  </div>
+    <div className="auth-visual"><div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div><h1>Practice smarter.<br/>Reach your target score.</h1><p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p><div className="auth-features"><div className="auth-feature"><CheckCircle2 size={16}/> All four PTE sections, one practice library</div><div className="auth-feature"><CheckCircle2 size={16}/> Objective scoring for every reading/listening task</div><div className="auth-feature"><CheckCircle2 size={16}/> Full-length mock tests with a real practice report</div></div><div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div></div>
+    <div className="auth-card"><div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE</span> AI</span></div><h2>Welcome back</h2><p className="muted">Sign in with the User ID and password provided by your administrator.</p><div className="alert notice"><AlertCircle size={17}/><span><b>⚠️ One Device &amp; One Browser Policy</b><br/>Your account is restricted to one device and one browser. Please log in using the device and browser you intend to use for your regular PTE practice.</span></div>{notice && <div className="alert error"><AlertCircle size={17}/>{notice}</div>}{error && <div className="alert error"><AlertCircle size={17}/>{error}</div>}<form onSubmit={submit}><label>User ID<input required autoCapitalize="none" autoCorrect="off" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="e.g. pte001"/></label><label>Password<div className="password-field"><input required type={showPassword ? "text" : "password"} value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Your password"/><button type="button" className="password-toggle" onClick={()=>setShowPassword(s=>!s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} tabIndex={-1}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></label><button className="primary full" disabled={busy}>{busy ? "Signing in..." : "Sign In"}</button></form><p className="muted" style={{marginTop:18}}>Don't have an account? Contact your administrator to get access.</p></div>
+  </div>;
 }
 
-// Shared by PteMegaMenu and MoreMenu — a small dropdown/flyout that opens on click, closes on a
-// second click / outside click / Escape, and returns focus to its own trigger on Escape. No
-// focus-trap (the panel's contents are a handful of simple links, not a modal workflow), but
-// every explicit Part 3 behavior (click to open/close, outside click, Escape, aria-expanded) is
-// implemented here once and reused by both menus rather than duplicated.
 function useDropdown() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
   const triggerRef = useRef(null);
   const location = useLocation();
-
   useEffect(() => { setOpen(false); }, [location.pathname]);
-
   useEffect(() => {
     if (!open) return;
-    function onKeyDown(e) {
-      if (e.key === "Escape") { setOpen(false); triggerRef.current?.focus(); }
-    }
-    function onPointerDown(e) {
-      if (panelRef.current?.contains(e.target) || triggerRef.current?.contains(e.target)) return;
-      setOpen(false);
-    }
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onPointerDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onPointerDown);
-    };
+    function onKeyDown(e) { if (e.key === "Escape") { setOpen(false); triggerRef.current?.focus(); } }
+    function onPointerDown(e) { if (panelRef.current?.contains(e.target) || triggerRef.current?.contains(e.target)) return; setOpen(false); }
+    document.addEventListener("keydown", onKeyDown); document.addEventListener("mousedown", onPointerDown);
+    return () => { document.removeEventListener("keydown", onKeyDown); document.removeEventListener("mousedown", onPointerDown); };
   }, [open]);
-
   return { open, setOpen, panelRef, triggerRef };
 }
 
-// The PTE Practice mega-menu (Part 3). Renders one markup tree that behaves as a desktop
-// 4-column flyout grid or a mobile full-width accordion (Part 24) purely via CSS media query
-// (matching this file's existing responsive pattern, e.g. .mobile-menu/.mobile-close) rather
-// than JS viewport detection, so there is no duplicated markup or client/server mismatch risk.
 function PteMegaMenu({ onNavigate }) {
   const { open, setOpen, panelRef, triggerRef } = useDropdown();
   const [accordionOpen, setAccordionOpen] = useState(() => new Set());
   const navigate = useNavigate();
   const location = useLocation();
   const active = PRACTICE_PATHS.has(location.pathname);
-
-  function go(section, slug) {
-    setOpen(false);
-    onNavigate?.();
-    navigate(slug ? `/${section}?type=${slug}` : `/${section}`);
-  }
-  function toggleAccordion(section) {
-    setAccordionOpen(prev => {
-      const next = new Set(prev);
-      next.has(section) ? next.delete(section) : next.add(section);
-      return next;
-    });
-  }
-
+  function go(section, slug) { setOpen(false); onNavigate?.(); navigate(slug ? `/${section}?type=${slug}` : `/${section}`); }
+  function toggleAccordion(section) { setAccordionOpen(prev => { const next = new Set(prev); next.has(section) ? next.delete(section) : next.add(section); return next; }); }
   return <div className="mega-menu-wrap">
-    <button
-      ref={triggerRef}
-      className={active ? "nav-item active" : "nav-item"}
-      aria-expanded={open}
-      aria-haspopup="true"
-      aria-controls="pte-practice-panel"
-      onClick={() => setOpen(o => !o)}
-    >
+    <button ref={triggerRef} className={active ? "nav-item active" : "nav-item"} aria-expanded={open} aria-haspopup="true" aria-controls="pte-practice-panel" onClick={() => setOpen(o => !o)}>
       <Trophy size={18} /><span>PTE Practice</span><ChevronDown size={14} className={open ? "chev open" : "chev"} />
     </button>
     {open && <div className="mega-menu-backdrop" aria-hidden="true"/>}
@@ -317,10 +231,7 @@ function AdminSidebarNav({ onNavigate }) {
     <NavLink to="/dashboard" className="nav-item" onClick={onNavigate}><Home size={18}/><span>Student Site</span></NavLink>
   </>;
 }
-// Mock Tests and Practice History already exist inside the More menu (unchanged below) — these
-// two are additional, directly-visible shortcuts to the same real routes (Part 4/Step 4), given
-// deliberately distinct labels ("Take Mock Test", "My Results") so they never collide with the
-// More menu's own "Mock Tests"/"Practice History" entries in the DOM at the same time.
+
 function StudentSidebarNav({ user, onNavigate }) {
   const cls = ({isActive}) => isActive ? "nav-item active" : "nav-item";
   return <>
@@ -336,9 +247,6 @@ function StudentSidebarNav({ user, onNavigate }) {
   </>;
 }
 
-// Real destinations only — every entry navigates somewhere that actually exists and works
-// (Part 33: no decorative search). Practice tasks are pulled from the same registry the mega-menu
-// and Practice Hub already use, so this can never list a task that isn't genuinely supported.
 function useSearchDestinations(user) {
   return useMemo(() => {
     const pages = [
@@ -464,891 +372,11 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   </div>
 }
 
-// Real skeleton placeholders (Part 25) — shown while a request is actually in flight, replaced
-// the instant real data arrives. Never a substitute for real content, never shown once data (or
-// a genuine empty/error state) is known.
-function SkeletonCards({ count = 4, gridClass = "score-grid" }) {
-  return <div className={gridClass} aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-card"/>)}</div>;
-}
-function SkeletonRows({ count = 5 }) {
-  return <div aria-hidden="true">{Array.from({ length: count }).map((_, i) => <div key={i} className="skeleton skeleton-row"/>)}</div>;
-}
-
-function fmtLongDate(d) {
-  return d ? new Date(d).toLocaleDateString(undefined, { day: "2-digit", month: "long", year: "numeric" }) : "—";
-}
-
-// Reads only fields the server already put on the cached user object (from /auth/signin or
-// /auth/me) — never computes validity independently. subscriptionStatus itself is server-derived
-// (see server/src/utils/subscription.js); this only formats it for display.
-function SubscriptionCard({ user }) {
-  if (!user || user.role === "admin") return null;
-  const status = user.subscriptionStatus;
-
-  if (status === "EXPIRED") {
-    return <div className="panel subscription-card subscription-card-expired">
-      <div className="subscription-card-head"><h3>Subscription</h3><Badge tone="bad">EXPIRED</Badge></div>
-      <p className="subscription-card-message">Your 30-day subscription has expired.</p>
-      <p className="muted">Please contact the administrator for renewal.</p>
-    </div>;
-  }
-
-  if (status !== "ACTIVE") {
-    return <div className="panel subscription-card">
-      <div className="subscription-card-head"><h3>Subscription</h3><Badge tone="warn">NOT ACTIVATED</Badge></div>
-      <p className="muted">Your subscription has not been activated yet. Please contact the administrator.</p>
-    </div>;
-  }
-
-  const daysLeft = user.subscriptionEndDate ? Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000)) : null;
-  return <div className="panel subscription-card">
-    <div className="subscription-card-head"><h3>Subscription</h3><Badge tone="good">ACTIVE</Badge></div>
-    <div className="subscription-card-grid">
-      <div><span>Started</span><b>{fmtLongDate(user.subscriptionStartDate)}</b></div>
-      <div><span>Expires</span><b>{fmtLongDate(user.subscriptionEndDate)}</b></div>
-      <div><span>Days remaining</span><b>{daysLeft ?? "—"}</b></div>
-    </div>
-  </div>;
-}
-
-// Reuses the exact subscription-card layout/classes (head + 3-column grid) — no new CSS.
-function StreakCard({ streak }) {
-  if (!streak) return null;
-  const { currentStreak, longestStreak, learnedToday, lastLearningDate } = streak;
-  return <div className="panel subscription-card">
-    <div className="subscription-card-head">
-      <h3>🔥 {currentStreak} Day Streak</h3>
-      <Badge tone={learnedToday ? "good" : "warn"}>{learnedToday ? "Learned today" : "Not yet today"}</Badge>
-    </div>
-    <div className="subscription-card-grid">
-      <div><span>Current streak</span><b>{currentStreak} day{currentStreak === 1 ? "" : "s"}</b></div>
-      <div><span>Longest streak</span><b>{longestStreak} day{longestStreak === 1 ? "" : "s"}</b></div>
-      <div><span>Last activity</span><b>{lastLearningDate || "—"}</b></div>
-    </div>
-    <p className="muted" style={{marginTop:12}}>{learnedToday ? "Keep learning every day!" : "Complete a practice activity today to keep your streak going."}</p>
-  </div>;
-}
-
-const WEEKDAY_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-function WeeklyActivity({ days }) {
-  if (!days?.length) return null;
-  return <div className="panel" style={{marginBottom:18}}>
-    <h3 style={{marginTop:0}}>This Week</h3>
-    <div style={{display:"flex",gap:10,justifyContent:"space-between"}}>
-      {days.map(d => {
-        const label = WEEKDAY_LABELS[new Date(`${d.date}T00:00:00Z`).getUTCDay()];
-        return <div key={d.date} style={{textAlign:"center"}}>
-          <small className="muted" style={{display:"block",marginBottom:4}}>{label}</small>
-          <span style={{fontSize:18}} aria-label={d.active ? "Learned" : "No activity"}>{d.active ? "✅" : "❌"}</span>
-        </div>;
-      })}
-    </div>
-  </div>;
-}
-
-function Dashboard({ user }) {
-  const [data,setData]=useState(null);
-  const [loading,setLoading]=useState(true);
-  // Read once and cleared immediately — set only by AdminRoute when a non-admin was just
-  // redirected away from /admin, so the denial is visible instead of a silent bounce, but never
-  // reappears on an ordinary visit to the dashboard.
-  const [accessDenied,setAccessDenied]=useState(() => {
-    const n = sessionStorage.getItem("pte_access_denied_notice");
-    sessionStorage.removeItem("pte_access_denied_notice");
-    return n || "";
-  });
-  useEffect(()=>{api.dashboard().then(setData).catch(()=>{}).finally(()=>setLoading(false));},[]);
-  const stats=data?.stats;
-  const scoreBySection = Object.fromEntries((data?.bySection||[]).map(x=>[x.section,x.score]));
-  return <Page title="Welcome back 👋" subtitle="Keep practicing to achieve your target PTE score.">
-    {accessDenied && <div className="alert error"><AlertCircle size={17}/>{accessDenied}</div>}
-
-    <SubscriptionCard user={user}/>
-    <StreakCard streak={data?.streak}/>
-    <WeeklyActivity days={data?.weeklyActivity}/>
-    <div className="hero-row dashboard-hero"><div><span className="eyebrow">YOUR TARGET</span><h1>{stats?.targetScore || 79}</h1><span className="muted">Overall target score</span></div><div className="dashboard-hero-copy"><span className="hero-status"><Sparkles size={14}/> Your next score is built today</span><p>Choose a focused practice task and turn your progress into a stronger PTE result.</p></div><NavLink className="primary" to="/speaking"><Play size={17}/> Continue Practice</NavLink></div>
-    <div className="score-grid">
-      <ScoreCard title="Overall Score" value={stats?.overall || 0} sub="Practice average" featured/>
-      {(data?.bySection||[]).map(x=><ScoreCard key={x.section} title={x.section} value={x.score} sub="Average score"/>)}
-    </div>
-
-    <section className="panel">
-      <div className="panel-head"><div><h3>Recent Results</h3><p className="muted">Your latest submissions</p></div><NavLink to="/history" className="link">View all</NavLink></div>
-      {loading ? <SkeletonRows count={3}/> : (data?.recent||[]).length ? <div className="recent-list">{data.recent.map(s=><div className="recent" key={s._id}><div className="recent-icon"><Activity size={16}/></div><div><b>{s.type}</b><small>{s.section}</small></div><strong>{s.score}</strong></div>)}</div> : <Empty text="Your practice attempts will appear here."/>}
-    </section>
-
-    <div className="mock-cta-banner">
-      <div className="mock-cta-banner-icon"><Trophy size={22}/></div>
-      <div className="mock-cta-banner-text"><h3>Ready for the real thing?</h3><p className="muted">Take a full mock test and get a section-by-section practice report.</p></div>
-      <NavLink className="primary" to="/mock">Start Mock Test</NavLink>
-    </div>
-  </Page>
-}
-
-function ScoreCard({title,value,sub,featured=false}) { return <div className={featured ? "score-card featured" : "score-card"}><span>{title}</span><strong>{value}</strong><small>{sub}</small></div> }
-
-// Real circular progress (Part 14) — driven entirely by the student's actual average score,
-// never a decorative or fixed fill.
-function ScoreRing({ value, max = 90, size = "sm" }) {
-  const pct = max ? Math.max(0, Math.min(100, Math.round((value / max) * 100))) : 0;
-  const r = 45, c = 2 * Math.PI * r;
-  return <div className={`progress-ring ${size}`.trim()} role="img" aria-label={`Score ${value} out of ${max}`}>
-    <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
-      <circle className="track" cx="50" cy="50" r={r}/>
-      <circle className="fill" cx="50" cy="50" r={r} strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c}/>
-    </svg>
-    <div className="progress-ring-label" aria-hidden="true">{value}</div>
-  </div>;
-}
-
-// One task card (Part 4). `state` is derived purely from real data — never hardcoded — so a
-// task never claims to be practicable unless the backend both supports the type AND currently
-// has at least one active question for it (Phase 15/16's known content gaps: reading/listening
-// mcq-multiple and hard difficulty are exactly why this second check exists, not just the first).
-// A single task row (one per PTE task type), styled as a compact list rather than a card grid —
-// each row carries only real, verified signals: "AI Score" only when this task actually gets AI
-// evaluation (never invented weighting/percentages we have no real data for), "No content yet"
-// only when the type is genuinely backend-supported but the question bank has zero active
-// questions for it (checked live against GET /api/questions, never assumed), and "Coming Soon"
-// only when the type has no backend support at all.
-function PracticeTaskRow({ section, task, hasContent, onStart }) {
-  const startable = task.supported && hasContent;
-  let badge = null;
-  if (!task.supported) badge = <span className="practice-row-badge soon">Coming Soon</span>;
-  else if (!hasContent) badge = <span className="practice-row-badge empty">No content yet</span>;
-  else if (task.hasAI) badge = <span className="practice-row-badge ai">AI Score</span>;
-
-  const content = <><span>{task.label}</span>{badge}</>;
-  return startable
-    ? <button type="button" className="practice-row" onClick={() => onStart(section, task.slug)}>{content}</button>
-    : <span className="practice-row disabled" aria-disabled="true">{content}</span>;
-}
-
-// /practice — the full Practice Hub (Part 4). Loads question metadata once per section (4
-// requests total, not one per task type and never the mega-menu's job) purely to know which
-// supported task types actually have content today — no audio, no full question bodies beyond
-// what GET /api/questions already safely returns to a student.
-function PracticeHub() {
-  const navigate = useNavigate();
-  const [available, setAvailable] = useState(null); // Set of "section:type" once loaded
-
-  useEffect(() => {
-    Promise.all(PRACTICE_SECTIONS.map(section => api.questions(section).then(d => ({ section, questions: d.questions })).catch(() => ({ section, questions: [] }))))
-      .then(results => {
-        const set = new Set();
-        results.forEach(({ section, questions }) => questions.forEach(q => set.add(`${section}:${q.type}`)));
-        setAvailable(set);
-      });
-  }, []);
-
-  function start(section, slug) { navigate(`/${section}?type=${slug}`); }
-
-  return <Page title="PTE Practice" subtitle="Practice every section, improve your skills, and understand your mistakes.">
-    <div className="panel practice-hub-panel">
-      <div className="exam-variant-toggle" role="tablist">
-        <span className="exam-variant-tab active" role="tab" aria-selected="true">PTE Core</span>
-        <span className="exam-variant-tab" role="tab" aria-selected="false" title="This portal's practice library isn't split by exam variant yet — the same available questions are shown for both.">PTE Academic / UKVI</span>
-      </div>
-      <div className="practice-columns">
-        {PRACTICE_SECTIONS.map(section => {
-          const SectionIcon = SECTION_ICONS[section];
-          const tasks = PRACTICE_TASKS[section];
-          const readyCount = available ? tasks.filter(t => t.supported && available.has(`${section}:${t.slug}`)).length : null;
-          return <div className={`practice-column practice-${section}`} key={section}>
-            <div className="practice-column-header">
-              <div className="practice-column-icon"><SectionIcon size={24}/></div>
-              <div className="practice-column-heading">
-                <h3 className="practice-column-head">{SECTION_LABELS[section]}</h3>
-                <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
-              </div>
-              <span className="practice-column-count">{readyCount == null ? "…" : `${readyCount}/${tasks.length} ready`}</span>
-            </div>
-            <div className="practice-column-list">
-              {tasks.map(task => <PracticeTaskRow
-                key={task.slug}
-                section={section}
-                task={task}
-                hasContent={available ? available.has(`${section}:${task.slug}`) : false}
-                onStart={start}
-              />)}
-            </div>
-          </div>;
-        })}
-      </div>
-      <div className="practice-more-section">
-        <h3 className="practice-column-head">More</h3>
-        <div className="practice-more-row">
-          {MORE_ITEMS.map(m => m.to
-            ? <NavLink key={m.key} to={m.to} className="practice-more-link">{m.label}</NavLink>
-            : <span key={m.key} className="practice-more-link disabled" aria-disabled="true">{m.label}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  </Page>;
-}
-function Page({title,subtitle,children,actions}) { return <><div className="page-head"><div><h1>{title}</h1>{subtitle&&<p>{subtitle}</p>}</div>{actions}</div>{children}</> }
-
-// Reads the desired-type slug straight from the URL (?type=) so the Practice Hub and the
-// mega-menu can deep-link into a specific task — the existing /speaking|writing|reading|listening
-// routes are reused as-is (Part 25: no new routes needed), only now search-param-aware. Falls
-// back to this section's first supported task, matching the exact previous default behavior when
-// no ?type= is present (so every existing test that renders e.g. "/speaking" unchanged still
-// lands on the same default task).
-function Practice({ section }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tasks = supportedTasksFor(section);
-  const requestedSlug = searchParams.get("type");
-  const [type, setType] = useState(() => tasks.find(t => t.slug === requestedSlug) || tasks[0]);
-
-  useEffect(() => {
-    const match = tasks.find(t => t.slug === requestedSlug);
-    if (match && match.slug !== type?.slug) setType(match);
-    // Only re-sync when the URL itself changes (e.g. a mega-menu deep link into an already-
-    // mounted Practice) — a same-section tab click below manages `type` itself.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [section, requestedSlug]);
-
-  function selectType(t) {
-    setType(t);
-    setSearchParams(t.slug === tasks[0].slug ? {} : { type: t.slug });
-  }
-
-  return <Page title={SECTION_LABELS[section]} subtitle={`Practice ${section} tasks with timing, scoring and feedback.`}>
-    <p className="muted" style={{marginTop:-14,marginBottom:16}}>PTE Practice &gt; {SECTION_LABELS[section]}{type ? ` > ${type.label}` : ""}</p>
-    <div className="practice-tabs">{tasks.map(t=><button key={t.slug} className={type?.slug===t.slug?"tab active":"tab"} onClick={()=>selectType(t)}>{t.label}</button>)}</div>
-    {type
-      ? <PracticeTask section={section} label={type.label} slug={type.slug}/>
-      : <Empty text="No practice questions available yet."/>}
-  </Page>
-}
-
-// The question-picker shown before a multi-question task (only when there's genuinely more than
-// one question to choose from — a single-question task skips straight to it, unchanged). "Done"
-// is real, not decorative: it's derived from the student's own practice history (GET
-// /submissions/history, already scoped server-side to this student and to standalone practice,
-// never mock attempts), matching exactly which of these specific questions they've already
-// submitted an answer for. No score/streak/bookmark/"Shadow" affordances are shown here — this
-// portal has no real data or feature behind any of those, and inventing UI for them would be
-// exactly the "fake functionality" this project has consistently avoided.
-// "All / Undone / Done" — a real filter over real data (the student's own attempt history), not
-// APEUni's "Mark"/"My Score"/"Shadowing" dropdowns, which this portal has no feature behind.
-// Deliberately client-side only: the full list was already fetched, so filtering it needs no
-// extra request and can't itself become a new source of truth that drifts from the real data.
-const PROGRESS_FILTERS = [
-  { key: "all", label: "All" },
-  { key: "undone", label: "Undone" },
-  { key: "done", label: "Done" }
-];
-
-// Search matches the same fields APEUni's own question search covers (title, and the question's
-// own identifier) — never a fabricated "relevance" ranking, just a real case-insensitive
-// substring match against real data already in memory (the full list was already fetched, so
-// this needs no extra request). Matching the position number too (e.g. typing "4" finds "#4")
-// mirrors how a student would actually try to jump to a specific numbered question.
-function matchesSearch(q, i, term) {
-  if (!term) return true;
-  const needle = term.trim().toLowerCase();
-  if (!needle) return true;
-  return q.title.toLowerCase().includes(needle) || q._id.toLowerCase().includes(needle) || String(i + 1) === needle;
-}
-
-function QuestionListView({ questions, progress, onSelect, section, label }) {
-  const [filter, setFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const doneCount = questions.filter(q => progress.has(q._id)).length;
-  const undoneCount = questions.length - doneCount;
-  const filterCounts = { all: questions.length, undone: undoneCount, done: doneCount };
-  const rows = questions
-    .map((q, i) => ({ q, i }))
-    .filter(({ q }) => filter === "all" || (filter === "done") === progress.has(q._id))
-    .filter(({ q, i }) => matchesSearch(q, i, search));
-  const TaskIcon = SECTION_ICONS[section];
-
-  return <div className="panel question-list-panel">
-    {TaskIcon && <div className="question-list-banner">
-      <span className="question-list-banner-icon"><TaskIcon size={18}/></span>
-      <h2>{label}</h2>
-    </div>}
-    <div className="question-list-head">
-      <div className="question-list-filters" role="tablist" aria-label="Filter by practice status">
-        {PROGRESS_FILTERS.map(f => <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
-          className={filter === f.key ? "question-list-filter active" : "question-list-filter"} onClick={() => setFilter(f.key)}>{f.label}<span className="question-list-filter-count">{filterCounts[f.key]}</span></button>)}
-      </div>
-      <div className="search question-list-search"><span aria-hidden="true">⌕</span><input placeholder="Search by title or question number..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Search questions"/></div>
-      <span className="muted">Done {doneCount}, Found {rows.length} question{rows.length === 1 ? "" : "s"}</span>
-    </div>
-    <div className="question-list">
-      {rows.map(({ q, i }) => {
-        const attempt = progress.get(q._id);
-        return <button key={q._id} type="button" className="question-list-row" onClick={() => onSelect(i)}>
-          <span className="question-row-number">#{i + 1}</span>
-          <span className="question-list-title">{q.title}</span>
-          {q.difficulty && <Badge tone={difficultyTone(q.difficulty)}>{q.difficulty}</Badge>}
-          {attempt
-            ? <span className="question-row-status">
-                {attempt.evaluationStatus === "FAILED"
-                  ? <Badge tone="warn">Evaluation failed</Badge>
-                  : <Badge tone="good"><CheckCircle2 size={12}/> Done · {attempt.score}/{attempt.maxScore}</Badge>}
-              </span>
-            : <Badge tone="neutral">Undone</Badge>}
-          <ChevronRight size={16} className="question-row-arrow" aria-hidden="true"/>
-        </button>;
-      })}
-      {!rows.length && <p className="muted" style={{padding:"14px 6px"}}>No questions match {search.trim() ? "your search" : "this filter"}.</p>}
-    </div>
-  </div>;
-}
-
-// The reusable multi-question practice session (Part 6/11/12 "Practice Multiple Questions"): the
-// server already returns every active question for this section+type in one call — this just
-// lets the student page through what was already fetched, entirely client-side. Each question is
-// still submitted individually through the exact same existing task components/API, so nothing
-// about scoring, ownership, or duplicate protection changes — this is navigation chrome only.
-const LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS = Array.isArray(summarizeSpokenTextContent)
-  ? summarizeSpokenTextContent.map(item => ({
-      _id: String(item.id),
-      section: "listening",
-      type: "summarize-spoken-text",
-      title: item.title,
-      prompt: "Listen to the short practice audio and summarize the main idea in your own words.",
-      audioUrl: new URL(`../content/listening/summarize-spoken-text/${item.audio.src}`, import.meta.url).href,
-      transcript: item.transcript,
-      difficulty: item.subtype === "core" ? "medium" : "easy",
-      evaluationType: "subjective"
-    }))
-  : [];
-
-function PracticeTask({section,label,slug}) {
-  const [questions,setQuestions]=useState([]);
-  const [idx,setIdx]=useState(null); // null = showing the question list, not yet inside a question
-  const [loading,setLoading]=useState(true);
-  // Real content genuinely being empty and the request itself failing look identical to a
-  // student unless tracked separately — this used to collapse both into the same "No practice
-  // questions available yet." message. `error` is only ever set when the request itself rejects
-  // (a real fetch/network failure), never for a normal response with zero items.
-  const [error,setError]=useState(false);
-  // questionId -> the student's own most recent full Submission for that question (history() is
-  // already sorted newest-first server-side, so the first match kept per id is the latest
-  // attempt) — the whole stored document (score/feedback/transcript/answer/...), not just a
-  // summary, so a completed question can be reopened to show its real stored result (Phase 19,
-  // Part 10) instead of AI ever being re-run just to view it.
-  const [progress,setProgress]=useState(new Map());
-  function load(){
-    setLoading(true); setError(false);
-    Promise.all([
-      api.questions(section, slug),
-      Promise.resolve(api.history()).catch(()=>({submissions:[]}))
-    ]).then(([qData, hData])=>{
-      const localQuestions = section === "listening" && slug === "summarize-spoken-text"
-        ? LOCAL_SUMMARIZE_SPOKEN_TEXT_QUESTIONS
-        : [];
-      const loadedQuestions = localQuestions.length ? localQuestions : (qData?.questions || []);
-      const loadedSubmissions = hData?.submissions || [];
-      const map = new Map();
-      for (const s of loadedSubmissions) {
-        const qid = s.question?._id || s.questionId;
-        if (qid && !map.has(qid)) map.set(qid, s);
-      }
-      setQuestions(loadedQuestions);
-      setProgress(map);
-      // A single question is opened directly — no list step for something with nothing to pick
-      // from. More than one always starts at the list, even if the student re-visits this exact
-      // task later (browsing the list again is itself harmless and never re-triggers anything).
-      setIdx(loadedQuestions.length === 1 ? 0 : null);
-    }).catch(()=>setError(true))
-      .finally(()=>setLoading(false));
-  }
-  useEffect(load,[section,slug]);
-
-  if (loading) return <div className="panel question-list-panel"><SkeletonRows count={6}/></div>;
-  if (error) return <div className="panel error-state">
-    <AlertCircle size={30}/>
-    <h4>Unable to load your questions</h4>
-    <p>Please check your connection and try again.</p>
-    <button className="secondary" onClick={load}>Retry</button>
-  </div>;
-  if (!questions.length) return <Empty text="No practice questions available yet."/>;
-
-  if (idx === null) return <QuestionListView questions={questions} progress={progress} onSelect={setIdx} section={section} label={label}/>;
-
-  const q=questions[idx];
-  const existingResult = q ? progress.get(q._id) : null;
-  const body = section==="speaking" ? <SpeakingTask key={q?._id} type={label} question={q} existingResult={existingResult}/>
-    : section==="writing" ? <WritingTask key={q?._id} type={label} question={q} existingResult={existingResult}/>
-    : section==="reading" ? <ReadingTask key={q?._id} question={q} existingResult={existingResult}/>
-    : <ListeningTask key={q?._id} question={q} existingResult={existingResult}/>;
-
-  return <div>
-    {questions.length > 1 && <>
-      <div className="mock-progress-bar" role="group" aria-label="Question navigation">
-        <button className="text-button" style={{marginTop:0}} onClick={()=>setIdx(null)}><ChevronLeft size={15}/> Back to list</button>
-        <span>Question {idx+1} / {questions.length}</span>
-        <div style={{display:"flex",gap:8}}>
-          <button className="secondary" onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}><ChevronLeft size={15}/> Previous</button>
-          <button className="secondary" onClick={()=>setIdx(i=>Math.min(questions.length-1,i+1))} disabled={idx===questions.length-1}>Next <ChevronRight size={15}/></button>
-        </div>
-      </div>
-      <div className="mock-progress-track" role="progressbar" aria-valuenow={idx+1} aria-valuemin={1} aria-valuemax={questions.length} aria-valuetext={`Question ${idx+1} of ${questions.length}`}>
-        <div className="mock-progress-fill" style={{width: `${((idx+1)/questions.length)*100}%`}}/>
-      </div>
-    </>}
-    {body}
-  </div>;
-}
-
-// UX-only cap matching each task's real PTE time budget — the browser stops the recording for
-// the student. The server never sees or trusts a client-declared duration; durationSeconds is
-// only ever a heuristic-evaluation input signal (see server/src/services/ai/evaluator.js), never
-// a security or scoring boundary.
-const SPEAKING_DURATION_LIMITS = { "read-aloud": 40, "repeat-sentence": 15, "describe-image": 40, "answer-short-question": 10 };
-const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
-
-function SpeakingTask({type,question,testSessionId,onAnswered,existingResult}) {
-  const [recording,setRecording]=useState(false), [seconds,setSeconds]=useState(0), [blob,setBlob]=useState(null), [transcript,setTranscript]=useState(""), [result,setResult]=useState(()=>existingResult||null), [error,setError]=useState(""), [busy,setBusy]=useState(false), [retrying,setRetrying]=useState(false);
-  const recorder=useRef(null), chunks=useRef([]), timer=useRef(null), recognition=useRef(null), elapsedRef=useRef(0);
-  const limit = SPEAKING_DURATION_LIMITS[question?.type] || DEFAULT_SPEAKING_DURATION_LIMIT;
-  useEffect(()=>()=>clearInterval(timer.current),[]);
-  // Guarded so a manual "Stop Recording" click and the auto-stop-at-limit tick can never both
-  // run to completion — whichever happens first clears recorder.current, and the other becomes
-  // a no-op, instead of MediaRecorder.stop() firing twice or a second onstop producing a second blob.
-  function stop(){
-    if(!recorder.current) return;
-    clearInterval(timer.current);
-    recorder.current.stop();
-    recorder.current=null;
-    recognition.current?.stop();
-    recognition.current=null;
-    setRecording(false);
-  }
-  function start() {
-    setError(""); setResult(null); setBlob(null); setTranscript(""); chunks.current=[]; elapsedRef.current=0;
-    navigator.mediaDevices?.getUserMedia({audio:true}).then(stream=>{
-      const r=new MediaRecorder(stream); recorder.current=r;
-      r.ondataavailable=e=>{if(e.data.size) chunks.current.push(e.data)};
-      r.onstop=()=>{setBlob(new Blob(chunks.current,{type:"audio/webm"}));stream.getTracks().forEach(t=>t.stop())};
-      r.start(); setRecording(true); setSeconds(0);
-      // A plain ref counter (not the seconds state, which stays stale inside this closure) drives
-      // the stop decision; setSeconds only ever updates the display.
-      timer.current=setInterval(()=>{
-        elapsedRef.current+=1;
-        setSeconds(elapsedRef.current);
-        if(elapsedRef.current>=limit) stop();
-      },1000);
-      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-      if(SR){const rec=new SR(); rec.continuous=true;rec.interimResults=true;rec.lang="en-US";rec.onresult=e=>{let t="";for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";setTranscript(t.trim())};rec.start();recognition.current=rec;}
-    }).catch(()=>setError("Microphone permission is required. Check your browser permissions and try again."));
-  }
-  async function submit(){if(!blob){setError("Record an answer first.");return} setBusy(true); setError(""); const f=new FormData();f.append("audio",blob,"speaking.webm");f.append("section","speaking");f.append("type",type);f.append("transcript",transcript);f.append("durationSeconds",seconds);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
-  async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
-  const durationLabel = recording ? `${formatMMSS(seconds*1000)} / ${formatMMSS(limit*1000)}` : `Ready · limit ${formatMMSS(limit*1000)}`;
-  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><span className={seconds>=limit?"speaking-duration-cap low":"speaking-duration-cap"}><Clock3 size={15}/> {durationLabel}</span></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Your speaking question will load from the practice library."}</p>{question?.imageUrl&&<img src={question.imageUrl} alt={question?.title||"Practice question image"} style={{maxWidth:"100%",borderRadius:9,margin:"12px 0"}}/>}{question?.audioUrl&&<audio className="audio" controls src={question.audioUrl}/>}<div className="record-box">{recording?<><div className="pulse"><Mic size={30}/></div><h3>Recording...</h3><div className="wave">{Array.from({length:36}).map((_,i)=><i key={i} style={{height:`${10+Math.random()*42}px`}}/>)}</div></>:<><div className="mic-circle"><Mic size={30}/></div><h3>Record your answer</h3><p className="muted">Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed.</p></>}</div>{transcript&&<div className="transcript"><b>Live transcript</b><p>{transcript}</p></div>}{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<div className="task-actions"><button className="secondary" onClick={recording?stop:start} disabled={busy}>{recording?"Stop Recording":"Start Recording"}</button><button className="primary" disabled={!blob||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button></div>}</section><aside className="panel tips"><h3>Speaking tips</h3><ul><li>Maintain steady fluency.</li><li>Pronounce words clearly.</li><li>Avoid long pauses.</li><li>Focus on the whole prompt.</li></ul><div className="tip-box"><Sparkles size={18}/><b>AI analysis</b><p>We evaluate your submitted response and return a practice score — see the note under your result for what is and isn't measured.</p></div></aside></div>
-}
-
-// UI guidance only — the server's own MAX_TEXT_LENGTH (character-based) remains the sole
-// enforced limit; a word count outside this range is still accepted and scored, exactly as
-// before. Keyed by the question's actual type slug (swt/essay), not its display title.
-const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
-
-function WordCountBadge({ count, range }) {
-  if (!range) return <span className="word-count">{count} words</span>;
-  const [min, max] = range;
-  const tone = count < min ? "low" : count > max ? "high" : "good";
-  return <span className={`word-count ${tone}`}>{count} / {min}–{max} words</span>;
-}
-
-function WritingTask({type,question,testSessionId,onAnswered,existingResult}) {
-  const [text,setText]=useState(()=>existingResult?.transcript||(typeof existingResult?.answer==="string"?existingResult.answer:"")),[result,setResult]=useState(()=>existingResult||null),[error,setError]=useState(""),[busy,setBusy]=useState(false),[retrying,setRetrying]=useState(false);
-  async function submit(){if(!text.trim()){setError("Write a response before submitting.");return} setBusy(true); setError(""); const f=new FormData();f.append("section","writing");f.append("type",type);f.append("answer",JSON.stringify(text));f.append("transcript",text);if(question?._id)f.append("questionId",question._id);if(testSessionId)f.append("testSessionId",testSessionId);try{const d=await api.submit(f);setResult(d.submission);onAnswered?.(d.submission)}catch(e){setError(e.message)}finally{setBusy(false)}}
-  async function retry(){setRetrying(true);setError("");try{setResult((await api.retryEvaluation(result._id)).submission)}catch(e){setError(e.message)}finally{setRetrying(false)}}
-  const wordCount = text.trim()?text.trim().split(/\s+/).length:0;
-  return <div className="task-layout"><section className="panel task-main"><div className="task-meta"><span className="chip">{type}</span><WordCountBadge count={wordCount} range={WRITING_WORD_RANGES[question?.type]}/></div><h2>{question?.title||type}</h2><p className="instruction">{question?.prompt||"Write your answer below."}</p>{question?.passage&&<div className="passage">{question.passage}</div>}<textarea className="answer-area" value={text} onChange={e=>setText(e.target.value)} placeholder="Type your answer here..." disabled={!!result}/>{error&&<div className="alert error">{error}</div>}{result?<Result result={result} onRetry={retry} retrying={retrying}/>:<button className="primary right" disabled={!text.trim()||busy} onClick={submit}>{busy?"Evaluating...":"Submit for AI Feedback"}</button>}</section><aside className="panel tips"><h3>Writing tips</h3><ul><li>Answer the exact task.</li><li>Use clear sentence structure.</li><li>Check grammar and spelling.</li><li>Keep your ideas relevant.</li></ul></aside></div>
-}
-
-function formatMMSS(ms) {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  const m = Math.floor(total / 60), s = total % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-// Purely cosmetic — the server's own expiresAt comparison is what actually rejects late
-// answers/completion (see routes/testSessions.js's expireIfNeeded). This never reads or sends
-// a remaining-time value itself, only displays what the parent already computed.
-function MockTimer({ remainingMs }) {
-  const low = remainingMs !== null && remainingMs <= 2 * 60 * 1000;
-  return <div className={low ? "mock-timer low" : "mock-timer"}>
-    <Clock3 size={16} />
-    <div><span className="mock-timer-label">Time Remaining</span><strong>{remainingMs === null ? "--:--" : formatMMSS(remainingMs)}</strong></div>
-  </div>;
-}
-
-// Navigation only ever indexes into the questions the server already returned at session
-// start — there is no way to jump to a question id the student supplies.
-function MockQuestionNav({ questions, idx, answered, onJump }) {
-  return <div className="mock-qnav" role="tablist" aria-label="Question overview">
-    {questions.map((q, i) => {
-      const state = i === idx ? "current" : answered[i] ? "answered" : "unanswered";
-      return <button key={q._id || i} type="button" className={`mock-qnav-item ${state}`} onClick={() => onJump(i)} aria-current={i === idx || undefined} title={`Question ${i + 1} — ${state}`}>{i + 1}</button>;
-    })}
-  </div>;
-}
-
-function Mock() {
-  const [session,setSession]=useState(null);
-  const [idx,setIdx]=useState(0);
-  const [answered,setAnswered]=useState({});
-  const [result,setResult]=useState(null);
-  const [starting,setStarting]=useState(false);
-  const [finishing,setFinishing]=useState(false);
-  const [error,setError]=useState("");
-  const [remainingMs,setRemainingMs]=useState(null);
-  const [timeUp,setTimeUp]=useState(false);
-  // "EXPIRED" | "ALREADY_COMPLETED" | null — a dedicated terminal state so these read as
-  // deliberate outcomes, never as the generic error alert.
-  const [terminal,setTerminal]=useState(null);
-  const [showConfirm,setShowConfirm]=useState(false);
-  // Two separate live regions (not one region with a changing politeness attribute — screen
-  // readers don't reliably pick up a live region's politeness changing after the fact): routine
-  // state changes are polite (won't interrupt), the two time-critical ones are assertive.
-  const [politeAnnouncement,setPoliteAnnouncement]=useState("");
-  const [assertiveAnnouncement,setAssertiveAnnouncement]=useState("");
-  const timerIdRef=useRef(null);
-  const autoSubmittedRef=useRef(false);
-  const lowTimeAnnouncedRef=useRef(false);
-
-  async function start() {
-    setStarting(true); setError("");
-    try {
-      const d = await api.testSessions.start();
-      autoSubmittedRef.current=false; lowTimeAnnouncedRef.current=false;
-      setSession(d); setIdx(0); setAnswered({}); setTimeUp(false); setTerminal(null); setRemainingMs(null);
-      setPoliteAnnouncement(""); setAssertiveAnnouncement("");
-    } catch(e){ setError(e.message); } finally { setStarting(false); }
-  }
-
-  async function finish() {
-    setFinishing(true); setError(""); setPoliteAnnouncement("Finishing your test…");
-    try {
-      const d = await api.testSessions.complete(session.testSession._id);
-      setResult(d.testSession);
-      setPoliteAnnouncement("Your mock test has been completed and scored.");
-    } catch(e){
-      // The frontend never marks the test completed on its own — only a real 200 from the
-      // server (above) does that. A rejection here always renders one of the dedicated
-      // terminal states below, never a fabricated result.
-      if (e.code === "TEST_SESSION_EXPIRED") { setTerminal("EXPIRED"); setAssertiveAnnouncement("Your test session has expired."); }
-      else if (e.code === "SESSION_ALREADY_COMPLETED") { setTerminal("ALREADY_COMPLETED"); setPoliteAnnouncement("This test was already completed."); }
-      else setError(e.message);
-    } finally { setFinishing(false); }
-  }
-
-  // Recomputed each tick from the server-issued expiresAt (not decremented locally), so a
-  // backgrounded/throttled tab still shows the true remaining time the instant it's visible
-  // again, and a page reload of this same in-progress session would recover the right value too.
-  useEffect(() => {
-    if (!session || result || terminal) return;
-    const expiresAtMs = new Date(session.testSession.expiresAt).getTime();
-    function tick() {
-      const remaining = expiresAtMs - Date.now();
-      setRemainingMs(Math.max(0, remaining));
-      // Announced once when crossing the threshold, never on every tick — a screen reader
-      // would be unusable if this fired every second.
-      if (remaining > 0 && remaining <= 2 * 60 * 1000 && !lowTimeAnnouncedRef.current) {
-        lowTimeAnnouncedRef.current = true;
-        setPoliteAnnouncement("Less than 2 minutes remaining.");
-      }
-      if (remaining <= 0) {
-        clearInterval(timerIdRef.current);
-        if (!autoSubmittedRef.current) {
-          autoSubmittedRef.current = true;
-          setAssertiveAnnouncement("Time is up. Submitting your test now.");
-          setTimeUp(true);
-          finish();
-        }
-      }
-    }
-    tick();
-    timerIdRef.current = setInterval(tick, 1000);
-    document.addEventListener("visibilitychange", tick);
-    return () => {
-      clearInterval(timerIdRef.current);
-      document.removeEventListener("visibilitychange", tick);
-    };
-  }, [session?.testSession?._id, result, terminal]);
-
-  // Present in every branch below so an announcement made right before a state transition (e.g.
-  // "Time is up" just before the timeUp screen renders) is never lost to an unmounted node.
-  const liveRegions = <>
-    <div aria-live="polite" className="sr-only">{politeAnnouncement}</div>
-    <div aria-live="assertive" className="sr-only">{assertiveAnnouncement}</div>
-  </>;
-
-  if (result) {
-    return <>{liveRegions}<Page title="Mock Test Complete" subtitle="Here is your practice report.">
-      <div className="mock-result">
-        <ScoreRing value={result.totalScore} max={result.totalMaxScore} size="lg"/>
-        <h2>Practice Score</h2>
-        <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
-        <div className="score-grid">{result.sectionScores.map(s=><ScoreCard key={s.section} title={s.section} value={`${s.score}/${s.maxScore}`} sub="Section score"/>)}</div>
-        <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
-      </div>
-    </Page></>;
-  }
-
-  if (terminal === "EXPIRED") {
-    return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-      <div className="mock-card panel mock-terminal expired">
-        <div className="mock-icon-badge tone-danger"><Clock3 size={30}/></div>
-        <h2>Mock Test Expired</h2>
-        <p>Your allotted test time has ended. Your test can no longer accept answers.</p>
-        <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
-      </div>
-    </Page></>;
-  }
-
-  if (terminal === "ALREADY_COMPLETED") {
-    return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-      <div className="mock-card panel mock-terminal">
-        <div className="mock-icon-badge tone-success"><CheckCircle2 size={30}/></div>
-        <h2>This Test Was Already Completed</h2>
-        <p>This mock attempt has already been submitted and scored.</p>
-        <NavLink className="primary" to="/history">View History</NavLink>
-      </div>
-    </Page></>;
-  }
-
-  if (!session) {
-    return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-      <div className="mock-card panel">
-        <div className="mock-icon-badge"><Trophy size={30}/></div>
-        <h2>Full PTE Practice Mock</h2>
-        <p>One question per section, scored from your actual answers — not a preset result.</p>
-        <div className="mock-section-chips">
-          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}><Icon size={14}/>{SECTION_LABELS[s]}</span>; })}
-        </div>
-        <p className="muted">20 minutes total for this compact mock.</p>
-        {error && <div className="alert error">{error}</div>}
-        <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
-      </div>
-    </Page></>;
-  }
-
-  if (timeUp) {
-    return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-      <div className="mock-card panel mock-terminal">
-        <div className="mock-icon-badge tone-warning"><Clock3 size={30}/></div>
-        <h2>Time's Up</h2>
-        <p>Submitting your test now…</p>
-      </div>
-    </Page></>;
-  }
-
-  const q = session.questions[idx];
-  const isLast = idx === session.questions.length - 1;
-  const answeredCount = Object.keys(answered).length;
-  const unansweredCount = session.questions.length - answeredCount;
-  function onAnswered(submission){ setAnswered(a=>({...a,[idx]:submission})); }
-  const confirmMessage = `You have answered ${answeredCount} of ${session.questions.length} questions, with ${formatMMSS(remainingMs ?? 0)} remaining.`
-    + (unansweredCount > 0 ? " You still have unanswered questions." : "");
-
-  return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-    <div className="mock-progress-bar">
-      <span>Question {idx+1} of {session.questions.length}</span>
-      <span className="chip">{q.section}</span>
-      <MockTimer remainingMs={remainingMs}/>
-    </div>
-    <div
-      className="mock-progress-track"
-      role="progressbar"
-      aria-valuenow={idx+1}
-      aria-valuemin={1}
-      aria-valuemax={session.questions.length}
-      aria-valuetext={`Question ${idx+1} of ${session.questions.length}`}
-    >
-      <div className="mock-progress-fill" style={{width: `${((idx+1)/session.questions.length)*100}%`}}/>
-    </div>
-    <MockQuestionNav questions={session.questions} idx={idx} answered={answered} onJump={setIdx}/>
-    {q.section==="speaking" && <SpeakingTask type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    {q.section==="writing" && <WritingTask type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    {q.section==="reading" && <ReadingTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    {q.section==="listening" && <ListeningTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    {error && <div className="alert error">{error}</div>}
-    <div className="mock-nav">
-      <button className="secondary" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>‹ Previous</button>
-      {!isLast && <button className="primary" onClick={()=>setIdx(i=>i+1)}>Next ›</button>}
-      <button className="secondary" disabled={finishing} onClick={()=>setShowConfirm(true)}>{finishing?"Finishing...":"Finish Test"}</button>
-    </div>
-    <ConfirmDialog
-      open={showConfirm}
-      title="Finish mock test?"
-      message={confirmMessage}
-      confirmLabel="Finish Test"
-      busy={finishing}
-      onConfirm={()=>{ setShowConfirm(false); finish(); }}
-      onCancel={()=>setShowConfirm(false)}
-    />
-  </Page></>;
-}
-
 function Plan() {
   const [data,setData]=useState(null);useEffect(()=>{api.plan().then(setData).catch(()=>{})},[]);
   return <Page title="Personal Study Plan" subtitle="Your plan adapts to your practice history."><div className="plan-hero panel"><div className="plan-icon"><Brain/></div><div><span className="eyebrow">FOCUS AREA</span><h2>{data?.weakest||"Speaking"}</h2><p>Build consistency in your weakest section first.</p></div></div><div className="two-col"><section className="panel"><h3>Today's tasks</h3>{(data?.tasks||["Complete 10 speaking questions","Review mistakes","Learn 10 words","Take a mini test"]).map((x,i)=><div className="check-row" key={i}><CheckCircle2 size={19}/><span>{x}</span></div>)}</section><section className="panel"><h3>Section performance</h3>{(data?.sectionScores||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</section></div></Page>
 }
 
-// Shared by the student's own mock-attempt detail view and the admin inspection view — both
-// endpoints return the identical safe-projected shape (see server/src/routes/testSessions.js's
-// loadSessionResults), so one renderer serves both without duplicating the answer-key guard.
-function describeAnswer(r) {
-  const opts = r.question?.options;
-  if (Array.isArray(opts) && opts.length) {
-    if (typeof r.answer === "number") return opts[r.answer] ?? String(r.answer);
-    if (Array.isArray(r.answer)) return r.answer.map(i => opts[i] ?? i).join(", ");
-  }
-  if (typeof r.answer === "string" && r.answer) return r.answer;
-  if (r.transcript) return r.transcript;
-  return "—";
-}
-
-function MockResultRow({ r }) {
-  return <div className="mock-result-row panel">
-    <div className="task-meta"><span className="chip">{r.section}</span><span>{r.question?.title || r.type}</span></div>
-    {r.question?.prompt && <p className="instruction">{r.question.prompt}</p>}
-    {r.question?.passage && <div className="passage">{r.question.passage}</div>}
-    <p className="muted">Your answer: {describeAnswer(r)}</p>
-    {r.evaluationType === "objective" ? <ObjectiveResult result={r}/> : <Result result={r}/>}
-  </div>;
-}
-
-function MockAttemptDetail({ id, onClose }) {
-  const [data,setData]=useState(null);
-  const [loading,setLoading]=useState(true);
-  const [error,setError]=useState("");
-  useEffect(()=>{
-    setLoading(true); setError("");
-    api.testSessions.details(id).then(setData).catch(e=>setError(e.message)).finally(()=>setLoading(false));
-  },[id]);
-  useEffect(() => {
-    function onKey(e) { if (e.key === "Escape") onClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  const s = data?.testSession;
-
-  return <div className="modal-overlay" onClick={onClose}>
-    <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label="Mock Test Details" onClick={e=>e.stopPropagation()}>
-      <div className="modal-head"><h3>Mock Test Details</h3><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button></div>
-      {loading ? <Empty text="Loading attempt..."/> : !s ? <div className="alert error">{error}</div> : <>
-        <div className="mock-detail-summary">
-          <span className="score-pill">{s.totalScore}/{s.totalMaxScore}</span>
-          <span className="muted">{s.submittedAt ? new Date(s.submittedAt).toLocaleString() : "In progress"}</span>
-        </div>
-        <div className="mock-detail-list">
-          {data.results.length ? data.results.map(r=><MockResultRow key={r._id} r={r}/>) : <p className="muted">No answers were submitted in this attempt.</p>}
-        </div>
-      </>}
-    </div>
-  </div>;
-}
-
-// "Today"/"Yesterday" reads more naturally than a repeated full timestamp in a history list
-// (Part 18) — falls back to the exact existing toLocaleString() format for anything older, so
-// this never hides real information, only shortens the two most common, most-glanced-at cases.
-function fmtRelativeDateTime(d) {
-  if (!d) return "—";
-  const date = new Date(d);
-  const startOfDay = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
-  const days = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000);
-  const time = date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-  if (days === 0) return `Today, ${time}`;
-  if (days === 1) return `Yesterday, ${time}`;
-  return date.toLocaleString();
-}
-
-const HISTORY_SECTION_FILTERS = ["all", ...PRACTICE_SECTIONS];
-
-function History() {
-  const [rows,setRows]=useState([]);
-  const [mocks,setMocks]=useState([]);
-  const [detailId,setDetailId]=useState(null);
-  const [sectionFilter,setSectionFilter]=useState("all");
-  useEffect(()=>{
-    api.history().then(d=>setRows(d.submissions)).catch(()=>{});
-    api.testSessions.list().then(d=>setMocks(d.testSessions)).catch(()=>{});
-  },[]);
-  // Client-side only — the full list is already fetched, and this is real data already on the
-  // page, not a second source of truth that could drift from it.
-  const filteredRows = sectionFilter === "all" ? rows : rows.filter(r => r.section === sectionFilter);
-  return <Page title="Practice History" subtitle="Review your recent attempts and scores.">
-    <h2 className="section-title" style={{marginTop:0}}>Mock test attempts</h2>
-    <div className="panel table-wrap">
-      <table><thead><tr><th>Date</th><th>Total</th><th>Speaking</th><th>Writing</th><th>Reading</th><th>Listening</th><th></th></tr></thead>
-      <tbody>{mocks.map(m=><tr key={m._id}>
-        <td>{fmtRelativeDateTime(m.submittedAt)}</td>
-        <td><span className="score-pill">{m.totalScore}/{m.totalMaxScore}</span></td>
-        {["speaking","writing","reading","listening"].map(sec=>{
-          const s=(m.sectionScores||[]).find(x=>x.section===sec);
-          return <td key={sec}>{s?`${s.score}/${s.maxScore}`:"—"}</td>;
-        })}
-        <td><button className="text-button" onClick={()=>setDetailId(m._id)}>View Details</button></td>
-      </tr>)}</tbody></table>
-      {!mocks.length && <Empty text="No completed mock tests yet."/>}
-    </div>
-    <div className="panel-head" style={{marginTop:30,marginBottom:0}}>
-      <h2 className="section-title" style={{margin:0}}>Practice attempts</h2>
-      <div className="question-list-filters" role="tablist" aria-label="Filter by section">
-        {HISTORY_SECTION_FILTERS.map(s => <button key={s} type="button" role="tab" aria-selected={sectionFilter===s}
-          className={sectionFilter===s ? "question-list-filter active" : "question-list-filter"}
-          onClick={()=>setSectionFilter(s)} style={{textTransform:"capitalize"}}>{s === "all" ? "All" : SECTION_LABELS[s]}</button>)}
-      </div>
-    </div>
-    <div className="panel table-wrap" style={{marginTop:14}}><table><thead><tr><th>Task</th><th>Section</th><th>Evaluation</th><th>Score</th><th>Date</th></tr></thead><tbody>{filteredRows.map(r=><tr key={r._id}><td><b>{r.type}</b></td><td style={{textTransform:"capitalize"}}>{r.section}</td><td>{r.evaluationType==="subjective" ? <Badge tone="info">AI Evaluation</Badge> : <Badge tone="neutral">Objective</Badge>}</td><td>{historyScoreCell(r)}</td><td>{fmtRelativeDateTime(r.createdAt)}</td></tr>)}</tbody></table>{!filteredRows.length&&<Empty text={rows.length ? "No practice attempts match this filter." : "No practice submissions yet. Start a task from the sidebar."}/>}</div>
-    {detailId && <MockAttemptDetail id={detailId} onClose={()=>setDetailId(null)}/>}
-  </Page>
-}
-
-function historyScoreCell(r) {
-  if (r.evaluationStatus==="PENDING" || r.evaluationStatus==="PROCESSING") return <span className="muted">Evaluating…</span>;
-  if (r.evaluationStatus==="FAILED") return <Badge tone="bad">Failed</Badge>;
-  return <span className="score-pill">{r.score}{r.maxScore?`/${r.maxScore}`:""}</span>;
-}
-
-function Profile({user}) {
-  const isAdmin = user.role === "admin";
-  return <Page title="Profile" subtitle="Manage your account.">
-    <div className="profile-card panel">
-      <div className="profile-header">
-        <div className="profile-avatar">{user.name.slice(0,1).toUpperCase()}</div>
-        <div><h2>{user.name}</h2><p className="muted">User ID: {user.username}</p></div>
-      </div>
-      <div className="detail-grid cols-2">
-        <section>
-          <h4>Account information</h4>
-          <dl>
-            <dt>Role</dt><dd style={{textTransform:"capitalize"}}>{user.role}</dd>
-            <dt>Email</dt><dd>{user.email || "—"}</dd>
-            <dt>Target score</dt><dd>{user.targetScore ?? "—"}</dd>
-            <dt>Member since</dt><dd>{fmtDate(user.createdAt)}</dd>
-            <dt>Last login</dt><dd>{fmtDateTime(user.lastLoginAt)}</dd>
-          </dl>
-        </section>
-        <section>
-          <h4>Subscription</h4>
-          {isAdmin
-            ? <p className="muted">Administrator accounts are not subject to subscription limits.</p>
-            : <dl>
-                <dt>Status</dt><dd><Badge tone={subscriptionTone(user.subscriptionStatus)}>{(user.subscriptionStatus||"").replace("_"," ")}</Badge></dd>
-                <dt>Started</dt><dd>{fmtDate(user.subscriptionStartDate)}</dd>
-                <dt>Access until</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
-                <dt>Days remaining</dt><dd>{daysRemaining(user)}</dd>
-              </dl>}
-        </section>
-      </div>
-      {!isAdmin && <p className="muted profile-footnote">To change your password or extend access, contact your administrator.</p>}
-    </div>
-  </Page>;
-}
-
-function Badge({tone,children}) { return <span className={`badge badge-${tone}`}>{children}</span> }
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
 function difficultyTone(d){ return d==="easy"?"good":d==="hard"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
@@ -1375,7 +403,7 @@ function daysRemaining(u){
   return Math.max(0, Math.ceil((new Date(u.subscriptionEndDate)-Date.now())/86400000));
 }
 
-function ToastHost({toasts,dismiss}) {
+export function ToastHost({toasts,dismiss}) {
   if(!toasts.length) return null;
   return <div className="toast-host" role="status" aria-live="polite">{toasts.map(t=><button key={t.id} type="button" className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}<span className="sr-only"> — dismiss</span></button>)}</div>
 }
@@ -1413,7 +441,7 @@ const ACTIVITY_LABELS = {
   SUBSCRIPTION_CHANGED:"changed the subscription of", FORCE_LOGOUT:"force-logged-out"
 };
 
-function AdminDashboard({notify, goToUsers, goToQuestions}) {
+export function AdminDashboard({notify, goToUsers, goToQuestions}) {
   const [stats,setStats]=useState(null);
   const [questionStats,setQuestionStats]=useState(null);
   const [activity,setActivity]=useState([]);
@@ -1583,7 +611,7 @@ function PasswordResetModal({ account, onClose }) {
   />;
 }
 
-function AdminUsers({notify, initialFilters, onFiltersApplied}) {
+export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   const [users,setUsers]=useState([]);
   const [total,setTotal]=useState(0);
   const [totalPages,setTotalPages]=useState(1);
@@ -1827,7 +855,7 @@ function AdminUserDetail({id, notify, onClose}) {
 
 function testSessionStatusTone(s) { return s==="COMPLETED"?"good":s==="EXPIRED"?"bad":s==="ABANDONED"?"neutral":"info" }
 
-function AdminTestSessions() {
+export function AdminTestSessions() {
   const [sessions,setSessions]=useState([]);
   const [total,setTotal]=useState(0);
   const [totalPages,setTotalPages]=useState(1);
@@ -1917,49 +945,6 @@ function AdminTestSessionDetail({id, onClose}) {
   </div>;
 }
 
-function Admin() {
-  // Kept in sync with ?tab= (both directions) so a sidebar link, the header search's admin
-  // destinations, and browser back/forward all land on the right tab — not just the tab strip's
-  // own clicks.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [tab,setTabState]=useState(() => searchParams.get("tab") || "dashboard");
-  const [toasts,setToasts]=useState([]);
-  const [usersFilter,setUsersFilter]=useState(null);
-
-  useEffect(() => {
-    const urlTab = searchParams.get("tab") || "dashboard";
-    setTabState(current => current === urlTab ? current : urlTab);
-  }, [searchParams]);
-
-  function setTab(next) {
-    setTabState(next);
-    setSearchParams(next === "dashboard" ? {} : { tab: next });
-  }
-
-  function notify(type, message) {
-    const id = Date.now()+Math.random();
-    setToasts(t=>[...t,{id,type,message}]);
-    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)), 6000);
-  }
-  function goToUsers(filters) { setUsersFilter(filters); setTab("users"); }
-
-  return <Page title="Admin Panel" subtitle="Manage users and the practice content library.">
-    <div className="practice-tabs">
-      <button className={tab==="dashboard"?"tab active":"tab"} onClick={()=>setTab("dashboard")}>Dashboard</button>
-      <button className={tab==="users"?"tab active":"tab"} onClick={()=>setTab("users")}>Users</button>
-      <button className={tab==="questions"?"tab active":"tab"} onClick={()=>setTab("questions")}>Questions</button>
-      <button className={tab==="testSessions"?"tab active":"tab"} onClick={()=>setTab("testSessions")}>Test Sessions</button>
-    </div>
-    {tab==="dashboard" && <AdminDashboard notify={notify} goToUsers={goToUsers} goToQuestions={()=>setTab("questions")}/>}
-    {tab==="users" && <div className="panel"><AdminUsers notify={notify} initialFilters={usersFilter} onFiltersApplied={()=>setUsersFilter(null)}/></div>}
-    {tab==="questions" && <div className="panel"><AdminQuestionsPanel notify={notify}/></div>}
-    {tab==="testSessions" && <div className="panel"><AdminTestSessions/></div>}
-    <ToastHost toasts={toasts} dismiss={id=>setToasts(t=>t.filter(x=>x.id!==id))}/>
-  </Page>
-}
-
-function Empty({text}) {return <div className="empty">{text}</div>}
-
 // The one and only gate for the admin surface (there is a single /admin route today — the
 // Users/Questions/Test Sessions tabs inside it are React state, not separate routes, so there is
 // nothing nested left to separately guard). The role checked here is req.user.role as returned by
@@ -1974,23 +959,25 @@ function AdminRoute({ user, children }) {
   return children;
 }
 
+const PRACTICE_TASK_COMPONENTS = { speaking: SpeakingTaskModule, writing: WritingTaskModule, reading: ReadingTask, listening: ListeningTask };
+
 export default function App() {
   const auth=useAuth();
   const { theme, toggleTheme } = useTheme();
   if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
   return <Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
-    <Route path="/dashboard" element={<Dashboard user={auth.user}/>}/>
-    <Route path="/practice" element={<PracticeHub/>}/>
-    <Route path="/speaking" element={<Practice section="speaking"/>}/>
-    <Route path="/writing" element={<Practice section="writing"/>}/>
-    <Route path="/reading" element={<Practice section="reading"/>}/>
-    <Route path="/listening" element={<Practice section="listening"/>}/>
-    <Route path="/mock" element={<Mock/>}/>
+    <Route path="/dashboard" element={<DashboardPage user={auth.user}/>}/>
+    <Route path="/practice" element={<PracticeHubPage/>}/>
+    <Route path="/speaking" element={<PracticePage section="speaking" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
+    <Route path="/writing" element={<PracticePage section="writing" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
+    <Route path="/reading" element={<PracticePage section="reading" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
+    <Route path="/listening" element={<PracticePage section="listening" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
+    <Route path="/mock" element={<MockPage/>}/>
     <Route path="/plan" element={<Plan/>}/>
-    <Route path="/history" element={<History/>}/>
-    <Route path="/profile" element={<Profile user={auth.user}/>}/>
-    <Route path="/admin" element={<AdminRoute user={auth.user}><Admin/></AdminRoute>}/>
+    <Route path="/history" element={<HistoryPage/>}/>
+    <Route path="/profile" element={<ProfilePage user={auth.user}/>}/>
+    <Route path="/admin" element={<AdminRoute user={auth.user}><AdminPage/></AdminRoute>}/>
     <Route path="*" element={<Navigate to="/dashboard"/>}/>
   </Routes></Layout>
 }
