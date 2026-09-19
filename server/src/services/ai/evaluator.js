@@ -7,9 +7,6 @@ const MAX_SCORE = 90;
 const HEURISTIC_NOTE = "Heuristic practice estimate based only on response length and structure — it does not analyze grammar, vocabulary, or (for speaking) pronunciation.";
 const AI_NOTE = "AI practice evaluation based on your transcript/text — pronunciation and audio quality are not analyzed, since only text is available to the model.";
 
-// No externally-verifiable signal exists here beyond word/sentence counts and response
-// duration. Deliberately does NOT invent a pronunciation, fluency, or grammar sub-score —
-// only one overall practice score plus qualitative, hedged feedback.
 function heuristicEvaluate({ text = "" }) {
   const trimmed = text.trim();
   const words = trimmed ? trimmed.split(/\s+/).length : 0;
@@ -35,26 +32,37 @@ function heuristicEvaluate({ text = "" }) {
     improvements,
     overall: "This is a heuristic practice estimate, not a language-quality analysis.",
     note: HEURISTIC_NOTE,
-    // The heuristic path has no real language understanding (length/structure counts only) — it
-    // must never fabricate a criteria breakdown or a mistake list it has no basis for.
     criteria: null,
     mistakes: []
   };
 }
 
-async function callOpenAi({ type, prompt, passage, text }) {
-  const client = new OpenAI({ apiKey: config.openaiKey });
-  const { system, user } = buildPrompt({ type, prompt, passage, response: text });
-  const response = await client.chat.completions.create({
-    model: config.openaiModel,
-    temperature: 0.2,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user }
-    ]
+async function callGroq({ type, prompt, passage, text }) {
+  const client = new OpenAI({ 
+    apiKey: config.openaiKey,
+    baseURL: "https://api.groq.com/openai/v1"
   });
-  return JSON.parse(response.choices[0].message.content);
+  
+  let lastError;
+  for (const model of config.openaiModels) {
+    try {
+      const { system, user } = buildPrompt({ type, prompt, passage, response: text });
+      const response = await client.chat.completions.create({
+        model: model.trim(),
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user }
+        ]
+      });
+      return JSON.parse(response.choices[0].message.content);
+    } catch (error) {
+      console.warn(`Model ${model} failed, trying next...`);
+      lastError = error;
+    }
+  }
+  throw lastError;
 }
 
 function failedResult(reason) {
@@ -73,16 +81,12 @@ function failedResult(reason) {
   };
 }
 
-// The single entry point for subjective (AI/heuristic) scoring. Missing OPENAI_API_KEY is a
-// disclosed, intentional product default (heuristic) — not a failure. A configured key that
-// then fails (timeout, rate limit, invalid response) is a real FAILED state: it is never
-// silently masked as a heuristic result, so a genuine outage is visible instead of hidden.
 export async function evaluateSubjective({ type, prompt, passage, text, durationSeconds }) {
   if (!config.openaiKey) {
     return heuristicEvaluate({ text, durationSeconds });
   }
   try {
-    const raw = await callOpenAi({ type, prompt, passage, text });
+    const raw = await callGroq({ type, prompt, passage, text });
     const criteriaKeys = taskInfoFor(type).criteriaKeys;
     const validated = validateAiResult(raw, MAX_SCORE, criteriaKeys);
     if (!validated.valid) return failedResult(`invalid structured response — ${validated.reason}`);

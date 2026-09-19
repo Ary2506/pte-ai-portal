@@ -19,7 +19,7 @@ export const config = {
   jwtSecret: required("JWT_SECRET", { minLength: 32 }),
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
   openaiKey: process.env.OPENAI_API_KEY || "",
-  openaiModel: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+  openaiModels: (process.env.OPENAI_MODEL || "llama-3.3-70b-versatile").split(","),
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   subscriptionDefaultDays: Number(process.env.SUBSCRIPTION_DEFAULT_DAYS || 30),
