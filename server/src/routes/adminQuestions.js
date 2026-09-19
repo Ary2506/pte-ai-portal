@@ -6,6 +6,7 @@ import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { validateAndNormalizeQuestion } from "../validation/questionValidation.js";
 import { QUESTION_TYPES, QUESTION_SECTIONS } from "../questionTypes.js";
+import { logAdminAction } from "../utils/audit.js";
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -84,12 +85,18 @@ router.post("/", asyncRoute(async (req, res) => {
     ...normalized,
     active: req.body.active !== false
   });
+  // targetUser is null here — AuditLog's targetUser field is a User reference, and the affected
+  // entity is a Question, not a user, so its identity goes in metadata instead.
+  logAdminAction(req.user, "QUESTION_CREATED", null, {
+    questionId: question._id, title: question.title, section: question.section, type: question.type
+  });
   res.status(201).json({ question });
 }));
 
 router.put("/:id", asyncRoute(async (req, res) => {
   const existing = await Question.findById(req.params.id);
   if (!existing) return res.status(404).json({ message: "Question not found", code: "NOT_FOUND" });
+  const before = { title: existing.title, section: existing.section, type: existing.type, active: existing.active };
 
   const merged = { ...existing.toObject(), ...req.body };
   const { errors, normalized } = validateAndNormalizeQuestion(merged);
@@ -100,6 +107,15 @@ router.put("/:id", asyncRoute(async (req, res) => {
   // Editing only changes the live question document. Past Submissions already stored their own
   // snapshot of score/feedback/answer at submission time, so historical results are unaffected —
   // there is no versioning system, and none is needed at this scale.
+  // changedFields lists which top-level fields the admin submitted, not their full before/after
+  // content — enough to answer "what changed" without logging potentially large passage/options
+  // text into the audit trail.
+  logAdminAction(req.user, "QUESTION_UPDATED", null, {
+    questionId: existing._id,
+    before,
+    after: { title: existing.title, section: existing.section, type: existing.type, active: existing.active },
+    changedFields: Object.keys(req.body)
+  });
   res.json({ question: existing });
 }));
 
@@ -124,6 +140,9 @@ router.patch("/:id/status", asyncRoute(async (req, res) => {
 
   question.active = active;
   await question.save();
+  logAdminAction(req.user, active ? "QUESTION_ACTIVATED" : "QUESTION_DEACTIVATED", null, {
+    questionId: question._id, title: question.title, section: question.section, type: question.type
+  });
   res.json({ question });
 }));
 
@@ -137,6 +156,9 @@ router.delete("/:id", asyncRoute(async (req, res) => {
   }
   const question = await Question.findByIdAndDelete(req.params.id);
   if (!question) return res.status(404).json({ message: "Question not found", code: "NOT_FOUND" });
+  logAdminAction(req.user, "QUESTION_DELETED", null, {
+    questionId: question._id, title: question.title, section: question.section, type: question.type
+  });
   res.json({ message: "Question deleted" });
 }));
 

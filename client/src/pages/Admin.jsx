@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AdminQuestionsPanel } from "../AdminQuestions.jsx";
+import { AdminQuestionsPanel } from "./admin/AdminQuestions.jsx";
 import { Page } from "../components/common.jsx";
-import { AdminDashboard, AdminUsers, AdminTestSessions, ToastHost } from "../App.jsx";
+import { AdminDashboard } from "./admin/AdminDashboard.jsx";
+import { AdminUsers } from "./admin/AdminUsers.jsx";
+import { AdminTestSessions } from "./admin/AdminTestSessions.jsx";
+import { ToastHost } from "../App.jsx";
 
 export default function Admin() {
 	const [searchParams, setSearchParams] = useSearchParams();

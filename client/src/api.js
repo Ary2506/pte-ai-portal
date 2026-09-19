@@ -85,6 +85,16 @@ export const api = {
       },
       get: (id) => request(`/admin/test-sessions/${id}`)
     },
+    media: {
+      // multipart/form-data with field name "file", matching the Phase 2 endpoint exactly —
+      // request() already skips setting a JSON Content-Type for a FormData body (see above),
+      // the same mechanism api.submit() already relies on for student audio uploads.
+      upload: (file) => {
+        const form = new FormData();
+        form.append("file", file);
+        return request("/admin/media/upload", { method: "POST", body: form });
+      }
+    },
     questions: {
       types: () => request("/admin/questions/types"),
       stats: () => request("/admin/questions/stats"),

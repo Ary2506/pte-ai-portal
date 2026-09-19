@@ -22,7 +22,9 @@ const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 
 // Browser-supplied Content-Type is a first filter only — never trusted alone (see the magic-byte
 // check below, which verifies the file's actual binary header after upload).
-const ALLOWED_AUDIO_MIME = new Set([
+// Exported so the admin media-upload route (adminMedia.js) reuses the exact same allow-list
+// rather than maintaining a second, potentially-drifting one.
+export const ALLOWED_AUDIO_MIME = new Set([
   "audio/webm", "audio/ogg", "audio/wav", "audio/x-wav", "audio/wave",
   "audio/mpeg", "audio/mp4", "audio/x-m4a", "audio/aac"
 ]);
@@ -65,7 +67,8 @@ const AUDIO_SIGNATURES = [
   { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] } // "ftyp" (mp4/m4a)
 ];
 
-function hasValidAudioSignature(filePath) {
+// Exported for reuse by adminMedia.js — same binary-signature check, one implementation.
+export function hasValidAudioSignature(filePath) {
   const buf = Buffer.alloc(12);
   const fd = fs.openSync(filePath, "r");
   const bytesRead = fs.readSync(fd, buf, 0, 12, 0);
@@ -306,6 +309,9 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
 
   const question = submission.question ? await Question.findById(submission.question) : null;
   const text = submission.transcript || (typeof submission.answer === "string" ? submission.answer : "");
+  // Same expected-answer pass-through as the initial evaluation (scoring/index.js) — a retry
+  // must get the same comparison the first attempt would have, not a weaker one.
+  const expectedAnswer = typeof question?.answer === "string" && question.answer.trim() ? question.answer.trim() : null;
 
   submission.evaluationStatus = "PROCESSING";
   await submission.save();
@@ -315,7 +321,8 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
     prompt: question?.prompt,
     passage: question?.passage,
     text,
-    durationSeconds: submission.durationSeconds
+    durationSeconds: submission.durationSeconds,
+    expectedAnswer
   });
 
   submission.evaluationStatus = result.evaluationStatus;
@@ -324,7 +331,9 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
   submission.scoringMethod = result.scoringMethod;
   submission.feedback = {
     strengths: result.strengths, improvements: result.improvements, overall: result.overall, note: result.note, scoringMethod: result.scoringMethod,
-    criteria: result.criteria ?? null, mistakes: result.mistakes ?? []
+    criteria: result.criteria ?? null, mistakes: result.mistakes ?? [],
+    status: result.status ?? null, correctedResponse: result.correctedResponse ?? null,
+    expectedAnswerText: expectedAnswer, studentAnswerText: text?.trim() || null
   };
   await submission.save();
 

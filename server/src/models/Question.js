@@ -19,4 +19,8 @@ const questionSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 }, { timestamps: true });
 
+// Every question list query (student practice fetch, admin list/filter, mock-test selection)
+// filters on this exact combination — section+type to pick a task, active to exclude drafts.
+questionSchema.index({ section: 1, type: 1, active: 1 });
+
 export default mongoose.model("Question", questionSchema);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Activity, Play, Sparkles, Trophy, AlertCircle } from "lucide-react";
+import { Activity, Play, Sparkles, Trophy, AlertCircle, CreditCard, Flame, Check, X, HelpCircle } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { api } from "../api.js";
 import { Badge, Empty, Page, SkeletonRows } from "../components/common.jsx";
@@ -7,13 +7,27 @@ import { Badge, Empty, Page, SkeletonRows } from "../components/common.jsx";
 function fmtLongDate(d) {
   return d
     ? new Date(d).toLocaleDateString(undefined, {
-        year: "numeric",
+        day: "2-digit",
         month: "long",
-        day: "numeric",
+        year: "numeric",
       })
     : "—";
 }
+const SUBSCRIPTION_NOTICE = {
+  EXPIRED: {
+    title: "Your 30-day subscription has expired.",
+    body: "Please contact the administrator for renewal.",
+  },
+  NOT_ACTIVATED: {
+    title: "Your subscription has not been activated yet.",
+    body: "Please contact the administrator to get started.",
+  },
+};
 function SubscriptionCard({ user }) {
+  if (user.role === "admin") return null;
+  const status = user.subscriptionStatus || "ACTIVE";
+  const tone = status === "ACTIVE" ? "good" : status === "EXPIRED" ? "bad" : "warn";
+  const notice = SUBSCRIPTION_NOTICE[status];
   const daysLeft = user.subscriptionEndDate
     ? Math.max(
         0,
@@ -21,45 +35,68 @@ function SubscriptionCard({ user }) {
       )
     : null;
   return (
-    <div className="panel subscription-card">
-      <div className="subscription-card-head">
-        <h3>Subscription</h3>
-        <Badge tone="good">ACTIVE</Badge>
+    <div className="panel stat-card">
+      <div className="stat-card-head">
+        <div className="stat-card-icon tone-sub">
+          <CreditCard size={19} />
+        </div>
+        <div className="stat-card-title">
+          <h3>Subscription</h3>
+          <span>Your access plan</span>
+        </div>
+        <Badge tone={tone}>{status.replace("_", " ")}</Badge>
       </div>
-      <div className="subscription-card-grid">
-        <div>
-          <span>Started</span>
-          <b>{fmtLongDate(user.subscriptionStartDate)}</b>
+      {notice ? (
+        <div className="stat-card-notice">
+          <p className="stat-card-notice-title">{notice.title}</p>
+          <p className="muted">{notice.body}</p>
         </div>
-        <div>
-          <span>Expires</span>
-          <b>{fmtLongDate(user.subscriptionEndDate)}</b>
+      ) : (
+        <div className="stat-card-grid">
+          <div>
+            <span>Started</span>
+            <b>{fmtLongDate(user.subscriptionStartDate)}</b>
+          </div>
+          <div>
+            <span>Expires</span>
+            <b>{fmtLongDate(user.subscriptionEndDate)}</b>
+          </div>
+          <div>
+            <span>Days remaining</span>
+            <b>{daysLeft ?? "—"}</b>
+          </div>
         </div>
-        <div>
-          <span>Days remaining</span>
-          <b>{daysLeft ?? "—"}</b>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
-function StreakCard({ streak }) {
+function StreakCard({ streak, weeklyActivity }) {
   if (!streak) return null;
   return (
-    <div className="panel subscription-card">
-      <div className="subscription-card-head">
+    <div className="panel streak-hero">
+      <div className="streak-hero-head">
         <h3>🔥 {streak.currentStreak} Day Streak</h3>
-        <Badge tone={streak.learnedToday ? "good" : "warn"}>
-          {streak.learnedToday ? "Learned today" : "Not yet today"}
-        </Badge>
-      </div>
-      <div className="subscription-card-grid">
-        <div>
-          <span>Current streak</span>
-          <b>
-            {streak.currentStreak} day{streak.currentStreak === 1 ? "" : "s"}
-          </b>
+        <div className="streak-hero-head-actions">
+          <Badge tone={streak.learnedToday ? "good" : "warn"}>
+            {streak.learnedToday ? "Learned today" : "Not yet today"}
+          </Badge>
+          <span
+            className="streak-help"
+            role="img"
+            aria-label="About your streak"
+            title="Complete one practice activity each day to keep your streak going."
+          >
+            <HelpCircle size={16} />
+          </span>
         </div>
+      </div>
+
+      <div className="streak-pill">
+        <span>Your Streak</span>
+        <strong>{streak.currentStreak}</strong>
+      </div>
+
+      <div className="streak-meta">
         <div>
           <span>Longest streak</span>
           <b>
@@ -71,42 +108,43 @@ function StreakCard({ streak }) {
           <b>{streak.lastLearningDate || "—"}</b>
         </div>
       </div>
-      <p className="muted" style={{ marginTop: 12 }}>
+
+      {!!weeklyActivity?.length && (
+        <div className="streak-week">
+          <span className="streak-week-label">This Week</span>
+          <div className="streak-week-dots">
+            {weeklyActivity.map((d) => (
+              <span
+                key={d.date}
+                className={d.active ? "streak-day-dot active" : "streak-day-dot"}
+                aria-label={d.active ? "Learned" : "No activity"}
+                title={
+                  ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                    new Date(`${d.date}T00:00:00Z`).getUTCDay()
+                  ]
+                }
+              >
+                {d.active ? (
+                  <Check size={14} strokeWidth={3} />
+                ) : (
+                  <X size={14} strokeWidth={3} />
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="streak-foot">
         {streak.learnedToday
           ? "Keep learning every day!"
           : "Complete a practice activity today to keep your streak going."}
       </p>
-    </div>
-  );
-}
-function WeeklyActivity({ days }) {
-  if (!days?.length) return null;
-  return (
-    <div className="panel" style={{ marginBottom: 18 }}>
-      <h3 style={{ marginTop: 0 }}>This Week</h3>
-      <div
-        style={{ display: "flex", gap: 10, justifyContent: "space-between" }}
-      >
-        {days.map((d) => (
-          <div key={d.date} style={{ textAlign: "center" }}>
-            <small
-              className="muted"
-              style={{ display: "block", marginBottom: 4 }}
-            >
-              {
-                ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                  new Date(`${d.date}T00:00:00Z`).getUTCDay()
-                ]
-              }
-            </small>
-            <span
-              style={{ fontSize: 18 }}
-              aria-label={d.active ? "Learned" : "No activity"}
-            >
-              {d.active ? "✅" : "❌"}
-            </span>
-          </div>
-        ))}
+
+      <div className="streak-hero-flames" aria-hidden="true">
+        <Flame className="flame flame-1" />
+        <Flame className="flame flame-2" />
+        <Flame className="flame flame-3" />
       </div>
     </div>
   );
@@ -147,9 +185,10 @@ export default function Dashboard({ user }) {
           {accessDenied}
         </div>
       )}
-      <SubscriptionCard user={user} />
-      <StreakCard streak={data?.streak} />
-      <WeeklyActivity days={data?.weeklyActivity} />
+      <div className="stats-row">
+        <SubscriptionCard user={user} />
+        <StreakCard streak={data?.streak} weeklyActivity={data?.weeklyActivity} />
+      </div>
       <div className="hero-row dashboard-hero">
         <div>
           <span className="eyebrow">YOUR TARGET</span>

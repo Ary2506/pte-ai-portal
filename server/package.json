@@ -1,5 +1,6 @@
 {
-  "name": "pte-ai-portal-server",
+  "name": "pte-core-ai-server",
+  "description": "AI-powered PTE Core preparation, practice, mock tests, scoring, and performance analysis platform.",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

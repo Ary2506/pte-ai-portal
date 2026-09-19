@@ -1,5 +1,6 @@
 {
-  "name": "pte-ai-portal-complete",
+  "name": "pte-core-ai",
+  "description": "AI-powered PTE Core preparation, practice, mock tests, scoring, and performance analysis platform.",
   "private": true,
   "scripts": {
     "install:all": "npm --prefix server install && npm --prefix client install",

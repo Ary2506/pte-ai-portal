@@ -140,11 +140,19 @@ export function Result({ result, onRetry, retrying }) {
   // A real, honest read of the actual score — never a separate invented metric — purely a label
   // for the same percentage the ring itself already renders.
   const perfLabel = pct >= 80 ? "Excellent Performance" : pct >= 65 ? "Strong Performance" : pct >= 40 ? "Good Progress" : "Needs More Practice";
+  // Only set when the question actually had a stored expected answer the AI compared against
+  // (currently Describe Image questions with a model answer on file) — every field below is
+  // conditionally rendered, so a question with none of this data (every other type today) renders
+  // exactly as before this feature existed.
+  const statusLabel = { correct: "Correct", partially_correct: "Partially Correct", incorrect: "Incorrect" }[f.status] || null;
   return <div className="result-panel">
     <div className="score-ring" style={{ "--pct": pct, "--ring-color": ringColor }}><strong>{result.score}</strong><small>/ {maxScore}</small></div>
     <div>
       <span className="result-perf-label" style={{ color: ringColor }}>{perfLabel}</span>
       <h3>{methodLabel}</h3>
+      {statusLabel && <div className="feedback-group"><b>Status</b><p>{statusLabel}</p></div>}
+      {f.expectedAnswerText && <div className="feedback-group"><b>Expected Answer</b><p>{f.expectedAnswerText}</p></div>}
+      {f.studentAnswerText && <div className="feedback-group"><b>Your Answer</b><p>{f.studentAnswerText}</p></div>}
       {!!criteriaEntries.length && <div className="feedback-group"><b>Breakdown</b>{criteriaEntries.map(([key, value]) => <p key={key} style={{textTransform:"capitalize"}}>{key}: {value} / 100</p>)}</div>}
       {!!f.strengths?.length && <div className="feedback-group"><b>Strengths</b>{f.strengths.map((x, i) => <p key={i}><CheckCircle2 size={15} /> {x}</p>)}</div>}
       {!!f.improvements?.length && <div className="feedback-group"><b>Improvements</b>{f.improvements.map((x, i) => <p key={i}>{x}</p>)}</div>}
@@ -154,6 +162,7 @@ export function Result({ result, onRetry, retrying }) {
         {m.correction && <p>Suggested correction: "{m.correction}"</p>}
         {m.explanation && <p className="muted">{m.explanation}</p>}
       </div>)}</div>}
+      {f.correctedResponse && <div className="feedback-group"><b>Corrected Answer</b><p>{f.correctedResponse}</p></div>}
       {f.overall && <p className="feedback-overall">{f.overall}</p>}
       {f.note && <p className="muted feedback-note">{f.note}</p>}
       <p className="disclaimer">Practice evaluation — not an official Pearson PTE score.</p>

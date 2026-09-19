@@ -31,9 +31,10 @@ export default function Speaking({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
-  // Describe Image only — no other Speaking type has ever shown a reference answer. Resets to
-  // hidden automatically on every new question because PracticeTask remounts this component via
-  // key={question._id}, the same mechanism that already resets recording/result state.
+  // Describe Image and Respond to a Situation only — no other Speaking type has ever shown a
+  // reference answer. Resets to hidden automatically on every new question because PracticeTask
+  // remounts this component via key={question._id}, the same mechanism that already resets
+  // recording/result state.
   const [showAnswer, setShowAnswer] = useState(false);
   const recorder = useRef(null);
   const chunks = useRef([]);
@@ -226,22 +227,29 @@ export default function Speaking({
             </button>
           </div>
         )}
-        {question?.type === "describe-image" && question?.answer && (
-          <>
-            <button
-              type="button"
-              className="secondary answer-toggle"
-              onClick={() => setShowAnswer((value) => !value)}
-            >
-              {showAnswer ? "Hide Answer" : "Show Answer"}
-            </button>
-            {showAnswer && (
-              <div className="answer-reveal">
-                <b>Model Answer</b>
-                <p>{question.answer}</p>
-              </div>
-            )}
-          </>
+        {(question?.type === "describe-image" || question?.type === "respond-to-situation") && (
+          question?.answer ? (
+            <>
+              <button
+                type="button"
+                className="secondary answer-toggle"
+                onClick={() => setShowAnswer((value) => !value)}
+              >
+                {showAnswer ? "Hide Answer" : "Show Answer"}
+              </button>
+              {showAnswer && (
+                <div className="answer-reveal">
+                  <b>Model Answer</b>
+                  <p>{question.answer}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            // Some Describe Image questions predate this feature and were never given a stored
+            // model answer — an honest note instead of a silently-missing button, so this reads
+            // as "no answer for this one" rather than "the feature is broken".
+            <p className="muted answer-toggle">No model answer available for this question yet.</p>
+          )
         )}
       </section>
       <aside className="panel tips">

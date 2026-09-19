@@ -1,4 +1,4 @@
-# PTE AI Portal — Complete Full-Stack Starter
+# PTE CORE AI — AI-Powered PTE Core Practice & Assessment Platform
 
 A production-oriented PTE preparation portal inspired by the feature set of modern PTE practice platforms, with original UI/code.
 

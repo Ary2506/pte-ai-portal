@@ -123,12 +123,111 @@ describe("Show Answer stays specific to Describe Image", () => {
     expect(screen.queryByText("Show Answer")).not.toBeInTheDocument();
   });
 
-  it("does not appear for a describe-image question that happens to have no stored answer", async () => {
+  it("shows an honest 'no model answer available' note instead of the button for a describe-image question with no stored answer", async () => {
     api.questions.mockResolvedValue({
       questions: [{ _id: "di-legacy", section: "speaking", type: "describe-image", title: "Legacy Image", prompt: "Describe it.", imageUrl: "https://example.com/old.png", evaluationType: "subjective" }]
     });
     renderAt("/speaking?type=describe-image", studentAuthUser());
     await screen.findByText("Legacy Image", { selector: "h2" });
     expect(screen.queryByText("Show Answer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hide Answer")).not.toBeInTheDocument();
+    expect(screen.getByText("No model answer available for this question yet.")).toBeInTheDocument();
+  });
+});
+
+// Covers the existing "AI Answer Result" location (the Result component, unchanged design/
+// components) surfacing the new expected-answer comparison fields — only ever present because the
+// server actually put them in submission.feedback; this test proves the UI wiring, real AI
+// comparison logic is covered separately in the backend's aiExpectedAnswerComparison.test.js.
+async function recordAndStop() {
+  fireEvent.click(await screen.findByText("Start Recording"));
+  await screen.findByText("Stop Recording");
+  fireEvent.click(screen.getByText("Stop Recording"));
+  await waitFor(() => expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled());
+}
+
+describe("AI Answer Result — expected-answer comparison fields, shown only when the server sends them", () => {
+  beforeEach(() => {
+    global.MediaRecorder = class {
+      constructor(stream) { this.stream = stream; }
+      start() { this.ondataavailable?.({ data: new Blob(["fake-audio-bytes"], { type: "audio/webm" }) }); }
+      stop() { this.onstop?.(); }
+    };
+  });
+
+  it("shows Status, Expected Answer, Your Answer, Corrected Answer and per-mistake correction/explanation when the server returns them", async () => {
+    api.questions.mockResolvedValue({ questions: DESCRIBE_IMAGE_QUESTIONS });
+    api.submit.mockResolvedValue({
+      submission: {
+        _id: "sub1", score: 55, maxScore: 90, evaluationType: "subjective", evaluationStatus: "COMPLETED", scoringMethod: "ai",
+        feedback: {
+          scoringMethod: "ai", overall: "The meaning is right, but grammar needs work.",
+          strengths: ["Correct core meaning"], improvements: ["Fix sentence structure"],
+          mistakes: [{ type: "grammar", studentText: "Rainfall New York highest", problem: "Missing verb and article structure.", correction: "New York has the highest rainfall.", explanation: "A complete sentence needs a verb." }],
+          status: "partially_correct",
+          expectedAnswerText: DESCRIBE_IMAGE_QUESTIONS[0].answer,
+          studentAnswerText: "Rainfall New York highest",
+          correctedResponse: "New York has the highest average rainfall among the four cities shown."
+        }
+      }
+    });
+    renderAt("/speaking?type=describe-image", studentAuthUser());
+    fireEvent.click(await screen.findByText(DESCRIBE_IMAGE_QUESTIONS[0].title));
+    await recordAndStop();
+    fireEvent.click(screen.getByText("Submit for AI Feedback"));
+
+    await screen.findByText("Partially Correct");
+    expect(screen.getByText("Expected Answer")).toBeInTheDocument();
+    expect(screen.getByText(DESCRIBE_IMAGE_QUESTIONS[0].answer)).toBeInTheDocument();
+    expect(screen.getByText("Your Answer")).toBeInTheDocument();
+    expect(screen.getByText("Rainfall New York highest")).toBeInTheDocument();
+    expect(screen.getByText(/Suggested correction: "New York has the highest rainfall\."/)).toBeInTheDocument();
+    expect(screen.getByText("A complete sentence needs a verb.")).toBeInTheDocument();
+    expect(screen.getByText("Corrected Answer")).toBeInTheDocument();
+    expect(screen.getByText("New York has the highest average rainfall among the four cities shown.")).toBeInTheDocument();
+  });
+
+  it("shows Status 'Correct' and an empty mistakes list when the answer genuinely matches — never invents a mistake", async () => {
+    api.questions.mockResolvedValue({ questions: DESCRIBE_IMAGE_QUESTIONS });
+    api.submit.mockResolvedValue({
+      submission: {
+        _id: "sub2", score: 88, maxScore: 90, evaluationType: "subjective", evaluationStatus: "COMPLETED", scoringMethod: "ai",
+        feedback: {
+          scoringMethod: "ai", overall: "Great job, matches the expected answer closely.",
+          strengths: ["Accurate content", "Natural phrasing"], improvements: [], mistakes: [],
+          status: "correct", expectedAnswerText: DESCRIBE_IMAGE_QUESTIONS[0].answer,
+          studentAnswerText: "New York had the most rainfall at 47.25 inches.", correctedResponse: null
+        }
+      }
+    });
+    renderAt("/speaking?type=describe-image", studentAuthUser());
+    fireEvent.click(await screen.findByText(DESCRIBE_IMAGE_QUESTIONS[0].title));
+    await recordAndStop();
+    fireEvent.click(screen.getByText("Submit for AI Feedback"));
+
+    await screen.findByText("Correct");
+    expect(screen.queryByText("Mistakes")).not.toBeInTheDocument();
+    expect(screen.queryByText("Corrected Answer")).not.toBeInTheDocument();
+  });
+
+  it("does not show Status/Expected Answer/Corrected Answer when the server omits them — unaffected question types render exactly as before", async () => {
+    api.questions.mockResolvedValue({
+      questions: [{ _id: "rs1", section: "speaking", type: "repeat-sentence", title: "Repeat Sentence", prompt: "Repeat this.", evaluationType: "subjective" }]
+    });
+    api.submit.mockResolvedValue({
+      submission: {
+        _id: "sub3", score: 60, maxScore: 90, evaluationType: "subjective", evaluationStatus: "COMPLETED", scoringMethod: "heuristic",
+        feedback: { scoringMethod: "heuristic", overall: "Decent attempt.", strengths: ["Good length"], improvements: [], mistakes: [] }
+      }
+    });
+    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
+    await recordAndStop();
+    fireEvent.click(screen.getByText("Submit for AI Feedback"));
+
+    await screen.findByText("Decent attempt.");
+    expect(screen.queryByText("Status")).not.toBeInTheDocument();
+    expect(screen.queryByText("Expected Answer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Your Answer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Corrected Answer")).not.toBeInTheDocument();
   });
 });

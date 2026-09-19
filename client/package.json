@@ -1,5 +1,6 @@
 {
-  "name": "pte-ai-portal-client",
+  "name": "pte-core-ai-client",
+  "description": "AI-powered PTE Core preparation, practice, mock tests, scoring, and performance analysis platform.",
   "private": true,
   "version": "1.0.0",
   "type": "module",

@@ -16,7 +16,7 @@ const OBJECTIVE_SCORERS = {
   "fill-blanks-dragdrop": scoreFillDrag
 };
 
-function subjectiveFeedback(result) {
+function subjectiveFeedback(result, extra = {}) {
   return {
     strengths: result.strengths,
     improvements: result.improvements,
@@ -26,7 +26,15 @@ function subjectiveFeedback(result) {
     // Diagnostic detail only (Phase 16, B2) — never present for the heuristic fallback or a
     // FAILED evaluation, since neither has a real basis for either (see evaluator.js).
     criteria: result.criteria ?? null,
-    mistakes: result.mistakes ?? []
+    mistakes: result.mistakes ?? [],
+    // status/correctedResponse come from the AI, only ever populated when expectedAnswerText was
+    // actually sent (see evaluateAnswer below). expectedAnswerText/studentAnswerText are
+    // deterministic pass-throughs of server data — never AI-invented — same pattern as the
+    // objective scorers' correctAnswerText/studentAnswerText (Phase 16, B4).
+    status: result.status ?? null,
+    correctedResponse: result.correctedResponse ?? null,
+    expectedAnswerText: extra.expectedAnswerText ?? null,
+    studentAnswerText: extra.studentAnswerText ?? null
   };
 }
 
@@ -60,13 +68,17 @@ export async function evaluateAnswer(question, { answer, text, durationSeconds }
     };
   }
 
-  const result = await evaluateSubjective({ type: question.type, prompt: question.prompt, passage: question.passage, text, durationSeconds });
+  // The question's own stored answer (when it has one — currently only Describe Image, section 9
+  // of the client's request) becomes the AI's comparison target. Untouched/empty for every other
+  // question, so their evaluation is unaffected.
+  const expectedAnswer = typeof question.answer === "string" && question.answer.trim() ? question.answer.trim() : null;
+  const result = await evaluateSubjective({ type: question.type, prompt: question.prompt, passage: question.passage, text, durationSeconds, expectedAnswer });
   return {
     score: result.score,
     maxScore: result.maxScore,
     evaluationType: "subjective",
     evaluationStatus: result.evaluationStatus,
     scoringMethod: result.scoringMethod,
-    feedback: subjectiveFeedback(result)
+    feedback: subjectiveFeedback(result, { expectedAnswerText: expectedAnswer, studentAnswerText: text?.trim() || null })
   };
 }
