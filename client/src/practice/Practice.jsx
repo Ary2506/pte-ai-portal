@@ -66,6 +66,7 @@ function matchesSearch(question, index, term) {
 function QuestionListView({ questions, progress, onSelect, section, label }) {
   const [filter, setFilter] = useState("all");
   const [subtypeFilter, setSubtypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [search, setSearch] = useState("");
   const doneCount = questions.filter((question) =>
     progress.has(question._id),
@@ -85,6 +86,12 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
     const subtype = normalizeSubtype(question.subtype);
     return subtype.includes(option.key);
   }));
+  // A separate, independently-gated "My Type" dropdown driven by `question.category` — currently
+  // only Speaking > Describe Image populates this field (Bar/Flow/Line/Map/Pic/Pie/Table). Kept
+  // deliberately distinct from the Core/Core P subtype filter above (which Listening's bundled
+  // content uses) rather than reusing or altering it, so every other section is unaffected.
+  const categoryValues = Array.from(new Set(questions.map(q => q.category).filter(Boolean))).sort();
+  const hasCategoryFilter = categoryValues.length > 0;
   const rows = questions
     .map((question, index) => ({ question, index }))
     .filter(
@@ -95,6 +102,7 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
       if (subtypeFilter === "all") return true;
       return normalizeSubtype(question.subtype).includes(subtypeFilter);
     })
+    .filter(({ question }) => categoryFilter === "all" || question.category === categoryFilter)
     .filter(({ question, index }) => matchesSearch(question, index, search));
 
   return (
@@ -112,6 +120,21 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
           {subtypeOptions.map(option => <button key={option.key} type="button" role="tab" aria-selected={subtypeFilter === option.key}
             className={subtypeFilter === option.key ? "question-list-filter active" : "question-list-filter"}
             onClick={() => setSubtypeFilter(option.key)}>{option.label}</button>)}
+        </div>}
+        {hasCategoryFilter && <div className="question-list-filters" role="group" aria-label="Filter by image type">
+          <button type="button" className={categoryFilter === "all" ? "question-list-filter active" : "question-list-filter"}
+            onClick={() => setCategoryFilter("all")}>All</button>
+          <label className="question-list-category-select">
+            My Type
+            <select
+              value={categoryFilter === "all" ? "" : categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value || "all")}
+              aria-label="My Type"
+            >
+              <option value="" disabled>Choose a type</option>
+              {categoryValues.map(value => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
         </div>}
         <div
           className="question-list-filters"

@@ -12,6 +12,11 @@ const questionSchema = new mongoose.Schema({
   answer: mongoose.Schema.Types.Mixed,
   explanation: String,
   difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
+  // Optional, currently populated only by Speaking > Describe Image (Bar/Flow/Line/Map/Pic/Pie/
+  // Table) to drive its own "My Type" filter dropdown. Deliberately separate from the existing
+  // `subtype`/Core-Core-P filter mechanism in client/src/practice/Practice.jsx (that one is
+  // reserved for Listening's bundled content) — left undefined for every other question.
+  category: { type: String },
   // "objective" = deterministically graded server-side (right/wrong or partial credit).
   // "subjective" = needs AI or human judgement (speaking, essay, free-text summary).
   evaluationType: { type: String, enum: ["objective", "subjective"], required: true },
