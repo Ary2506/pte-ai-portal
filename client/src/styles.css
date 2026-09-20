@@ -361,6 +361,7 @@ h1,h2{font-family:var(--font-display);letter-spacing:-.02em}
 .answer-toggle{margin-top:12px}
 .answer-reveal{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--bg-soft)}
 .answer-reveal p{margin:6px 0 0;color:var(--ink-soft)}
+.answer-reveal p + b{display:block;margin-top:14px}
 .listening-fill-passage{font-size:var(--text-lg);line-height:2.1;color:var(--ink);margin:20px 0}
 .listening-fill-input{min-width:120px;max-width:180px;margin:0 6px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);font:inherit;line-height:1.2}
 .listening-fill-input:focus{outline:0;border-color:var(--blue);box-shadow:var(--focus-ring)}

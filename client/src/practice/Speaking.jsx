@@ -31,10 +31,10 @@ export default function Speaking({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
-  // Describe Image and Respond to a Situation only — no other Speaking type has ever shown a
-  // reference answer. Resets to hidden automatically on every new question because PracticeTask
-  // remounts this component via key={question._id}, the same mechanism that already resets
-  // recording/result state.
+  // Describe Image, Respond to a Situation, and Answer Short Question only — no other Speaking
+  // type has ever shown a reference answer. Resets to hidden automatically on every new question
+  // because PracticeTask remounts this component via key={question._id}, the same mechanism that
+  // already resets recording/result state.
   const [showAnswer, setShowAnswer] = useState(false);
   const recorder = useRef(null);
   const chunks = useRef([]);
@@ -164,10 +164,22 @@ export default function Speaking({
           </span>
         </div>
         <h2>{question?.title || type}</h2>
-        <p className="instruction">
-          {question?.prompt ||
-            "Your speaking question will load from the practice library."}
-        </p>
+        {/* Answer Short Question is audio-only in the real PTE test — reading the question text
+            up front would defeat the listening-comprehension point of the task, so unlike every
+            other Speaking type, its prompt is withheld here and only revealed (as a transcript)
+            together with the answer, via the toggle below. */}
+        {question?.type === "answer-short-question" ? (
+          !question?.audioUrl && (
+            <p className="instruction">
+              Your speaking question will load from the practice library.
+            </p>
+          )
+        ) : (
+          <p className="instruction">
+            {question?.prompt ||
+              "Your speaking question will load from the practice library."}
+          </p>
+        )}
         {question?.imageUrl && (
           <img
             src={question.imageUrl}
@@ -227,7 +239,7 @@ export default function Speaking({
             </button>
           </div>
         )}
-        {(question?.type === "describe-image" || question?.type === "respond-to-situation") && (
+        {(question?.type === "describe-image" || question?.type === "respond-to-situation" || question?.type === "answer-short-question") && (
           question?.answer ? (
             <>
               <button
@@ -239,8 +251,19 @@ export default function Speaking({
               </button>
               {showAnswer && (
                 <div className="answer-reveal">
-                  <b>Model Answer</b>
-                  <p>{question.answer}</p>
+                  {question?.type === "answer-short-question" ? (
+                    <>
+                      <b>Transcript</b>
+                      <p>{question.prompt}</p>
+                      <b>Answer</b>
+                      <p>{question.answer}</p>
+                    </>
+                  ) : (
+                    <>
+                      <b>Model Answer</b>
+                      <p>{question.answer}</p>
+                    </>
+                  )}
                 </div>
               )}
             </>

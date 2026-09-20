@@ -17,11 +17,6 @@ const questions = [
     difficulty: "medium", evaluationType: "subjective"
   },
   {
-    section: "speaking", type: "answer-short-question", title: "Answer Short Question",
-    prompt: "What do we call the first meal of the day?",
-    difficulty: "easy", evaluationType: "subjective"
-  },
-  {
     section: "writing", type: "swt", title: "Summarize Written Text",
     passage: "Online education has become increasingly popular because it offers flexibility and access to a wide range of courses. Students can learn at their own pace, but successful online learning also requires discipline, time management, and motivation.",
     prompt: "Write one sentence summarizing the passage in 5–75 words.",

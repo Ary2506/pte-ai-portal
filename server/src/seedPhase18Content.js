@@ -70,8 +70,15 @@ const readAloud = [
 }));
 
 // ---------------------------------------------------------------------------
-// SPEAKING — Answer Short Question (20). Text prompt only; scored subjectively (existing
-// architecture), so there is no stored answer key here, matching the pre-existing seeded item.
+// SUPERSEDED — do not add back to PHASE18_TEXT_ONLY_CANDIDATES. This was the original 20-question
+// Answer Short Question set (text prompt only, no answer key, no audio). The client later
+// replaced Answer Short Question's entire content with 15 new questions that each carry a real
+// answer key and a client-supplied audio clip (see clientAnswerShortQuestion below), and the old
+// 21 records (these 20 plus 1 pre-existing one from seed.js) were deliberately deleted from the
+// database. Kept here only as a historical record — pulling it back into
+// PHASE18_TEXT_ONLY_CANDIDATES would let the idempotent seeder silently re-insert these 20 stale
+// questions on a future server restart (the same mistake already made and fixed twice this
+// project — see the SUPERSEDED comments above `clientDescribeImage` and `writeEmail`).
 // ---------------------------------------------------------------------------
 const answerShortQuestion = [
   ["What do we call a place where books are borrowed and read for free?", "easy"],
@@ -261,7 +268,7 @@ const reorder = [
 ];
 
 const PHASE18_TEXT_ONLY_CANDIDATES = [
-  ...readAloud, ...answerShortQuestion, ...swt, ...essay, ...mcqSingle, ...mcqMultiple, ...fillBlanks, ...reorder
+  ...readAloud, ...swt, ...essay, ...mcqSingle, ...mcqMultiple, ...fillBlanks, ...reorder
 ];
 
 // ---------------------------------------------------------------------------
@@ -422,6 +429,51 @@ const clientDescribeImage = [
 const CLIENT_DESCRIBE_IMAGE_CANDIDATES = [...clientDescribeImage];
 
 // ---------------------------------------------------------------------------
+// Client-supplied Answer Short Question batch (15) — replaces the old 20-question text-only set
+// (see the SUPERSEDED comment above `answerShortQuestion`). Audio for questions 2-15 is the
+// client's own TTS-generated clips, copied verbatim into client/public/audio/answer-short-question/
+// (served at /audio/answer-short-question/... by Vite's default publicDir) and renamed
+// answer-short-question-01..15.mp3 in place of their original random filenames.
+//
+// The `file` below is the VERIFIED audio for each question — confirmed by actually transcribing
+// every clip (Whisper, via a throwaway @xenova/transformers + mpg123-decoder script, not by
+// filename/timestamp order, which an earlier version of this batch used and which turned out to
+// be wrong). Transcription found: file 04 and file 03 both contain the *same* spoken content
+// ("What do you call a person who lives next to your house or in your community?" — Question
+// 4/Neighbor), confirmed on two different Whisper models and by differing file checksums (so it's
+// a genuine duplicate recording, not a copy/rename bug). File 04 is used for Question 4; file 03
+// is an unused spare. None of the client's 15 files contained Question 1's content ("...opaque,
+// vivid, brilliant, shiny?"), so its audio (answer-short-question-16.wav) was instead generated
+// with Higgsfield's seed_audio text-to-speech from Question 1's own prompt text verbatim, then
+// verified the same way — transcribed back and confirmed it actually says that text — before
+// being wired in. `answer` is the exact short answer the client provided per question (never
+// auto-graded — see STUDENT_SAFE_FIELDS in routes/questions.js for why a subjective type's
+// `answer` is safe to expose as a revealable reference answer).
+// ---------------------------------------------------------------------------
+const clientAnswerShortQuestion = [
+  ["To which of our senses do all of the following words relate, opaque, vivid, brilliant, shiny?", "Vision", "answer-short-question-16.wav"],
+  ["What clothing do people wear, such as students or nurses, to show that they belong to the same organizations?", "Uniform", "answer-short-question-01.mp3"],
+  ["What kind of soup utensils do you use at table?", "Spoon / Spoons", "answer-short-question-02.mp3"],
+  ["What do you call a person who lives next to your house or in your community?", "Neighbor", "answer-short-question-04.mp3"],
+  ["What do we call buying and transporting goods from another country?", "Import", "answer-short-question-05.mp3"],
+  ["What are breakfast, lunch, and dinner examples of?", "Meal", "answer-short-question-06.mp3"],
+  ["What do we call a person who writes a book?", "Author / Writer", "answer-short-question-07.mp3"],
+  ["What do people usually use to cut food in the plate?", "Knife", "answer-short-question-08.mp3"],
+  ["What do we call a liquid that is used for washing hair?", "Shampoo", "answer-short-question-09.mp3"],
+  ["What geometric shape are circumference, diameter and radius related with?", "Circle", "answer-short-question-10.mp3"],
+  ["What do you use to dry your body after a shower?", "Towel", "answer-short-question-11.mp3"],
+  ["What's the grey thing in the sky when it's about to rain?", "Cloud", "answer-short-question-12.mp3"],
+  ["What do we call the long, orange thing that grows underground?", "Carrot", "answer-short-question-13.mp3"],
+  ["What do we call the person who plays sports to make a living?", "Athlete / Sportsman / Sportswoman", "answer-short-question-14.mp3"],
+  ["What shows dishes before you order?", "Menu", "answer-short-question-15.mp3"]
+].map(([prompt, answer, file], i) => ({
+  section: "speaking", type: "answer-short-question", title: `Answer Short Question ${i + 1}`,
+  prompt, answer, audioUrl: `/audio/answer-short-question/${file}`, difficulty: "medium"
+}));
+
+const CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES = [...clientAnswerShortQuestion];
+
+// ---------------------------------------------------------------------------
 // Phase 22 — original AI-generated audio (Higgsfield seed_audio) for two of the six
 // previously-audio-blocked types. Every clip was verified live before being used here: HTTP 200,
 // Content-Type audio/x-wav, a genuine RIFF/WAVE file signature, and a byte size consistent with
@@ -457,7 +509,8 @@ const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
 
 const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
-  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES
+  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
+  ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES
 ];
 
 // Guards against two overlapping calls *within this same process* racing each other's
@@ -507,5 +560,5 @@ async function runSeed(candidates) {
 export {
   PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE20_TEXT_CANDIDATES,
   PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, CLIENT_DESCRIBE_IMAGE_CANDIDATES,
-  PHASE18_ALL_CANDIDATES, signature
+  CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
 };
