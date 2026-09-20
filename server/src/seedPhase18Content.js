@@ -328,6 +328,16 @@ const PHASE18_MEDIA_CANDIDATES = [...describeImage, ...repeatSentence, ...sstLis
 // (Write Email, Fill in the Blanks Drag-and-Drop). The three remaining new types this phase adds
 // (Respond to a Situation, Select Missing Word, Highlight Incorrect Words) all require audio and
 // are deliberately left with zero seeded content here — see the Phase 20 report for why.
+//
+// SUPERSEDED (Write Email only, dragFill below is unaffected and still active) — the client
+// replaced Write Email's entire question-based content with their own PDF of 12 sample emails,
+// shown and downloaded as-is (see client/src/practice/WriteEmailPdf.jsx and
+// client/public/writing-resources/write-email-samples.pdf). The write-email practice page now
+// bypasses the DB-backed question flow entirely, and these 5 original prompts were deliberately
+// deleted from the database. The `writeEmail` array is kept only as a historical record — it must
+// stay out of PHASE18_ALL_CANDIDATES, or the idempotent seeder will silently re-insert these 5
+// stale questions on the next server restart (exactly what happened once already with an earlier,
+// similarly-superseded Describe Image batch — see the comment above `clientDescribeImage`).
 // ---------------------------------------------------------------------------
 const writeEmail = [
   ["You recently purchased a product online that arrived damaged. Write an email to the company's customer service team explaining the problem and requesting a replacement or refund.", "easy"],
@@ -351,7 +361,7 @@ const dragFill = [
   prompt: dragFillPrompt, passage, options, answer, difficulty
 }));
 
-const PHASE20_TEXT_CANDIDATES = [...writeEmail, ...dragFill];
+const PHASE20_TEXT_CANDIDATES = [...dragFill];
 
 // ---------------------------------------------------------------------------
 // Phase 23 — the client's own curated Read Aloud set (client-confirmed as content they have the
@@ -386,15 +396,14 @@ const clientReadAloud = [
 const PHASE23_TEXT_CANDIDATES = [...clientReadAloud];
 
 // ---------------------------------------------------------------------------
-// Client-supplied Describe Image batch (8) — images are real files the client provided, copied
-// verbatim into client/public/question-images/describe-image/ (served at
-// /question-images/describe-image/... by Vite's default publicDir); `answer` text is copied
-// byte-for-byte from the client's pte_describe_images.json, never reworded. Continues the title
-// numbering after the 5 pre-existing Describe Image questions above. Recorded here (not only as a
-// one-off DB insert) so these 8 questions are reproducible on any fresh database/environment,
-// exactly like every other batch in this file — the idempotent signature check in runSeed() below
-// means this is a no-op against a database that already has them (matched on
-// type+prompt+imageUrl+answer, not title), and a real insert on one that doesn't.
+// SUPERSEDED — do not add back to PHASE18_ALL_CANDIDATES. This was the original client-supplied
+// Describe Image batch (8, describe_image_01.jpg..08.jpg). The client later replaced this entire
+// Describe Image set with 41 individually cropped questions (bar/flow/line/map/pic/pie/table +
+// the 8-in-one set, see client/public/question-images/describe-image/*.jpg) and the old 14
+// records (these 8 plus 6 pre-existing ones) were deliberately deleted from the database. The
+// array is kept here only as a historical record of what was once seeded — it must stay out of
+// PHASE18_ALL_CANDIDATES, or the idempotent seeder will silently re-insert these 8 stale
+// questions the next time the server restarts (which is exactly what happened once already).
 // ---------------------------------------------------------------------------
 const describeImagePrompt2 = "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing.";
 const clientDescribeImage = [
@@ -448,8 +457,7 @@ const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
 
 const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
-  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
-  ...CLIENT_DESCRIBE_IMAGE_CANDIDATES
+  ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES
 ];
 
 // Guards against two overlapping calls *within this same process* racing each other's

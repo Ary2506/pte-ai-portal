@@ -187,14 +187,14 @@ describe("Phase 20 — Respond to a Situation (speaking) reuses SpeakingTask wit
   });
 });
 
-describe("Phase 20 — Write Email (writing) reuses WritingTask", () => {
-  it("renders a text editor for the email prompt", async () => {
-    api.questions.mockResolvedValue({
-      questions: [{ _id: "em1", section: "writing", type: "write-email", title: "Email Task", prompt: "Write an email requesting leave." }]
-    });
+describe("Write Email — client PDF resource, bypasses the DB-backed question flow", () => {
+  it("renders the sample-emails PDF and a download link, without calling api.questions", async () => {
     renderAt("/writing?type=write-email", studentAuthUser());
-    await screen.findByText("Email Task");
-    expect(screen.getByPlaceholderText("Type your answer here...")).toBeInTheDocument();
+    await screen.findByText("Write Email — Sample Emails");
+    const downloadLink = screen.getByText("Download PDF").closest("a");
+    expect(downloadLink).toHaveAttribute("href", "/writing-resources/write-email-samples.pdf");
+    expect(downloadLink).toHaveAttribute("download");
+    expect(api.questions).not.toHaveBeenCalledWith("writing", "write-email");
   });
 });
 

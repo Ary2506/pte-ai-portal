@@ -18,6 +18,7 @@ import {
 } from "../practiceTaskRegistry.js";
 import { Badge, Empty, SkeletonRows } from "../components/common.jsx";
 import ReadAloudPractice from "./ReadAloudPractice.jsx";
+import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { LOCAL_LISTENING_QUESTIONS } from "./listeningData/index.js";
 import { normalizeSubtype } from "./listeningData/shared.js";
 
@@ -406,6 +407,11 @@ export default function Practice({ section, taskComponents }) {
           // its own counter/navigation/completion screen — bypasses the generic DB-backed
           // PracticeTask flow used by every other task type, which is unaffected by this branch.
           <ReadAloudPractice />
+        ) : section === "writing" && type.slug === "write-email" ? (
+          // Write Email's content is the client's own PDF of 12 sample emails, shown and
+          // downloadable as-is — same bypass pattern as Read Aloud above, and equally isolated
+          // from every other task type's DB-backed PracticeTask flow.
+          <WriteEmailPdf />
         ) : (
           <PracticeTask
             section={section}
