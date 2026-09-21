@@ -7,6 +7,9 @@ import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import adminQuestionRoutes from "./routes/adminQuestions.js";
 import adminMediaRoutes from "./routes/adminMedia.js";
+// Temporary/emergency admin feature — isolated on purpose, see the removal note at the top of
+// models/SubscriptionExtension.js for exactly what to delete to remove it later.
+import adminSubscriptionExtensionRoutes from "./routes/adminSubscriptionExtension.js";
 import questionRoutes from "./routes/questions.js";
 import submissionRoutes from "./routes/submissions.js";
 import testSessionRoutes from "./routes/testSessions.js";
@@ -27,6 +30,7 @@ app.get("/api/health", (_, res) => res.json({ ok: true, service: "pte-core-ai" }
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/media", adminMediaRoutes);
 app.use("/api/admin/questions", adminQuestionRoutes);
+app.use("/api/admin/subscription-extension", adminSubscriptionExtensionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/submissions", submissionRoutes);

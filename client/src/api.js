@@ -76,6 +76,23 @@ export const api = {
     resetPassword: (id, password) =>
       request(`/admin/users/${id}/password`, { method: "PATCH", body: JSON.stringify({ password }) }),
     revokeSessions: (id) => request(`/admin/users/${id}/revoke-sessions`, { method: "POST" }),
+    // Temporary/emergency admin feature — see the removal note at the top of
+    // server/src/models/SubscriptionExtension.js for how to remove this cleanly, including this
+    // one nested block.
+    subscriptionExtension: {
+      extendUser: (id, days, reason) =>
+        request(`/admin/subscription-extension/users/${id}`, { method: "POST", body: JSON.stringify({ days, reason }) }),
+      bulkPreview: (days) =>
+        request(`/admin/subscription-extension/bulk/preview`, { method: "POST", body: JSON.stringify({ days }) }),
+      bulkExtend: (days, reason, clientRequestId) =>
+        request(`/admin/subscription-extension/bulk`, { method: "POST", body: JSON.stringify({ days, reason, clientRequestId }) }),
+      history: (params = {}) => {
+        const q = new URLSearchParams(
+          Object.fromEntries(Object.entries(params).filter(([, v]) => v !== "" && v !== undefined && v !== null))
+        ).toString();
+        return request(`/admin/subscription-extension/history${q ? `?${q}` : ""}`);
+      }
+    },
     testSessions: {
       list: (params = {}) => {
         const q = new URLSearchParams(

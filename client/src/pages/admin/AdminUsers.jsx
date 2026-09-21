@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { api } from "../../api.js";
 import { Badge, ConfirmDialog, DataTable, Empty, Modal } from "../../components/common.jsx";
 import { fmtDate, fmtDateTime } from "./adminFormat.js";
+// Temporary/emergency admin feature — see the removal note at the top of
+// AdminSubscriptionExtension.jsx for exactly what to delete, including these two lines and their
+// two call sites below (each marked with a matching comment).
+import { ExtendAllActiveButton, ExtendSubscriptionButton } from "./AdminSubscriptionExtension.jsx";
 
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
@@ -171,7 +175,11 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   return <div>
     <div className="panel-head">
       <div><h3>User accounts</h3><p className="muted">{total} total · registration is admin-only</p></div>
-      <button className="primary" onClick={()=>setShowCreate(s=>!s)}>{showCreate ? "Cancel" : "+ Create user"}</button>
+      <div style={{display:"flex",gap:10}}>
+        {/* Temporary/emergency admin feature — see AdminSubscriptionExtension.jsx's removal note */}
+        <ExtendAllActiveButton onExtended={()=>load()}/>
+        <button className="primary" onClick={()=>setShowCreate(s=>!s)}>{showCreate ? "Cancel" : "+ Create user"}</button>
+      </div>
     </div>
     {error && <div className="alert error">{error}</div>}
     {showCreate && <form onSubmit={createUser} className="admin-create-form">
@@ -295,6 +303,8 @@ function AdminUserDetail({id, notify, onClose}) {
               <dt>Days remaining</dt><dd>{daysRemaining(u)}</dd>
               <dt>Status</dt><dd><Badge tone={subscriptionTone(u.subscriptionStatus)}>{u.subscriptionStatus.replace("_"," ")}</Badge></dd>
             </dl>
+            {/* Temporary/emergency admin feature — see AdminSubscriptionExtension.jsx's removal note */}
+            <ExtendSubscriptionButton user={u} onExtended={load}/>
           </section>
           <section>
             <h4>Login &amp; sessions</h4>
