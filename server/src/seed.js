@@ -17,12 +17,6 @@ const questions = [
     difficulty: "medium", evaluationType: "subjective"
   },
   {
-    section: "writing", type: "swt", title: "Summarize Written Text",
-    passage: "Online education has become increasingly popular because it offers flexibility and access to a wide range of courses. Students can learn at their own pace, but successful online learning also requires discipline, time management, and motivation.",
-    prompt: "Write one sentence summarizing the passage in 5–75 words.",
-    difficulty: "easy", evaluationType: "subjective"
-  },
-  {
     section: "writing", type: "essay", title: "Write Essay",
     prompt: "Some people believe technology makes life easier, while others believe it creates new problems. Discuss both views and give your opinion.",
     difficulty: "medium", evaluationType: "subjective"

@@ -106,7 +106,13 @@ const answerShortQuestion = [
 }));
 
 // ---------------------------------------------------------------------------
-// WRITING — Summarize Written Text (15).
+// SUPERSEDED — do not add back to PHASE18_TEXT_ONLY_CANDIDATES. This was the original 15-passage
+// Summarize Written Text set. The client replaced Summarize Written Text's entire content with 7
+// new passages of their own (see clientSWT below), and these 15 plus the 1 pre-existing one from
+// seed.js were deliberately deleted from the database. Kept here only as a historical record — see
+// the SUPERSEDED comments above `clientDescribeImage`, `writeEmail`, and `answerShortQuestion` for
+// the same pattern and why it matters: pulling this back into the active candidates would let the
+// idempotent seeder silently re-insert these 15 stale questions on a future server restart.
 // ---------------------------------------------------------------------------
 const swtPrompt = "Write one sentence summarizing the passage in 5–75 words.";
 const swt = [
@@ -268,7 +274,7 @@ const reorder = [
 ];
 
 const PHASE18_TEXT_ONLY_CANDIDATES = [
-  ...readAloud, ...swt, ...essay, ...mcqSingle, ...mcqMultiple, ...fillBlanks, ...reorder
+  ...readAloud, ...essay, ...mcqSingle, ...mcqMultiple, ...fillBlanks, ...reorder
 ];
 
 // ---------------------------------------------------------------------------
@@ -429,6 +435,58 @@ const clientDescribeImage = [
 const CLIENT_DESCRIBE_IMAGE_CANDIDATES = [...clientDescribeImage];
 
 // ---------------------------------------------------------------------------
+// Client-supplied "Core P" Describe Image batch (8) — the individual sub-images cropped from the
+// client's "Core p 8 qus.jpeg" source file (see client/public/question-images/describe-image/
+// coreq8_01..08.jpg). Deliberately left WITHOUT a `category` value, on purpose: this project's
+// "My Type" category filter (client/src/practice/Practice.jsx's QuestionListView) already treats
+// an uncategorized question as visible only under "All", never under any specific category tab —
+// so no schema change or new filtering logic was needed, just omitting `category` here. These 8
+// therefore appear in All Describe Image (making the active total 33 curated + 8 = 41) but never
+// under Bar/Flow/Pie/Line/Map/Table/Pic, even though several overlap in topic with a curated
+// question from the dedicated per-type source files (e.g. "Instant Coffee" also exists as a Flow
+// question, "Commuting Time" also exists as a Pie question) — kept anyway, per explicit
+// instruction not to deduplicate this group against the curated set. `sourceGroup: "core-p"` is
+// non-functional metadata (nothing filters on it) kept only so this batch stays identifiable as a
+// deliberate group, distinct from any other stray uncategorized content that might exist later.
+// ---------------------------------------------------------------------------
+const clientCoreP = [
+  ["Average Rainfall", "coreq8_01", "The bar chart shows the average rainfall in inches in New York, Dallas, Phoenix, and Honolulu. New York has the highest amount, 47.25 inches, followed by Dallas at 33.70. Phoenix has the lowest, 7.66 inches, while Honolulu receives 22.02 inches. Overall, the chart shows that average rainfall varies significantly across these cities."],
+  ["Instant Coffee", "coreq8_02", "The picture shows the steps for making a cup of instant coffee. First, hot water is poured into a cup. Next, a sachet of instant coffee is added, followed by creamer from a sachet. Then, sugar is added and the mixture is stirred well until it dissolves. Finally, the coffee is ready to drink and can be enjoyed."],
+  ["Stationery Shopping", "coreq8_03", "The pictures show a mother and her daughter shopping in a stationery store. In the left image, the mother looks at her daughter with a smile while the daughter holds a new bag. In the right image, the daughter carries the bag on her back and holds six colorful pencils in her hands. Overall, the pictures show the two happily shopping for stationery items."],
+  ["Pet Ownership", "coreq8_04", "The bar chart shows the number of U.S. households keeping pets. In total, 84.9 million households have pets. Dogs are the most common at 63.4 million, followed by cats at 42.7 million. Freshwater fish and birds are much lower at 11.5 million and 5.7 million. Horses and saltwater fish are the least common at 1.6 million each. Overall, dogs and cats are far more popular than the other types of pets."],
+  ["Cat Owners", "coreq8_05", "The bar chart shows the percentage of people who own a cat in different countries. Russia has the highest percentage at 59%, followed by the United States at 43% and Argentina at 41%. The lowest percentage is in South Korea at 9%. Other countries, such as Italy, France, Vietnam and Brazil, have moderate percentages. Overall, the chart shows that cat ownership varies widely across countries."],
+  ["Commuting Time", "coreq8_06", "The pie chart shows the travel time to work in Ontario in 2016. The largest proportion is 15–29 minutes at 32.2%, followed by less than 15 minutes at 24.0% and 30–44 minutes at 21.3%. About 10.1% of people travel for 45–59 minutes, while 12.4% take more than 1 hour. Overall, most people spend less than 30 minutes commuting."],
+  ["Canada Visitors", "coreq8_07", "The bar chart shows how many tourists visit Canada each year. The highest number is in 2019 at 22.1 million, followed by 2018 and 2017. The lowest number is in 2020 at only 3.0 million, with 2021 slightly higher at 3.1 million. The number then increased to 12.8 million in 2022 and 18.3 million in 2023. Overall, the chart shows a sharp drop in 2020 and 2021, followed by a recovery in 2022 and 2023."],
+  ["Weekly Spending", "coreq8_08", "The chart shows average weekly household spending on goods and services. Current housing costs are the highest at about $270, followed by food and non-alcoholic beverages at $240 and transport at $200. The lowest spending is on tobacco products at $10, with personal care at $20 and alcoholic beverages at $40. Overall, households spend the most on housing and the least on tobacco products."]
+].map(([title, file, answer]) => ({
+  section: "speaking", type: "describe-image", title, prompt: describeImagePrompt2,
+  imageUrl: `/question-images/describe-image/${file}.jpg`, answer, sourceGroup: "core-p", difficulty: "medium"
+}));
+
+const CLIENT_CORE_P_CANDIDATES = [...clientCoreP];
+
+// ---------------------------------------------------------------------------
+// Client-supplied Summarize Written Text batch (7) — replaces the old 15-passage set (see the
+// SUPERSEDED comment above `swtPrompt`). Passage text is used exactly as supplied by the client's
+// PDF, unmodified. Each source passage carried its own reference number (e.g. "111 — Microloans")
+// which reads as a word count, not a sequence index — dropped from `title` since it isn't part of
+// the passage's identity, keeping just the descriptive topic name.
+// ---------------------------------------------------------------------------
+const clientSwt = [
+  ["Microloans", "Microloans are small-scale loans created to help individuals and small businesses that may not have access to conventional bank financing. They are commonly offered through microfinance initiatives that seek to improve financial inclusion and encourage economic development. Borrowers may use these funds to launch a business, buy equipment, or meet short-term operating expenses. A major benefit is that microloans are often easier to obtain than larger bank loans, particularly for people with limited credit records or collateral. The amounts are usually modest, ranging from several hundred to a few thousand dollars. Even so, these loans can have a meaningful effect by helping small businesses expand and become financially sustainable. Before choosing a microloan, borrowers should consider their funding requirements, ability to repay, and how the money will contribute to their business objectives. Overall, microloans provide entrepreneurs with accessible funding for relatively small but important financial needs."],
+  ["Outdoor Games", "Outdoor games play an important role in children's physical and psychological growth. Activities such as soccer, tag, and hide-and-seek help young people develop coordination, motor abilities, physical fitness, and strength. Playing outside also gives children opportunities to interact with others, practice teamwork and communication, and understand cooperation and fair play. In addition, outdoor environments encourage exploration and imagination while exposing children to fresh air and natural sunlight. Frequent physical activity can help lower the likelihood of obesity and other health problems and can encourage an active lifestyle. With children spending increasing amounts of time using digital devices, outdoor games are particularly useful for reducing sedentary behavior and encouraging healthier daily routines."],
+  ["Preschool Education Programs", "A recent policy proposal recommends cutting financial support for preschool education and redirecting some of those resources toward primary and secondary schools. Supporters argue that these stages face urgent problems, including crowded classrooms and shortages of teachers, and therefore deserve additional funding. Some also believe that parents should have a greater role in providing education during early childhood instead of depending heavily on publicly funded programs.\n\nCritics, however, stress that preschool education establishes an important foundation for children's later academic and social development. Research indicates that children who receive high-quality early education often achieve stronger results in school, are more likely to complete high school, and may have greater earning opportunities later in life. Critics further argue that funding cuts could have a greater effect on low-income families, who may depend on affordable preschool services, thereby widening existing educational inequalities.\n\nEarly childhood programs also assist working parents by providing reliable care and learning opportunities, allowing them to remain employed. The discussion therefore centers on whether redirecting limited education funds would provide greater benefits than the possible long-term effects of reducing investment in preschool education."],
+  ["Microloan", "Business microloans have become an important means of helping small enterprises develop and encouraging economic progress, especially in developing nations. These relatively small, short-term loans give entrepreneurs capital to establish or expand their businesses. Because they can be more accessible than conventional financing, microloans may help people who would otherwise struggle to obtain funds. Entrepreneurs can use them to purchase equipment, employ workers, or increase production, creating benefits for the wider economy. Microfinance programs may also focus on underserved groups, including women and minorities, giving them greater access to financial resources and opportunities for economic independence. Such support can contribute to poverty reduction and social inclusion.\n\nDespite these advantages, microloan programs can also create difficulties. Critics note that limited loan amounts and short repayment schedules may put considerable financial pressure on borrowers and increase the risk of default. Their effectiveness can also depend on additional support, including financial education and business guidance, which helps borrowers manage funds responsibly and develop their enterprises. Nevertheless, microloans continue to be used to encourage entrepreneurship and economic development, and financial institutions and nonprofit organizations can improve their effectiveness by adapting these programs to the needs of different communities."],
+  ["Opening Day", "Launching a new business can be both exciting and demanding because it requires careful preparation and effective planning. One important part of the launch is the grand opening, which introduces the business to the public and helps establish its brand image and customer experience. A successful opening should provide attractive activities and incentives that draw visitors and create interest in the new business.\n\nSpecial discounts and limited-time promotions can encourage guests to purchase products and recommend the business to others. Free samples or demonstrations can also allow visitors to experience the products or services directly. Entertainment such as live music, games, and interactive workshops can make the occasion more enjoyable. Giveaways and prize raffles are another way to encourage participation and keep visitors engaged.\n\nWorking with local influencers or community figures can help increase awareness and attract additional customers. Good organization and sufficient staff are also essential for providing a smooth experience. Overall, a grand opening should create a friendly and memorable atmosphere, communicate the business's unique value, and begin building lasting relationships with customers through engaging activities and appealing incentives."],
+  ["Coffee Shop", "Successful coffee shops generally depend on strong customer traffic and a high number of daily sales. Many establishments serve as many as 500 customers each day and may experience several customer turnovers during the busy lunch period, even when they have limited seating and floor space. Coffee and espresso beverages can provide substantial profit margins because their primary ingredient is water. However, with an average customer purchase of roughly $3, a coffee shop needs a steady flow of customers to remain profitable. In addition to freshly roasted coffee, coffeehouses commonly sell espresso beverages such as cappuccinos and lattes, as well as tea, bottled water, fruit juices, baked items, desserts, and packaged coffee beans."],
+  ["Esports", "Esports is increasingly being viewed by schools as an educational and extracurricular opportunity rather than simply a form of entertainment. Many high schools and colleges have introduced esports teams, training facilities, and organized programs, reflecting the growing role of gaming in society. These activities also give students who are not interested in conventional sports another way to participate in group activities and become more connected with their school community.\n\nEsports participation can help students develop confidence, teamwork, communication, discipline, and a stronger sense of belonging. Team members practice consistently, communicate during competitive situations, and encourage one another in ways that resemble traditional athletic teams. Such experiences may be especially useful for students who are shy or socially disconnected. Achieving success in competitions can also motivate students to attend school regularly and concentrate more on their studies.\n\nSchool reports and research have associated esports participation with positive academic engagement, including improved attendance, maintaining satisfactory grades, and higher graduation rates in some programs. Students may also think more seriously about future goals because academic progress can be required to remain eligible for their teams. These findings indicate that organized competitive gaming can serve as an additional pathway for student engagement, personal development, and preparation for future careers."]
+].map(([title, passage]) => ({
+  section: "writing", type: "swt", title, passage, prompt: swtPrompt, difficulty: "medium"
+}));
+
+const CLIENT_SWT_CANDIDATES = [...clientSwt];
+
+// ---------------------------------------------------------------------------
 // Client-supplied Answer Short Question batch (15) — replaces the old 20-question text-only set
 // (see the SUPERSEDED comment above `answerShortQuestion`). Audio for questions 2-15 is the
 // client's own TTS-generated clips, copied verbatim into client/public/audio/answer-short-question/
@@ -510,7 +568,7 @@ const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
 const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
   ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
-  ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES
+  ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, ...CLIENT_CORE_P_CANDIDATES, ...CLIENT_SWT_CANDIDATES
 ];
 
 // Guards against two overlapping calls *within this same process* racing each other's
@@ -560,5 +618,6 @@ async function runSeed(candidates) {
 export {
   PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE20_TEXT_CANDIDATES,
   PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, CLIENT_DESCRIBE_IMAGE_CANDIDATES,
-  CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
+  CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, CLIENT_CORE_P_CANDIDATES, CLIENT_SWT_CANDIDATES,
+  PHASE18_ALL_CANDIDATES, signature
 };

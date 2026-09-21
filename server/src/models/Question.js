@@ -17,6 +17,11 @@ const questionSchema = new mongoose.Schema({
   // `subtype`/Core-Core-P filter mechanism in client/src/practice/Practice.jsx (that one is
   // reserved for Listening's bundled content) — left undefined for every other question.
   category: { type: String },
+  // Optional, non-functional metadata — nothing filters or queries on this. Purely so a
+  // deliberately uncategorized batch (e.g. Describe Image's "Core P" set, visible in "All" but
+  // excluded from every category tab by having no `category`) stays identifiable as intentional,
+  // instead of looking like more stray leftover content the way past uncategorized records have.
+  sourceGroup: { type: String },
   // "objective" = deterministically graded server-side (right/wrong or partial credit).
   // "subjective" = needs AI or human judgement (speaking, essay, free-text summary).
   evaluationType: { type: String, enum: ["objective", "subjective"], required: true },
