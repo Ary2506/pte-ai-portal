@@ -9,6 +9,15 @@ import {
   SECTION_LABELS,
 } from "../practiceTaskRegistry.js";
 import { Page } from "../components/common.jsx";
+import { LOCAL_LISTENING_QUESTIONS } from "../practice/listeningData/index.js";
+
+// Read Aloud (Speaking) and several Listening task types are served from locally bundled
+// content (see Practice.jsx and listeningData/index.js) instead of the question database, so
+// the database-only availability check below never sees them on its own — merge these in.
+const LOCALLY_BACKED_KEYS = new Set([
+  "speaking:read-aloud",
+  ...new Set(LOCAL_LISTENING_QUESTIONS.map((q) => `listening:${q.type}`)),
+]);
 
 const SECTION_ICONS = {
   speaking: Mic,
@@ -70,7 +79,7 @@ export default function PracticeHub() {
           .catch(() => ({ section, questions: [] })),
       ),
     ).then((results) => {
-      const set = new Set();
+      const set = new Set(LOCALLY_BACKED_KEYS);
       results.forEach(({ section, questions }) =>
         questions.forEach((question) => set.add(`${section}:${question.type}`)),
       );

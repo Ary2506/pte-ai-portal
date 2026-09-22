@@ -130,7 +130,12 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Write From Dictation").closest(".practice-row"));
-    await screen.findByText("Dictation Q");
+    // Write From Dictation is served from its own locally-curated 30-question set too (not the
+    // single mocked "Dictation Q" DB question) — the same mechanism Read Aloud uses above. With
+    // more than one question it lands on the picker list first, so open question #1 from there.
+    const rows = await screen.findAllByText("WFD");
+    fireEvent.click(rows[0].closest(".question-list-row"));
+    await screen.findByText("Listen to the recording and write the sentence you hear.");
   });
 
   it("shows a PTE Core / PTE Academic-UKVI toggle without inventing a real content split", async () => {
