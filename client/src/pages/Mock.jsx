@@ -213,7 +213,7 @@ function Mock() {
       <div className="mock-progress-fill" style={{width: `${((idx+1)/session.questions.length)*100}%`}}/>
     </div>
     <MockQuestionNav questions={session.questions} idx={idx} answered={answered} onJump={setIdx}/>
-    {q.section==="speaking" && <SpeakingTaskModule type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
+    {q.section==="speaking" && <SpeakingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="writing" && <WritingTaskModule type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="reading" && <ReadingTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="listening" && <ListeningTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}

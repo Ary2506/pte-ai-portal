@@ -35,18 +35,15 @@ export async function migrateQuestions() {
 // so any future type/shape is covered automatically; deactivation is the same safe, reversible
 // action a legacy no-media question always got here.
 //
-// EXCEPTION — respond-to-situation is deliberately excluded from this sweep. The 20 current
-// Respond to a Situation questions were inserted as an explicit, user-authorized, disclosed
-// temporary exception: real audio for them will be added later, and until then they are
-// intentionally active with no audioUrl (the admin explicitly asked to keep the audio-required
-// architecture/validation intact for *new* creates/reactivations while allowing this one already-
-// disclosed content gap to stay live). Without this exclusion, this exact function silently
-// deactivated all 20 of them on every server restart — the shared validator has no way to tell
-// "legacy broken data" apart from "a disclosed, temporary, intentional exception", so the
-// exclusion is scoped to this one type rather than weakening the shared validator itself (which
-// must keep rejecting a *new* audio-less respond-to-situation question, and does).
+// The respond-to-situation exception that used to live here is gone: those 20 audio-less
+// documents were the "real audio will be added later" content gap it was disclosing, and
+// seedPhase18Content.js's CLIENT_RESPOND_TO_SITUATION_CANDIDATES batch is that audio. With no
+// exception left, this sweep now covers respond-to-situation like every other type — the 20
+// legacy documents fail ordinary "prompt-audio" shape validation (no audioUrl) and get
+// deactivated (not deleted) the next time this runs, same as any other legacy broken-media
+// question always has.
 export async function deactivateLegacyBrokenMedia() {
-  const activeQuestions = await Question.find({ active: true, type: { $ne: "respond-to-situation" } });
+  const activeQuestions = await Question.find({ active: true });
   const broken = activeQuestions.filter(q => validateAndNormalizeQuestion(q.toObject()).errors.length > 0);
   for (const q of broken) { q.active = false; await q.save(); }
   if (broken.length) console.log(`Deactivated ${broken.length} active question(s) that fail current validation rules.`);

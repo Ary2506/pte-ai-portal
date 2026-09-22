@@ -9,18 +9,19 @@ import { deactivateLegacyBrokenMedia } from "../src/migrateQuestions.js";
 // unmodified — this file covers the newer types the old hard-coded list never checked, plus
 // non-media structural breakage, and confirms the generalization introduces no false positives.
 describe("deactivateLegacyBrokenMedia — generalized, shape-driven detection", () => {
-  // respond-to-situation is deliberately EXCLUDED from this sweep (see migrateQuestions.js) —
-  // a real, disclosed, user-authorized batch of 20 audio-less RTS questions was silently
-  // deactivated by an earlier version of this generalization on every server restart, which was
-  // never authorized. This test locks in the fix: an active, audio-less RTS question must stay
-  // active, even though it would fail validateAndNormalizeQuestion() on its own.
-  it("does NOT deactivate a respond-to-situation question with no audio — explicit, disclosed exception", async () => {
+  // The respond-to-situation exclusion this test used to lock in is gone (see migrateQuestions.js):
+  // it existed only while a batch of 20 audio-less RTS questions was a disclosed, temporary content
+  // gap. Real audio now exists for every active respond-to-situation question
+  // (seedPhase18Content.js's CLIENT_RESPOND_TO_SITUATION_CANDIDATES), so this type is covered by the
+  // sweep like any other: an active, audio-less RTS question is exactly the kind of legacy broken
+  // media this function exists to catch, and must be deactivated (not deleted) like any other type.
+  it("deactivates a respond-to-situation question with no audio, same as any other type", async () => {
     const q = await Question.create({
       section: "speaking", type: "respond-to-situation", title: "No audio prompt", prompt: "Respond to the situation.",
       evaluationType: "subjective", maxScore: 90, active: true
     });
     await deactivateLegacyBrokenMedia();
-    expect((await Question.findById(q._id)).active).toBe(true);
+    expect((await Question.findById(q._id)).active).toBe(false);
   });
 
   it("leaves a respond-to-situation question with audio untouched", async () => {

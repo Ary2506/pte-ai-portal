@@ -380,3 +380,67 @@ describe("Mock test — admin is unaffected by the student subscription-logout t
     expect(screen.getByText("Time Remaining")).toBeInTheDocument();
   });
 });
+
+// Regression test for a real bug: <SpeakingTaskModule> was rendered in Mock.jsx with no `key`
+// prop, so when two speaking questions appeared back to back in one mock test, React reused the
+// same component instance across both — its internal `result` state (the just-submitted AI
+// feedback for question 1) survived into question 2's render even though question 2's own
+// prompt/audio correctly updated, i.e. exactly "question N shown, but the answer/result on screen
+// belongs to question N-1". Fixed by keying the element on `q._id` (matching how PracticeTask
+// already keys the same component outside Mock), which forces a full remount — and therefore a
+// full state reset — on every question change. This test fails on the un-keyed render and passes
+// once it's keyed.
+describe("Mock test — speaking question identity (result must not leak between questions)", () => {
+  function speakingMockQuestions() {
+    return [
+      { _id: "rts-1", section: "speaking", type: "respond-to-situation", title: "RTS #51 — Italian Food",
+        prompt: "Situation one: your friends want Italian food.", answer: "Model answer for situation one.",
+        audioUrl: "/audio/respond-to-situation/respond-to-situation-01.wav", evaluationType: "subjective" },
+      { _id: "rts-2", section: "speaking", type: "respond-to-situation", title: "RTS #52 — Dinner with Colleague",
+        prompt: "Situation two: you feel too ill for dinner plans.", answer: "Model answer for situation two.",
+        audioUrl: "/audio/respond-to-situation/respond-to-situation-02.wav", evaluationType: "subjective" }
+    ];
+  }
+
+  beforeEach(() => {
+    global.navigator.mediaDevices = {
+      getUserMedia: vi.fn(() => Promise.resolve({ getTracks: () => [{ stop: vi.fn() }] }))
+    };
+    global.MediaRecorder = class {
+      constructor(stream) { this.stream = stream; }
+      start() { this.ondataavailable?.({ data: new Blob(["fake-audio-bytes"], { type: "audio/webm" }) }); }
+      stop() { this.onstop?.(); }
+    };
+  });
+
+  it("clears question 1's AI result when navigating to question 2, and shows question 2's own prompt/audio", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts-speaking", status: "IN_PROGRESS", totalQuestions: 2, expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString() },
+      questions: speakingMockQuestions()
+    });
+    api.submit.mockResolvedValue({
+      submission: { _id: "sub-rts-1", score: 72, maxScore: 90, evaluationType: "subjective", evaluationStatus: "COMPLETED",
+        scoringMethod: "heuristic", feedback: { strengths: ["Clear response"], improvements: [], overall: "Question 1's feedback.", note: "n", scoringMethod: "heuristic" } }
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+
+    // Answer question 1.
+    expect(await screen.findByText("Situation one: your friends want Italian food.")).toBeInTheDocument();
+    fireEvent.click(await screen.findByText("Start Recording"));
+    await screen.findByText("Stop Recording");
+    fireEvent.click(screen.getByText("Stop Recording"));
+    await waitFor(() => expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled());
+    fireEvent.click(screen.getByText("Submit for AI Feedback"));
+    expect(await screen.findByText("Question 1's feedback.")).toBeInTheDocument();
+
+    // Move to question 2 — its own prompt/audio must show, and question 1's result must be gone.
+    fireEvent.click(screen.getByText("Next ›"));
+    expect(await screen.findByText("Situation two: you feel too ill for dinner plans.")).toBeInTheDocument();
+    expect(screen.queryByText("Question 1's feedback.")).not.toBeInTheDocument();
+    expect(screen.getByText("Record your answer")).toBeInTheDocument();
+    expect(screen.getByText("Start Recording")).toBeInTheDocument();
+    const audioEl = document.querySelector("audio.audio");
+    expect(audioEl.getAttribute("src")).toBe("/audio/respond-to-situation/respond-to-situation-02.wav");
+  });
+});

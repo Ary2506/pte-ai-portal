@@ -532,6 +532,105 @@ const clientAnswerShortQuestion = [
 const CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES = [...clientAnswerShortQuestion];
 
 // ---------------------------------------------------------------------------
+// Client-supplied Respond to a Situation batch (22) — replaces the 20 legacy respond-to-situation
+// documents that were inserted directly into the database (not via any seeder in this repo) with
+// no audioUrl, as an explicit, disclosed, temporary exception carved out of
+// migrateQuestions.js's deactivateLegacyBrokenMedia() sweep (see that file). That exception has
+// now been removed (this batch is exactly the "real audio added later" it was waiting on), so the
+// next server restart's sweep deactivates all 20 legacy documents on its own — they fail the
+// ordinary "prompt-audio" shape validation (no audioUrl) as soon as the exclusion is lifted. They
+// are not deleted, so they remain recoverable if ever needed.
+//
+// prompt/answer text is copied verbatim from the client's PDFs (question numbers correspond to
+// the client's own numbering, kept in the title for traceability, e.g. "RTS #51 — Italian Food").
+// Audio was generated with Higgsfield's seed_audio text-to-speech directly from each question's
+// own `prompt` text below (one consistent preset voice, "Arthur"), so prompt and audio match by
+// construction — the DB `prompt` field is the exact string given to the TTS engine, not a
+// separately-typed transcript that could drift from it. Every clip was downloaded and confirmed
+// to be a genuine, non-empty RIFF/WAVE file whose duration is consistent with reading the full
+// prompt at a natural pace (not truncated/silent) before being wired in here; full Whisper-based
+// content re-transcription (the norm elsewhere in this file) was not possible for this batch — no
+// OPENAI_API_KEY was configured in this environment — so that specific check is the one exception
+// to the usual verification bar for AI-generated audio in this project, disclosed here rather than
+// silently skipped. Files live at client/public/audio/respond-to-situation/respond-to-situation-
+// 01..22.wav (served at /audio/respond-to-situation/... by Vite's default publicDir).
+// ---------------------------------------------------------------------------
+const clientRespondToSituation = [
+  [51, "Italian Food",
+    "You are planning to have a meal outside with your friends, but they would like to choose Italian cuisine. You are not a fan of Italian food, although you still want to join them for dinner. What would you say to your friends?",
+    "Hi everyone, I wanted to discuss our dinner plan with you. I understand that you would like to have Italian food, but it is not really my preference. However, I would still be happy to go out and spend time with you. Could we consider another type of restaurant that everyone might enjoy? What do you think?"],
+  [52, "Dinner with Colleague",
+    "You have made plans to have dinner with a colleague and possibly watch a movie afterward. At the moment, however, you are feeling ill, have a headache, and think you may be getting a cold. You see your colleague in the lunchroom drinking coffee. What would you say to them?",
+    "Hi, I wanted to let you know about our plans for tonight. We had planned to have dinner and possibly watch a movie, but unfortunately I am not feeling well today. I have a bad headache and I think I may be coming down with a cold, so I don't think I will be able to join you today. Could we make another plan for a different day? I hope you understand."],
+  [53, "Sharing the Cost",
+    "You and your colleague Mike live in the same building. Both of you drive to work and have to pay parking fees at the company. You would like to travel to work together each day and divide the parking expense. What would you say to Mike?",
+    "Hi Mike, I have an idea that could make our daily commute easier. Since we live in the same building and both drive to work, why don't we travel together every day? We could split the parking charges, which would help us both save money. It would also be convenient and give us some time to talk during the journey. Would that work for you?"],
+  [55, "Lost Bag",
+    "You had dinner with your friends at a restaurant yesterday and believe that you may have forgotten your bag there. Your group was sitting at a table near the window, and the bag contains important college materials. You decide to call the restaurant manager. What would you say?",
+    "Hello, I am calling about a bag that I may have left at your restaurant yesterday. I had dinner there with my friends and we were sitting at a table near the window. The bag contains some important college materials, so I would be very grateful if you could check whether it has been found or handed in. Could you please let me know if the staff has seen it? Thank you for your help."],
+  [56, "Late for Appointment",
+    "You have arrived thirty minutes late for your doctor's appointment, which was scheduled for 10 a.m. You need to explain your lateness to the receptionist and ask whether the doctor can see you at another time later today. What would you say?",
+    "Hello, I apologize for arriving thirty minutes late for my 10 a.m. doctor's appointment. Unfortunately, I was delayed and could not arrive on time. I understand that I missed my scheduled appointment, but could you please ask the doctor if there is any possibility of seeing me later today? I would really appreciate your help and understanding. Thank you."],
+  [58, "Complaint about Waiter",
+    "You have finished eating at a restaurant, and the manager asks about your experience. You enjoyed the food, but you are unhappy with the waiter's service. In addition, the coffee you ordered still has not been brought to you. What would you say to the manager?",
+    "Thank you for asking. I enjoyed the food, and the dishes were very good. However, I was disappointed with the service because the waiter was not very attentive. I also ordered a coffee, but it has not been served yet. Could you please look into this issue? I hope the service can be improved. Thank you for understanding."],
+  [60, "Sam's Cafe",
+    "You are going out for dinner with a friend. She would like to visit Sam's Cafe, where the menu mainly includes sandwiches, coffee, and tea. You would prefer a restaurant with a wider selection of food. What would you say to your friend?",
+    "Hey, I wanted to discuss our dinner plans with you. I know you would like to go to Sam's Cafe, but it mainly offers sandwiches, coffee, and tea. I would prefer to choose a restaurant with a wider variety of food so we have more options for dinner. Would you be okay with trying another restaurant?"],
+  [61, "Call and Dinner",
+    "You are busy preparing dinner when your friend calls to talk about a problem involving one of her children. You genuinely want to help her, but you cannot talk at the moment. You would like her to call you again later. What would you say?",
+    "Hi, I really want to help you with the problem you are having with your child. However, I am preparing dinner right now and I am unable to talk properly at the moment. Could you please call me a little later when I am free? I will be happy to listen and help you then. I hope that is okay with you."],
+  [62, "History Assignment",
+    "You have finished a history assignment but want to make some improvements before submitting it. Your classmate Ali performs very well in history, so you decide to ask him for feedback. How would you approach Ali, and what questions would you ask to improve your assignment?",
+    "Hi Ali, could you please help me review my history assignment? I have completed it, but I would like to improve it before I submit it. Could you tell me whether my main points are clear and whether my arguments are well supported? I would also like to know if there are any areas where I could improve the organization, examples, or explanation. I would really appreciate your feedback."],
+  [65, "Garden Care",
+    "You are going on vacation soon and are concerned that your garden plants will not receive enough care while you are away. You see your neighbor at her door and would like to ask whether she can water the plants two times a week during your trip. What would you say?",
+    "Hi, I wanted to ask you for a small favor. I am going away on vacation soon, and I am worried about taking care of my garden plants while I am away. Would you be able to water the plants twice a week until I return? I would really appreciate your help in keeping them healthy. Please let me know if that would be possible."],
+  [70, "Cat",
+    "You will be away from home for three days and need someone to look after your cat. You decide to ask your friend Monica to help by feeding your cat while you are away. How would you explain the situation and make the request?",
+    "Hi Monica, I wanted to ask you for a small favor. I will be away from home for three days, and I need someone to look after my cat during that time. Would you be able to feed my cat while I am away? I would really appreciate your help. Please let me know if you can do this."],
+  [74, "Wrong Delivery",
+    "A letter was accidentally delivered to your home, but it is addressed to your neighbor. You want to speak to your neighbor politely and return the letter. What would you say?",
+    "Hi, I think this letter was delivered to my house by mistake. I noticed that it is addressed to you, so I wanted to bring it over and return it to you personally. I hope this helps, and I am sorry for any inconvenience caused. Please check that everything is in order."],
+  [80, "Umbrella",
+    "You have reached the office and noticed that it is raining heavily outside. You forgot to bring an umbrella, and a nearby colleague usually keeps an extra one. How would you politely ask to borrow it and explain when you will return it?",
+    "Hi, could I ask you for a quick favor? It is raining very heavily outside, and I forgot to bring an umbrella today. I remember that you usually have a spare umbrella. Would it be possible for me to borrow it for a short time? I will return it to you as soon as I can. I would really appreciate your help."],
+  [82, "Wall Painting",
+    "You have lived in your apartment for several years and think that repainting the walls would make the place look fresher. You want to ask your landlord for permission to paint the walls yourself. What would you say to request approval?",
+    "Hello, I would like to discuss a small improvement to my apartment. I have been living here for several years, and I think a fresh coat of paint would make the space brighter and more pleasant. Would you allow me to paint the walls myself? I will choose a suitable color, take proper care during the work, and restore the walls if necessary when I move out. I would appreciate your permission and consideration."],
+  [88, "Dessert",
+    "You are hosting a party and a friend plans to bring dessert. However, you have already prepared the desserts yourself. You would prefer your friend to bring another type of food, such as fruit or cake. What would you say?",
+    "Hey, I wanted to ask you about the food for my party. I have already prepared plenty of dessert, so there is no need to bring more. Would you mind bringing some fruit or another snack instead? That would give everyone a little more variety. Would that be okay with you?"],
+  [89, "Walk in Countryside",
+    "Your friend Susan has suggested going for a countryside walk tomorrow. You would like to go, but the forecast indicates that rain is possible. You would prefer to check the weather again tomorrow morning before deciding. What would you say to Susan?",
+    "Hi Susan, I would love to go for the countryside walk with you. However, I checked the weather forecast and there is a chance of rain tomorrow. Why don't we check the forecast again tomorrow morning and then decide whether to go? That way, we can avoid going if the weather is bad. What do you think?"],
+  [90, "Flight Canceled",
+    "You had arranged a taxi to take you to the airport, but your flight has now been canceled. You need to change the destination to your home and give the driver your address and directions. What would you say?",
+    "Hello, I need to change the destination for the taxi. I originally asked you to take me to the airport, but unfortunately my flight has been canceled, so I need to go home instead. I can give you my home address and guide you along the route if needed. Could you please take me there? Thank you for your understanding."],
+  [95, "Wind",
+    "Your classmate Lily is away on vacation, and you are currently at her home. Strong winds have damaged some furniture on the balcony. You want to inform her calmly so she knows about the situation before returning. What would you say?",
+    "Hi Lily, I wanted to let you know about something at your house. There were strong winds, and unfortunately some of the furniture on the balcony was damaged. I thought I should tell you now so you are aware of the situation and can plan what to do when you return. Please don't worry too much; I just wanted to keep you informed."],
+  [104, "Meal Invitation",
+    "Your friend Mike has invited you to a meal and wants to know whether you have any dietary restrictions. You do not have any, but your partner has a milk allergy. What would you say to Mike?",
+    "Hi Mike, thanks for inviting us to the meal. I personally don't have any dietary restrictions, but I should mention that my partner is allergic to milk. Could you please make sure that there are some suitable options without milk or dairy ingredients? I would really appreciate you keeping this in mind."],
+  [107, "Assignment Extension",
+    "You have an assignment deadline, but an unexpected personal emergency has made it difficult to finish the work on time. You need to speak with your professor and politely request additional time. What would you say?",
+    "Dear Professor, I would like to discuss my assignment deadline with you. Unfortunately, an unexpected personal emergency has affected my ability to complete the assignment on time. Would it be possible to receive a short extension so I can finish the work properly and submit it as soon as possible? I apologize for the inconvenience and would be grateful for your understanding."],
+  [108, "Milk Carton",
+    "A carton of milk has accidentally fallen from your hands while you are shopping, and the milk has spilled on the supermarket floor. You need to inform a staff member politely and explain what happened. What would you say?",
+    "Excuse me, I would like to report a small accident. I accidentally dropped a carton of milk while I was shopping, and unfortunately it spilled onto the floor. Could you please arrange for someone to clean the area so that nobody slips? I am sorry about the accident and appreciate your help."],
+  [113, "Dairy Product",
+    "You and your family are going to your friend's home for dinner. Your wife Lilly cannot consume dairy products, and you are unsure whether your friend knows about this restriction. You decide to call ahead and inform your friend. What would you say?",
+    "Hi Jack, I wanted to let you know about an important dietary requirement before dinner tonight. My wife Lilly cannot have dairy products, so I thought it would be helpful to tell you in advance. Could you please make sure there are some suitable dairy-free options for her? Thank you for keeping this in mind, and please let me know if you need any information."]
+].map(([num, label, prompt, answer], i) => ({
+  section: "speaking", type: "respond-to-situation", title: `RTS #${num} — ${label}`,
+  prompt, answer, audioUrl: `/audio/respond-to-situation/respond-to-situation-${String(i + 1).padStart(2, "0")}.wav`,
+  difficulty: "medium"
+}));
+
+const CLIENT_RESPOND_TO_SITUATION_CANDIDATES = [...clientRespondToSituation];
+
+// ---------------------------------------------------------------------------
 // Phase 22 — original AI-generated audio (Higgsfield seed_audio) for two of the six
 // previously-audio-blocked types. Every clip was verified live before being used here: HTTP 200,
 // Content-Type audio/x-wav, a genuine RIFF/WAVE file signature, and a byte size consistent with
@@ -568,7 +667,8 @@ const PHASE22_MEDIA_CANDIDATES = [...selectMissingWord, ...listeningFillBlanks];
 const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
   ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
-  ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, ...CLIENT_CORE_P_CANDIDATES, ...CLIENT_SWT_CANDIDATES
+  ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, ...CLIENT_CORE_P_CANDIDATES, ...CLIENT_SWT_CANDIDATES,
+  ...CLIENT_RESPOND_TO_SITUATION_CANDIDATES
 ];
 
 // Guards against two overlapping calls *within this same process* racing each other's
@@ -619,5 +719,5 @@ export {
   PHASE18_TEXT_ONLY_CANDIDATES, PHASE18_MEDIA_CANDIDATES, PHASE20_TEXT_CANDIDATES,
   PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, CLIENT_DESCRIBE_IMAGE_CANDIDATES,
   CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, CLIENT_CORE_P_CANDIDATES, CLIENT_SWT_CANDIDATES,
-  PHASE18_ALL_CANDIDATES, signature
+  CLIENT_RESPOND_TO_SITUATION_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
 };
