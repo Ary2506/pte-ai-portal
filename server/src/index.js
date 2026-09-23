@@ -5,7 +5,7 @@ import { seedQuestions } from "./seed.js";
 import { seedAdmin } from "./seedAdmin.js";
 import { migrateLegacyUsers } from "./migrateLegacyUsers.js";
 import { migrateQuestions, deactivateLegacyBrokenMedia } from "./migrateQuestions.js";
-import { seedPhase18Content } from "./seedPhase18Content.js";
+// import { seedPhase18Content } from "./seedPhase18Content.js";
 import User from "./models/User.js";
 
 await connectDb();
@@ -25,7 +25,7 @@ await deactivateLegacyBrokenMedia();
 // Phase 18: unlike seedQuestions() above (gated on an empty collection, so it can never run
 // again against this already-populated database), this seeder re-checks every candidate against
 // the database on every boot and only inserts what's genuinely new — safe to run every start.
-await seedPhase18Content();
+// await seedPhase18Content();
 await seedAdmin();
 
 app.listen(config.port, () => console.log(`API running at http://localhost:${config.port}`));

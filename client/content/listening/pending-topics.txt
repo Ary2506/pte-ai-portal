@@ -1,2 +1,21 @@
-1. fill in the blanks
-2. write from dictation
+// Karan
+1. Listening
+    a. fill in the blanks
+    b. write from dictation
+    c. highlight incorrect word question is not proper
+
+// Aryan
+1. Speaking all
+2. Writing all
+
+// aryan friend
+3. Reading he will give
+4. mock test
+
+// pending
+1. reset question button in every question
+2. done/undone filter feature in question also show that in every question
+3. Designing
+4. mongo cloud
+5. cloudinary vs local storage
+6. deploy on vercel

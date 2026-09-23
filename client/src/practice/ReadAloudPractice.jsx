@@ -17,7 +17,15 @@ function buildReadAloudQuestions() {
   const items = Array.isArray(readAloudContent) ? readAloudContent : [];
   const valid =
     items.length > 0 &&
-    items.every((item) => item && item.id != null && item.title && item.question && item.answer && item.type === "Read Aloud") &&
+    items.every(
+      (item) =>
+        item &&
+        item.id != null &&
+        item.title &&
+        item.question &&
+        item.answer &&
+        item.type === "Read Aloud",
+    ) &&
     new Set(items.map((item) => item.id)).size === items.length;
   if (!valid) {
     console.error(
@@ -65,6 +73,7 @@ export default function ReadAloudPractice() {
   // Holds the live getUserMedia stream while recording, so true unmount can release the
   // microphone directly instead of going through MediaRecorder's stop()/onstop pipeline.
   const activeStreamRef = useRef(null);
+  const resettingRef = useRef(false);
   // Mirrors audioUrl so the unmount-only effect below (empty deps, so its closure never sees
   // state updates) can always revoke whatever object URL is actually current, not a stale one.
   const audioUrlRef = useRef(null);
@@ -76,18 +85,25 @@ export default function ReadAloudPractice() {
   // unmounts outright (e.g. leaving Read Aloud mid-recording) — the [idx] effect below already
   // handles the same cleanup for question-to-question navigation, but its logic doesn't run on a
   // true unmount since it has no returned cleanup function of its own.
-  useEffect(() => () => {
-    clearInterval(timer.current);
-    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    activeStreamRef.current = null;
-    recorder.current = null;
-    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      clearInterval(timer.current);
+      activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+      activeStreamRef.current = null;
+      recorder.current = null;
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     clearInterval(timer.current);
     if (recorder.current) {
-      try { recorder.current.stop(); } catch { /* already stopped */ }
+      try {
+        recorder.current.stop();
+      } catch {
+        /* already stopped */
+      }
       recorder.current = null;
     }
     setRecording(false);
@@ -139,13 +155,20 @@ export default function ReadAloudPractice() {
           if (event.data.size) chunks.current.push(event.data);
         };
         mediaRecorder.onstop = () => {
-          const recordedBlob = new Blob(chunks.current, { type: "audio/webm" });
-          setBlob(recordedBlob);
-          const newUrl = URL.createObjectURL(recordedBlob);
-          setAudioUrl(newUrl);
-          audioUrlRef.current = newUrl;
           stream.getTracks().forEach((track) => track.stop());
           activeStreamRef.current = null;
+
+          if (!resettingRef.current) {
+            const recordedBlob = new Blob(chunks.current, {
+              type: "audio/webm",
+            });
+
+            setBlob(recordedBlob);
+
+            const newUrl = URL.createObjectURL(recordedBlob);
+            setAudioUrl(newUrl);
+            audioUrlRef.current = newUrl;
+          }
         };
         mediaRecorder.start();
         setRecording(true);
@@ -157,7 +180,9 @@ export default function ReadAloudPractice() {
         }, 1000);
       })
       .catch(() =>
-        setError("Microphone permission is required. Check your browser permissions and try again."),
+        setError(
+          "Microphone permission is required. Check your browser permissions and try again.",
+        ),
       );
   }
 
@@ -185,7 +210,10 @@ export default function ReadAloudPractice() {
     try {
       const data = await api.submit(form);
       setResult(data.submission);
-      setAttempts((previous) => ({ ...previous, [question._id]: data.submission }));
+      setAttempts((previous) => ({
+        ...previous,
+        [question._id]: data.submission,
+      }));
     } catch (submitError) {
       setError(submitError.message);
     } finally {
@@ -200,12 +228,76 @@ export default function ReadAloudPractice() {
     try {
       const data = await api.retryEvaluation(result._id);
       setResult(data.submission);
-      setAttempts((previous) => ({ ...previous, [question._id]: data.submission }));
+      setAttempts((previous) => ({
+        ...previous,
+        [question._id]: data.submission,
+      }));
     } catch (retryError) {
       setError(retryError.message);
     } finally {
       setRetrying(false);
     }
+  }
+
+  function resetQuestion() {
+    resettingRef.current = true;
+
+    // Stop timer
+    clearInterval(timer.current);
+    timer.current = null;
+
+    // Stop recording
+    if (recorder.current) {
+      try {
+        if (recorder.current.state !== "inactive") {
+          recorder.current.stop();
+        }
+      } catch {
+        // Recorder may already be stopped
+      }
+    }
+
+    recorder.current = null;
+
+    // Release microphone
+    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+    activeStreamRef.current = null;
+
+    // Remove replay audio URL
+    setAudioUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return null;
+    });
+
+    audioUrlRef.current = null;
+
+    // Reset question state
+    setRecording(false);
+    setSeconds(0);
+    setBlob(null);
+    setShowAnswer(false);
+    setResult(null);
+    setError("");
+    setBusy(false);
+    setRetrying(false);
+
+    // Remove previous submission for this question
+    setAttempts((previous) => {
+      const updated = { ...previous };
+      delete updated[question._id];
+      return updated;
+    });
+
+    // Reset recording internals
+    chunks.current = [];
+    elapsed.current = 0;
+
+    // Allow future recordings to create blobs normally
+    setTimeout(() => {
+      resettingRef.current = false;
+    }, 0);
   }
 
   function goPrevious() {
@@ -224,16 +316,24 @@ export default function ReadAloudPractice() {
       <div className="panel error-state">
         <AlertCircle size={30} />
         <h4>Read Aloud content is unavailable</h4>
-        <p>The bundled Read Aloud question set did not pass validation. Please contact an administrator.</p>
+        <p>
+          The bundled Read Aloud question set did not pass validation. Please
+          contact an administrator.
+        </p>
       </div>
     );
   }
 
   if (finished) {
     const attemptedResults = Object.values(attempts);
-    const scored = attemptedResults.filter((attempt) => attempt.evaluationStatus === "COMPLETED");
+    const scored = attemptedResults.filter(
+      (attempt) => attempt.evaluationStatus === "COMPLETED",
+    );
     const average = scored.length
-      ? Math.round(scored.reduce((sum, attempt) => sum + attempt.score, 0) / scored.length)
+      ? Math.round(
+          scored.reduce((sum, attempt) => sum + attempt.score, 0) /
+            scored.length,
+        )
       : null;
     return (
       <div className="panel task-main narrow">
@@ -241,14 +341,18 @@ export default function ReadAloudPractice() {
           <span className="chip">Read Aloud</span>
         </div>
         <h2>Practice Completed 🎉</h2>
-        <p className="instruction">You've gone through all {total} Read Aloud questions.</p>
+        <p className="instruction">
+          You've gone through all {total} Read Aloud questions.
+        </p>
         <div className="answer-reveal" style={{ marginTop: 16 }}>
           <b>Session summary</b>
           <p>
-            {attemptedResults.length} of {total} question{total === 1 ? "" : "s"} submitted for AI
-            feedback.
+            {attemptedResults.length} of {total} question
+            {total === 1 ? "" : "s"} submitted for AI feedback.
           </p>
-          {average !== null && <p>Average score on submitted questions: {average}/90.</p>}
+          {average !== null && (
+            <p>Average score on submitted questions: {average}/90.</p>
+          )}
         </div>
         <div className="task-actions" style={{ marginTop: 20 }}>
           <button className="secondary" onClick={restart}>
@@ -268,12 +372,20 @@ export default function ReadAloudPractice() {
 
   return (
     <>
-      <div className="mock-progress-bar" role="group" aria-label="Question navigation">
+      <div
+        className="mock-progress-bar"
+        role="group"
+        aria-label="Question navigation"
+      >
         <span>
           Question {idx + 1} of {total}
         </span>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="secondary" onClick={goPrevious} disabled={idx === 0}>
+          <button
+            className="secondary"
+            onClick={goPrevious}
+            disabled={idx === 0}
+          >
             Previous
           </button>
           <button className="primary" onClick={goNext}>
@@ -289,13 +401,22 @@ export default function ReadAloudPractice() {
         aria-valuemax={total}
         aria-valuetext={`Question ${idx + 1} of ${total}`}
       >
-        <div className="mock-progress-fill" style={{ width: `${((idx + 1) / total) * 100}%` }} />
+        <div
+          className="mock-progress-fill"
+          style={{ width: `${((idx + 1) / total) * 100}%` }}
+        />
       </div>
       <div className="task-layout">
         <section className="panel task-main">
           <div className="task-meta">
             <span className="chip">Read Aloud</span>
-            <span className={seconds >= RECORD_LIMIT_SECONDS ? "speaking-duration-cap low" : "speaking-duration-cap"}>
+            <span
+              className={
+                seconds >= RECORD_LIMIT_SECONDS
+                  ? "speaking-duration-cap low"
+                  : "speaking-duration-cap"
+              }
+            >
               {durationLabel}
             </span>
           </div>
@@ -316,31 +437,68 @@ export default function ReadAloudPractice() {
                 </div>
                 <h3>Record your answer</h3>
                 <p className="muted">
-                  Read the passage aloud clearly, then stop recording when you're done. Only your
-                  recording is evaluated — pronunciation scoring is not part of this practice mode.
+                  Read the passage aloud clearly, then stop recording when
+                  you're done. Only your recording is evaluated — pronunciation
+                  scoring is not part of this practice mode.
                 </p>
               </>
             )}
           </div>
-          {audioUrl && <audio ref={replayRef} src={audioUrl} style={{ display: "none" }} />}
+          {audioUrl && (
+            <audio ref={replayRef} src={audioUrl} style={{ display: "none" }} />
+          )}
           {error && <div className="alert error">{error}</div>}
           {result ? (
             <Result result={result} onRetry={retry} retrying={retrying} />
           ) : (
             <div className="task-actions">
-              <button className="secondary" onClick={recording ? stop : start} disabled={busy}>
+              <button
+                className="secondary"
+                onClick={recording ? stop : start}
+                disabled={busy}
+              >
                 {recording ? "Stop Recording" : "Start Recording"}
               </button>
-              <button className="secondary" onClick={replay} disabled={!blob || recording}>
-                <Play size={15} style={{ verticalAlign: "middle", marginRight: 4 }} />
+
+              <button
+                className="secondary"
+                onClick={replay}
+                disabled={!blob || recording}
+              >
+                <Play
+                  size={15}
+                  style={{ verticalAlign: "middle", marginRight: 4 }}
+                />
                 Replay Recording
               </button>
-              <button className="primary" disabled={!blob || busy} onClick={submit}>
+
+              <button
+                className="primary"
+                disabled={!blob || busy}
+                onClick={submit}
+              >
                 {busy ? "Evaluating..." : "Submit for AI Feedback"}
               </button>
             </div>
           )}
-          <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer((value) => !value)}>
+
+          {/* Always available, including after AI evaluation */}
+          <div className="task-actions">
+            <button
+              type="button"
+              className="secondary"
+              onClick={resetQuestion}
+              disabled={busy || retrying}
+            >
+              Reset Question
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="secondary answer-toggle"
+            onClick={() => setShowAnswer((value) => !value)}
+          >
             {showAnswer ? "Hide Answer" : "Show Answer"}
           </button>
           {showAnswer && (
@@ -361,7 +519,9 @@ export default function ReadAloudPractice() {
           <div className="tip-box">
             <Sparkles size={18} />
             <b>AI analysis</b>
-            <p>We evaluate your submitted recording and return a practice score.</p>
+            <p>
+              We evaluate your submitted recording and return a practice score.
+            </p>
           </div>
         </aside>
       </div>
