@@ -3,6 +3,7 @@
     a. fill in the blanks
     b. write from dictation
     c. highlight incorrect word question is not proper
+    d. extend subs limit to 7 days, +60 days extend ask for confirmation, revoke subs button
 
 // Aryan
 1. Speaking all
