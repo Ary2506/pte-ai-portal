@@ -48,7 +48,9 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
 }));
 
 router.get("/study-plan", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
-  const submissions = await Submission.find({ user: req.user._id });
+  // Bounded the same way the "/" route above bounds its own Submission.find on this same model —
+  // without a limit this grows unbounded with a student's full practice history.
+  const submissions = await Submission.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(100);
   const sectionScores = ["speaking", "writing", "reading", "listening"].map(section => {
     const rows = submissions.filter(s => s.section === section);
     return { section, score: rows.length ? Math.round(rows.reduce((a, s) => a + s.score, 0) / rows.length) : 0 };

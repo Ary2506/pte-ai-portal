@@ -41,10 +41,25 @@ export default function Speaking({
   const timer = useRef(null);
   const recognition = useRef(null);
   const elapsed = useRef(0);
+  // Holds the live getUserMedia stream while a recording is in progress, so it can be released
+  // directly on unmount without going through MediaRecorder's stop()/onstop pipeline (which would
+  // otherwise create a new blob/would-be object URL after the component is already gone).
+  const activeStreamRef = useRef(null);
   const limit =
     SPEAKING_DURATION_LIMITS[question?.type] || DEFAULT_SPEAKING_DURATION_LIMIT;
 
-  useEffect(() => () => clearInterval(timer.current), []);
+  // Guarantees the microphone is released if this component unmounts while still recording —
+  // e.g. navigating to another Mock Test question mid-recording. Stopping the tracks directly
+  // (rather than calling recorder.current.stop()) avoids triggering onstop after unmount, which
+  // would otherwise finalize a blob/object URL that nothing is left to clean up.
+  useEffect(() => () => {
+    clearInterval(timer.current);
+    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+    activeStreamRef.current = null;
+    recorder.current = null;
+    recognition.current?.stop();
+    recognition.current = null;
+  }, []);
 
   function stop() {
     if (!recorder.current) return;
@@ -66,6 +81,7 @@ export default function Speaking({
     navigator.mediaDevices
       ?.getUserMedia({ audio: true })
       .then((stream) => {
+        activeStreamRef.current = stream;
         const mediaRecorder = new MediaRecorder(stream);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
@@ -74,6 +90,7 @@ export default function Speaking({
         mediaRecorder.onstop = () => {
           setBlob(new Blob(chunks.current, { type: "audio/webm" }));
           stream.getTracks().forEach((track) => track.stop());
+          activeStreamRef.current = null;
         };
         mediaRecorder.start();
         setRecording(true);

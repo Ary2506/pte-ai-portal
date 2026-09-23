@@ -62,11 +62,27 @@ export default function ReadAloudPractice() {
   const timer = useRef(null);
   const elapsed = useRef(0);
   const replayRef = useRef(null);
+  // Holds the live getUserMedia stream while recording, so true unmount can release the
+  // microphone directly instead of going through MediaRecorder's stop()/onstop pipeline.
+  const activeStreamRef = useRef(null);
+  // Mirrors audioUrl so the unmount-only effect below (empty deps, so its closure never sees
+  // state updates) can always revoke whatever object URL is actually current, not a stale one.
+  const audioUrlRef = useRef(null);
 
   const finished = idx >= total;
   const question = !finished ? READ_ALOUD_QUESTIONS[idx] : null;
 
-  useEffect(() => () => clearInterval(timer.current), []);
+  // Guarantees the microphone and the last recording's object URL are released if this component
+  // unmounts outright (e.g. leaving Read Aloud mid-recording) — the [idx] effect below already
+  // handles the same cleanup for question-to-question navigation, but its logic doesn't run on a
+  // true unmount since it has no returned cleanup function of its own.
+  useEffect(() => () => {
+    clearInterval(timer.current);
+    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+    activeStreamRef.current = null;
+    recorder.current = null;
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+  }, []);
 
   useEffect(() => {
     clearInterval(timer.current);
@@ -81,6 +97,7 @@ export default function ReadAloudPractice() {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return null;
     });
+    audioUrlRef.current = null;
     setShowAnswer(false);
     setError("");
     setBusy(false);
@@ -109,11 +126,13 @@ export default function ReadAloudPractice() {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return null;
     });
+    audioUrlRef.current = null;
     chunks.current = [];
     elapsed.current = 0;
     navigator.mediaDevices
       ?.getUserMedia({ audio: true })
       .then((stream) => {
+        activeStreamRef.current = stream;
         const mediaRecorder = new MediaRecorder(stream);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
@@ -122,8 +141,11 @@ export default function ReadAloudPractice() {
         mediaRecorder.onstop = () => {
           const recordedBlob = new Blob(chunks.current, { type: "audio/webm" });
           setBlob(recordedBlob);
-          setAudioUrl(URL.createObjectURL(recordedBlob));
+          const newUrl = URL.createObjectURL(recordedBlob);
+          setAudioUrl(newUrl);
+          audioUrlRef.current = newUrl;
           stream.getTracks().forEach((track) => track.stop());
+          activeStreamRef.current = null;
         };
         mediaRecorder.start();
         setRecording(true);

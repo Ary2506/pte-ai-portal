@@ -27,26 +27,31 @@ export async function expireIfNeeded(session) {
   return session;
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 // One question per section, chosen server-side so the client never sees the full bank (or
 // any answer) before the attempt starts.
+//
+// Picks a uniformly random candidate the same way the old shuffle-then-take-first did, but
+// without ever pulling full question documents for the whole pool: first fetch only the
+// matching _ids (cheap), pick one at random, then fetch that single document with the normal
+// student-safe projection. Real Mongoose documents come back either way, so the JSON shape of
+// the response is unchanged.
+async function pickOneQuestion(section) {
+  // The type allowlist is defense-in-depth: creation-time validation already guarantees every
+  // question has a supported type, but this keeps the mock test safe even against legacy data.
+  const candidateIds = await Question.find(
+    { section, active: true, type: { $in: Object.keys(QUESTION_TYPES) } },
+    "_id"
+  );
+  if (!candidateIds.length) return null;
+  const chosenId = candidateIds[Math.floor(Math.random() * candidateIds.length)]._id;
+  return Question.findById(chosenId).select(STUDENT_SAFE_FIELDS);
+}
+
 async function pickMockQuestions() {
-  const picks = [];
-  for (const section of MOCK_SECTIONS) {
-    // The type allowlist is defense-in-depth: creation-time validation already guarantees every
-    // question has a supported type, but this keeps the mock test safe even against legacy data.
-    const candidates = await Question.find({ section, active: true, type: { $in: Object.keys(QUESTION_TYPES) } }).select(STUDENT_SAFE_FIELDS);
-    if (candidates.length) picks.push(shuffle(candidates)[0]);
-  }
-  return picks;
+  // The 4 sections are independent of each other, so picking them concurrently instead of in a
+  // sequential loop cuts the wall-clock DB round-trip time without changing what gets picked.
+  const picks = await Promise.all(MOCK_SECTIONS.map(pickOneQuestion));
+  return picks.filter(Boolean);
 }
 
 router.post("/", asyncRoute(async (req, res) => {
