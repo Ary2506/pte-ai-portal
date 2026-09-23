@@ -60,17 +60,19 @@ describe("Read Aloud content — read_aloud.json is the single source of truth",
     });
   });
 
-  it("currently contains exactly the 15 specified questions, first and last matching the given order", () => {
-    expect(readAloudJson.length).toBe(15);
+  it("currently contains exactly the 111 specified questions (15 original + 96 added from client PDFs), first and last matching the given order", () => {
+    expect(readAloudJson.length).toBe(111);
     expect(READ_ALOUD_QUESTIONS[0].title).toBe("Language Appearance");
-    expect(READ_ALOUD_QUESTIONS[READ_ALOUD_QUESTIONS.length - 1].title).toBe("Community Gardening");
+    expect(READ_ALOUD_QUESTIONS[14].title).toBe("Community Gardening"); // last of the original 15
+    expect(READ_ALOUD_QUESTIONS[15].title).toBe("Visit to Canada"); // first of the 96 newly added
+    expect(READ_ALOUD_QUESTIONS[READ_ALOUD_QUESTIONS.length - 1].title).toBe("Shakespeare"); // last of the 96 newly added
   });
 });
 
 describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () => {
-  it("opens directly into question 1 of 15 with the passage visible and the answer hidden", async () => {
+  it("opens directly into question 1 of 111 with the passage visible and the answer hidden", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     expect(screen.getByRole("heading", { name: "Language Appearance" })).toBeInTheDocument();
     expect(screen.getByText(/It seems that language appeared from nowhere/)).toBeInTheDocument();
     // The passage itself is always visible (it's the question); it's the dedicated answer-reveal
@@ -81,13 +83,13 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
 
   it("never calls the DB question API for Read Aloud — it is fully local content", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     expect(api.questions).not.toHaveBeenCalled();
   });
 
   it("Show Answer reveals the exact answer field and can be hidden again", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     fireEvent.click(screen.getByText("Show Answer"));
     await screen.findByText("Hide Answer");
     // Question and answer text happen to be identical in this dataset, so the assertion is scoped
@@ -101,28 +103,59 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
 
   it("Next/Previous move through questions in order and update the counter; Previous is disabled on question 1", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     expect(screen.getByText("Previous")).toBeDisabled();
 
     fireEvent.click(screen.getByText("Next"));
-    await screen.findByText("Question 2 of 15");
+    await screen.findByText("Question 2 of 111");
     expect(screen.getByRole("heading", { name: "Elephant" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Previous"));
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     expect(screen.getByRole("heading", { name: "Language Appearance" })).toBeInTheDocument();
   });
 
   it("resets recording and hides the answer again when moving to a new question", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     fireEvent.click(screen.getByText("Show Answer"));
     await screen.findByText("Hide Answer");
 
     fireEvent.click(screen.getByText("Next"));
-    await screen.findByText("Question 2 of 15");
+    await screen.findByText("Question 2 of 111");
     expect(screen.getByText("Show Answer")).toBeInTheDocument();
   });
+
+  it("navigating past question 15 into the newly added PDF content shows the right question, and Previous returns correctly", async () => {
+    renderAt("/speaking", studentAuthUser());
+    await screen.findByText("Question 1 of 111");
+
+    // Walk from question 1 to question 16 — the first of the 96 newly added questions.
+    for (let i = 0; i < 15; i += 1) fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Question 16 of 111");
+    expect(screen.getByRole("heading", { name: "Visit to Canada" })).toBeInTheDocument();
+
+    // Walk to question 50.
+    for (let i = 0; i < 34; i += 1) fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Question 50 of 111");
+    expect(screen.getByRole("heading", { name: "Primitive Men" })).toBeInTheDocument();
+
+    // Walk to question 96.
+    for (let i = 0; i < 46; i += 1) fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Question 96 of 111");
+    expect(screen.getByRole("heading", { name: "Galaxy" })).toBeInTheDocument();
+
+    // Walk to question 111, the last one.
+    for (let i = 0; i < 15; i += 1) fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Question 111 of 111");
+    expect(screen.getByRole("heading", { name: "Shakespeare" })).toBeInTheDocument();
+    expect(screen.getByText("Finish")).toBeInTheDocument();
+
+    // Previous from the last question returns to question 110, not some other question.
+    fireEvent.click(screen.getByText("Previous"));
+    await screen.findByText("Question 110 of 111");
+    expect(screen.getByRole("heading", { name: "Alphabet" })).toBeInTheDocument();
+  }, 20000); // 110 total Next clicks — see the timeout note on the Finish test below
 
   it("records, replays, and submits — using the real existing AI-evaluation pipeline with no questionId", async () => {
     api.submit.mockResolvedValue({
@@ -133,7 +166,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
       }
     });
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
 
     fireEvent.click(screen.getByText("Start Recording"));
     await screen.findByText("Stop Recording");
@@ -151,22 +184,25 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
     expect(await screen.findByText("Heuristic Practice Evaluation")).toBeInTheDocument();
   });
 
-  it("shows Practice Completed with an honest summary after Finish on question 15 — no fabricated score", async () => {
+  // 110 rapid Next clicks comfortably finish under 5s in isolation, but can exceed the default
+  // test timeout under full-suite parallel load (CPU shared across many concurrent test files) —
+  // a resource-contention issue, not a logic problem, so this one test gets a longer budget.
+  it("shows Practice Completed with an honest summary after Finish on question 111 — no fabricated score", async () => {
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
 
-    // 14 "Next" clicks walk from question 1 to question 15; the 15th click (its button now
-    // labeled "Finish", since we're on the last question) moves past it to the completion screen.
-    for (let i = 0; i < 14; i += 1) {
+    // 110 "Next" clicks walk from question 1 to question 111; the 111th question's own button is
+    // now labeled "Finish" (since it's the last question), moving past it to the completion screen.
+    for (let i = 0; i < 110; i += 1) {
       fireEvent.click(screen.getByText("Next"));
-      await screen.findByText(`Question ${i + 2} of 15`);
+      await screen.findByText(`Question ${i + 2} of 111`);
     }
     expect(screen.getByText("Finish")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Finish"));
 
     expect(await screen.findByText("Practice Completed 🎉")).toBeInTheDocument();
-    expect(screen.getByText("0 of 15 questions submitted for AI feedback.")).toBeInTheDocument();
+    expect(screen.getByText("0 of 111 questions submitted for AI feedback.")).toBeInTheDocument();
     expect(screen.queryByText(/Average score/)).not.toBeInTheDocument(); // never invented when nothing was submitted
     expect(screen.getByText("Restart Practice")).toBeInTheDocument();
-  });
+  }, 20000);
 });

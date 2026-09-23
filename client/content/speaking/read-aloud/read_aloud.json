@@ -103,5 +103,677 @@
     "type": "Read Aloud",
     "question": "We bring together people, resources, and education to benefit lives and neighborhoods through community gardening. From our beginnings, American Community Gardening Association has encouraged networking among members to share community gardening information, experience, and best practices. We also offer formal educational opportunities, such as local and regional workshops, webinars, publications, and online resources.",
     "answer": "We bring together people, resources, and education to benefit lives and neighborhoods through community gardening. From our beginnings, American Community Gardening Association has encouraged networking among members to share community gardening information, experience, and best practices. We also offer formal educational opportunities, such as local and regional workshops, webinars, publications, and online resources."
+  },
+  {
+    "id": 2001,
+    "title": "Visit to Canada",
+    "type": "Read Aloud",
+    "question": "Autumn is considered one of the best periods to travel around Canada because comfortable temperatures and colorful foliage make activities such as scenic drives, hiking, and outdoor sightseeing particularly pleasant. Travel resources often identify the period from late September to November as an especially good time to enjoy changing colors in Ontario, Quebec, and several other parts of the country.",
+    "answer": "Autumn is considered one of the best periods to travel around Canada because comfortable temperatures and colorful foliage make activities such as scenic drives, hiking, and outdoor sightseeing particularly pleasant. Travel resources often identify the period from late September to November as an especially good time to enjoy changing colors in Ontario, Quebec, and several other parts of the country."
+  },
+  {
+    "id": 2002,
+    "title": "Community Gardening",
+    "type": "Read Aloud",
+    "question": "Community gardening connects people, educational resources, and shared facilities to improve neighborhoods and people's lives. Since its early days, the American Community Gardening Association has promoted cooperation among members so they can exchange information, experience, and useful gardening practices. It also provides structured learning opportunities through regional workshops, webinars, publications, and online materials.",
+    "answer": "Community gardening connects people, educational resources, and shared facilities to improve neighborhoods and people's lives. Since its early days, the American Community Gardening Association has promoted cooperation among members so they can exchange information, experience, and useful gardening practices. It also provides structured learning opportunities through regional workshops, webinars, publications, and online materials."
+  },
+  {
+    "id": 2003,
+    "title": "Smart Cooking",
+    "type": "Read Aloud",
+    "question": "Nutrition specialists and home cooks say that preparing meals on weekends does not need to take a great deal of time. A growing trend promoted through social media and lifestyle publications encourages easy meal preparation, cooking food in batches, and using appliances that save time, helping people reduce the pressure associated with cooking.",
+    "answer": "Nutrition specialists and home cooks say that preparing meals on weekends does not need to take a great deal of time. A growing trend promoted through social media and lifestyle publications encourages easy meal preparation, cooking food in batches, and using appliances that save time, helping people reduce the pressure associated with cooking."
+  },
+  {
+    "id": 2004,
+    "title": "Returning Book",
+    "type": "Read Aloud",
+    "question": "When a borrowed book is returned with missing pages, being honest about the damage is important. Librarians and etiquette specialists have observed more disagreements over damaged books, frequently because problems are not reported when the book is returned. Acknowledging the issue, apologizing, and offering to correct the problem can stop a minor mistake from developing into a larger misunderstanding.",
+    "answer": "When a borrowed book is returned with missing pages, being honest about the damage is important. Librarians and etiquette specialists have observed more disagreements over damaged books, frequently because problems are not reported when the book is returned. Acknowledging the issue, apologizing, and offering to correct the problem can stop a minor mistake from developing into a larger misunderstanding."
+  },
+  {
+    "id": 2005,
+    "title": "Subgenre",
+    "type": "Read Aloud",
+    "question": "Different variations helped keep the genre popular. As literacy expanded during the middle of the nineteenth century, adventure became a widely enjoyed form of fiction. Although its possibilities were not always fully explored, the genre changed considerably over time, developing from stories about armored knights into modern narratives involving advanced technology and espionage.",
+    "answer": "Different variations helped keep the genre popular. As literacy expanded during the middle of the nineteenth century, adventure became a widely enjoyed form of fiction. Although its possibilities were not always fully explored, the genre changed considerably over time, developing from stories about armored knights into modern narratives involving advanced technology and espionage."
+  },
+  {
+    "id": 2006,
+    "title": "University Workshops",
+    "type": "Read Aloud",
+    "question": "The university is offering a set of workshops designed to help final-year students succeed in interviews. The sessions are intended to teach participants how to prepare properly and perform confidently during future employment interviews. The instructors have a strong history of helping students obtain the jobs they are aiming for.",
+    "answer": "The university is offering a set of workshops designed to help final-year students succeed in interviews. The sessions are intended to teach participants how to prepare properly and perform confidently during future employment interviews. The instructors have a strong history of helping students obtain the jobs they are aiming for."
+  },
+  {
+    "id": 2007,
+    "title": "Parent Teacher Conferences",
+    "type": "Read Aloud",
+    "question": "Schools arrange meetings between parents and teachers several times each year, and families are encouraged to take part. These meetings provide an opportunity to speak with teachers, ask about a child's academic progress, and discuss any concerns. Preparing a list of questions in advance can make the meeting more useful.",
+    "answer": "Schools arrange meetings between parents and teachers several times each year, and families are encouraged to take part. These meetings provide an opportunity to speak with teachers, ask about a child's academic progress, and discuss any concerns. Preparing a list of questions in advance can make the meeting more useful."
+  },
+  {
+    "id": 2008,
+    "title": "Bill",
+    "type": "Read Aloud",
+    "question": "The proposed legislation requires the National Landslide Hazards Reduction Program to be established within twelve months after the law takes effect. Its responsibilities include identifying and understanding landslide dangers, lowering related losses, protecting communities that face these risks, and strengthening communication and emergency-readiness measures.",
+    "answer": "The proposed legislation requires the National Landslide Hazards Reduction Program to be established within twelve months after the law takes effect. Its responsibilities include identifying and understanding landslide dangers, lowering related losses, protecting communities that face these risks, and strengthening communication and emergency-readiness measures."
+  },
+  {
+    "id": 2009,
+    "title": "Agricultural Problems",
+    "type": "Read Aloud",
+    "question": "Climate change, unusual weather patterns, declining water supplies, and damage to soil have created serious agricultural challenges across the world. To address these difficulties, increasing attention is being given to ethical approaches and family-based farming practices.",
+    "answer": "Climate change, unusual weather patterns, declining water supplies, and damage to soil have created serious agricultural challenges across the world. To address these difficulties, increasing attention is being given to ethical approaches and family-based farming practices."
+  },
+  {
+    "id": 2010,
+    "title": "Innovative Product",
+    "type": "Read Aloud",
+    "question": "A company can gain an advantage over competitors by introducing a new product or service, creating a lead that may be difficult for new businesses to overcome. When the underlying technology is protected by a patent, competitors are also prevented from simply reproducing the design because the innovation has legal protection.",
+    "answer": "A company can gain an advantage over competitors by introducing a new product or service, creating a lead that may be difficult for new businesses to overcome. When the underlying technology is protected by a patent, competitors are also prevented from simply reproducing the design because the innovation has legal protection."
+  },
+  {
+    "id": 2011,
+    "title": "Tortoise",
+    "type": "Read Aloud",
+    "question": "The size and shape of a tortoise's shell can differ according to its habitat. The shell is formed from bone and generally has a dull brown appearance. Because the ribs, backbone, and breastbone are incorporated into the shell, the animal cannot be separated from this protective structure.",
+    "answer": "The size and shape of a tortoise's shell can differ according to its habitat. The shell is formed from bone and generally has a dull brown appearance. Because the ribs, backbone, and breastbone are incorporated into the shell, the animal cannot be separated from this protective structure."
+  },
+  {
+    "id": 2012,
+    "title": "Enough Fluid",
+    "type": "Read Aloud",
+    "question": "Almost two-thirds of the human body consists of water, so drinking enough fluids is essential for staying hydrated and healthy. When the body does not receive sufficient water, a person may become tired, develop headaches, and find it harder to perform at their best.",
+    "answer": "Almost two-thirds of the human body consists of water, so drinking enough fluids is essential for staying hydrated and healthy. When the body does not receive sufficient water, a person may become tired, develop headaches, and find it harder to perform at their best."
+  },
+  {
+    "id": 2013,
+    "title": "Attendance",
+    "type": "Read Aloud",
+    "question": "A person's age and household situation can influence how often they attend cultural places and events. For instance, people who live with dependent children are more likely to visit zoos and aquariums than individuals who live alone.",
+    "answer": "A person's age and household situation can influence how often they attend cultural places and events. For instance, people who live with dependent children are more likely to visit zoos and aquariums than individuals who live alone."
+  },
+  {
+    "id": 2014,
+    "title": "Tutor",
+    "type": "Read Aloud",
+    "question": "A university tutor helps students use their time effectively by providing advice, direction, and ongoing support. Every new student receives a personal tutor who can encourage them to make the most of their studies, connect them with additional support services, and assist them in reaching their academic goals.",
+    "answer": "A university tutor helps students use their time effectively by providing advice, direction, and ongoing support. Every new student receives a personal tutor who can encourage them to make the most of their studies, connect them with additional support services, and assist them in reaching their academic goals."
+  },
+  {
+    "id": 2015,
+    "title": "William Shakespeare",
+    "type": "Read Aloud",
+    "question": "Even centuries after his death, William Shakespeare continues to hold a central place in English-language literature. He is among the most frequently quoted poets and most regularly performed playwrights, and his work is also highly influential in film. His lasting importance raises questions about the writer himself and the reasons for his continued popularity.",
+    "answer": "Even centuries after his death, William Shakespeare continues to hold a central place in English-language literature. He is among the most frequently quoted poets and most regularly performed playwrights, and his work is also highly influential in film. His lasting importance raises questions about the writer himself and the reasons for his continued popularity."
+  },
+  {
+    "id": 2016,
+    "title": "Statistics",
+    "type": "Read Aloud",
+    "question": "Statistics provide evidence of change and make it possible to compare different situations in meaningful ways. Although people may focus on the issues highlighted by statistics, the data themselves help shape our understanding of those issues. Statistical literacy means being able to understand, interpret, and assess information accurately.",
+    "answer": "Statistics provide evidence of change and make it possible to compare different situations in meaningful ways. Although people may focus on the issues highlighted by statistics, the data themselves help shape our understanding of those issues. Statistical literacy means being able to understand, interpret, and assess information accurately."
+  },
+  {
+    "id": 2017,
+    "title": "Political Problems",
+    "type": "Read Aloud",
+    "question": "The course examines how different thinkers have addressed the political challenges of their periods and how their ideas have contributed to wider discussions about human needs, values, justice, and democracy. It also explores the appropriate relationship between individual people and the state.",
+    "answer": "The course examines how different thinkers have addressed the political challenges of their periods and how their ideas have contributed to wider discussions about human needs, values, justice, and democracy. It also explores the appropriate relationship between individual people and the state."
+  },
+  {
+    "id": 2018,
+    "title": "Child Psychology",
+    "type": "Read Aloud",
+    "question": "This free course provides an introduction to child psychology and to theories and methods developed to understand and support children's lives by considering individual differences. Psychologists can examine how a child's abilities change over time, including development in physical, cognitive, social, and emotional areas.",
+    "answer": "This free course provides an introduction to child psychology and to theories and methods developed to understand and support children's lives by considering individual differences. Psychologists can examine how a child's abilities change over time, including development in physical, cognitive, social, and emotional areas."
+  },
+  {
+    "id": 2019,
+    "title": "Root Network",
+    "type": "Read Aloud",
+    "question": "The root systems plants use to obtain water and nutrients can spread across an area much larger than the visible portion of the plant above the ground. The structure and characteristics of these roots can help plants survive and adjust to difficult conditions, including dry desert environments.",
+    "answer": "The root systems plants use to obtain water and nutrients can spread across an area much larger than the visible portion of the plant above the ground. The structure and characteristics of these roots can help plants survive and adjust to difficult conditions, including dry desert environments."
+  },
+  {
+    "id": 2020,
+    "title": "Urban Forests",
+    "type": "Read Aloud",
+    "question": "A city's urban forest can strengthen local pride and community identity. Trees can also support economic activity by attracting visitors and businesses, since people tend to spend more time shopping on streets lined with trees. Properties surrounded by greenery may be rented more quickly, while companies in tree-filled developments have reported greater productivity and fewer employee absences.",
+    "answer": "A city's urban forest can strengthen local pride and community identity. Trees can also support economic activity by attracting visitors and businesses, since people tend to spend more time shopping on streets lined with trees. Properties surrounded by greenery may be rented more quickly, while companies in tree-filled developments have reported greater productivity and fewer employee absences."
+  },
+  {
+    "id": 2021,
+    "title": "Norms and Values",
+    "type": "Read Aloud",
+    "question": "For a culture to survive and operate successfully, its members need to follow the accepted norms of that society. They must be willing to respect its rules and first learn the social values that define appropriate behavior. They also have a responsibility to pass these norms and values on to their children through socialization.",
+    "answer": "For a culture to survive and operate successfully, its members need to follow the accepted norms of that society. They must be willing to respect its rules and first learn the social values that define appropriate behavior. They also have a responsibility to pass these norms and values on to their children through socialization."
+  },
+  {
+    "id": 2022,
+    "title": "Natural Environment",
+    "type": "Read Aloud",
+    "question": "The natural world can present serious dangers, and modern travel and recreational activities mean that people are increasingly exposed to conditions that may threaten their lives. Although the human body can adapt to certain environmental changes, it has limits and cannot safely withstand poisonous substances or long exposure to extreme conditions.",
+    "answer": "The natural world can present serious dangers, and modern travel and recreational activities mean that people are increasingly exposed to conditions that may threaten their lives. Although the human body can adapt to certain environmental changes, it has limits and cannot safely withstand poisonous substances or long exposure to extreme conditions."
+  },
+  {
+    "id": 2023,
+    "title": "Making Notes",
+    "type": "Read Aloud",
+    "question": "The main reason for taking notes is to support and improve learning. Notes should be reviewed within a day so that unclear points can be corrected and the writing remains useful for later revision. Reviewing them can also reveal important questions and subjects that require additional reading.",
+    "answer": "The main reason for taking notes is to support and improve learning. Notes should be reviewed within a day so that unclear points can be corrected and the writing remains useful for later revision. Reviewing them can also reveal important questions and subjects that require additional reading."
+  },
+  {
+    "id": 2024,
+    "title": "Word Radical",
+    "type": "Read Aloud",
+    "question": "The term radical comes from a Latin word meaning root and refers to someone who supports fundamental political change. In a broader sense, a radical seeks to address political or social problems by examining their deepest social or economic causes and attempting to change the underlying weakness.",
+    "answer": "The term radical comes from a Latin word meaning root and refers to someone who supports fundamental political change. In a broader sense, a radical seeks to address political or social problems by examining their deepest social or economic causes and attempting to change the underlying weakness."
+  },
+  {
+    "id": 2025,
+    "title": "Volcano Behaviors",
+    "type": "Read Aloud",
+    "question": "Before scientists developed the idea that Earth's mantle behaves as a semisolid material, several explanations were proposed for volcanic activity. For many years, the possibility that compression and radioactive substances generated heat received little attention, while volcanic eruptions were commonly explained by chemical reactions and a relatively thin layer of molten material close to the surface.",
+    "answer": "Before scientists developed the idea that Earth's mantle behaves as a semisolid material, several explanations were proposed for volcanic activity. For many years, the possibility that compression and radioactive substances generated heat received little attention, while volcanic eruptions were commonly explained by chemical reactions and a relatively thin layer of molten material close to the surface."
+  },
+  {
+    "id": 2026,
+    "title": "Hybrid Rice",
+    "type": "Read Aloud",
+    "question": "A new rice variety combining an annual Asian species with a perennial African species may provide a more sustainable farming choice. This hybrid produced crops through eight consecutive harvests over four years, with yields similar to conventional annual Asian rice while requiring considerably less labor and lower costs.",
+    "answer": "A new rice variety combining an annual Asian species with a perennial African species may provide a more sustainable farming choice. This hybrid produced crops through eight consecutive harvests over four years, with yields similar to conventional annual Asian rice while requiring considerably less labor and lower costs."
+  },
+  {
+    "id": 2027,
+    "title": "Pandemic",
+    "type": "Read Aloud",
+    "question": "Some people who believed that the COVID-19 pandemic was fabricated, exaggerated, or intentionally created for harmful purposes were also more inclined to accept other conspiracy theories. One study found that people skeptical about the pandemic were more likely to believe claims of fraud in the 2020 election.",
+    "answer": "Some people who believed that the COVID-19 pandemic was fabricated, exaggerated, or intentionally created for harmful purposes were also more inclined to accept other conspiracy theories. One study found that people skeptical about the pandemic were more likely to believe claims of fraud in the 2020 election."
+  },
+  {
+    "id": 2028,
+    "title": "Reserve Bank",
+    "type": "Read Aloud",
+    "question": "Many people are unaware that banks can issue loans even when they do not have the equivalent amount of money deposited. This practice, known as fractional reserve banking, operates in most economies. The system appears secure because banks are required to keep a portion of their deposits with the central or reserve bank.",
+    "answer": "Many people are unaware that banks can issue loans even when they do not have the equivalent amount of money deposited. This practice, known as fractional reserve banking, operates in most economies. The system appears secure because banks are required to keep a portion of their deposits with the central or reserve bank."
+  },
+  {
+    "id": 2029,
+    "title": "Female Undergraduates",
+    "type": "Read Aloud",
+    "question": "One notable change is that women now make up 46 percent of university undergraduates. In the past, when the speaker attended the institution, women had only recently been admitted, and they were a small minority. Around 70 percent of students were men, and female academic staff were extremely rare.",
+    "answer": "One notable change is that women now make up 46 percent of university undergraduates. In the past, when the speaker attended the institution, women had only recently been admitted, and they were a small minority. Around 70 percent of students were men, and female academic staff were extremely rare."
+  },
+  {
+    "id": 2030,
+    "title": "Your Thesis",
+    "type": "Read Aloud",
+    "question": "Students are generally expected to submit the final version of their thesis to the university library in both printed and electronic formats, where it can normally be accessed by the public. After being placed in the library, the thesis may be read, borrowed, or reproduced according to the institution's rules.",
+    "answer": "Students are generally expected to submit the final version of their thesis to the university library in both printed and electronic formats, where it can normally be accessed by the public. After being placed in the library, the thesis may be read, borrowed, or reproduced according to the institution's rules."
+  },
+  {
+    "id": 2031,
+    "title": "Volunteering",
+    "type": "Read Aloud",
+    "question": "Graduates who want to contribute to society often choose volunteering, either within the UK or in another country. The cost of volunteer programs can range from free opportunities to projects costing several thousand pounds, so applicants should carefully investigate the organization and project before making a commitment.",
+    "answer": "Graduates who want to contribute to society often choose volunteering, either within the UK or in another country. The cost of volunteer programs can range from free opportunities to projects costing several thousand pounds, so applicants should carefully investigate the organization and project before making a commitment."
+  },
+  {
+    "id": 2032,
+    "title": "Loggerhead Turtle",
+    "type": "Read Aloud",
+    "question": "This young loggerhead turtle is being prepared for research. Scientists can place turtles in small cloth harnesses and observe them in a controlled swimming tank. Researchers study these animals because they begin an extraordinary journey from birth: their mothers bury the eggs on beaches, return to the ocean, and the eggs usually hatch after roughly 50 to 60 days.",
+    "answer": "This young loggerhead turtle is being prepared for research. Scientists can place turtles in small cloth harnesses and observe them in a controlled swimming tank. Researchers study these animals because they begin an extraordinary journey from birth: their mothers bury the eggs on beaches, return to the ocean, and the eggs usually hatch after roughly 50 to 60 days."
+  },
+  {
+    "id": 2033,
+    "title": "Antarctic",
+    "type": "Read Aloud",
+    "question": "Antarctica is the world's fifth-largest continent and is almost completely covered by an ice sheet that can be around 2,000 meters thick. The region supports diverse wildlife, including seals, whales, and penguins. International management of the continent is guided by the Antarctic Treaty, which was signed in 1959 and came into force in 1961.",
+    "answer": "Antarctica is the world's fifth-largest continent and is almost completely covered by an ice sheet that can be around 2,000 meters thick. The region supports diverse wildlife, including seals, whales, and penguins. International management of the continent is guided by the Antarctic Treaty, which was signed in 1959 and came into force in 1961."
+  },
+  {
+    "id": 2034,
+    "title": "Roman Army",
+    "type": "Read Aloud",
+    "question": "The Roman Army consisted mainly of legionaries and auxiliary soldiers. Legionaries were Roman citizens and formed the highly trained core of the army, while auxiliaries generally came from outside Roman citizenship. Legionaries wore linen undergarments and woolen tunics, with linen helping them remain cool and wool providing insulation against cold weather.",
+    "answer": "The Roman Army consisted mainly of legionaries and auxiliary soldiers. Legionaries were Roman citizens and formed the highly trained core of the army, while auxiliaries generally came from outside Roman citizenship. Legionaries wore linen undergarments and woolen tunics, with linen helping them remain cool and wool providing insulation against cold weather."
+  },
+  {
+    "id": 2035,
+    "title": "Primitive Men",
+    "type": "Read Aloud",
+    "question": "Modern research supports the idea that the development of early humans and their cultures should be studied as an interconnected process. However, this development was highly complex, and future discoveries are expected to help researchers distinguish more precisely between the different periods within it.",
+    "answer": "Modern research supports the idea that the development of early humans and their cultures should be studied as an interconnected process. However, this development was highly complex, and future discoveries are expected to help researchers distinguish more precisely between the different periods within it."
+  },
+  {
+    "id": 2036,
+    "title": "Regular Exercise",
+    "type": "Read Aloud",
+    "question": "Consistent physical activity releases chemicals in the brain that support memory, concentration, and mental alertness while also improving mood and reducing stress and anxiety. Research indicates that exercise can help people handle complicated tasks, organize their thoughts, and maintain sharper concentration during demanding study or examination periods.",
+    "answer": "Consistent physical activity releases chemicals in the brain that support memory, concentration, and mental alertness while also improving mood and reducing stress and anxiety. Research indicates that exercise can help people handle complicated tasks, organize their thoughts, and maintain sharper concentration during demanding study or examination periods."
+  },
+  {
+    "id": 2037,
+    "title": "University Terms",
+    "type": "Read Aloud",
+    "question": "Different industries and workplaces often develop specialized vocabulary for particular objects, locations, or groups, and universities do the same. Universities therefore provide explanations of specialized terms that students may encounter on institutional websites and in higher-education contexts.",
+    "answer": "Different industries and workplaces often develop specialized vocabulary for particular objects, locations, or groups, and universities do the same. Universities therefore provide explanations of specialized terms that students may encounter on institutional websites and in higher-education contexts."
+  },
+  {
+    "id": 2038,
+    "title": "Era of Mayan",
+    "type": "Read Aloud",
+    "question": "The Classic Maya period ended at approximately 900 AD, although the exact reason remains uncertain. One possible explanation is that excessive farming weakened the land and was followed by a prolonged drought, resulting in food shortages. Geological evidence supports this possibility by indicating that a drought lasting about two centuries occurred during the relevant period.",
+    "answer": "The Classic Maya period ended at approximately 900 AD, although the exact reason remains uncertain. One possible explanation is that excessive farming weakened the land and was followed by a prolonged drought, resulting in food shortages. Geological evidence supports this possibility by indicating that a drought lasting about two centuries occurred during the relevant period."
+  },
+  {
+    "id": 2039,
+    "title": "Political Scholars",
+    "type": "Read Aloud",
+    "question": "Political researchers have long understood that mass media plays an important social role. Its influence over elections and government has grown substantially during the past four decades. In the future, mass media is expected to function as a central communication system and as a major source through which the public receives information.",
+    "answer": "Political researchers have long understood that mass media plays an important social role. Its influence over elections and government has grown substantially during the past four decades. In the future, mass media is expected to function as a central communication system and as a major source through which the public receives information."
+  },
+  {
+    "id": 2040,
+    "title": "Psychology",
+    "type": "Read Aloud",
+    "question": "Psychology examines human thoughts, emotions, and behavior. Professionals in this field perform many different kinds of work, including research into how people respond in particular situations, why they think in certain ways, how emotions develop, and how those emotions influence relationships and interactions.",
+    "answer": "Psychology examines human thoughts, emotions, and behavior. Professionals in this field perform many different kinds of work, including research into how people respond in particular situations, why they think in certain ways, how emotions develop, and how those emotions influence relationships and interactions."
+  },
+  {
+    "id": 2041,
+    "title": "Charlie Parker",
+    "type": "Read Aloud",
+    "question": "Charlie Parker understood that musical solos could be improvised using both chords and melodies. This method allowed him to create fresh variations within existing song structures while producing a greater number of notes at faster speeds.",
+    "answer": "Charlie Parker understood that musical solos could be improvised using both chords and melodies. This method allowed him to create fresh variations within existing song structures while producing a greater number of notes at faster speeds."
+  },
+  {
+    "id": 2042,
+    "title": "Canada",
+    "type": "Read Aloud",
+    "question": "Canada is the world's second-largest country and has a population of slightly more than 30 million. It is well known for its enormous wilderness areas, which remain relatively unaffected by industrial and intensive agricultural pollution. Protecting untouched forests in northern Ontario and along the western coast is an important environmental concern.",
+    "answer": "Canada is the world's second-largest country and has a population of slightly more than 30 million. It is well known for its enormous wilderness areas, which remain relatively unaffected by industrial and intensive agricultural pollution. Protecting untouched forests in northern Ontario and along the western coast is an important environmental concern."
+  },
+  {
+    "id": 2043,
+    "title": "Blue Whale",
+    "type": "Read Aloud",
+    "question": "Blue whales are the largest mammals currently living on Earth. Although estimates differ, Antarctic blue whales may have reached lengths of around 100 feet and weights exceeding 150 tons before commercial whaling greatly reduced their numbers. Blue whales in the North Atlantic can reach approximately 80 to 85 feet.",
+    "answer": "Blue whales are the largest mammals currently living on Earth. Although estimates differ, Antarctic blue whales may have reached lengths of around 100 feet and weights exceeding 150 tons before commercial whaling greatly reduced their numbers. Blue whales in the North Atlantic can reach approximately 80 to 85 feet."
+  },
+  {
+    "id": 2044,
+    "title": "Bad Habits",
+    "type": "Read Aloud",
+    "question": "Unhealthy behaviors can become habits quite easily, including eating too many sweets or large quantities of food, drinking excessively, or smoking. Repeating an activity frequently can increase our enjoyment of it. Over time, giving up the behavior may make us feel uncomfortable or unhappy, showing how strongly habits can influence us.",
+    "answer": "Unhealthy behaviors can become habits quite easily, including eating too many sweets or large quantities of food, drinking excessively, or smoking. Repeating an activity frequently can increase our enjoyment of it. Over time, giving up the behavior may make us feel uncomfortable or unhappy, showing how strongly habits can influence us."
+  },
+  {
+    "id": 2045,
+    "title": "Smartphones",
+    "type": "Read Aloud",
+    "question": "For millions of people, smartphones are now an important part of everyday life, supporting activities such as social media use and banking. Mobile contracts that include calls, internet data, messages, and the phone itself can spread payments over a longer period, although this arrangement may result in a higher overall cost.",
+    "answer": "For millions of people, smartphones are now an important part of everyday life, supporting activities such as social media use and banking. Mobile contracts that include calls, internet data, messages, and the phone itself can spread payments over a longer period, although this arrangement may result in a higher overall cost."
+  },
+  {
+    "id": 2046,
+    "title": "Soft Drink",
+    "type": "Read Aloud",
+    "question": "The manufacture of soft drinks developed during the 1830s after several experimental stages. A cola-style beverage had already appeared in 1781. The term soft drink was used to distinguish these beverages from alcoholic drinks, and today they remain widely consumed along with tea, coffee, and fruit juice.",
+    "answer": "The manufacture of soft drinks developed during the 1830s after several experimental stages. A cola-style beverage had already appeared in 1781. The term soft drink was used to distinguish these beverages from alcoholic drinks, and today they remain widely consumed along with tea, coffee, and fruit juice."
+  },
+  {
+    "id": 2047,
+    "title": "Liverpool",
+    "type": "Read Aloud",
+    "question": "The University of Liverpool is recognized for strong teaching, learning, and research, together with high-quality facilities and support for students. These features have contributed to its position among the top one percent of universities worldwide and provide students with an enriching experience within an international and diverse community.",
+    "answer": "The University of Liverpool is recognized for strong teaching, learning, and research, together with high-quality facilities and support for students. These features have contributed to its position among the top one percent of universities worldwide and provide students with an enriching experience within an international and diverse community."
+  },
+  {
+    "id": 2048,
+    "title": "Passion",
+    "type": "Read Aloud",
+    "question": "Choose an activity because you genuinely care about it instead of simply following current trends. Genuine interest is important because meaningful achievements usually demand steady effort over an extended period. When people do not enjoy what they are doing, they are more likely to lose enthusiasm and eventually give up.",
+    "answer": "Choose an activity because you genuinely care about it instead of simply following current trends. Genuine interest is important because meaningful achievements usually demand steady effort over an extended period. When people do not enjoy what they are doing, they are more likely to lose enthusiasm and eventually give up."
+  },
+  {
+    "id": 2049,
+    "title": "Reserve Requirements",
+    "type": "Read Aloud",
+    "question": "Reserve requirements determine the portion of customer deposits that banks must retain rather than lend. For instance, with a reserve requirement of ten percent, a $100 deposit would allow the bank to lend $90 while keeping $10 in reserve.",
+    "answer": "Reserve requirements determine the portion of customer deposits that banks must retain rather than lend. For instance, with a reserve requirement of ten percent, a $100 deposit would allow the bank to lend $90 while keeping $10 in reserve."
+  },
+  {
+    "id": 2050,
+    "title": "Recurring Dream",
+    "type": "Read Aloud",
+    "question": "Having the same type of dream repeatedly is quite common, and almost two-thirds of people report experiencing recurring dreams. Common examples include dreams about being chased, being naked in public, facing a natural disaster, losing teeth, or discovering that an entire semester of classes has been missed.",
+    "answer": "Having the same type of dream repeatedly is quite common, and almost two-thirds of people report experiencing recurring dreams. Common examples include dreams about being chased, being naked in public, facing a natural disaster, losing teeth, or discovering that an entire semester of classes has been missed."
+  },
+  {
+    "id": 2051,
+    "title": "Selective History",
+    "type": "Read Aloud",
+    "question": "Historical accounts are necessarily selective because no book can record every event that happened in the past. Historians choose particular events and subjects to discuss, meaning that some aspects are left out. Since everything cannot be taught, educators must also decide which historical topics should be passed on to future generations.",
+    "answer": "Historical accounts are necessarily selective because no book can record every event that happened in the past. Historians choose particular events and subjects to discuss, meaning that some aspects are left out. Since everything cannot be taught, educators must also decide which historical topics should be passed on to future generations."
+  },
+  {
+    "id": 2052,
+    "title": "Source of Funding",
+    "type": "Read Aloud",
+    "question": "A study found that research financed by the soft-drink industry produced results that differed from research funded by other sources, raising concerns that financial support may have affected the findings. Scientific methods are designed in part to reduce the possibility that research conclusions are influenced by the identity of the funder.",
+    "answer": "A study found that research financed by the soft-drink industry produced results that differed from research funded by other sources, raising concerns that financial support may have affected the findings. Scientific methods are designed in part to reduce the possibility that research conclusions are influenced by the identity of the funder."
+  },
+  {
+    "id": 2053,
+    "title": "Sleep Behavior",
+    "type": "Read Aloud",
+    "question": "Some people experience sleep-related behaviors in which they talk or walk while still asleep and may have little awareness of their actions. These behaviors usually do not produce serious physical harm, but unusual sleep patterns may be connected with mental health conditions and have been observed in people affected by childhood trauma, serious difficulties, or depression.",
+    "answer": "Some people experience sleep-related behaviors in which they talk or walk while still asleep and may have little awareness of their actions. These behaviors usually do not produce serious physical harm, but unusual sleep patterns may be connected with mental health conditions and have been observed in people affected by childhood trauma, serious difficulties, or depression."
+  },
+  {
+    "id": 2054,
+    "title": "Flu Season",
+    "type": "Read Aloud",
+    "question": "The current flu season has been unusually serious and has not yet ended. Health authorities expect influenza activity to remain elevated for several more weeks. This raises an important question: does recovering from the flu once provide protection for the rest of the season?",
+    "answer": "The current flu season has been unusually serious and has not yet ended. Health authorities expect influenza activity to remain elevated for several more weeks. This raises an important question: does recovering from the flu once provide protection for the rest of the season?"
+  },
+  {
+    "id": 2055,
+    "title": "Market Research",
+    "type": "Read Aloud",
+    "question": "Market research is commonly divided into two major methods. Quantitative research collects information from large numbers of people using tools such as surveys and questionnaires. Qualitative research generally involves smaller consumer groups who discuss products or services while researchers document and examine their opinions.",
+    "answer": "Market research is commonly divided into two major methods. Quantitative research collects information from large numbers of people using tools such as surveys and questionnaires. Qualitative research generally involves smaller consumer groups who discuss products or services while researchers document and examine their opinions."
+  },
+  {
+    "id": 2056,
+    "title": "Girls vs. Boys",
+    "type": "Read Aloud",
+    "question": "Girls continue to perform better than boys in English during their teenage years, while the gender difference in mathematics and science is now quite small. Data show that 80 percent of 14-year-old girls achieved at least Level 5 in English, compared with 65 percent of boys. Girls were 1 percent ahead in mathematics and 2 percent ahead in science.",
+    "answer": "Girls continue to perform better than boys in English during their teenage years, while the gender difference in mathematics and science is now quite small. Data show that 80 percent of 14-year-old girls achieved at least Level 5 in English, compared with 65 percent of boys. Girls were 1 percent ahead in mathematics and 2 percent ahead in science."
+  },
+  {
+    "id": 2057,
+    "title": "Learning Method",
+    "type": "Read Aloud",
+    "question": "There is no universal learning strategy that guarantees success because students learn in different ways. A method that is highly effective for one learner may not work equally well for another, even when they study the same subject. Individual differences exist, although groups of students can still share certain learning patterns.",
+    "answer": "There is no universal learning strategy that guarantees success because students learn in different ways. A method that is highly effective for one learner may not work equally well for another, even when they study the same subject. Individual differences exist, although groups of students can still share certain learning patterns."
+  },
+  {
+    "id": 2058,
+    "title": "Only Family",
+    "type": "Read Aloud",
+    "question": "Imagine living for your entire life as the only family on a particular street. Then one morning, you step outside and discover houses, neighbors working in gardens, and children going to school. You might wonder where everyone came from. Perhaps those people had always been there, but you simply had never paid attention to them.",
+    "answer": "Imagine living for your entire life as the only family on a particular street. Then one morning, you step outside and discover houses, neighbors working in gardens, and children going to school. You might wonder where everyone came from. Perhaps those people had always been there, but you simply had never paid attention to them."
+  },
+  {
+    "id": 2059,
+    "title": "Elephant",
+    "type": "Read Aloud",
+    "question": "The elephant is the largest living land animal. Its skeleton has evolved major adaptations to deal with two significant demands. First, it must support the heavy grinding teeth and long tusks that make the skull extremely weighty. Second, its skeletal structure must carry the enormous overall mass of the animal.",
+    "answer": "The elephant is the largest living land animal. Its skeleton has evolved major adaptations to deal with two significant demands. First, it must support the heavy grinding teeth and long tusks that make the skull extremely weighty. Second, its skeletal structure must carry the enormous overall mass of the animal."
+  },
+  {
+    "id": 2060,
+    "title": "Mathematics",
+    "type": "Read Aloud",
+    "question": "Mathematical skills were also identified as an area of concern. More than half of those surveyed believed that school graduates do not possess sufficient mathematical ability. Among university graduates, more than 10 percent were considered weak in mathematics, while about 70 percent of respondents described their skills as adequate.",
+    "answer": "Mathematical skills were also identified as an area of concern. More than half of those surveyed believed that school graduates do not possess sufficient mathematical ability. Among university graduates, more than 10 percent were considered weak in mathematics, while about 70 percent of respondents described their skills as adequate."
+  },
+  {
+    "id": 2061,
+    "title": "Breeding Areas",
+    "type": "Read Aloud",
+    "question": "Important breeding locations and breeding islands are represented on maps by dark green areas or dots. Open dots indicate places where breeding has not been recorded and can also mark sightings made offshore from ships or boats. Other locations where the species is not expected to occur are shown in pale green, with hatching used for areas where records are generally limited.",
+    "answer": "Important breeding locations and breeding islands are represented on maps by dark green areas or dots. Open dots indicate places where breeding has not been recorded and can also mark sightings made offshore from ships or boats. Other locations where the species is not expected to occur are shown in pale green, with hatching used for areas where records are generally limited."
+  },
+  {
+    "id": 2062,
+    "title": "Population Growth",
+    "type": "Read Aloud",
+    "question": "The world's population continues to increase at different rates across regions. Growth is relatively slow in the United States and other developed nations, while many developing countries experience much faster expansion. This rapid increase means that the global population is expected to reach around nine billion within a relatively short period.",
+    "answer": "The world's population continues to increase at different rates across regions. Growth is relatively slow in the United States and other developed nations, while many developing countries experience much faster expansion. This rapid increase means that the global population is expected to reach around nine billion within a relatively short period."
+  },
+  {
+    "id": 2063,
+    "title": "Productive Capacity",
+    "type": "Read Aloud",
+    "question": "The central difficulty was the large gap between a nation's ability to produce goods and the purchasing power of its population. Major advances in production methods during and after the war increased industrial output beyond what American farmers and wage earners were able to purchase.",
+    "answer": "The central difficulty was the large gap between a nation's ability to produce goods and the purchasing power of its population. Major advances in production methods during and after the war increased industrial output beyond what American farmers and wage earners were able to purchase."
+  },
+  {
+    "id": 2064,
+    "title": "A Book",
+    "type": "Read Aloud",
+    "question": "Although the book focuses on the experience of traveling through enormous cities and remote villages that may seem unfamiliar to Western visitors, it also explores a different type of journey. The work therefore considers both physical travel and another form of personal or intellectual exploration.",
+    "answer": "Although the book focuses on the experience of traveling through enormous cities and remote villages that may seem unfamiliar to Western visitors, it also explores a different type of journey. The work therefore considers both physical travel and another form of personal or intellectual exploration."
+  },
+  {
+    "id": 2065,
+    "title": "Atlantis",
+    "type": "Read Aloud",
+    "question": "Atlantis has remained one of the Western world's best-known legends for centuries, combining mystery with imaginative stories. According to these accounts, it was once a wealthy and powerful civilization that disappeared beneath the sea, while some people still believe that its remains may eventually be discovered.",
+    "answer": "Atlantis has remained one of the Western world's best-known legends for centuries, combining mystery with imaginative stories. According to these accounts, it was once a wealthy and powerful civilization that disappeared beneath the sea, while some people still believe that its remains may eventually be discovered."
+  },
+  {
+    "id": 2066,
+    "title": "Classic Adaptation",
+    "type": "Read Aloud",
+    "question": "A growing trend in entertainment is to transform well-known literary works into television programs or films. Supporters argue that such adaptations can introduce audiences to books they might never otherwise read, although successful adaptations are considered difficult to produce.",
+    "answer": "A growing trend in entertainment is to transform well-known literary works into television programs or films. Supporters argue that such adaptations can introduce audiences to books they might never otherwise read, although successful adaptations are considered difficult to produce."
+  },
+  {
+    "id": 2067,
+    "title": "Paper Writing",
+    "type": "Read Aloud",
+    "question": "College assignments often require students to use quotations from one or more sources. Even when quotations are optional, carefully selected passages can make an argument more convincing and engaging. The important point is to use evidence to strengthen a specific idea rather than adding quotations simply to increase the length of a paper.",
+    "answer": "College assignments often require students to use quotations from one or more sources. Even when quotations are optional, carefully selected passages can make an argument more convincing and engaging. The important point is to use evidence to strengthen a specific idea rather than adding quotations simply to increase the length of a paper."
+  },
+  {
+    "id": 2068,
+    "title": "Analysts",
+    "type": "Read Aloud",
+    "question": "Analysts noted that profit margins had improved in nearly every region except the United Kingdom. They viewed this development as evidence of efforts to increase profitability across the organization. Although the recovery was still at an early stage and the company's valuation appeared high, the initial progress was considered significant given the complexity of the business.",
+    "answer": "Analysts noted that profit margins had improved in nearly every region except the United Kingdom. They viewed this development as evidence of efforts to increase profitability across the organization. Although the recovery was still at an early stage and the company's valuation appeared high, the initial progress was considered significant given the complexity of the business."
+  },
+  {
+    "id": 2069,
+    "title": "Donor Countries",
+    "type": "Read Aloud",
+    "question": "In 2005, donor nations reached an agreement designed to make their aid practices more consistent. Since then, aid workers have argued that relatively little has changed in practice. Meetings concerning assistance to developing countries continue to be strongly influenced by a small number of northern European governments, while the United States is frequently not represented.",
+    "answer": "In 2005, donor nations reached an agreement designed to make their aid practices more consistent. Since then, aid workers have argued that relatively little has changed in practice. Meetings concerning assistance to developing countries continue to be strongly influenced by a small number of northern European governments, while the United States is frequently not represented."
+  },
+  {
+    "id": 2070,
+    "title": "Business Climate",
+    "type": "Read Aloud",
+    "question": "A global study reported that Egypt experienced a greater improvement in its business environment than any other country during the previous year. The research identified numerous company-focused reforms throughout the Middle East. World Bank rankings also indicated that business reforms in Eastern Europe were progressing more rapidly than those in East Asia.",
+    "answer": "A global study reported that Egypt experienced a greater improvement in its business environment than any other country during the previous year. The research identified numerous company-focused reforms throughout the Middle East. World Bank rankings also indicated that business reforms in Eastern Europe were progressing more rapidly than those in East Asia."
+  },
+  {
+    "id": 2071,
+    "title": "Tesla and Edison",
+    "type": "Read Aloud",
+    "question": "Nikola Tesla's theoretical ideas helped shape modern alternating-current electrical systems. Thomas Edison once asked him to work on improving motors and generators, but a disagreement concerning promised payment damaged their professional relationship and eventually turned the two inventors into rivals.",
+    "answer": "Nikola Tesla's theoretical ideas helped shape modern alternating-current electrical systems. Thomas Edison once asked him to work on improving motors and generators, but a disagreement concerning promised payment damaged their professional relationship and eventually turned the two inventors into rivals."
+  },
+  {
+    "id": 2072,
+    "title": "Fast Food",
+    "type": "Read Aloud",
+    "question": "Millions of Americans eat fast food every day, often without considering the wider effects of their purchases. The usual routine is quick and simple: customers collect their meal, find a table, remove the packaging, eat, and leave, making the entire experience short-lived.",
+    "answer": "Millions of Americans eat fast food every day, often without considering the wider effects of their purchases. The usual routine is quick and simple: customers collect their meal, find a table, remove the packaging, eat, and leave, making the entire experience short-lived."
+  },
+  {
+    "id": 2073,
+    "title": "Mental Health",
+    "type": "Read Aloud",
+    "question": "Mental illness can significantly influence how a person feels, thinks, behaves, and interacts with other people. Such conditions may also affect relatives and friends, and disorders such as depression have become important concerns in global public health.",
+    "answer": "Mental illness can significantly influence how a person feels, thinks, behaves, and interacts with other people. Such conditions may also affect relatives and friends, and disorders such as depression have become important concerns in global public health."
+  },
+  {
+    "id": 2074,
+    "title": "Lenient Parenting",
+    "type": "Read Aloud",
+    "question": "During a dinner gathering, two sisters discussed how they had been raised. The older sister remembered their parents as strict and said she had been frightened of them, while her younger sister strongly disagreed and recalled their parents as much more relaxed.",
+    "answer": "During a dinner gathering, two sisters discussed how they had been raised. The older sister remembered their parents as strict and said she had been frightened of them, while her younger sister strongly disagreed and recalled their parents as much more relaxed."
+  },
+  {
+    "id": 2075,
+    "title": "The Origins of Language",
+    "type": "Read Aloud",
+    "question": "Human language is unusual because no other known species has a communication system that closely matches it. Nevertheless, many animals can produce and interpret basic sounds for communication, and these abilities may have existed before complex human language developed.",
+    "answer": "Human language is unusual because no other known species has a communication system that closely matches it. Nevertheless, many animals can produce and interpret basic sounds for communication, and these abilities may have existed before complex human language developed."
+  },
+  {
+    "id": 2076,
+    "title": "Studying Abroad",
+    "type": "Read Aloud",
+    "question": "Studying in another country can give students greater exposure to different cultures and help them develop communication skills. However, international experience does not always provide a direct advantage when looking for employment, because employers may place greater value on interpersonal abilities and professional knowledge.",
+    "answer": "Studying in another country can give students greater exposure to different cultures and help them develop communication skills. However, international experience does not always provide a direct advantage when looking for employment, because employers may place greater value on interpersonal abilities and professional knowledge."
+  },
+  {
+    "id": 2077,
+    "title": "Public Register of Property Owners",
+    "type": "Read Aloud",
+    "question": "Britain planned a public register identifying the owners behind foreign companies that hold property in the country. The proposal was connected with concerns that shell companies could be used to conceal identities, avoid taxes, or support money laundering, particularly when overseas companies own property in London.",
+    "answer": "Britain planned a public register identifying the owners behind foreign companies that hold property in the country. The proposal was connected with concerns that shell companies could be used to conceal identities, avoid taxes, or support money laundering, particularly when overseas companies own property in London."
+  },
+  {
+    "id": 2078,
+    "title": "Exercise and Heart Health",
+    "type": "Read Aloud",
+    "question": "Regular exercise may help reduce damage associated with inactive lifestyles and aging hearts. Research by cardiologists suggests that sufficient physical activity, especially when started at an appropriate time, can help lower the risk of heart failure in the future.",
+    "answer": "Regular exercise may help reduce damage associated with inactive lifestyles and aging hearts. Research by cardiologists suggests that sufficient physical activity, especially when started at an appropriate time, can help lower the risk of heart failure in the future."
+  },
+  {
+    "id": 2079,
+    "title": "Parents and Television",
+    "type": "Read Aloud",
+    "question": "Parents can teach young children to choose television programs carefully and guide them toward informative or educational content. Television can provide useful information for preschoolers, but simply watching programs does not automatically make children more intelligent.",
+    "answer": "Parents can teach young children to choose television programs carefully and guide them toward informative or educational content. Television can provide useful information for preschoolers, but simply watching programs does not automatically make children more intelligent."
+  },
+  {
+    "id": 2080,
+    "title": "Studying Topics and Note-Taking",
+    "type": "Read Aloud",
+    "question": "Teachers discuss important subjects in class, and much of the information they provide may be useful when students take examinations. Learners therefore need to listen carefully and develop strong note-taking skills so they can record the main points from classroom explanations.",
+    "answer": "Teachers discuss important subjects in class, and much of the information they provide may be useful when students take examinations. Learners therefore need to listen carefully and develop strong note-taking skills so they can record the main points from classroom explanations."
+  },
+  {
+    "id": 2081,
+    "title": "Galaxy",
+    "type": "Read Aloud",
+    "question": "One unidentified object in the study is positioned just beyond Centaurus A (NGC 5128), an elliptical galaxy around 12 million light-years from Earth. The second is located in a globular star cluster just outside NGC 4636, another elliptical galaxy about 47 million light-years away in Virgo.",
+    "answer": "One unidentified object in the study is positioned just beyond Centaurus A (NGC 5128), an elliptical galaxy around 12 million light-years from Earth. The second is located in a globular star cluster just outside NGC 4636, another elliptical galaxy about 47 million light-years away in Virgo."
+  },
+  {
+    "id": 2082,
+    "title": "Danny Danziger",
+    "type": "Read Aloud",
+    "question": "Drawing on more than fifty interviews, award-winning author Danny Danziger offers an engaging portrait of the people behind New York's Metropolitan Museum of Art. They include the museum's aristocratic and outspoken director, knowledgeable curators devoted to their collections, security staff, and philanthropists who help sustain the museum financially.",
+    "answer": "Drawing on more than fifty interviews, award-winning author Danny Danziger offers an engaging portrait of the people behind New York's Metropolitan Museum of Art. They include the museum's aristocratic and outspoken director, knowledgeable curators devoted to their collections, security staff, and philanthropists who help sustain the museum financially."
+  },
+  {
+    "id": 2083,
+    "title": "Unions",
+    "type": "Read Aloud",
+    "question": "Labor unions can limit the power employers have in a number of workplace matters. Some cases have involved employees accused of sexual or racial harassment who remained protected by their unions and kept their positions. Unions may also mean that weaker and stronger performers receive similar pay and raises, reducing the incentive to exceed expectations.",
+    "answer": "Labor unions can limit the power employers have in a number of workplace matters. Some cases have involved employees accused of sexual or racial harassment who remained protected by their unions and kept their positions. Unions may also mean that weaker and stronger performers receive similar pay and raises, reducing the incentive to exceed expectations."
+  },
+  {
+    "id": 2084,
+    "title": "Yellow",
+    "type": "Read Aloud",
+    "question": "Cheerful yellow is highly noticeable and is often associated with optimism. However, people may become more short-tempered in yellow rooms, while babies may cry more frequently. Because the eyes find yellow particularly difficult to process, excessive use can become overwhelming. The color is also associated with improved concentration and increased metabolism.",
+    "answer": "Cheerful yellow is highly noticeable and is often associated with optimism. However, people may become more short-tempered in yellow rooms, while babies may cry more frequently. Because the eyes find yellow particularly difficult to process, excessive use can become overwhelming. The color is also associated with improved concentration and increased metabolism."
+  },
+  {
+    "id": 2085,
+    "title": "Welfare",
+    "type": "Read Aloud",
+    "question": "In the United States, welfare has a distinctive political meaning because it commonly describes financial assistance provided to people with limited incomes. In places such as Europe, welfare services are more often considered a universal entitlement, reflecting the belief that everyone should receive a basic level of social assistance and well-being.",
+    "answer": "In the United States, welfare has a distinctive political meaning because it commonly describes financial assistance provided to people with limited incomes. In places such as Europe, welfare services are more often considered a universal entitlement, reflecting the belief that everyone should receive a basic level of social assistance and well-being."
+  },
+  {
+    "id": 2086,
+    "title": "Administration Option",
+    "type": "Read Aloud",
+    "question": "One alternative method of administering marijuana is to heat it at a low temperature to eliminate harmful microorganisms and then have the patient consume it in food or a beverage. Such methods avoid the need for smoking. Critics of medical marijuana also point out that its natural origin makes patenting difficult, which may reduce pharmaceutical companies' incentive to market it widely.",
+    "answer": "One alternative method of administering marijuana is to heat it at a low temperature to eliminate harmful microorganisms and then have the patient consume it in food or a beverage. Such methods avoid the need for smoking. Critics of medical marijuana also point out that its natural origin makes patenting difficult, which may reduce pharmaceutical companies' incentive to market it widely."
+  },
+  {
+    "id": 2087,
+    "title": "Cat's Paws",
+    "type": "Read Aloud",
+    "question": "The photograph shows the enormous paws of a wild cat gripping the side of a white safari Jeep occupied by Chappell. When standing on its hind legs, the animal is nearly as tall as the Jeep and seems to be pushing its muzzle toward the vehicle's rear window.",
+    "answer": "The photograph shows the enormous paws of a wild cat gripping the side of a white safari Jeep occupied by Chappell. When standing on its hind legs, the animal is nearly as tall as the Jeep and seems to be pushing its muzzle toward the vehicle's rear window."
+  },
+  {
+    "id": 2088,
+    "title": "Grand Canyon",
+    "type": "Read Aloud",
+    "question": "The Grand Canyon extends about 277 miles, can reach 18 miles in width, and is more than a mile deep. Scientists continue to discuss the precise geological processes and timing behind its formation. However, newer evidence indicates that the Colorado River had carved a route through the canyon at least 17 million years ago.",
+    "answer": "The Grand Canyon extends about 277 miles, can reach 18 miles in width, and is more than a mile deep. Scientists continue to discuss the precise geological processes and timing behind its formation. However, newer evidence indicates that the Colorado River had carved a route through the canyon at least 17 million years ago."
+  },
+  {
+    "id": 2089,
+    "title": "Yellow",
+    "type": "Read Aloud",
+    "question": "Yellow is commonly described as a very optimistic color, yet it can have surprising effects. People may become angry more easily in yellow rooms, and babies can cry more often in them. One explanation is that yellow is especially demanding for the eyes, so large amounts of it may feel excessive.",
+    "answer": "Yellow is commonly described as a very optimistic color, yet it can have surprising effects. People may become angry more easily in yellow rooms, and babies can cry more often in them. One explanation is that yellow is especially demanding for the eyes, so large amounts of it may feel excessive."
+  },
+  {
+    "id": 2090,
+    "title": "Tesla & Edison",
+    "type": "Read Aloud",
+    "question": "Early in his career, Tesla worked for Edison, who offered a payment equivalent to roughly one million dollars today for solving problems with his DC generators and motors. Tesla repaired the machines, but when he later asked for the promised money, Edison refused and jokingly claimed that Tesla had misunderstood American humor.",
+    "answer": "Early in his career, Tesla worked for Edison, who offered a payment equivalent to roughly one million dollars today for solving problems with his DC generators and motors. Tesla repaired the machines, but when he later asked for the promised money, Edison refused and jokingly claimed that Tesla had misunderstood American humor."
+  },
+  {
+    "id": 2091,
+    "title": "A University",
+    "type": "Read Aloud",
+    "question": "A university provides far more than lectures, classes, and examinations. It creates opportunities for students to grow academically while also developing personally. Exploring campus projects, clubs, and student societies can help you discover activities that match your interests and make your university experience more rewarding.",
+    "answer": "A university provides far more than lectures, classes, and examinations. It creates opportunities for students to grow academically while also developing personally. Exploring campus projects, clubs, and student societies can help you discover activities that match your interests and make your university experience more rewarding."
+  },
+  {
+    "id": 2092,
+    "title": "Market Research",
+    "type": "Read Aloud",
+    "question": "Market research is an essential element of business planning. Even when you and your team have extensive experience in a particular field, researching the views of local people is important before launching a service in a new area. Understanding the potential customers' opinions can help determine whether the idea is suitable.",
+    "answer": "Market research is an essential element of business planning. Even when you and your team have extensive experience in a particular field, researching the views of local people is important before launching a service in a new area. Understanding the potential customers' opinions can help determine whether the idea is suitable."
+  },
+  {
+    "id": 2093,
+    "title": "US Student Debt",
+    "type": "Read Aloud",
+    "question": "The scale of student debt in the United States is substantial. A typical university graduate in 2015 who borrowed money to cover tuition entered employment carrying about $35,000 in student loans. Across the country, total student debt had risen above $1.5 trillion, exceeding the nation's credit-card debt.",
+    "answer": "The scale of student debt in the United States is substantial. A typical university graduate in 2015 who borrowed money to cover tuition entered employment carrying about $35,000 in student loans. Across the country, total student debt had risen above $1.5 trillion, exceeding the nation's credit-card debt."
+  },
+  {
+    "id": 2094,
+    "title": "War on Women",
+    "type": "Read Aloud",
+    "question": "Although the Republican field at the time contained many male candidates, several prominent criticisms of Hillary Clinton came from women. Democrats had previously campaigned around the claim that Republicans were conducting a 'war on women' in 2012, but the same approach was less successful when repeated in 2014. With Clinton expected to become the Democratic nominee, women voters were an important focus of the 2016 campaign.",
+    "answer": "Although the Republican field at the time contained many male candidates, several prominent criticisms of Hillary Clinton came from women. Democrats had previously campaigned around the claim that Republicans were conducting a 'war on women' in 2012, but the same approach was less successful when repeated in 2014. With Clinton expected to become the Democratic nominee, women voters were an important focus of the 2016 campaign."
+  },
+  {
+    "id": 2095,
+    "title": "Alphabet",
+    "type": "Read Aloud",
+    "question": "One difficulty with English begins with its writing system. English uses letters inherited from Latin even though English and Latin do not have exactly the same sounds. Creating an English spelling system from those letters is therefore comparable to trying to construct a children's play area from parts designed for an entirely different purpose.",
+    "answer": "One difficulty with English begins with its writing system. English uses letters inherited from Latin even though English and Latin do not have exactly the same sounds. Creating an English spelling system from those letters is therefore comparable to trying to construct a children's play area from parts designed for an entirely different purpose."
+  },
+  {
+    "id": 2096,
+    "title": "Shakespeare",
+    "type": "Read Aloud",
+    "question": "A young man from a small provincial town, without personal wealth, influential family connections, or a university education, moved to London in the late 1580s. In a remarkably short period, he became one of the greatest playwrights in history. This raises an intriguing question: what enabled Shakespeare to achieve such extraordinary success?",
+    "answer": "A young man from a small provincial town, without personal wealth, influential family connections, or a university education, moved to London in the late 1580s. In a remarkably short period, he became one of the greatest playwrights in history. This raises an intriguing question: what enabled Shakespeare to achieve such extraordinary success?"
   }
 ]

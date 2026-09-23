@@ -106,9 +106,9 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Read Aloud").closest(".practice-row"));
-    // Read Aloud now opens its own dedicated, locally-curated 15-question set (not the mocked
+    // Read Aloud now opens its own dedicated, locally-curated 111-question set (not the mocked
     // "Read Aloud Q" DB question) — landing on its first question is the real navigation proof.
-    await screen.findByText("Question 1 of 15");
+    await screen.findByText("Question 1 of 111");
     expect(screen.getByRole("heading", { name: "Language Appearance" })).toBeInTheDocument();
   });
 
