@@ -181,11 +181,21 @@ export default function Speaking({
           </p>
         )}
         {question?.imageUrl && (
-          <img
-            src={question.imageUrl}
-            alt={question?.title || "Practice question image"}
-            style={{ maxWidth: "100%", borderRadius: 9, margin: "12px 0" }}
-          />
+          question?.type === "describe-image" ? (
+            <div className="describe-image-frame">
+              <img
+                className="describe-image-photo"
+                src={question.imageUrl}
+                alt={question?.title || "Practice question image"}
+              />
+            </div>
+          ) : (
+            <img
+              src={question.imageUrl}
+              alt={question?.title || "Practice question image"}
+              style={{ maxWidth: "100%", borderRadius: 9, margin: "12px 0" }}
+            />
+          )
         )}
         {question?.audioUrl && (
           <audio className="audio" controls src={question.audioUrl} />
