@@ -358,5 +358,185 @@
         },
         "answer": "Before architecture was invented, humans lived in underground houses.",
         "userAnswer": ""
+    },
+    {
+        "id": "1407",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1407.mp3",
+            "transcript": "Please move us to the meeting room for the next hour."
+        },
+        "answer": "Please move us to the conference room for the next hour.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1408",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1408.mp3",
+            "transcript": "The students will meet their new teachers after the summer vacation."
+        },
+        "answer": "The students will meet their new instructors after the summer vacation.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1413",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1413.mp3",
+            "transcript": "Please close the door behind you when you leave the room."
+        },
+        "answer": "Please shut the door behind you when you leave the room.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1439",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1439.mp3",
+            "transcript": "The fiction books are just past the counter."
+        },
+        "answer": "The fiction books are just beyond the counter.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1245",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1245.mp3",
+            "transcript": "The digital revolution has changed the way we read."
+        },
+        "answer": "The digital revolution has transformed the way we read.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1286",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1286.mp3",
+            "transcript": "The falling birth rate means the number of students drops."
+        },
+        "answer": "The declining birth rate means the number of students drops.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1338",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1338.mp3",
+            "transcript": "The employment opportunities available in engineering are increasing rapidly."
+        },
+        "answer": "The employment opportunities available in engineering are growing rapidly.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1356",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1356.mp3",
+            "transcript": "The university canteen now offers many healthy meal options."
+        },
+        "answer": "The university cafeteria now offers many healthy meal options.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1358",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1358.mp3",
+            "transcript": "Communication skills have become more important in recent years."
+        },
+        "answer": "Communication skills have become increasingly important in recent years.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1372",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1372.mp3",
+            "transcript": "Before the invention of the refrigerator, people stored food in underground ice houses."
+        },
+        "answer": "Before the invention of the refrigerator, people kept food in underground ice houses.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1401",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1401.mp3",
+            "transcript": "You can keep your bags in the back room."
+        },
+        "answer": "You can leave your bags in the back room.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1402",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1402.mp3",
+            "transcript": "Please turn off the light to save energy."
+        },
+        "answer": "Please switch off the light to save energy.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1403",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1403.mp3",
+            "transcript": "Before preparing food, be sure to wash your hands well."
+        },
+        "answer": "Before preparing food, be sure to wash your hands thoroughly.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1415",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1415.mp3",
+            "transcript": "You must call your doctor to make an appointment."
+        },
+        "answer": "You should call your doctor to make an appointment.",
+        "userAnswer": ""
+    },
+    {
+        "id": "1427",
+        "title": "WFD",
+        "type": "write_from_dictation",
+        "subtype": "corep",
+        "audio": {
+            "src": "1427.mp3",
+            "transcript": "I want to make an appointment with the manager."
+        },
+        "answer": "I would like to make an appointment with the manager.",
+        "userAnswer": ""
     }
 ]

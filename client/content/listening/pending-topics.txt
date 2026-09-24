@@ -1,9 +1,8 @@
 // Karan
 1. Listening
-    a. fill in the blanks
-    b. write from dictation
     c. highlight incorrect word question is not proper
     d. extend subs limit to 7 days, +60 days extend ask for confirmation, revoke subs button
+    e. core/core p filter is not working properly
 
 // Aryan
 1. Speaking all

@@ -1436,5 +1436,3039 @@
                 "value": " for families to enjoy weekly. This ensures people have access to nutritious food."
             }
         ]
+    },
+    {
+        "id": "350",
+        "title": "Different Types of Work",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "350.mp3",
+            "transcript": "Some people choose simple tasks at their job because they are easy to complete. These tasks often require less time and effort. Others enjoy more complex challenges that test their problem-solving skills. These projects can take days or even weeks to finish. Both types of work are important in an office to keep things running smoothly. It depends on the person's skills and preferences."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Some people choose "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "simple",
+                "acceptedAnswers": [
+                    "simple"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " tasks at their job because they are easy to complete. These tasks often require less time and effort. Others enjoy more "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "complex",
+                "acceptedAnswers": [
+                    "complex"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " challenges that test their problem-solving skills. These projects can take days or even weeks to finish. Both types of "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "work",
+                "acceptedAnswers": [
+                    "work"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " are important in an office to keep things running smoothly. It depends on the person’s skills and preferences."
+            }
+        ]
+    },
+    {
+        "id": "349",
+        "title": "Investing in Education for Growth",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "349.mp3",
+            "transcript": "Governments frequently invest in education to boost the growth of their country. This investment helps create a skilled workforce for the future. It also encourages the development of new industries and technologies. These efforts lead to a stronger economy over time."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Governments frequently invest in education to "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "boost",
+                "acceptedAnswers": [
+                    "boost"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " the growth of their country. This investment helps create a skilled workforce for the future. It also encourages the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "development",
+                "acceptedAnswers": [
+                    "development"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of new industries and technologies. These efforts lead to a stronger economy over time."
+            }
+        ]
+    },
+    {
+        "id": "348",
+        "title": "Selling Furniture Successfully",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "348.mp3",
+            "transcript": "When selling furniture, the color of the items plays a major role in catching a buyer’s eye. Bright or unique shades can make a piece stand out. The value of the furniture also matters, as customers want quality for their money. A good price can make the deal more attractive. Finally, the design must attract potential buyers by matching their style preferences. This combination helps increase sales."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "When selling furniture, the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "color",
+                "acceptedAnswers": [
+                    "color"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the items plays a major role in catching a buyer’s eye. Bright or unique shades can make a piece stand out. The "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "value",
+                "acceptedAnswers": [
+                    "value"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the furniture also matters, as customers want quality for their money. A good price can make the deal more attractive. Finally, the design must "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "attract",
+                "acceptedAnswers": [
+                    "attract"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " potential buyers by matching their style preferences. This combination helps increase sales."
+            }
+        ]
+    },
+    {
+        "id": "347",
+        "title": "Traveling to Toronto by Bus",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "347.mp3",
+            "transcript": "The city offers dependable transport options for travelers heading to different destinations. One popular route is the bus to Canada, which runs daily. It takes passengers directly to Toronto, a lively city known for its culture and attractions. The journey is comfortable and affordable for most people."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The city offers dependable "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "transport",
+                "acceptedAnswers": [
+                    "transport"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " options for travelers heading to different destinations. One popular route is the bus to Canada, which runs "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "daily",
+                "acceptedAnswers": [
+                    "daily"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". It takes passengers directly to Toronto, a lively city known for its culture and attractions. The journey is comfortable and "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "affordable",
+                "acceptedAnswers": [
+                    "affordable"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for most people."
+            }
+        ]
+    },
+    {
+        "id": "346",
+        "title": "The Biology of Personalities",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "346.mp3",
+            "transcript": "Scientists have discovered that people’s personalities can be influenced by their genetic makeup. This connection between traits and DNA is interesting. From a biology perspective, some behaviors are linked to specific genes. These traits can often be visible in how individuals interact with others. For example, some people are naturally more outgoing than others. This research helps us understand human behavior better."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Scientists have discovered that people’s "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "personalities",
+                "acceptedAnswers": [
+                    "personalities"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " can be influenced by their genetic makeup. This connection between traits and DNA is interesting. From a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "biology",
+                "acceptedAnswers": [
+                    "biology"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " perspective, some behaviors are linked to specific genes. These traits can often be "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "visible",
+                "acceptedAnswers": [
+                    "visible"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in how individuals interact with others. For example, some people are naturally more outgoing than others. This research helps us understand human behavior better."
+            }
+        ]
+    },
+    {
+        "id": "345",
+        "title": "Growth of Technology Systems",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "345.mp3",
+            "transcript": "The tech industry continues to burgeon as new innovations emerge each year. This growth is transforming how we live and work. Advanced systems like artificial intelligence are now part of daily life. They help automate tasks and improve efficiency. Their contribution to society is significant, making processes faster and more accurate. Many businesses rely on these technologies to stay competitive."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The tech industry continues to "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "burgeon",
+                "acceptedAnswers": [
+                    "burgeon"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " as new innovations emerge each year. This growth is transforming how we live and work. Advanced "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "systems",
+                "acceptedAnswers": [
+                    "systems"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " like artificial intelligence are now part of daily life. They help automate tasks and improve efficiency. Their "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "contribution",
+                "acceptedAnswers": [
+                    "contribution"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to society is significant, making processes faster and more accurate. Many businesses rely on these technologies to stay competitive."
+            }
+        ]
+    },
+    {
+        "id": "344",
+        "title": "A Day in the Life of a Baker",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "344.mp3",
+            "transcript": "Every morning, the baker begins her day with a simple routine to prepare for the busy hours ahead. She measures out the sugar needed for her popular cookies, ensuring the recipe stays sweet and delicious. During the morning rush, she has to move quickly to bake enough bread for the customers. Her steady pace allows her to keep up with the demand without feeling overwhelmed. On an average day, she bakes around 50 loaves of bread, which is typical for her small bakery. By maintaining a workflow, she ensures that everything runs smoothly and her customers leave happy."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Every morning, the baker begins her day with a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "simple",
+                "acceptedAnswers": [
+                    "simple"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " routine to prepare for the busy hours ahead. She measures out the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "sugar",
+                "acceptedAnswers": [
+                    "sugar"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " needed for her popular cookies, ensuring the recipe stays sweet and delicious. During the morning "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "rush",
+                "acceptedAnswers": [
+                    "rush"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", she has to move quickly to bake enough bread for the customers. Her "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "steady",
+                "acceptedAnswers": [
+                    "steady"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " pace allows her to keep up with the demand without feeling overwhelmed. On an "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "average",
+                "acceptedAnswers": [
+                    "average"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " day, she bakes around 50 loaves of bread, which is typical for her small bakery. By maintaining a "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "workflow",
+                "acceptedAnswers": [
+                    "workflow"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", she ensures that everything runs smoothly and her customers leave happy."
+            }
+        ]
+    },
+    {
+        "id": "343",
+        "title": "Traditional Jobs in a Modern World",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "343.mp3",
+            "transcript": "Many people still prefer traditional careers like teaching or farming because they are stable. These roles have been around for centuries and stay important. However, the reality of today’s job market is that technology is changing how work is done. Many of these jobs now require digital skills to stay competitive. Young people frequently apply for these roles while also learning new technologies. This combination helps them succeed in a modern world."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Many people still prefer "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "traditional",
+                "acceptedAnswers": [
+                    "traditional"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " careers like teaching or farming because they are stable. These roles have been around for centuries and stay important. However, the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "reality",
+                "acceptedAnswers": [
+                    "reality"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of today’s job market is that technology is changing how work is done. Many of these "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "jobs",
+                "acceptedAnswers": [
+                    "jobs"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " now require digital skills to stay competitive. Young people frequently "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "apply",
+                "acceptedAnswers": [
+                    "apply"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for these roles while also learning new technologies. This combination helps them succeed in a modern world."
+            }
+        ]
+    },
+    {
+        "id": "342",
+        "title": "Busy Summer at the Ice Cream Shop",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "342.mp3",
+            "transcript": "During summer, the ice cream shop has the same number of customers every day. People love its tasty flavors. It’s the favorite spot for many families in town because of its variety. The shop is always busy in the afternoons, especially on weekends. It stays open for long hours to serve everyone who comes by. On average, they earn about one dollar per hour per customer."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "During summer, the ice cream shop has the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "same",
+                "acceptedAnswers": [
+                    "same"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " number of customers every day. People love its tasty flavors. It’s the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "favorite",
+                "acceptedAnswers": [
+                    "favorite"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " spot for many families in town because of its variety. The shop is always "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "busy",
+                "acceptedAnswers": [
+                    "busy"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in the afternoons, especially on weekends. It stays open for long "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "hours",
+                "acceptedAnswers": [
+                    "hours"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to serve everyone who comes by. On "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "average",
+                "acceptedAnswers": [
+                    "average"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", they earn about one dollar per hour per customer."
+            }
+        ]
+    },
+    {
+        "id": "341",
+        "title": "STEM Internship Support",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "341.mp3",
+            "transcript": "Many universities provide subsidies for summer research to maintain an average stipend, while career centers oversee placement rates to secure practical experience for graduates."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Many universities provide "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "subsidies",
+                "acceptedAnswers": [
+                    "subsidies"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for summer research to maintain an "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "average",
+                "acceptedAnswers": [
+                    "average"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " stipend, while career centers oversee "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "placement",
+                "acceptedAnswers": [
+                    "placement"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " rates to secure practical "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "experience",
+                "acceptedAnswers": [
+                    "experience"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for graduates."
+            }
+        ]
+    },
+    {
+        "id": "340",
+        "title": "Climate Change in Science Education",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "340.mp3",
+            "transcript": "The science textbook has a dedicated section on climate change and its effects. It explains how various elements affect the environment. One key factor discussed is the rise in global temperatures over the years. This has led to melting ice caps and rising sea levels. The contribution of human activity, such as deforestation, is also highlighted in the chapter. These insights help students understand the importance of sustainability."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The science textbook has a dedicated "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "section",
+                "acceptedAnswers": [
+                    "section"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " on climate change and its effects. It explains how various elements affect the environment. One key "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "factor",
+                "acceptedAnswers": [
+                    "factor"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " discussed is the rise in global temperatures over the years. This has led to melting ice caps and rising sea levels. The "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "contribution",
+                "acceptedAnswers": [
+                    "contribution"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of human activity, such as deforestation, is also highlighted in the chapter. These insights help students understand the importance of sustainability."
+            }
+        ]
+    },
+    {
+        "id": "339",
+        "title": "Global Assignment Criteria",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "339.mp3",
+            "transcript": "The new mobility program defines the required qualification standards, evaluates cultural competence for cross-border roles, measures candidate energy levels to sustain productivity, and tests their ability to distribute tasks across multiple locations."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The new mobility program defines the required "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "qualification",
+                "acceptedAnswers": [
+                    "qualification"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " standards, evaluates "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "cultural",
+                "acceptedAnswers": [
+                    "cultural"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " competence for cross-border roles, measures candidate "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "energy",
+                "acceptedAnswers": [
+                    "energy"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " levels to sustain productivity, and tests their ability to "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "distribute",
+                "acceptedAnswers": [
+                    "distribute"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " tasks across multiple locations."
+            }
+        ]
+    },
+    {
+        "id": "338",
+        "title": "University Orientation Program",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "338.mp3",
+            "transcript": "The university hosts an orientation program for new students to help them adjust to campus life. It includes tours, workshops, and meetings with advisors. This event helps students feel more comfortable before classes start. It's an important first step for their academic journey."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The university hosts an "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "orientation",
+                "acceptedAnswers": [
+                    "orientation"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " program for new students to help them adjust to campus life. It includes tours, workshops, and meetings with advisors. This event helps students feel more comfortable before classes start. It's an important first step for their academic journey."
+            }
+        ]
+    },
+    {
+        "id": "337",
+        "title": "Art in Real Estate Development",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "337.mp3",
+            "transcript": "Modern developers are incorporating art into their projects to make buildings more attractive. This trend is becoming popular in the real estate industry. For example, they often include a sculpture in the lobby to create a unique atmosphere. A recent graduate from an art school was hired to design these pieces. Her profession as an artist allows her to contribute creatively to architecture. Her work is considered highly professional and has impressed many clients."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Modern developers are "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "incorporating",
+                "acceptedAnswers": [
+                    "incorporating"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " art into their projects to make buildings more attractive. This trend is becoming popular in the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "real",
+                "acceptedAnswers": [
+                    "real"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " estate industry. For example, they often include a "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "sculpture",
+                "acceptedAnswers": [
+                    "sculpture"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in the lobby to create a unique atmosphere. A recent "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "graduate",
+                "acceptedAnswers": [
+                    "graduate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " from an art school was hired to design these pieces. Her "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "profession",
+                "acceptedAnswers": [
+                    "profession"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " as an artist allows her to contribute creatively to architecture. Her work is considered highly "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "professional",
+                "acceptedAnswers": [
+                    "professional"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and has impressed many clients."
+            }
+        ]
+    },
+    {
+        "id": "336",
+        "title": "Environmental Finance Incentives",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "336.mp3",
+            "transcript": "Critics argue that using push money to boost green bond sales fails to address core climate issues and may slow sustainable development in emerging markets."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Critics argue that using push money to "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "boost",
+                "acceptedAnswers": [
+                    "boost"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " green bond sales fails to address core "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "climate",
+                "acceptedAnswers": [
+                    "climate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " issues and may slow sustainable "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "development",
+                "acceptedAnswers": [
+                    "development"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in emerging markets."
+            }
+        ]
+    },
+    {
+        "id": "335",
+        "title": "New Restaurant Opening in the City",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "335.mp3",
+            "transcript": "A new dining spot has just opened in the city, attracting many food lovers. It’s called Bella’s Kitchen and is gaining popularity quickly. This restaurant offers a menu with a variety of international dishes to choose from. Many customers find the options very interesting and unique. The owner of the place, Bella, has years of experience in the culinary world. It’s located in the downtown area, making it a convenient spot for everyone."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "A "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "new",
+                "acceptedAnswers": [
+                    "new"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " dining spot has just opened in the city, attracting many food lovers. It’s called Bella’s Kitchen and is gaining popularity quickly. This "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "restaurant",
+                "acceptedAnswers": [
+                    "restaurant"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " offers a "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "menu",
+                "acceptedAnswers": [
+                    "menu"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " with a variety of international dishes to choose from. Many customers find the options very "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "interesting",
+                "acceptedAnswers": [
+                    "interesting"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and unique. The "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "owner",
+                "acceptedAnswers": [
+                    "owner"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the place, Bella, has years of experience in the culinary world. It’s located in the "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "downtown",
+                "acceptedAnswers": [
+                    "downtown"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " area, making it a convenient spot for everyone."
+            }
+        ]
+    },
+    {
+        "id": "334",
+        "title": "Healthcare Reform Measures",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "334.mp3",
+            "transcript": "The pandemic created an urgent situation, prompting unprecedented contribution to bolster the health system, reform the pharmaceutical sector, and distribute relief throughout the country."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The pandemic created an "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "urgent",
+                "acceptedAnswers": [
+                    "urgent"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " situation, prompting unprecedented "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "contribution",
+                "acceptedAnswers": [
+                    "contribution"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to bolster the health "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "system",
+                "acceptedAnswers": [
+                    "system"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", reform the pharmaceutical "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "sector",
+                "acceptedAnswers": [
+                    "sector"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", and distribute relief "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "throughout",
+                "acceptedAnswers": [
+                    "throughout"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " the country."
+            }
+        ]
+    },
+    {
+        "id": "333",
+        "title": "Evolution of American Cars",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "333.mp3",
+            "transcript": "For many years, most vehicles in the U.S. were gas powered, relying on fossil fuels for energy. These cars contributed to air pollution and climate change. The urgency to find cleaner alternatives led to new innovations in the automotive industry. Engineers began designing sleek electric cars that were both fast and stylish. They also developed hydrogen cars, which use a renewable energy source to reduce emissions. These advancements are helping create a more sustainable future."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "For many years, most vehicles in the U.S. were gas "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "powered",
+                "acceptedAnswers": [
+                    "powered"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", relying on fossil fuels for energy. These cars contributed to air pollution and climate change. The "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "urgency",
+                "acceptedAnswers": [
+                    "urgency"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to find cleaner alternatives led to new innovations in the automotive industry. Engineers began designing "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "sleek",
+                "acceptedAnswers": [
+                    "sleek"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " electric cars that were both fast and stylish. They also developed "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "hydrogen",
+                "acceptedAnswers": [
+                    "hydrogen"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " cars, which use a renewable energy source to reduce emissions. These advancements are helping create a more sustainable future."
+            }
+        ]
+    },
+    {
+        "id": "332",
+        "title": "Innovative Material for Water Purification",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "332.mp3",
+            "transcript": "Scientists have developed a new material designed to clean polluted water effectively. This innovation is a breakthrough in environmental technology. The material can absorb harmful chemicals, leaving the water safe for use. This process helps protect aquatic ecosystems."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Scientists have "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "made",
+                "acceptedAnswers": [
+                    "made"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " a new material designed to clean polluted water effectively. This innovation is a breakthrough in environmental technology. The material can "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "absorb",
+                "acceptedAnswers": [
+                    "absorb"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " harmful chemicals, leaving the water safe for use. This process helps protect aquatic ecosystems."
+            }
+        ]
+    },
+    {
+        "id": "331",
+        "title": "Airport Boarding Announcement",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "331.mp3",
+            "transcript": "The airline staff is inviting passengers to board the plane at gate 12 now. They are making announcements to ensure everyone is ready. If you have special needs, they are requiring you to approach the staff for assistance. You can find them at the check-in desk near the entrance. This is a regular procedure for all flights to ensure a smooth boarding process. Please have your boarding pass ready."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The airline staff is "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "inviting",
+                "acceptedAnswers": [
+                    "inviting"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " passengers to board the plane at gate 12 now. They are making announcements to ensure everyone is ready. If you have special needs, they are "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "requiring",
+                "acceptedAnswers": [
+                    "requiring"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " you to approach the staff for assistance. You can find them at the check-in "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "desk",
+                "acceptedAnswers": [
+                    "desk"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " near the entrance. This is a "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "regular",
+                "acceptedAnswers": [
+                    "regular"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " procedure for all flights to ensure a smooth boarding process. Please have your boarding pass ready."
+            }
+        ]
+    },
+    {
+        "id": "330",
+        "title": "Government Support for Farmers",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "330.mp3",
+            "transcript": "Many governments provide subsidies to support farmers in growing organic crops. This financial help encourages sustainable agriculture. It also ensures that healthy food is available to more people. These programs are essential for rural development."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Many governments provide "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "subsidies",
+                "acceptedAnswers": [
+                    "subsidies"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to support farmers in growing organic crops. This financial help encourages sustainable agriculture. It also ensures that healthy food is available to more people. These programs are essential for rural development."
+            }
+        ]
+    },
+    {
+        "id": "329",
+        "title": "The Role of Predictions in Consumer Behavior",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "329.mp3",
+            "transcript": "Experts often make a prediction about future trends in the market to guide businesses. These forecasts can shape how companies plan their strategies. One profound impact of such forecasts is the change in consumer behavior over time. People tend to adjust their habits based on new information. For example, the consumption of eco-friendly products has risen due to predictions about climate change. This shift benefits both the environment and the economy."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Experts often make a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "prediction",
+                "acceptedAnswers": [
+                    "prediction"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " about future trends in the market to guide businesses. These forecasts can shape how companies plan their strategies. One "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "profound",
+                "acceptedAnswers": [
+                    "profound"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " impact of such forecasts is the change in consumer behavior over time. People tend to adjust their habits based on new information. For example, the "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "consumption",
+                "acceptedAnswers": [
+                    "consumption"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of eco-friendly products has risen due to predictions about climate change. This shift benefits both the environment and the economy."
+            }
+        ]
+    },
+    {
+        "id": "328",
+        "title": "Sustainable Practices Around the World",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "328.mp3",
+            "transcript": "In today's world, eco-friendly practices can be found everywhere as people become more aware of environmental issues. Many industries are adopting green technologies to reduce their carbon footprint. These sustainable solutions, such as solar panels and reusable materials, are now widely used in daily life. They help protect the planet for future generations. The application of these technologies shows how innovation can support a healthier environment. This trend is expected to grow even further."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "In today's world, eco-friendly practices can be found "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "everywhere",
+                "acceptedAnswers": [
+                    "everywhere"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " as people become more aware of environmental issues. Many industries are adopting green technologies to reduce their carbon footprint. These "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "sustainable",
+                "acceptedAnswers": [
+                    "sustainable"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " solutions, such as solar panels and reusable materials, are now widely used in daily life. They help protect the planet for future generations. The "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "application",
+                "acceptedAnswers": [
+                    "application"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of these technologies shows how innovation can support a healthier environment. This trend is expected to grow even further."
+            }
+        ]
+    },
+    {
+        "id": "326",
+        "title": "The Impact of Technology on Society",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "326.mp3",
+            "transcript": "Technology has brought a major benefit to society by improving communication and access to information. It allows people to connect instantly across the globe. For humans, this means better collaboration and the ability to share knowledge more effectively. Many tools we use daily have become common in households, such as smartphones and computers. This widespread use creates an opportunity for everyone to learn new skills and participate in the digital world. Education and innovation continue to grow as a result."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Technology has brought a major "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "benefit",
+                "acceptedAnswers": [
+                    "benefit"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to society by improving communication and access to information. It allows people to connect instantly across the globe. For "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "humans",
+                "acceptedAnswers": [
+                    "humans"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", this means better collaboration and the ability to share knowledge more effectively. Many tools we use daily have become "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "common",
+                "acceptedAnswers": [
+                    "common"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in households, such as smartphones and computers. This widespread use creates an "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "opportunity",
+                "acceptedAnswers": [
+                    "opportunity"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " for everyone to learn new skills and participate in the digital world. Education and innovation continue to grow as a result."
+            }
+        ]
+    },
+    {
+        "id": "327",
+        "title": "Scientific Research in Biology",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "327.mp3",
+            "transcript": "A scientist who cares about the environment often focuses on how living organisms interact with their surroundings. They study these interactions to understand ecosystems better. In the field of biology, researchers observe how plants and animals respond to changes in their habitat. These observations help them develop new theories about life. Many of these studies are experimental in nature, involving controlled tests to explore new ideas. This approach helps advance our knowledge of the natural world."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "A scientist who "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "cares",
+                "acceptedAnswers": [
+                    "cares"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " about the environment often focuses on how living organisms interact with their surroundings. They study these interactions to understand ecosystems better. In the field of "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "biology",
+                "acceptedAnswers": [
+                    "biology"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", researchers observe how plants and animals "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "respond",
+                "acceptedAnswers": [
+                    "respond"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to changes in their habitat. These observations help them develop new theories about life. Many of these studies are "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "experimental",
+                "acceptedAnswers": [
+                    "experimental"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in nature, involving controlled tests to explore new ideas. This approach helps advance our knowledge of the natural world."
+            }
+        ]
+    },
+    {
+        "id": "325",
+        "title": "A Father's Tech Skills",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "325.mp3",
+            "transcript": "I work as a journalist in the field of new media. My job is with a well-known agency that covers various topics. Over the years, I have gained valuable experience in this industry. However, I was surprised by my father's ability to use technology, which felt quite scary to me. He was so skilled with electronics that it amazed me."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "I work as a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "journalist",
+                "acceptedAnswers": [
+                    "journalist"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in the field of new media. My job is with a well-known "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "agency",
+                "acceptedAnswers": [
+                    "agency"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that covers various topics. Over the years, I have gained valuable "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "experience",
+                "acceptedAnswers": [
+                    "experience"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in this industry. However, I was surprised by my father's ability to use technology, which felt quite "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "scary",
+                "acceptedAnswers": [
+                    "scary"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to me. He was so skilled with "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "electronics",
+                "acceptedAnswers": [
+                    "electronics"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " that it amazed me."
+            }
+        ]
+    },
+    {
+        "id": "324",
+        "title": "Feasibility Study",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "324.mp3",
+            "transcript": "During the feasibility study, the team identified serious impacts, catalogued potential negative outcomes, and documented all risks before proceeding to the planning phase."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "During the feasibility study, the team identified "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "serious",
+                "acceptedAnswers": [
+                    "serious"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " impacts, catalogued potential "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "negative",
+                "acceptedAnswers": [
+                    "negative"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " outcomes, and documented all "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "risks",
+                "acceptedAnswers": [
+                    "risks"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " before proceeding to the planning phase."
+            }
+        ]
+    },
+    {
+        "id": "322",
+        "title": "Urban Mobility",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "322.mp3",
+            "transcript": "Building an underground transit system can transform urban mobility, but its pricing model must address the expensive upfront costs, often requiring generous subsidies to make fares more affordable and bring prices down to an average level."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Building an "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "underground",
+                "acceptedAnswers": [
+                    "underground"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " transit system can transform urban mobility, but its "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "pricing",
+                "acceptedAnswers": [
+                    "pricing"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " model must address the "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "expensive",
+                "acceptedAnswers": [
+                    "expensive"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " upfront costs, often requiring generous "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "subsidies",
+                "acceptedAnswers": [
+                    "subsidies"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to make fares more affordable and bring prices down to an "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "average",
+                "acceptedAnswers": [
+                    "average"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " level."
+            }
+        ]
+    },
+    {
+        "id": "321",
+        "title": "Journalism Internship",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "321.mp3",
+            "transcript": "The university offers a placement program for students interested in media careers. This opportunity allows them to work at a local news station. Each student becomes a journalist intern, learning how to report news professionally. They gain valuable experience in writing and interviewing during this time. On average, the program lasts about three months, giving students enough time to develop their skills. Many graduates find jobs in media after completing it."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The university offers a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "placement",
+                "acceptedAnswers": [
+                    "placement"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " program for students interested in media careers. This opportunity allows them to work at a local news station. Each student becomes a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "journalist",
+                "acceptedAnswers": [
+                    "journalist"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " intern, learning how to report news professionally. They gain valuable "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "experience",
+                "acceptedAnswers": [
+                    "experience"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in writing and interviewing during this time. On "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "average",
+                "acceptedAnswers": [
+                    "average"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", the program lasts about three months, giving students enough time to develop their skills. Many graduates find jobs in media after completing it."
+            }
+        ]
+    },
+    {
+        "id": "303",
+        "title": "Robotic Surgery",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "303.mp3",
+            "transcript": "This new type of surgery is performed with a camera, remotely, and with a robot. This robotic surgery method is capable of performing complex tasks. Surgeons must undergo new training to operate the robotic systems efficiently. With this method, the surgeons can operate the procedure with enhanced precision and control."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "This new type of surgery is performed with a camera, remotely, and with a robot. This robotic surgery method is capable of performing "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "complex",
+                "acceptedAnswers": [
+                    "complex"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " tasks. Surgeons must undergo "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "new",
+                "acceptedAnswers": [
+                    "new"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " training to "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "operate",
+                "acceptedAnswers": [
+                    "operate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " the robotic systems efficiently. With this method, the surgeons can operate the procedure with enhanced "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "precision",
+                "acceptedAnswers": [
+                    "precision"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and control."
+            }
+        ]
+    },
+    {
+        "id": "285",
+        "title": "Roma",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "285.mp3",
+            "transcript": "The city of Roma has a rich history spanning many years, with traditions preserved by skilled local craftsmen. Among them, the carpenter played a crucial role in constructing buildings and furniture, contributing to the cultural and architectural legacy of the area."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The city of Roma has a rich history spanning many years, with traditions "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "craftsmen",
+                "acceptedAnswers": [
+                    "craftsmen"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". Among them, the "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "carpenter",
+                "acceptedAnswers": [
+                    "carpenter"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " played a crucial role in constructing buildings and furniture, contributing to the cultural and architectural "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "legacy",
+                "acceptedAnswers": [
+                    "legacy"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the area."
+            }
+        ]
+    },
+    {
+        "id": "247",
+        "title": "Burial",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "247.mp3",
+            "transcript": "So between 4,000 and 3,000 BC the Mesopotamian Samarian cultures did not practice any kind of burial. And then, about 3,000, in the early Dynastic Period, these burials start to reappear, and they reappear with a certain amount of conspicuous consumption, and this is the context for the royal burials at Ur. OK, so, the royal cemetery consists of quite a number of pits, so these are the excavation workers who are coming down into the pits. So you get some sense of how really deep and how really difficult it was to construct these chambers."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "So between 4,000 and 3,000 BC the Mesopotamian Samarian cultures did not "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "practice",
+                "acceptedAnswers": [
+                    "practice"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " any kind of burial. And then, about 3,000, in the early Dynastic Period, these burials start to reappear, and they reappear with a certain amount of "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "conspicuous",
+                "acceptedAnswers": [
+                    "conspicuous"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " consumption, and this is the context for the royal burials at Ur. OK, so, the royal "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "cemetery",
+                "acceptedAnswers": [
+                    "cemetery"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " consists of quite a number of pits, so these are the "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "excavation",
+                "acceptedAnswers": [
+                    "excavation"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " workers who are coming down into the pits. So you get some sense of how really deep and how really difficult it was to construct these "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "chambers",
+                "acceptedAnswers": [
+                    "chambers"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "."
+            }
+        ]
+    },
+    {
+        "id": "244",
+        "title": "Life on Mars",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "244.mp3",
+            "transcript": "The thing that makes it difficult is because even if life had evolved on Mars, the chances of being preserved are very small. If we use Earth as a reference and our planet is teeming with life, yet it rarely preserves evidence of life of the fossil record. And the focus now is on exploring for habitable environments. If you're looking for water, a source of energy, either solar energy or thermal energy or chemical energy, and then organic carbon, assuming life as we know it on Earth based on carbon. So those are sort of the three things that we're looking for in the course of our mission."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "The thing that makes it difficult is because even if life had evolved on Mars, the chances of being preserved are very small. If we use Earth as a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "reference",
+                "acceptedAnswers": [
+                    "reference"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and our planet is teeming with life, yet it rarely preserves evidence of life of the fossil record. And the focus now is on exploring for "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "habitable",
+                "acceptedAnswers": [
+                    "habitable"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " environments. If you're looking for water, a "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "source",
+                "acceptedAnswers": [
+                    "source"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of energy, either solar energy or thermal energy or chemical energy, and then "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "organic",
+                "acceptedAnswers": [
+                    "organic"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " carbon, assuming life as we know it on Earth based on carbon. So those are sort of the three things that we're looking for in the course of our mission."
+            }
+        ]
+    },
+    {
+        "id": "241",
+        "title": "Belief",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "241.mp3",
+            "transcript": "Belief is the human capacity to imagine, to be creative, to hope and dream, to infuse the world with meanings, and to cast our aspirations far and wide. Limited neither by personal experience nor material reality. Believing is a commitment, an investment, a devotion to possibilities. Beliefs permeate neurobiologies, bodies and ecologies acting as dynamic agents in evolutionary processes. The human capacity for belief, the specifics of belief, and I, and our diverse belief systems shape, structure and alter our daily lives, our societies, and the world around us."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Belief is the human capacity to imagine, to be creative, to hope and dream, to infuse the world with meanings, and to cast our aspirations far and wide. Limited neither by personal experience nor "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "material",
+                "acceptedAnswers": [
+                    "material"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " reality. Believing is a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "commitment",
+                "acceptedAnswers": [
+                    "commitment"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", an investment, a devotion to possibilities. Beliefs "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "permeate",
+                "acceptedAnswers": [
+                    "permeate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " neurobiologies, bodies and ecologies acting as dynamic agents in evolutionary processes. The human capacity for belief, the "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "specifics",
+                "acceptedAnswers": [
+                    "specifics"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of belief, and I, and our diverse belief systems shape, structure and alter our daily lives, our societies, and the world around us."
+            }
+        ]
+    },
+    {
+        "id": "240",
+        "title": "Malaria",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "240.mp3",
+            "transcript": "Also, malaria is something that is a very complex disease with this complex life cycle. That means that if you're going to eliminate it, you have to be able to target cute parasites and humans. You have to be able to target parasites in the mosquitoes, that mosquito population. And so that requires a lot of resources. It requires really good planning and a health system across all these different levels. And so I think the political capital that you need for that, the educational infrastructure you need for that, the economic resources you need for that are quite a challenge."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Also, malaria is something that is a very complex disease with this complex life cycle. That means that if you're going to "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "eliminate",
+                "acceptedAnswers": [
+                    "eliminate"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " it, you have to be able to target cute parasites and humans. You have to be able to target parasites in the mosquitoes, that mosquito "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "population",
+                "acceptedAnswers": [
+                    "population"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". And so that requires a lot of resources. It requires really good planning and a health system across all these different "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "levels",
+                "acceptedAnswers": [
+                    "levels"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". And so I think the political capital that you need for that, the educational "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "infrastructure",
+                "acceptedAnswers": [
+                    "infrastructure"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " you need for that, the economic resources you need for that are quite a "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "challenge",
+                "acceptedAnswers": [
+                    "challenge"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "."
+            }
+        ]
+    },
+    {
+        "id": "239",
+        "title": "Corporate Culture",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "239.mp3",
+            "transcript": "For a long time now, it's been a widely accepted and rarely questioned belief that a strong corporate culture goes hand in hand with success. However, a recent study has cast some doubt on this principle. After all, the authors of the report argue for culture. A company's build-up may be strong, but wrong. There is little point in every employee marching to the same tune if they are all marching in the wrong direction."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "For a long time now, it's been a widely accepted and "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "rarely",
+                "acceptedAnswers": [
+                    "rarely"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " questioned belief that a strong corporate culture goes hand in hand with success. However, a recent study has "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "cast",
+                "acceptedAnswers": [
+                    "cast"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " some doubt on this principle. After all, the "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "authors",
+                "acceptedAnswers": [
+                    "authors"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the report argue for culture. A company's build-up may be strong, but wrong. There is little point in every "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "employee",
+                "acceptedAnswers": [
+                    "employee"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " marching to the same tune if they are all marching in the wrong direction."
+            }
+        ]
+    },
+    {
+        "id": "228",
+        "title": "Curie",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "228.mp3",
+            "transcript": "My hero is Marie Curie. She was a Polish physicist and chemist working in France, and she conducted pioneering research on radioactivity. She was also the first woman who won a Nobel prize. Marie Curie is my hero because she showed a lot of determination in following her career path and her passions. She also showed a lot of patience in working for years to receive results from her experiments. And Marie Curie, she designed and built the first mobile X-Ray machines. She worked on the front lines of the first World War along with her daughter saving soldiers."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "My hero is Marie Curie. She was a Polish physicist and chemist working in France, and she "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "conducted",
+                "acceptedAnswers": [
+                    "conducted"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " pioneering research on radioactivity. She was also the first woman who won a Nobel prize. Marie Curie is my hero because she showed a lot of "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "determination",
+                "acceptedAnswers": [
+                    "determination"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in following her career path and her "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "passions",
+                "acceptedAnswers": [
+                    "passions"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". She also showed a lot of "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "patience",
+                "acceptedAnswers": [
+                    "patience"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " in working for years to receive results from her experiments. And Marie Curie, she designed and built the first "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "mobile",
+                "acceptedAnswers": [
+                    "mobile"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " X-Ray machines. She worked on the front lines of the first World War along with her "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "daughter",
+                "acceptedAnswers": [
+                    "daughter"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " saving soldiers."
+            }
+        ]
+    },
+    {
+        "id": "164",
+        "title": "Dogs",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "164.mp3",
+            "transcript": "Dogs are not simply man's best friend. Previous studies have shown that kids with dogs are less likely to develop asthma. Now a new study may show how—if results from mice apply to us. The work was presented at a meeting of the American Society for Microbiology. The study tests what's called the hygiene hypothesis. The idea is that extreme cleanliness may actually promote disease later on. Researchers collected dust from homes that had a dog. They fed that house dust to mice. They then infected the mice with a common childhood infection called respiratory syncytial virus—or RSV."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Dogs are not simply man's best friend. Previous studies have shown that kids with dogs are less likely to develop asthma. Now a new study may show how—if results from mice apply to us. The work was presented at a meeting of the American Society for Microbiology. The study tests what's called the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "hygiene",
+                "acceptedAnswers": [
+                    "hygiene"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " hypothesis. The idea is that extreme cleanliness may actually promote disease later on. Researchers collected dust from homes that had a dog. They fed that house dust to mice. They then infected the mice with a common "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "childhood",
+                "acceptedAnswers": [
+                    "childhood"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " infection called "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "respiratory",
+                "acceptedAnswers": [
+                    "respiratory"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " syncytial virus—or RSV."
+            }
+        ]
+    },
+    {
+        "id": "127",
+        "title": "Biscuits",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "127.mp3",
+            "transcript": "When baking, it is important to explore different types of biscuits to achieve the desired taste and texture. Plain biscuits can be enhanced by adding a stick of chocolate or other flavors, creating a variety of options for consumption and experimentation."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "When baking, it is important to "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "explore",
+                "acceptedAnswers": [
+                    "explore"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " different types of biscuits to achieve the desired taste and texture. "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "Plain",
+                "acceptedAnswers": [
+                    "Plain"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " biscuits can be enhanced by adding a "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "stick",
+                "acceptedAnswers": [
+                    "stick"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of chocolate or other flavors, creating a variety of options for consumption and experimentation."
+            }
+        ]
+    },
+    {
+        "id": "119",
+        "title": "Green Chemistry",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "119.mp3",
+            "transcript": "Green Chemistry is a concept designed to develop technologies which allow chemistry to be practiced with minimal damage to the environment, or in an environmentally compatible way, and it's meant to cover both chemical processes and chemical products. The center was established about seven or eight years ago. And the idea was to provide a hub of activities that covered fundamental research work, international collaboration, but also educational development on public understanding of the project as well, and also networking so we network out to well over 1000 people around the globe."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Green Chemistry is a concept designed to develop "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "technologies",
+                "acceptedAnswers": [
+                    "technologies"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " which allow chemistry to be practiced with minimal damage to the environment, or in an environmentally "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "compatible",
+                "acceptedAnswers": [
+                    "compatible"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " way, and it's meant to cover both chemical processes and chemical "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "products",
+                "acceptedAnswers": [
+                    "products"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ". The center was established about seven or eight years ago. And the idea was to provide a hub of activities that covered "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "fundamental",
+                "acceptedAnswers": [
+                    "fundamental"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " research work, international collaboration, but also educational development on public "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "understanding",
+                "acceptedAnswers": [
+                    "understanding"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the project as well, and also networking so we network out to well over 1000 people around the globe."
+            }
+        ]
+    },
+    {
+        "id": "110",
+        "title": "Sunflowers",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "110.mp3",
+            "transcript": "These two paintings, both called \"Sunflowers\", are generally accepted as the finest of several depictions of the thick-stemmed, nodding blooms that Van Gogh made in 1888 and 1889 during his time in Arles. The first is now in the collection of the National Gallery in London, and the second is in the Van Gogh Museum in Amsterdam. Van Gogh referred to this work as a repetition of the London painting. But art historians and curators have long been curious to know how different this \"repetition\" is from the first. Should it be considered a copy, an independent artwork or something in between? An extensive research project conducted over the past three years by conservation experts at both the National Gallery and the Van Gogh Museum has concluded that the second painting was \"not intended as an exact copy of the original\", said Ella Hendriks, a professor of conservation and restoration at the University of Amsterdam, who was the lead researcher on the project."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "These two paintings, both called \"Sunflowers\", are generally accepted as the finest of several "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "depictions",
+                "acceptedAnswers": [
+                    "depictions"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the thick-stemmed, nodding blooms that Van Gogh made in 1888 and 1889 during his time in Arles. The first is now in the collection of the National Gallery in London, and the second is in the Van Gogh Museum in Amsterdam. Van Gogh referred to this work as a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "repetition",
+                "acceptedAnswers": [
+                    "repetition"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the London painting. But art historians and curators have long been "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "curious",
+                "acceptedAnswers": [
+                    "curious"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " to know how different this \"repetition\" is from the first. Should it be considered a copy, an independent artwork or something in between? An "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "extensive",
+                "acceptedAnswers": [
+                    "extensive"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " research project conducted over the past three years by conservation experts at both the National Gallery and the Van Gogh Museum has concluded that the second painting was \"not intended as an exact copy of the "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "original",
+                "acceptedAnswers": [
+                    "original"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": "\", said Ella Hendriks, a professor of conservation and restoration at the University of Amsterdam, who was the lead researcher on the project."
+            }
+        ]
+    },
+    {
+        "id": "99",
+        "title": "Nanotechnology",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "99.mp3",
+            "transcript": "What is nanotechnology? Well, a report that was put together by a combination of the Royal Society and the Royal Academy of Engineering that came out last summer, identifies two topics. Nano-science is the study of phenomena and the manipulation of materials at atomic, molecular and macromolecular scales, where properties differ significantly from those as a larger scale. Nanotechnologies are the design, characterization, production and application of structures, devices and systems by controlling shape and size at the nanometer scale. So I'll talk a little bit more in a moment about what a nanometer is, but loosely speaking people think of nanotechnologies as being a sort of a hundred nanometers or less."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "What is nanotechnology? Well, a report that was put together by a "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "combination",
+                "acceptedAnswers": [
+                    "combination"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of the Royal Society and the Royal Academy of Engineering that came out last summer, "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "identifies",
+                "acceptedAnswers": [
+                    "identifies"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " two topics. Nano-science is the study of "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "phenomena",
+                "acceptedAnswers": [
+                    "phenomena"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and the manipulation of materials at atomic, molecular and "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "macromolecular",
+                "acceptedAnswers": [
+                    "macromolecular"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " scales, where properties differ significantly from those as a larger scale. Nanotechnologies are the design, characterization, production and application of "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "structures",
+                "acceptedAnswers": [
+                    "structures"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", devices and systems by controlling shape and size at the nanometer scale. So I'll talk a little bit more in a moment about what a nanometer is, but "
+            },
+            {
+                "type": "blank",
+                "id": "6",
+                "answer": "loosely",
+                "acceptedAnswers": [
+                    "loosely"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " speaking people think of nanotechnologies as being a sort of a hundred nanometers or less."
+            }
+        ]
+    },
+    {
+        "id": "94",
+        "title": "Beautiful Building",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "94.mp3",
+            "transcript": "Along the way, we have constructed beautiful buildings, two of which have won and been runner-up in the prestigious United Nations World Habitat Award: the first time an Australian building has received that international honor. We rely on older concepts of Australian architecture that are heavily influenced by the bush. All residents have private verandas which allow them to socialize outdoors and also creates some \"defensible space\" between their bedrooms and public areas. We use a lot of natural or soft materials and build beautiful landscaped gardens."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Along the way, we have constructed "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "unashamedly",
+                "acceptedAnswers": [
+                    "unashamedly"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " beautiful buildings, two of which have won and been runner-up in the prestigious United Nations World "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "Habitat",
+                "acceptedAnswers": [
+                    "Habitat"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " Award: the first time an Australian building has received that international honor. We rely on older "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "concepts",
+                "acceptedAnswers": [
+                    "concepts"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of Australian architecture that are heavily influenced by the bush. All residents have private verandas which allow them to "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "socialize",
+                "acceptedAnswers": [
+                    "socialize"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " outdoors and also creates some \"defensible space\" between their bedrooms and public areas. We use a lot of "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "natural",
+                "acceptedAnswers": [
+                    "natural"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " or soft materials and build beautiful landscaped gardens."
+            }
+        ]
+    },
+    {
+        "id": "88",
+        "title": "Water Crisis",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "88.mp3",
+            "transcript": "Now that story's been scotched, as only part of contingency planning. But it was a symptom of the dramatic turn of events in South Australia, and it flushed out other remarks from water academics and people like Tim Flannery, indicating that things were really much worse than had been foreshadowed, even earlier this year. So is Adelaide, let alone some whole regions of South Australia, in serious bother? Considering that the vast amount of its drinking water comes from the beleaguered Murray, something many of us outside the State may not have quite realized. Is their predicament something we have to face up to as a nation?"
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Now that story's been scotched, as only part of contingency planning. But it was a symptom of the dramatic turn of events in South Australia, and it flushed out other remarks from water "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "academics",
+                "acceptedAnswers": [
+                    "academics"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and people like Tim Flannery, indicating that things were really much worse than had been "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "foreshadowed",
+                "acceptedAnswers": [
+                    "foreshadowed"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": ", even earlier this year. So is Adelaide, let alone some whole "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "regions",
+                "acceptedAnswers": [
+                    "regions"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " of South Australia, in serious bother? Considering that the vast amount of its drinking water comes from the "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "beleaguered",
+                "acceptedAnswers": [
+                    "beleaguered"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " Murray, something many of us outside the State may not have quite realized. Is their "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "predicament",
+                "acceptedAnswers": [
+                    "predicament"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " something we have to face up to as a nation?"
+            }
+        ]
+    },
+    {
+        "id": "89",
+        "title": "Laurence Stephen Lowry",
+        "type": "fill_in_the_blanks",
+        "subtype": "core",
+        "audio": {
+            "src": "89.mp3",
+            "transcript": "Laurence Stephen Lowry RBS RA was an English artist. Many of his drawings and paintings depict Pend Lebury, Lancashire, where he lived and worked for more than 40 years, and also Salford and its surrounding areas. Lowry is famous for painting scenes of life in the industrial districts of North West England in the mid-20th century. He developed a distinctive style of painting and is best known for his city landscapes peopled with human figures often referred to as matchstick man. He painted mysterious unpopulated landscapes, brooding portraits and the unpublished \"marionette\" works, which were only found after his death."
+        },
+        "content": [
+            {
+                "type": "text",
+                "value": "Laurence Stephen Lowry RBS RA was an English artist. Many of his drawings and paintings depict Pend Lebury, Lancashire, where he lived and worked for more than 40 years, and also Salford and its surrounding areas. Lowry is famous for painting scenes of life in the "
+            },
+            {
+                "type": "blank",
+                "id": "1",
+                "answer": "industrial",
+                "acceptedAnswers": [
+                    "industrial"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " districts of North West England in the mid-20th century. He developed a "
+            },
+            {
+                "type": "blank",
+                "id": "2",
+                "answer": "distinctive",
+                "acceptedAnswers": [
+                    "distinctive"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " style of painting and is best known for his "
+            },
+            {
+                "type": "blank",
+                "id": "3",
+                "answer": "city",
+                "acceptedAnswers": [
+                    "city"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " landscapes peopled with human figures often referred to as "
+            },
+            {
+                "type": "blank",
+                "id": "4",
+                "answer": "matchstick",
+                "acceptedAnswers": [
+                    "matchstick"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " man. He painted mysterious unpopulated landscapes, brooding "
+            },
+            {
+                "type": "blank",
+                "id": "5",
+                "answer": "portraits",
+                "acceptedAnswers": [
+                    "portraits"
+                ],
+                "userAnswer": ""
+            },
+            {
+                "type": "text",
+                "value": " and the unpublished \"marionette\" works, which were only found after his death."
+            }
+        ]
     }
 ]
