@@ -1,21 +1,21 @@
 // Karan
 1. Listening
     c. highlight incorrect word question is not proper
-    d. extend subs limit to 7 days, +60 days extend ask for confirmation, revoke subs button
+    d. revoke perticular days subs button and cancel subs button 
     e. core/core p filter is not working properly
     f. lazy loading
 
 // Aryan
 1. Speaking all
-2. Writing all
+2. Writing all --> done
 
 // aryan friend
 3. Reading he will give
 4. mock test
 
 // pending
-1. reset question button in every question
-2. done/undone filter feature in question also show that in every question
+1. reset question button in every question --> done
+2. done/undone filter feature in question also show that in every question --> done
 3. Designing
 4. mongo cloud
 5. cloudinary vs local storage

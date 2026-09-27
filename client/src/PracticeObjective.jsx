@@ -348,6 +348,19 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
+  function resetQuestion() {
+    const isReorderQ = question?.type === "reorder";
+    const isDragFillQ = question?.type === "fill-blanks-dragdrop";
+    const blankCount = isDragFillQ ? (question.passage?.match(/____/g) || []).length : 0;
+    setChoice("");
+    setMulti([]);
+    setOrder(isReorderQ ? (question.options || []).map((_, i) => i) : null);
+    setDragPlacement(isDragFillQ ? Array(blankCount).fill(null) : null);
+    setResult(null);
+    setError("");
+    setBusy(false);
+  }
+
   async function submit() {
     setBusy(true); setError("");
     const f = new FormData();
@@ -387,6 +400,12 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     {result
       ? <ObjectiveResult result={result} />
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Submitting..." : "Submit Answer"}</button>}
+    {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is untouched
+        (gated on testSessionId, exactly as Mock always passes it and standalone practice never
+        does). Always available, including after submission. */}
+    {!testSessionId && <div className="task-actions">
+      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy}>Reset Question</button>
+    </div>}
   </div>;
 }
 
@@ -438,6 +457,27 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
+  // Listening's bundled local content (every type here, per LOCAL_LISTENING_QUESTIONS) has no
+  // real Question document, so the server has no answer key to score it against — these results
+  // are computed client-side and shown instantly (unchanged). What was missing is any durable
+  // record of the attempt at all, which is why a "Done" question always reverted to "Undone"
+  // after a reload: /submissions/history had nothing to find. This persists the exact
+  // already-shown result in the background, tagged with the question's own local id, so history
+  // can match it back up — never awaited, never able to change or block what's already on screen.
+  function persistLocalResult(localResult, answerValue) {
+    if (testSessionId) return;
+    const f = new FormData();
+    f.append("section", "listening");
+    f.append("type", question.type);
+    f.append("localQuestionId", question._id);
+    f.append("answer", JSON.stringify(answerValue));
+    f.append("localResult", JSON.stringify({ score: localResult.score, maxScore: localResult.maxScore, feedback: localResult.feedback }));
+    api.submit(f).catch(() => {
+      // Best-effort progress sync only — the result the student already sees came from the local
+      // computation above and is entirely unaffected by this failing.
+    });
+  }
+
   async function submit() {
     if (isLocalFillBlanks) {
       const answers = question.localBlankAnswers;
@@ -452,6 +492,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       );
       setResult(localResult);
       onAnswered?.(localResult);
+      persistLocalResult(localResult, blankValues);
       return;
     }
     const persisted = isPersistedQuestionId(question._id);
@@ -460,6 +501,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       if (localResult) {
         setResult(localResult);
         onAnswered?.(localResult);
+        persistLocalResult(localResult, isChoice ? choice : isMulti ? multi : text);
         return;
       }
     }
@@ -470,6 +512,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     f.append("answer", JSON.stringify(isChoice ? choice : isMulti ? multi : text));
     if (isFreeText) f.append("transcript", text);
     if (persisted) f.append("questionId", question._id);
+    else if (!testSessionId) f.append("localQuestionId", question._id);
     if (testSessionId) f.append("testSessionId", testSessionId);
     try {
       const d = await api.submit(f);
@@ -483,6 +526,18 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     try { setResult((await api.retryEvaluation(result._id)).submission); }
     catch (e) { setError(e.message); }
     finally { setRetrying(false); }
+  }
+
+  function resetQuestion() {
+    setChoice("");
+    setMulti([]);
+    setBlankValues(question?.localBlankAnswers?.map(() => "") || []);
+    setText("");
+    setResult(null);
+    setError("");
+    setBusy(false);
+    setRetrying(false);
+    setShowAnswer(false);
   }
 
   const canSubmit = isLocalFillBlanks ? blankValues.every(value => value.trim()) : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
@@ -515,6 +570,12 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     {result
       ? (question.evaluationType === "objective" ? <ObjectiveResult result={result} /> : <Result result={result} onRetry={retry} retrying={retrying} />)
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Evaluating..." : "Submit"}</button>}
+    {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is untouched
+        (gated on testSessionId, exactly as Mock always passes it and standalone practice never
+        does). Always available, including after AI evaluation. */}
+    {!testSessionId && <div className="task-actions">
+      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy || retrying}>Reset Question</button>
+    </div>}
     {answerText && <>
       <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(value => !value)}>
         {showAnswer ? "Hide Answer" : "Answer"}

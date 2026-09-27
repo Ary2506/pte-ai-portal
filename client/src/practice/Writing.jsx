@@ -69,6 +69,14 @@ export default function Writing({
     }
   }
 
+  function resetQuestion() {
+    setText("");
+    setResult(null);
+    setError("");
+    setBusy(false);
+    setRetrying(false);
+  }
+
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   return (
     <div className="task-layout">
@@ -103,6 +111,21 @@ export default function Writing({
           >
             {busy ? "Evaluating..." : "Submit for AI Feedback"}
           </button>
+        )}
+        {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is
+            untouched (gated on testSessionId, exactly as Mock always passes it and standalone
+            practice never does). Always available, including after AI evaluation. */}
+        {!testSessionId && (
+          <div className="task-actions">
+            <button
+              type="button"
+              className="secondary"
+              onClick={resetQuestion}
+              disabled={busy || retrying}
+            >
+              Reset Question
+            </button>
+          </div>
         )}
       </section>
       <aside className="panel tips">

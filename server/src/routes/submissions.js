@@ -151,6 +151,43 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       if (!question) return res.status(404).json({ message: "Question not found", code: "NOT_FOUND" });
     }
 
+    // Lets a submission for bundled, non-DB content (e.g. Listening's local JSON, whose ids like
+    // "3942" are not Mongo ObjectIds) be matched back by /submissions/history for progress
+    // tracking, the same way `question` does for a real DB question. Only ever stored — never
+    // used to skip real scoring — when there is no real `question` and no `testSession`, so a
+    // request that also resolves a real question (or belongs to a Mock Test) is completely
+    // unaffected by anything below.
+    const rawLocalQuestionId = req.body.localQuestionId;
+    const localQuestionId =
+      typeof rawLocalQuestionId === "string" && rawLocalQuestionId.trim() && rawLocalQuestionId.length <= 64
+        ? rawLocalQuestionId.trim()
+        : null;
+
+    // A pre-scored result for that same local content, computed client-side because the server
+    // has no answer key for it at all (the bundled JSON never reaches the server). This is only
+    // ever trusted for the exact same case as above — no real `question`, no `testSession` — so
+    // it can never be used to override a real DB question's or a Mock Test's server-computed
+    // score. The client already shows this exact result to the student instantly; storing it is
+    // just making that already-trusted number durable, not a new trust boundary.
+    let trustedLocalResult = null;
+    if (req.body.localResult) {
+      try {
+        const candidate = JSON.parse(req.body.localResult);
+        if (
+          candidate && typeof candidate === "object" &&
+          Number.isFinite(candidate.score) &&
+          Number.isFinite(candidate.maxScore) && candidate.maxScore > 0 &&
+          candidate.feedback && typeof candidate.feedback === "object"
+        ) {
+          trustedLocalResult = { score: candidate.score, maxScore: candidate.maxScore, feedback: candidate.feedback };
+        }
+      } catch {
+        // Malformed JSON is treated the same as no localResult at all — falls through to the
+        // normal evaluation path below, which will score it as best it can (or return 0 for an
+        // unrecognized local type), never a 500.
+      }
+    }
+
     let testSession = null;
     if (testSessionId) {
       testSession = await TestSession.findById(testSessionId);
@@ -212,6 +249,9 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     }
 
     const isSubjective = question ? question.evaluationType === "subjective" : true;
+    // See the localQuestionId/trustedLocalResult comments above — both are only ever honored
+    // when there is no real question and no test session.
+    const useTrustedLocalResult = !question && !testSession && localQuestionId && trustedLocalResult;
 
     // Objective scoring is instant and deterministic — a single write is enough. Subjective
     // (AI/heuristic) scoring gets a real PENDING row first, so a mid-request crash leaves an
@@ -219,6 +259,7 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     const base = {
       user: req.user._id,
       question: question?._id,
+      localQuestionId: question ? null : localQuestionId,
       testSession: testSession?._id || null,
       section, type,
       answer: parsedAnswer,
@@ -228,7 +269,17 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     };
 
     let submission;
-    if (isSubjective) {
+    if (useTrustedLocalResult) {
+      submission = await Submission.create({
+        ...base,
+        score: trustedLocalResult.score,
+        maxScore: trustedLocalResult.maxScore,
+        evaluationType: "objective",
+        evaluationStatus: "COMPLETED",
+        scoringMethod: null,
+        feedback: trustedLocalResult.feedback
+      });
+    } else if (isSubjective) {
       submission = await Submission.create({ ...base, score: 0, maxScore: 90, evaluationType: "subjective", evaluationStatus: "PENDING", scoringMethod: null, feedback: null });
       submission.evaluationStatus = "PROCESSING";
       await submission.save();

@@ -248,7 +248,9 @@ function PracticeTask({ section, label, slug, taskComponents }) {
           : questionData?.questions || [];
         const map = new Map();
         for (const submission of historyData?.submissions || []) {
-          const questionId = submission.question?._id || submission.questionId;
+          // localQuestionId matches bundled local content (e.g. Listening) that has no real
+          // Question document — see models/Submission.js.
+          const questionId = submission.question?._id || submission.localQuestionId;
           if (questionId && !map.has(questionId))
             map.set(questionId, submission);
         }

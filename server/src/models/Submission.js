@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 const submissionSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   question: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
+  // Set only for standalone-practice content that has no real Question document at all (e.g.
+  // Listening's bundled JSON, which uses its own short ids like "3942") — lets /submissions/history
+  // match a submission back to that content's id for progress tracking, the same way `question`
+  // does for real DB questions. Always null whenever `question` is set.
+  localQuestionId: { type: String, default: null },
   testSession: { type: mongoose.Schema.Types.ObjectId, ref: "TestSession", default: null },
   section: { type: String, required: true },
   type: { type: String, required: true },

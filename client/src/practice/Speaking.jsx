@@ -45,6 +45,10 @@ export default function Speaking({
   // directly on unmount without going through MediaRecorder's stop()/onstop pipeline (which would
   // otherwise create a new blob/would-be object URL after the component is already gone).
   const activeStreamRef = useRef(null);
+  // Set while resetQuestion() is stopping an in-progress recording, so the recorder's onstop (and
+  // any late speech-recognition result) fired by that stop() don't repopulate blob/transcript
+  // right after the reset just cleared them.
+  const resettingRef = useRef(false);
   const limit =
     SPEAKING_DURATION_LIMITS[question?.type] || DEFAULT_SPEAKING_DURATION_LIMIT;
 
@@ -88,9 +92,11 @@ export default function Speaking({
           if (event.data.size) chunks.current.push(event.data);
         };
         mediaRecorder.onstop = () => {
-          setBlob(new Blob(chunks.current, { type: "audio/webm" }));
           stream.getTracks().forEach((track) => track.stop());
           activeStreamRef.current = null;
+          if (!resettingRef.current) {
+            setBlob(new Blob(chunks.current, { type: "audio/webm" }));
+          }
         };
         mediaRecorder.start();
         setRecording(true);
@@ -108,6 +114,7 @@ export default function Speaking({
           speech.interimResults = true;
           speech.lang = "en-US";
           speech.onresult = (event) => {
+            if (resettingRef.current) return;
             let value = "";
             for (let i = event.resultIndex; i < event.results.length; i += 1)
               value += `${event.results[i][0].transcript} `;
@@ -160,6 +167,39 @@ export default function Speaking({
     } finally {
       setRetrying(false);
     }
+  }
+
+  function resetQuestion() {
+    resettingRef.current = true;
+    clearInterval(timer.current);
+    timer.current = null;
+    if (recorder.current) {
+      try {
+        if (recorder.current.state !== "inactive") recorder.current.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+    recorder.current = null;
+    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+    activeStreamRef.current = null;
+    recognition.current?.stop();
+    recognition.current = null;
+    chunks.current = [];
+    elapsed.current = 0;
+    setRecording(false);
+    setSeconds(0);
+    setBlob(null);
+    setTranscript("");
+    setResult(null);
+    setError("");
+    setBusy(false);
+    setRetrying(false);
+    setShowAnswer(false);
+    // Allow a future recording's onstop/onresult to set blob/transcript normally again.
+    setTimeout(() => {
+      resettingRef.current = false;
+    }, 0);
   }
 
   const durationLabel = recording
@@ -263,6 +303,21 @@ export default function Speaking({
               onClick={submit}
             >
               {busy ? "Evaluating..." : "Submit for AI Feedback"}
+            </button>
+          </div>
+        )}
+        {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is
+            untouched (gated on testSessionId, exactly as Mock always passes it and standalone
+            practice never does). Always available, including after AI evaluation. */}
+        {!testSessionId && (
+          <div className="task-actions">
+            <button
+              type="button"
+              className="secondary"
+              onClick={resetQuestion}
+              disabled={busy || retrying}
+            >
+              Reset Question
             </button>
           </div>
         )}
