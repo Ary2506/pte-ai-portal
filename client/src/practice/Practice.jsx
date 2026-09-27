@@ -20,7 +20,6 @@ import { Badge, Empty, SkeletonRows } from "../components/common.jsx";
 import ReadAloudPractice from "./ReadAloudPractice.jsx";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { LOCAL_LISTENING_QUESTIONS } from "./listeningData/index.js";
-import { normalizeSubtype } from "./listeningData/shared.js";
 
 const SECTION_ICONS = {
   speaking: Mic,
@@ -45,14 +44,6 @@ const PROGRESS_FILTERS = [
   { key: "done", label: "Done" },
 ];
 
-function difficultyTone(difficulty) {
-  return difficulty === "easy"
-    ? "good"
-    : difficulty === "hard"
-      ? "bad"
-      : "warn";
-}
-
 function matchesSearch(question, index, term) {
   if (!term) return true;
   const needle = term.trim().toLowerCase();
@@ -66,7 +57,6 @@ function matchesSearch(question, index, term) {
 
 function QuestionListView({ questions, progress, onSelect, section, label }) {
   const [filter, setFilter] = useState("all");
-  const [subtypeFilter, setSubtypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [search, setSearch] = useState("");
   const doneCount = questions.filter((question) =>
@@ -79,18 +69,8 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
     done: doneCount,
   };
   const SectionIcon = SECTION_ICONS[section];
-  const subtypeOptions = [
-    { key: "all", label: "All" },
-    { key: "core", label: "Core" },
-    { key: "corep", label: "Core P" },
-  ].filter(option => option.key === "all" || questions.some(question => {
-    const subtype = normalizeSubtype(question.subtype);
-    return subtype.includes(option.key);
-  }));
   // A separate, independently-gated "My Type" dropdown driven by `question.category` — currently
-  // only Speaking > Describe Image populates this field (Bar/Flow/Line/Map/Pic/Pie/Table). Kept
-  // deliberately distinct from the Core/Core P subtype filter above (which Listening's bundled
-  // content uses) rather than reusing or altering it, so every other section is unaffected.
+  // only Speaking > Describe Image populates this field (Bar/Flow/Line/Map/Pic/Pie/Table).
   const categoryValues = Array.from(new Set(questions.map(q => q.category).filter(Boolean))).sort();
   const hasCategoryFilter = categoryValues.length > 0;
   const rows = questions
@@ -99,10 +79,6 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
       ({ question }) =>
         filter === "all" || (filter === "done") === progress.has(question._id),
     )
-    .filter(({ question }) => {
-      if (subtypeFilter === "all") return true;
-      return normalizeSubtype(question.subtype).includes(subtypeFilter);
-    })
     .filter(({ question }) => categoryFilter === "all" || question.category === categoryFilter)
     .filter(({ question, index }) => matchesSearch(question, index, search));
 
@@ -117,11 +93,6 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
         </div>
       )}
       <div className="question-list-head">
-        {subtypeOptions.length > 1 && <div className="question-list-filters" role="tablist" aria-label="Filter by question type">
-          {subtypeOptions.map(option => <button key={option.key} type="button" role="tab" aria-selected={subtypeFilter === option.key}
-            className={subtypeFilter === option.key ? "question-list-filter active" : "question-list-filter"}
-            onClick={() => setSubtypeFilter(option.key)}>{option.label}</button>)}
-        </div>}
         {hasCategoryFilter && <div className="question-list-filters" role="group" aria-label="Filter by image type">
           <button type="button" className={categoryFilter === "all" ? "question-list-filter active" : "question-list-filter"}
             onClick={() => setCategoryFilter("all")}>All</button>
@@ -188,11 +159,6 @@ function QuestionListView({ questions, progress, onSelect, section, label }) {
             >
               <span className="question-row-number">#{index + 1}</span>
               <span className="question-list-title">{question.title}</span>
-              {question.difficulty && (
-                <Badge tone={difficultyTone(question.difficulty)}>
-                  {question.difficulty}
-                </Badge>
-              )}
               {attempt ? (
                 <span className="question-row-status">
                   {attempt.evaluationStatus === "FAILED" ? (

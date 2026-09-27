@@ -1,8 +1,7 @@
 // Karan
 1. Listening
     c. highlight incorrect word question is not proper
-    d. revoke perticular days subs button and cancel subs button 
-    e. core/core p filter is not working properly
+    d. revoke perticular days subs button and cancel subs button
     f. lazy loading
 
 // Aryan
@@ -16,7 +15,16 @@
 // pending
 1. reset question button in every question --> done
 2. done/undone filter feature in question also show that in every question --> done
-3. Designing
-4. mongo cloud
-5. cloudinary vs local storage
-6. deploy on vercel
+3. remove all, core, core p filter and diffculty label --> done 
+4. Designing
+5. mongo cloud
+6. cloudinary
+7. deploy on vercel
+
+
+// cloudinary
+Cloudinary's free plan gives you 25 credits/month, and 1 credit = 1 GB of storage OR 1 GB of bandwidth OR 1,000 transformations — they all draw from the same shared pool. So in practice it's not really "25 GB of storage" — if you dedicate everything to storage you could hit ~25 GB, but bandwidth (serving those audio/image files to students) and any transformations (resizing, format conversion) eat into the same 25 credits. For a PTE practice app serving image/audio to many students, bandwidth is likely to be the real constraint before storage is.
+
+One more relevant detail: on the free plan, going over the limit doesn't charge you — it just stops delivering/transforming assets until the next billing cycle, which would visibly break the app for your users if you hit it.
+
+Given you have 100+ bundled audio/image files already (fixed, static, rarely change) plus ongoing student-submitted recordings (growing over time), I'd recommend keeping the static bundled content served as regular static assets (no Cloudinary cost at all) and reserving Cloudinary specifically for the dynamic, growing student-recordings use case — that keeps you well under the free tier for longer.
