@@ -265,7 +265,9 @@ router.patch("/users/:id/subscription", asyncRoute(async (req, res) => {
   const update = {};
   if (paymentStatus) update.paymentStatus = paymentStatus;
   if (subscriptionStartDate) update.subscriptionStartDate = new Date(subscriptionStartDate);
-  if (subscriptionEndDate) update.subscriptionEndDate = new Date(subscriptionEndDate);
+  // A new/changed expiry date is a fresh subscription cycle — clears any earlier cancellation so
+  // it isn't mislabeled "Cancelled" going forward (see models/User.js's subscriptionCancelledAt).
+  if (subscriptionEndDate) { update.subscriptionEndDate = new Date(subscriptionEndDate); update.subscriptionCancelledAt = null; }
   if (paymentId !== undefined) update.paymentId = paymentId;
 
   const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
@@ -284,6 +286,8 @@ router.post("/users/:id/renew", asyncRoute(async (req, res) => {
   user.subscriptionStartDate = user.subscriptionStartDate && base > now ? user.subscriptionStartDate : now;
   user.subscriptionEndDate = addDays(base, days);
   user.paymentStatus = "PAID";
+  // A fresh renewal — any earlier cancellation no longer describes this subscription cycle.
+  user.subscriptionCancelledAt = null;
   await user.save();
   logAdminAction(req.user, "SUBSCRIPTION_RENEWED", user, { days, newEndDate: user.subscriptionEndDate });
   res.json({ user: publicUser(user) });

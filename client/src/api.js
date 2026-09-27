@@ -82,6 +82,10 @@ export const api = {
     subscriptionExtension: {
       extendUser: (id, days, reason) =>
         request(`/admin/subscription-extension/users/${id}`, { method: "POST", body: JSON.stringify({ days, reason }) }),
+      revokeUser: (id, days) =>
+        request(`/admin/subscription-extension/users/${id}/revoke`, { method: "POST", body: JSON.stringify({ days }) }),
+      cancelUser: (id) =>
+        request(`/admin/subscription-extension/users/${id}/cancel`, { method: "POST" }),
       bulkPreview: (days) =>
         request(`/admin/subscription-extension/bulk/preview`, { method: "POST", body: JSON.stringify({ days }) }),
       bulkExtend: (days, reason, clientRequestId) =>

@@ -11,6 +11,13 @@ const userSchema = new mongoose.Schema({
   paymentId: { type: String, default: null },
   subscriptionStartDate: { type: Date, default: null },
   subscriptionEndDate: { type: Date, default: null },
+  // Set only by the admin "Cancel Subscription" action (routes/adminSubscriptionExtension.js) so
+  // getSubscriptionStatus() can tell a subscription an admin ended early apart from one that ran
+  // out naturally — both leave subscriptionEndDate in the past, but only one should ever be
+  // labeled "Cancelled" instead of "Expired". Cleared back to null whenever the subscription is
+  // renewed or its dates are changed by an admin (routes/admin.js), so a later, unrelated cycle
+  // is never mislabeled from a stale cancellation.
+  subscriptionCancelledAt: { type: Date, default: null },
   targetScore: { type: Number, default: 79 },
   lastLoginAt: { type: Date, default: null },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },

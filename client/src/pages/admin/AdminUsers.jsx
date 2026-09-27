@@ -5,11 +5,11 @@ import { fmtDate, fmtDateTime } from "./adminFormat.js";
 // Temporary/emergency admin feature — see the removal note at the top of
 // AdminSubscriptionExtension.jsx for exactly what to delete, including these two lines and their
 // two call sites below (each marked with a matching comment).
-import { ExtendAllActiveButton, ExtendSubscriptionButton } from "./AdminSubscriptionExtension.jsx";
+import { ExtendAllActiveButton, ExtendSubscriptionButton, RevokeSubscriptionButton } from "./AdminSubscriptionExtension.jsx";
 
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
-function subscriptionTone(s){ return s==="ACTIVE"?"good":s==="EXPIRED"?"bad":"neutral" }
+function subscriptionTone(s){ return s==="ACTIVE"?"good":(s==="EXPIRED"||s==="CANCELLED")?"bad":"neutral" }
 // Maps the exact `reason` code the server already returns on a rejected sign-in to a short,
 // student-safe label an admin can scan quickly — never a raw device identifier here.
 function loginAttemptReasonLabel(reason) {
@@ -242,7 +242,6 @@ function AdminUserDetail({id, notify, onClose}) {
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [confirmAction,setConfirmAction]=useState(null);
-  const [customDays,setCustomDays]=useState("");
   const [subForm,setSubForm]=useState({paymentStatus:"PENDING",subscriptionStartDate:"",subscriptionEndDate:""});
   const [busy,setBusy]=useState(false);
   const [resetAccount,setResetAccount]=useState(null);
@@ -304,7 +303,11 @@ function AdminUserDetail({id, notify, onClose}) {
               <dt>Status</dt><dd><Badge tone={subscriptionTone(u.subscriptionStatus)}>{u.subscriptionStatus.replace("_"," ")}</Badge></dd>
             </dl>
             {/* Temporary/emergency admin feature — see AdminSubscriptionExtension.jsx's removal note */}
-            <ExtendSubscriptionButton user={u} onExtended={load}/>
+            <div className="detail-actions">
+              <ExtendSubscriptionButton user={u} onExtended={load}/>
+              <RevokeSubscriptionButton user={u} onRevoked={load}/>
+              {u.subscriptionStatus==="ACTIVE" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Cancel subscription?",message:`Confirm you want to cancel the subscription for ${u.username}?`,label:"Cancel subscription",danger:true,successMsg:"Subscription cancelled",run:()=>api.admin.subscriptionExtension.cancelUser(u.id)})}>Cancel Subscription</button>}
+            </div>
           </section>
           <section>
             <h4>Login &amp; sessions</h4>
@@ -343,9 +346,7 @@ function AdminUserDetail({id, notify, onClose}) {
 
         <h4>Renew subscription</h4>
         <div className="renew-row">
-          {[30,60,90].map(d=><button key={d} className="secondary" disabled={busy} onClick={()=>act(()=>api.admin.renew(u.id,d), `Renewed for ${d} days`)}>+{d} days</button>)}
-          <input type="number" min="1" placeholder="Custom days" aria-label="Custom number of days" value={customDays} onChange={e=>setCustomDays(e.target.value)}/>
-          <button className="secondary" disabled={busy||!customDays} onClick={()=>act(()=>api.admin.renew(u.id,Number(customDays)), `Renewed for ${customDays} days`)}>Apply</button>
+          {[30,60,90].map(d=><button key={d} className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Renew subscription?",message:`Confirm renew subscription for ${u.username} by ${d} days?`,label:"Confirm renewal",danger:false,successMsg:`Renewed for ${d} days`,run:()=>api.admin.renew(u.id,d)})}>+{d} days</button>)}
         </div>
 
         <h4>Change subscription</h4>

@@ -60,7 +60,7 @@ export function requireAdmin(req, res, next) {
 export function requireActiveSubscription(req, res, next) {
   if (req.user?.role === "admin") return next();
   const status = getSubscriptionStatus(req.user);
-  if (status === "EXPIRED") {
+  if (status === "EXPIRED" || status === "CANCELLED") {
     return res.status(403).json({
       message: "Your 30-day access has expired. Please contact the administrator to renew your subscription.",
       code: "SUBSCRIPTION_EXPIRED"

@@ -178,9 +178,10 @@ describe("user detail actions", () => {
     await waitFor(() => expect(api.admin.setStatus).toHaveBeenCalledWith("u1", "BLOCKED"));
   });
 
-  it("renews a subscription for 30 days", async () => {
+  it("renews a subscription for 30 days after confirmation", async () => {
     await openDetail();
     fireEvent.click(screen.getByText("+30 days"));
+    fireEvent.click(await screen.findByText("Confirm renewal"));
     await waitFor(() => expect(api.admin.renew).toHaveBeenCalledWith("u1", 30));
   });
 

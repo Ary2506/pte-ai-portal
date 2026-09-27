@@ -14,9 +14,13 @@ import mongoose from "mongoose";
 // newExpiry/daysAdded fields, not free-form metadata.
 const subscriptionExtensionSchema = new mongoose.Schema({
   extensionId: { type: String, required: true, index: true },
-  type: { type: String, enum: ["INDIVIDUAL", "BULK"], required: true },
+  // REVOKE/CANCEL reuse this same collection and the same previousExpiry/daysAdded/newExpiry
+  // shape as an extension — just with a negative daysAdded — rather than a separate model, since
+  // they are the exact same "admin adjusted this user's subscriptionEndDate" event.
+  type: { type: String, enum: ["INDIVIDUAL", "BULK", "REVOKE", "CANCEL"], required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   previousExpiry: { type: Date, required: true },
+  // Positive for an extension, negative for a revoke/cancel.
   daysAdded: { type: Number, required: true },
   newExpiry: { type: Date, required: true },
   reason: { type: String, required: true },

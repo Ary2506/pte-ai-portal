@@ -74,6 +74,84 @@ router.post("/users/:id", asyncRoute(async (req, res) => {
 }));
 
 // ---------------------------------------------------------------------------
+// Revoke a specific number of days — the mirror image of the individual extension above. Re-reads
+// the user's current expiry and re-validates the "cannot revoke more than is left" rule
+// server-side, exactly like the extension route never trusts a status the frontend already
+// showed: a stale remaining-days count on the admin's screen can never revoke past zero.
+// ---------------------------------------------------------------------------
+router.post("/users/:id/revoke", asyncRoute(async (req, res) => {
+  const days = Number(req.body.days);
+  if (!Number.isInteger(days) || days <= 0) {
+    return res.status(400).json({ message: "Days to revoke must be a positive whole number.", code: "VALIDATION_ERROR" });
+  }
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
+
+  if (getSubscriptionStatus(user) !== "ACTIVE") {
+    return res.status(409).json({
+      message: "This user does not currently have an active subscription to revoke days from.",
+      code: "SUBSCRIPTION_NOT_ACTIVE"
+    });
+  }
+
+  const previousExpiry = user.subscriptionEndDate;
+  const remainingDays = Math.ceil((previousExpiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  if (days > remainingDays) {
+    return res.status(400).json({
+      message: `Cannot revoke more than the ${remainingDays} day(s) this subscription has left.`,
+      code: "EXCEEDS_REMAINING_DAYS"
+    });
+  }
+
+  const newExpiry = addDays(previousExpiry, -days);
+  user.subscriptionEndDate = newExpiry;
+  await user.save();
+
+  const extensionId = await nextExtensionId();
+  await SubscriptionExtension.create({
+    extensionId, type: "REVOKE", user: user._id,
+    previousExpiry, daysAdded: -days, newExpiry, reason: `Admin revoked ${days} day(s)`, performedBy: req.user._id
+  });
+
+  logAdminAction(req.user, "SUBSCRIPTION_REVOKED", user, { extensionId, days, previousExpiry, newExpiry });
+  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysRevoked: days });
+}));
+
+// ---------------------------------------------------------------------------
+// Cancel all remaining days — sets the subscription to expire right now. Deliberately leaves
+// paymentStatus untouched (this is "end access today", not a refund/payment-status change,
+// which already has its own dedicated admin flow via /users/:id/subscription).
+// ---------------------------------------------------------------------------
+router.post("/users/:id/cancel", asyncRoute(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
+
+  if (getSubscriptionStatus(user) !== "ACTIVE") {
+    return res.status(409).json({
+      message: "This user does not currently have an active subscription to cancel.",
+      code: "SUBSCRIPTION_NOT_ACTIVE"
+    });
+  }
+
+  const previousExpiry = user.subscriptionEndDate;
+  const remainingDays = Math.max(0, Math.ceil((previousExpiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+  const newExpiry = new Date();
+  user.subscriptionEndDate = newExpiry;
+  user.subscriptionCancelledAt = newExpiry;
+  await user.save();
+
+  const extensionId = await nextExtensionId();
+  await SubscriptionExtension.create({
+    extensionId, type: "CANCEL", user: user._id,
+    previousExpiry, daysAdded: -remainingDays, newExpiry, reason: "Admin cancelled remaining subscription", performedBy: req.user._id
+  });
+
+  logAdminAction(req.user, "SUBSCRIPTION_CANCELLED", user, { extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays });
+  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays });
+}));
+
+// ---------------------------------------------------------------------------
 // Bulk preview — read-only, no writes, safe to call repeatedly while an admin adjusts the days
 // field. Eligibility is computed with the exact same filter the confirm step will use.
 // ---------------------------------------------------------------------------

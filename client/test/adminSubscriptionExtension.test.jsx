@@ -150,7 +150,7 @@ describe("individual Extend Subscription", () => {
     expect(await within(dialog).findByText("10/7/2026")).toBeInTheDocument(); // 9/30 + 7 days
   });
 
-  it("submits the extension and shows a success message", async () => {
+  it("requires confirmation before applying the extension, then applies it", async () => {
     api.admin.subscriptionExtension.extendUser.mockResolvedValue({
       success: true, extensionId: "EXT-2026-001",
       user: sampleUser({ subscriptionEndDate: "2026-10-07T00:00:00.000Z" })
@@ -161,6 +161,12 @@ describe("individual Extend Subscription", () => {
     fireEvent.change(within(dialog).getByLabelText("Extra days"), { target: { value: "7" } });
     fireEvent.change(within(dialog).getByLabelText("Reason"), { target: { value: "Portal technical issue" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Extend Subscription" }));
+
+    const confirmDialog = await screen.findByRole("dialog", { name: "Confirm Extension" });
+    expect(within(confirmDialog).getByText(/Confirm extend subscription for .* by 7 day\(s\)\?/)).toBeInTheDocument();
+    expect(api.admin.subscriptionExtension.extendUser).not.toHaveBeenCalled();
+
+    fireEvent.click(within(confirmDialog).getByText("Confirm"));
     await waitFor(() => expect(api.admin.subscriptionExtension.extendUser).toHaveBeenCalledWith("u1", 7, "Portal technical issue"));
   });
 
@@ -172,6 +178,9 @@ describe("individual Extend Subscription", () => {
     fireEvent.change(within(dialog).getByLabelText("Extra days"), { target: { value: "7" } });
     fireEvent.change(within(dialog).getByLabelText("Reason"), { target: { value: "Portal technical issue" } });
     fireEvent.click(within(dialog).getByRole("button", { name: "Extend Subscription" }));
+
+    const confirmDialog = await screen.findByRole("dialog", { name: "Confirm Extension" });
+    fireEvent.click(within(confirmDialog).getByText("Confirm"));
     expect(await within(dialog).findByText("This user does not currently have an active subscription to extend.")).toBeInTheDocument();
   });
 });

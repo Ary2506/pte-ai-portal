@@ -1,19 +1,21 @@
 import React, { useState } from "react";
 import { api } from "../../api.js";
-import { Modal } from "../../components/common.jsx";
+import { Modal, ConfirmDialog } from "../../components/common.jsx";
 import { fmtDate } from "./adminFormat.js";
 
-// Temporary/emergency Admin Subscription Extension feature — deliberately kept in this one file
-// plus the two small integration points in AdminUsers.jsx (an import, a button, and rendering
-// these two components). To remove this feature completely later:
+// Temporary/emergency Admin Subscription Extension feature (extend/revoke/cancel a user's
+// subscription) — deliberately kept in this one file plus the small integration points in
+// AdminUsers.jsx (an import, a few buttons, and rendering these components). To remove this
+// feature completely later:
 //   1. Delete this file.
 //   2. Delete server/src/routes/adminSubscriptionExtension.js and
 //      server/src/models/SubscriptionExtension.js.
 //   3. Remove the one import + one app.use line for it in server/src/app.js.
 //   4. Remove the `subscriptionExtension` block from client/src/api.js.
-//   5. In AdminUsers.jsx, remove the `ExtendAllActiveModal` button/render in AdminUsers and the
-//      `ExtendSubscriptionModal` button/render in AdminUserDetail (each is a single self-contained
-//      block, clearly commented below with a matching comment at each call site).
+//   5. In AdminUsers.jsx, remove the `ExtendAllActiveModal` button/render in AdminUsers, and in
+//      AdminUserDetail: the `ExtendSubscriptionButton`/`RevokeSubscriptionButton` renders and the
+//      "Cancel Subscription" button (each is a single self-contained block, clearly commented
+//      below with a matching comment at each call site).
 //   6. Drop the subscriptionextensions/bulkextensionrequests/extensioncounters collections.
 // Nothing outside those files reads this feature's data, so no other code needs to change.
 
@@ -38,45 +40,133 @@ function ExtendSubscriptionModal({ user, onClose, onExtended }) {
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const daysNum = Number(days);
   const daysValid = Number.isInteger(daysNum) && daysNum > 0;
   const reasonValid = reason.trim().length > 0;
   const newExpiry = daysValid ? addDaysPreview(user.subscriptionEndDate, daysNum) : null;
 
-  async function submit() {
-    if (!daysValid || !reasonValid) return;
+  async function confirmExtend() {
     setBusy(true); setError("");
     try {
       const result = await api.admin.subscriptionExtension.extendUser(user.id, daysNum, reason.trim());
       onExtended?.(result);
+      setShowConfirm(false);
       onClose();
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
+    } catch (e) {
+      setError(e.message);
+      setShowConfirm(false);
+    } finally {
+      setBusy(false);
+    }
   }
 
-  return <Modal onClose={onClose} title="Extend Subscription" ariaLabel="Extend Subscription"
-    footer={<>
-      <button className="secondary" onClick={onClose} disabled={busy}>Cancel</button>
-      <button className="primary" onClick={submit} disabled={busy || !daysValid || !reasonValid}>
-        {busy ? "Extending..." : "Extend Subscription"}
-      </button>
-    </>}>
-    {error && <div className="alert error">{error}</div>}
-    <dl>
-      <dt>Current Expiry</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
-    </dl>
-    <label>Extra Days
-      <input type="number" min="1" step="1" value={days} onChange={e => setDays(e.target.value)} aria-label="Extra days" />
-    </label>
-    {!daysValid && days !== "" && <p className="muted" style={{ color: "var(--danger)" }}>Extra days must be a positive whole number.</p>}
-    <label>Reason
-      <input value={reason} onChange={e => setReason(e.target.value)} placeholder="e.g. Portal technical issue" aria-label="Reason" />
-    </label>
-    {!reasonValid && <p className="muted">A reason is required.</p>}
-    <dl>
-      <dt>New Expiry</dt><dd>{newExpiry ? fmtDate(newExpiry) : "—"}</dd>
-    </dl>
-  </Modal>;
+  return <>
+    <Modal onClose={onClose} title="Extend Subscription" ariaLabel="Extend Subscription"
+      footer={<>
+        <button className="secondary" onClick={onClose} disabled={busy}>Cancel</button>
+        <button className="primary" onClick={() => setShowConfirm(true)} disabled={busy || !daysValid || !reasonValid}>
+          Extend Subscription
+        </button>
+      </>}>
+      {error && <div className="alert error">{error}</div>}
+      <dl>
+        <dt>Current Expiry</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
+      </dl>
+      <label>Extra Days
+        <input type="number" min="1" step="1" value={days} onChange={e => setDays(e.target.value)} aria-label="Extra days" />
+      </label>
+      {!daysValid && days !== "" && <p className="muted" style={{ color: "var(--danger)" }}>Extra days must be a positive whole number.</p>}
+      <label>Reason
+        <input value={reason} onChange={e => setReason(e.target.value)} placeholder="e.g. Portal technical issue" aria-label="Reason" />
+      </label>
+      {!reasonValid && <p className="muted">A reason is required.</p>}
+      <dl>
+        <dt>New Expiry</dt><dd>{newExpiry ? fmtDate(newExpiry) : "—"}</dd>
+      </dl>
+    </Modal>
+    <ConfirmDialog
+      open={showConfirm}
+      title="Confirm Extension"
+      message={`Confirm extend subscription for ${user.username} by ${daysNum} day(s)?`}
+      confirmLabel="Confirm"
+      busy={busy}
+      onConfirm={confirmExtend}
+      onCancel={() => setShowConfirm(false)}
+    />
+  </>;
+}
+
+// --- Revoke a specific number of days from one user's active subscription --------------------
+
+export function RevokeSubscriptionButton({ user, onRevoked }) {
+  // null = closed, "input" = entering a day count, "confirm" = the confirm popup.
+  const [step, setStep] = useState(null);
+  const [days, setDays] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  if (user.subscriptionStatus !== "ACTIVE") return null;
+
+  const remainingDays = Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000));
+  const daysNum = Number(days);
+  const daysValid = Number.isInteger(daysNum) && daysNum > 0 && daysNum <= remainingDays;
+
+  function open() {
+    setDays(""); setError(""); setStep("input");
+  }
+
+  async function confirmRevoke() {
+    setBusy(true); setError("");
+    try {
+      const result = await api.admin.subscriptionExtension.revokeUser(user.id, daysNum);
+      onRevoked?.(result);
+      setStep(null);
+    } catch (e) {
+      setError(e.message);
+      setStep(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <>
+    <button className="secondary" onClick={open}>Revoke Subscription</button>
+    {step === "input" && (
+      <Modal onClose={() => setStep(null)} title="Revoke Subscription" ariaLabel="Revoke Subscription"
+        footer={<>
+          <button className="secondary" onClick={() => setStep(null)}>Cancel</button>
+          <button className="primary" onClick={() => setStep("confirm")} disabled={!daysValid}>OK</button>
+        </>}>
+        {error && <div className="alert error">{error}</div>}
+        <dl>
+          <dt>Days remaining</dt><dd>{remainingDays}</dd>
+        </dl>
+        <label>Days to revoke
+          <input type="number" min="1" max={remainingDays} step="1" value={days}
+            onChange={e => setDays(e.target.value)} aria-label="Days to revoke" autoFocus />
+        </label>
+        {days !== "" && !daysValid && (
+          <p className="muted" style={{ color: "var(--danger)" }}>
+            {daysNum > remainingDays
+              ? `You cannot revoke more than the ${remainingDays} day(s) this subscription has left.`
+              : "Enter a positive whole number of days."}
+          </p>
+        )}
+      </Modal>
+    )}
+    <ConfirmDialog
+      open={step === "confirm"}
+      title="Revoke Subscription"
+      message={`Confirm revoke subscription for ${user.username}?`}
+      confirmLabel="Confirm"
+      danger
+      busy={busy}
+      onConfirm={confirmRevoke}
+      onCancel={() => setStep(null)}
+    />
+  </>;
 }
 
 // --- Bulk extension of every currently active subscription -----------------------------------

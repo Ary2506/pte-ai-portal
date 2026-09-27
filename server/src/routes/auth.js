@@ -71,7 +71,7 @@ router.post("/signin", loginLimiter, async (req, res) => {
     }
 
     const subscriptionStatus = getSubscriptionStatus(user);
-    if (subscriptionStatus === "EXPIRED") {
+    if (subscriptionStatus === "EXPIRED" || subscriptionStatus === "CANCELLED") {
       await recordLoginAttempt(req, { user, success: false, reason: "SUBSCRIPTION_EXPIRED" });
       return res.status(403).json({
         message: "Your 30-day access has expired. Please contact the administrator to renew your subscription.",
