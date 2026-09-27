@@ -317,7 +317,7 @@ export default function Speaking({
               onClick={resetQuestion}
               disabled={busy || retrying}
             >
-              Reset Question
+              Re-do
             </button>
           </div>
         )}

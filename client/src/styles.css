@@ -754,6 +754,24 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .highlight-word:hover:not(:disabled){background:var(--blue-soft);border-color:var(--blue-softer)}
 .highlight-word.selected{background:var(--danger-bg);border-color:#f3c9c9;color:var(--danger);font-weight:700}
 .highlight-word:disabled{cursor:default}
+/* Full-passage variant — candidate words sit inline in the real sentence text, so they read as
+   part of the passage (not a muted button) until selected, revealed, or scored. Text selection is
+   disabled here: a click that drags even slightly across this much inline text otherwise starts a
+   native browser text-selection highlight (blue, spanning the whole passage) that visually drowns
+   out the actual picked/revealed/scored word colors below — this isn't an editable/copyable block,
+   it's a set of click targets. */
+.highlight-words-passage{line-height:2.5;user-select:none;-webkit-user-select:none}
+/* Every word in the passage is a button now (not just a handful of candidates), so the old
+   chip-list padding/margin below would space normal sentences out far more than real prose —
+   tightened here to read like ordinary text with just enough hit target to click comfortably. */
+.highlight-words-passage .highlight-word{color:inherit;padding:1px 2px;margin:0}
+/* Picked, not yet graded — neutral accent color (never red/green pre-submit, since the student
+   doesn't know yet whether the guess is right). */
+.highlight-words-passage .highlight-word.picked{background:var(--blue-soft);border-color:var(--blue-softer);color:var(--blue2);font-weight:700}
+.highlight-words-passage .highlight-word.reveal{background:var(--success-bg);border-color:var(--success);color:var(--success);font-weight:700}
+.highlight-words-passage .highlight-word.correct-caught{background:var(--success-bg);border-color:var(--success);color:var(--success);font-weight:700}
+.highlight-words-passage .highlight-word.wrong-pick{background:var(--danger-bg);border-color:#f3c9c9;color:var(--danger);font-weight:700}
+.highlight-word-answer{color:var(--warning);font-weight:600}
 
 /* Fill in the Blanks — inline dropdown variant. */
 .fill-blank-inline select{display:inline-block;width:auto;margin:0 4px;padding:5px 9px;border:1px solid var(--blue-softer);border-radius:var(--radius-sm);background:var(--blue-soft);color:var(--blue2);font:inherit;font-weight:700}

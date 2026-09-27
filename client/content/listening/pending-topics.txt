@@ -1,6 +1,6 @@
 // Karan
 1. Listening
-    c. highlight incorrect word question is not proper
+    c. highlight incorrect word question is not proper --> done
     d. revoke perticular days subs button and cancel subs button
     f. lazy loading
 

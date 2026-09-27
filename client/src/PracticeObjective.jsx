@@ -214,16 +214,66 @@ function MultiChoiceOptions({ options, selected, toggle, disabled }) {
   </label>)}</div>;
 }
 
-// Highlight Incorrect Words (Phase 20): the transcript's individual words ARE question.options
-// (in reading order); the student clicks each word that doesn't match what they heard. Reuses the
-// exact same selected-indices array and toggle() the checkbox-based MultiChoiceOptions uses — only
-// the rendering differs (inline flowing words, not a vertical list) — so it submits and scores
-// (scoreMultipleChoice) identically to mcq-multiple, with zero new backend logic.
+// Highlight Incorrect Words: a fallback for the rare case a question has no passageSegments (see
+// HighlightWordsPassage below, which every current question uses) — renders only the bare
+// candidate words with the surrounding sentence text dropped, so the task is still answerable
+// rather than crashing. Reuses the exact same selected-indices array and toggle() the
+// checkbox-based MultiChoiceOptions uses, so it submits and scores identically either way.
 function HighlightWords({ options, selected, toggle, disabled }) {
   return <p className="highlight-words" role="group" aria-label="Click every word that does not match what you heard">
     {(options || []).map((word, i) => <button type="button" key={i}
       className={selected.includes(i) ? "highlight-word selected" : "highlight-word"}
       onClick={() => toggle(i)} disabled={disabled} aria-pressed={selected.includes(i)}>{word}</button>)}
+  </p>;
+}
+
+// Highlight Incorrect Words — full passage. question.passageSegments interleaves plain text runs
+// with each clickable candidate word in reading order; a word segment's `index` is the exact same
+// index `selected`/toggle()/scoring already use (see listeningData/shared.js), so this is purely a
+// richer rendering of the same selection state, never a new one.
+//   - Before submitting: a clicked word gets the existing "selected" (picked) look; toggling the
+//     Answer button also reveals the true incorrect words in green as a preview, without touching
+//     the student's own selection.
+//   - After submitting: a correctly-caught word turns green, a wrongly-picked word keeps the red
+//     "selected" look with an added "×", and a missed incorrect word gets a plain outline with the
+//     word the audio actually said appended after it.
+function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswer, corrections }) {
+  return <p className="highlight-words highlight-words-passage" role="group" aria-label="Click every word that does not match what you heard">
+    {segments.map((segment, i) => {
+      if (segment.type === "text") return <span key={i}>{segment.value}</span>;
+      const isSelected = selected.includes(segment.index);
+      let className = "highlight-word";
+      let marker = null;
+      let suffix = null;
+      if (disabled) {
+        if (segment.isIncorrect && isSelected) {
+          className += " correct-caught";
+          marker = "✓ ";
+        } else if (segment.isIncorrect && !isSelected) {
+          // Always shown in the same green as a caught answer — a missed one is still the correct
+          // answer, and the student should see it plainly rather than a muted "you missed this"
+          // box, especially when every one of their own picks turned out wrong.
+          className += " correct-caught";
+          suffix = <span className="highlight-word-answer"> (Answer: {corrections[segment.index]})</span>;
+        } else if (!segment.isIncorrect && isSelected) {
+          className += " wrong-pick";
+          marker = "✕ ";
+        }
+      } else if (isSelected) {
+        // Picked, not yet graded — a neutral accent color, not red/green, since the student
+        // doesn't know yet whether this guess is right. Only resolves to a color that means
+        // something (correct-caught green, wrong-pick red) once `disabled` above is true.
+        className += " picked";
+      } else if (showAnswer && segment.isIncorrect) {
+        className += " reveal";
+      }
+      return <Fragment key={i}>
+        <button type="button" className={className} onClick={() => toggle(segment.index)} disabled={disabled} aria-pressed={isSelected}>
+          {marker}{segment.text}
+        </button>
+        {suffix}
+      </Fragment>;
+    })}
   </p>;
 }
 
@@ -404,7 +454,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
         (gated on testSessionId, exactly as Mock always passes it and standalone practice never
         does). Always available, including after submission. */}
     {!testSessionId && <div className="task-actions">
-      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy}>Reset Question</button>
+      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy}>Re-do</button>
     </div>}
   </div>;
 }
@@ -562,7 +612,9 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>
       : isHighlight
-      ? <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
+      ? (Array.isArray(question.passageSegments)
+          ? <HighlightWordsPassage segments={question.passageSegments} selected={multi} toggle={toggleMulti} disabled={!!result} showAnswer={showAnswer} corrections={question.localWordCorrections || {}} />
+          : <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />)
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : <textarea className="answer-area compact" value={text} onChange={e => setText(e.target.value)} placeholder="Type your response..." disabled={!!result} />}
@@ -574,7 +626,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
         (gated on testSessionId, exactly as Mock always passes it and standalone practice never
         does). Always available, including after AI evaluation. */}
     {!testSessionId && <div className="task-actions">
-      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy || retrying}>Reset Question</button>
+      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy || retrying}>Re-do</button>
     </div>}
     {answerText && <>
       <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(value => !value)}>
