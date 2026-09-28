@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { AlertCircle, Mic, Play, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
+import { RECORDER_OPTIONS } from "./recording.js";
 import readAloudContent from "../../content/speaking/read-aloud/read_aloud.json";
 
 // client/content/speaking/read-aloud/read_aloud.json is the single source of truth: question
@@ -11,7 +12,10 @@ import readAloudContent from "../../content/speaking/read-aloud/read_aloud.json"
 // maintained here. A structurally malformed entry (missing id/title/text, wrong type, or a
 // duplicate id) is rejected wholesale rather than partially rendered — an honest empty state
 // (below) is always safer than silently showing content that doesn't match the file.
-const RECORD_LIMIT_SECONDS = 40;
+// Kept in step with SPEAKING_DURATION_LIMITS["read-aloud"] in Speaking.jsx, which governs the
+// same task inside a mock test — the two flows use separate components, so the limit is defined
+// twice and a change to one without the other would give the same task two different timers.
+const RECORD_LIMIT_SECONDS = 60;
 
 function buildReadAloudQuestions() {
   const items = Array.isArray(readAloudContent) ? readAloudContent : [];
@@ -149,7 +153,7 @@ export default function ReadAloudPractice() {
       ?.getUserMedia({ audio: true })
       .then((stream) => {
         activeStreamRef.current = stream;
-        const mediaRecorder = new MediaRecorder(stream);
+        const mediaRecorder = new MediaRecorder(stream, RECORDER_OPTIONS);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size) chunks.current.push(event.data);

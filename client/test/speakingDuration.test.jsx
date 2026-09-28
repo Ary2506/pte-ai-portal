@@ -56,16 +56,21 @@ async function startRecording() {
 }
 
 // None of these render bare "/speaking" any more: Read Aloud now has its own dedicated,
-// locally-curated practice flow (ReadAloudPractice) with its own fixed 40s limit, so it's no
-// longer the generic pass-through default tab these tests can rely on. Each test now requests
-// its actual type explicitly; "respond-to-situation" (no entry in SPEAKING_DURATION_LIMITS, so it
-// falls back to the 40s default) stands in wherever a prior test used "read-aloud" purely to
-// exercise the generic default-limit/manual-stop/unmount mechanics, not the Read Aloud feature.
+// locally-curated practice flow (ReadAloudPractice) with its own fixed limit, so it's no longer
+// the generic pass-through default tab these tests can rely on. Each test requests its actual
+// type explicitly; "respond-to-situation" stands in wherever a prior test used "read-aloud"
+// purely to exercise the generic manual-stop/unmount mechanics, not the Read Aloud feature.
 describe("Speaking duration cap — per-type limits", () => {
-  it("shows the 40s default limit for a type with no explicit override", async () => {
+  // DEFAULT_SPEAKING_DURATION_LIMIT is deliberately not covered here any more. Every task in
+  // PRACTICE_TASKS.speaking now has an explicit entry in SPEAKING_DURATION_LIMITS, and Practice
+  // .jsx renders an empty state for a slug that isn't in the registry at all — so the fallback
+  // is unreachable through the routed UI, and the only test that could exercise it would be one
+  // asserting on a type a student can never actually open. The constant stays as the safety net
+  // for a future task added to the registry without its own entry.
+  it("shows the 60s limit for Respond to a Situation", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
     renderAt("/speaking?type=respond-to-situation", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 00:40")).toBeInTheDocument();
+    expect(await screen.findByText("Ready · limit 01:00")).toBeInTheDocument();
   });
 
   it("shows the 15s limit for Repeat Sentence", async () => {
@@ -74,10 +79,10 @@ describe("Speaking duration cap — per-type limits", () => {
     expect(await screen.findByText("Ready · limit 00:15")).toBeInTheDocument();
   });
 
-  it("shows the 40s limit for Describe Image", async () => {
+  it("shows the 60s limit for Describe Image", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("describe-image", "Describe Image")] });
     renderAt("/speaking?type=describe-image", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 00:40")).toBeInTheDocument();
+    expect(await screen.findByText("Ready · limit 01:00")).toBeInTheDocument();
   });
 
   it("shows the 10s limit for Answer Short Question", async () => {
@@ -118,7 +123,7 @@ describe("Speaking duration cap — auto-stop behavior", () => {
     fireEvent.click(screen.getByText("Stop Recording"));
     expect(stopSpy).toHaveBeenCalledTimes(1);
 
-    await vi.advanceTimersByTimeAsync(60 * 1000); // long past the 40s limit — nothing left to fire
+    await vi.advanceTimersByTimeAsync(120 * 1000); // long past the 60s limit — nothing left to fire
     expect(stopSpy).toHaveBeenCalledTimes(1);
   });
 

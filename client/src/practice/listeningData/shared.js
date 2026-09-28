@@ -1,5 +1,18 @@
+// Base for every listening clip. Empty by default, so the files are served straight from
+// client/public/audio/listening/ the same way the speaking clips already are. Point
+// VITE_AUDIO_BASE at a CDN/object-store origin to serve them from there instead, without
+// touching a call site.
+const AUDIO_BASE = import.meta.env.VITE_AUDIO_BASE || "";
+
+// A plain runtime string, deliberately NOT `new URL(..., import.meta.url)`. Vite cannot resolve
+// that form statically when the path contains a variable, so it rewrites it into an
+// import.meta.glob that eagerly pulls in every file matching the pattern — that was 129
+// `?import&url` module requests on the listening page before a student had played anything.
+// A bare string keeps the bundler out of the audio path entirely: the browser fetches a clip
+// only when an <audio> element actually plays it, and the filenames stay stable across builds
+// so far-future cache headers keep working after a deploy.
 export function audioUrl(folder, src) {
-  return new URL(`../../../content/listening/${folder}/${src}`, import.meta.url).href;
+  return `${AUDIO_BASE}/audio/listening/${folder}/${src}`;
 }
 
 export function normalizeOptions(options) {

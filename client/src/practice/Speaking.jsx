@@ -2,11 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Clock3, Mic, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
+import { RECORDER_OPTIONS } from "./recording.js";
 
 const SPEAKING_DURATION_LIMITS = {
-  "read-aloud": 40,
+  "read-aloud": 60,
   "repeat-sentence": 15,
-  "describe-image": 40,
+  "describe-image": 60,
+  // Listed explicitly rather than left to fall through to DEFAULT_SPEAKING_DURATION_LIMIT: this
+  // task's 60s is a deliberate choice, and leaving it implicit would silently change it again the
+  // next time the default moves (or hand 60s to whatever new task type is added without an entry).
+  "respond-to-situation": 60,
   "answer-short-question": 10,
 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
@@ -86,7 +91,7 @@ export default function Speaking({
       ?.getUserMedia({ audio: true })
       .then((stream) => {
         activeStreamRef.current = stream;
-        const mediaRecorder = new MediaRecorder(stream);
+        const mediaRecorder = new MediaRecorder(stream, RECORDER_OPTIONS);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size) chunks.current.push(event.data);

@@ -3,6 +3,8 @@
     c. highlight incorrect word question is not proper --> done
     d. revoke perticular days subs button and cancel subs button --> done
     f. lazy loading
+    g. Kill the Vite glob (3 lines + a file move) --> done
+    h. Compress student recordings (2 lines) --> done
 
 // Aryan
 1. Speaking all

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { CheckCircle2, FileText } from "lucide-react";
 import { api } from "./api.js";
+import { audioUrl } from "./practice/listeningData/shared.js";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
 const LOCAL_SUMMARIZE_SPOKEN_TEXT = Array.isArray(summarizeSpokenTextContent) ? summarizeSpokenTextContent : [];
@@ -94,7 +95,7 @@ function getLocalAudioUrl(question) {
   if (question?.audioUrl) return question.audioUrl;
   const match = LOCAL_SUMMARIZE_SPOKEN_TEXT.find(item => item.title === question?.title || String(item.id) === String(question?._id));
   if (!match?.audio?.src) return null;
-  return new URL(`../content/listening/summarize-spoken-text/${match.audio.src}`, import.meta.url).href;
+  return audioUrl("summarize-spoken-text", match.audio.src);
 }
 
 function TranscriptModal({ title, text, onClose }) {
