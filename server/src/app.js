@@ -1,5 +1,6 @@
 import path from "path";
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { config } from "./config.js";
@@ -16,6 +17,11 @@ import testSessionRoutes from "./routes/testSessions.js";
 import dashboardRoutes from "./routes/dashboard.js";
 
 export const app = express();
+// Mounted first so it covers every response below, including the static question-media mount.
+// Every API payload here is JSON — question lists, submission history, AI feedback — which is
+// exactly what gzip is best at; audio and images are already-compressed formats and are skipped
+// automatically by compression's own content-type filter, so this costs them nothing.
+app.use(compression());
 app.use(cors({ origin: config.clientUrl, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use(rateLimit({ windowMs: 60_000, max: 180 }));

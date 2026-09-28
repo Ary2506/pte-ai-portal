@@ -4,6 +4,7 @@ import { AlertCircle, Mic, Play, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { RECORDER_OPTIONS } from "./recording.js";
+import { QuestionListView } from "./QuestionListView.jsx";
 import readAloudContent from "../../content/speaking/read-aloud/read_aloud.json";
 
 // client/content/speaking/read-aloud/read_aloud.json is the single source of truth: question
@@ -56,7 +57,9 @@ function formatMMSS(milliseconds) {
 
 export default function ReadAloudPractice() {
   const total = READ_ALOUD_QUESTIONS.length;
-  const [idx, setIdx] = useState(0);
+  // null = showing the question list, matching PracticeTask's own convention for every other
+  // task. A single-question bank skips straight to that question, since a one-row list is noise.
+  const [idx, setIdx] = useState(total === 1 ? 0 : null);
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [blob, setBlob] = useState(null);
@@ -69,6 +72,10 @@ export default function ReadAloudPractice() {
   // The real, actually-submitted result per question this session — used only to build an honest
   // completion summary (count attempted, real average score). Never a fabricated statistic.
   const [attempts, setAttempts] = useState({});
+  // Attempts from *previous* sessions, keyed by this JSON bank's own question id, so the list's
+  // Done/Undone badges survive a reload. Built exactly the way PracticeTask builds its own map
+  // (see Practice.jsx) — from submissions whose localQuestionId matches local content.
+  const [progress, setProgress] = useState(new Map());
   const recorder = useRef(null);
   const chunks = useRef([]);
   const timer = useRef(null);
@@ -82,8 +89,29 @@ export default function ReadAloudPractice() {
   // state updates) can always revoke whatever object URL is actually current, not a stale one.
   const audioUrlRef = useRef(null);
 
-  const finished = idx >= total;
-  const question = !finished ? READ_ALOUD_QUESTIONS[idx] : null;
+  const finished = idx !== null && idx >= total;
+  const question = idx !== null && !finished ? READ_ALOUD_QUESTIONS[idx] : null;
+
+  // One fetch on mount, scoped to this task, purely to mark which questions are already Done.
+  // A failure is deliberately swallowed: the list still works, every question simply shows as
+  // Undone, which is far better than blocking practice because a history lookup failed.
+  useEffect(() => {
+    let cancelled = false;
+    // Wrapped in Promise.resolve, matching Practice.jsx's own history call: this must not depend
+    // on api.history returning a real promise, so that the list still renders if it doesn't.
+    Promise.resolve(api.history({ summary: 1, section: "speaking", type: "read-aloud" }))
+      .then((data) => {
+        if (cancelled) return;
+        const map = new Map();
+        for (const submission of data?.submissions || []) {
+          const id = submission.localQuestionId;
+          if (id && !map.has(id)) map.set(id, submission);
+        }
+        setProgress(map);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Guarantees the microphone and the last recording's object URL are released if this component
   // unmounts outright (e.g. leaving Read Aloud mid-recording) — the [idx] effect below already
@@ -206,6 +234,11 @@ export default function ReadAloudPractice() {
     form.append("section", "speaking");
     form.append("type", "read-aloud");
     form.append("durationSeconds", seconds);
+    // This bank's own id (269, 302, ...), not a MongoDB ObjectId — which is exactly what
+    // localQuestionId exists for (see models/Submission.js). It is what lets a past attempt be
+    // matched back to its question, so the list's Done badge survives a reload; without it these
+    // submissions were unattributable and every question always read as Undone.
+    form.append("localQuestionId", question._id);
     // Deliberately no questionId: these ids (269, 302, ...) are this JSON bank's own ids, not
     // MongoDB ObjectIds — sending one would fail Question.findById with a cast error. Omitting it
     // uses the exact same "freeform" AI-evaluated path the backend already supports for a
@@ -328,6 +361,20 @@ export default function ReadAloudPractice() {
     );
   }
 
+  // The same list every other task shows, reused rather than reimplemented — see the export note
+  // on QuestionListView. `section` drives its heading icon only.
+  if (idx === null) {
+    return (
+      <QuestionListView
+        questions={READ_ALOUD_QUESTIONS}
+        progress={progress}
+        onSelect={setIdx}
+        section="speaking"
+        label="Read Aloud"
+      />
+    );
+  }
+
   if (finished) {
     const attemptedResults = Object.values(attempts);
     const scored = attemptedResults.filter(
@@ -382,6 +429,15 @@ export default function ReadAloudPractice() {
         aria-label="Question navigation"
       >
         <span>
+          {total > 1 && (
+            <button
+              className="text-button"
+              style={{ marginTop: 0, marginRight: 12 }}
+              onClick={() => setIdx(null)}
+            >
+              ‹ Back to list
+            </button>
+          )}
           Question {idx + 1} of {total}
         </span>
         <div style={{ display: "flex", gap: 8 }}>

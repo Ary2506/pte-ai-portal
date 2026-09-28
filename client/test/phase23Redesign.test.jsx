@@ -46,9 +46,10 @@ describe("Phase 23 — header search is real, not decorative", () => {
     expect(result).toBeInTheDocument();
 
     // Read Aloud is a real, always-populated destination (its own locally-curated 111-question
-    // set, not a DB fetch that could come back empty) — clicking it lands on real question 1.
+    // set, not a DB fetch that could come back empty) — clicking it lands on that task's own
+    // question list, with its real first question in it.
     fireEvent.click(result);
-    await screen.findByText("Question 1 of 111");
+    expect(await screen.findByText("Language Appearance")).toBeInTheDocument();
   });
 
   it("shows an honest 'no matches' state instead of fabricating results", async () => {
@@ -82,28 +83,64 @@ describe("Phase 23 — Practice History section filter", () => {
     { _id: "s2", type: "mcq-single", section: "reading", evaluationType: "objective", score: 1, maxScore: 1, evaluationStatus: "COMPLETED", createdAt: "2026-01-02T00:00:00.000Z" }
   ];
 
-  it("filters the practice-attempts table by section without touching the real fetched data", async () => {
-    api.history.mockResolvedValue({ submissions: ROWS });
+  // The section filter is now applied by the server rather than by filtering the fetched rows in
+  // place. That change is what makes pagination correct: a client-side filter could only ever
+  // search the page currently loaded, so picking "Speaking" would silently hide every speaking
+  // attempt sitting on another page. These tests therefore assert the re-query, the same way the
+  // admin user/question table tests do.
+  it("re-queries the server with the chosen section, and back to unfiltered for All", async () => {
+    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
     await screen.findByText("read-aloud");
     expect(screen.getByText("mcq-single")).toBeInTheDocument();
 
     // "Speaking"/"Writing"/etc. also appear as mock-table column headers on this same page —
     // the filter tabs are scoped by role to disambiguate.
+    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
-    expect(screen.getByText("read-aloud")).toBeInTheDocument();
-    expect(screen.queryByText("mcq-single")).not.toBeInTheDocument();
 
+    await waitFor(() => expect(screen.queryByText("mcq-single")).not.toBeInTheDocument());
+    expect(screen.getByText("read-aloud")).toBeInTheDocument();
+    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: "speaking", page: 1 }));
+
+    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "All" }));
-    expect(screen.getByText("mcq-single")).toBeInTheDocument();
+    expect(await screen.findByText("mcq-single")).toBeInTheDocument();
+    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: undefined }));
   });
 
   it("shows an honest empty state distinct from 'no submissions at all' when a filter matches nothing", async () => {
-    api.history.mockResolvedValue({ submissions: ROWS });
+    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
     await screen.findByText("read-aloud");
+
+    api.history.mockResolvedValue({ submissions: [], total: 0, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "Writing" }));
     expect(await screen.findByText("No practice attempts match this filter.")).toBeInTheDocument();
+  });
+
+  it("fetches the next page only when Next is clicked, and resets to page 1 on a filter change", async () => {
+    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 2, page: 1, totalPages: 2 });
+    renderAt("/history", studentAuthUser());
+    await screen.findByText("read-aloud");
+
+    // One page fetched on load — the second is not prefetched.
+    expect(api.history).toHaveBeenCalledTimes(1);
+
+    api.history.mockResolvedValue({ submissions: [ROWS[1]], total: 2, page: 2, totalPages: 2 });
+    fireEvent.click(screen.getByRole("button", { name: /Next/ }));
+
+    expect(await screen.findByText("mcq-single")).toBeInTheDocument();
+    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    expect(screen.getByText(/Page 2 of 2/)).toBeInTheDocument();
+
+    // Switching section while on page 2 must not leave the student stranded on a page that
+    // section may not have.
+    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
+    fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
+    await waitFor(() =>
+      expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: "speaking", page: 1 }))
+    );
   });
 });
 

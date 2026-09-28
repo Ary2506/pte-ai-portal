@@ -402,12 +402,55 @@ router.get("/:id/audio", requireAuth, asyncRoute(async (req, res) => {
   res.sendFile(filePath);
 }));
 
+// Everything a history row needs EXCEPT answer/transcript/feedback — those three are the whole
+// reason a single row can reach ~8KB (see the size caps in services/ai/validate.js), and the
+// practice-history table renders none of them. `question` and `localQuestionId` stay: they are
+// what a row is matched back to its question by.
+const HISTORY_SUMMARY_FIELDS =
+  "type section evaluationType evaluationStatus score maxScore createdAt question localQuestionId";
+
 router.get("/history", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
-  const submissions = await Submission.find({ user: req.user._id, testSession: null })
+  // Coerced to strings before they reach the query. Express's default 'extended' query parser
+  // turns ?section[$ne]=x into an object, which would otherwise pass straight through into the
+  // filter as a Mongo operator.
+  const section = typeof req.query.section === "string" ? req.query.section : null;
+  const type = typeof req.query.type === "string" ? req.query.type : null;
+
+  const filter = { user: req.user._id, testSession: null };
+  if (section) filter.section = section;
+  if (type) filter.type = type;
+
+  // Both default to the original behaviour — the newest 50 rows — so Practice.jsx, which needs
+  // every attempt for one task to build its done/undone map rather than a page of them, keeps
+  // working unchanged by simply not sending either param.
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+  const page = Math.max(1, Number(req.query.page) || 1);
+
+  const query = Submission.find(filter)
     .sort({ createdAt: -1 })
-    .limit(50)
+    .skip((page - 1) * limit)
+    .limit(limit)
     .populate("question", "title type section");
-  res.json({ submissions });
+
+  // Opt-in, and deliberately NOT the default: Practice.jsx feeds these same rows to its task
+  // components as `existingResult`, which restore a previous answer and its AI feedback from
+  // exactly the fields this drops (see Writing.jsx's transcript/answer reads). Only a caller
+  // that renders a list and never reopens an attempt can ask for the trimmed shape.
+  if (req.query.summary === "1") query.select(HISTORY_SUMMARY_FIELDS);
+
+  // Safe to go through .lean(): these rows are serialized straight to JSON and nothing calls a
+  // document method or .save() on them. Populated `question` stays a plain object, so a caller
+  // reading `submission.question?._id` is unaffected.
+  // countDocuments uses the same filter, so a section-filtered page reports that section's own
+  // total rather than the student's overall attempt count.
+  const [submissions, total] = await Promise.all([query.lean(), Submission.countDocuments(filter)]);
+  res.json({
+    submissions,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit))
+  });
 }));
 
 export default router;

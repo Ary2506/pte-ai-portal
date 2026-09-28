@@ -69,10 +69,51 @@ describe("Read Aloud content — read_aloud.json is the single source of truth",
   });
 });
 
+// Read Aloud now opens on the same question list every other task shows (QuestionListView)
+// rather than dropping the student straight into question 1, so these flow tests enter through
+// that list. The list row and the opened question share the title text, hence the explicit wait
+// on the counter to confirm the question view actually rendered.
+async function openFirstReadAloudQuestion() {
+  renderAt("/speaking", studentAuthUser());
+  fireEvent.click(await screen.findByText("Language Appearance"));
+  await screen.findByText("Question 1 of 111");
+}
+
 describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () => {
-  it("opens directly into question 1 of 111 with the passage visible and the answer hidden", async () => {
+  it("lands on a paged question list, not straight into question 1", async () => {
+    api.history.mockResolvedValue({ submissions: [] });
     renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+
+    // The list, not the question view.
+    await screen.findByText("Language Appearance");
+    expect(screen.queryByText("Question 1 of 111")).not.toBeInTheDocument();
+
+    // Ten per page out of 111, so the counts are the full bank while the page is not.
+    expect(screen.getByText(/Page 1 of 12/)).toBeInTheDocument();
+    expect(document.querySelectorAll(".question-list-row").length).toBe(10);
+  });
+
+  it("marks a question Done from a previous session's submission, via localQuestionId", async () => {
+    api.history.mockResolvedValue({
+      submissions: [
+        { _id: "sub1", localQuestionId: READ_ALOUD_QUESTIONS[0]._id, evaluationStatus: "COMPLETED", score: 74, maxScore: 90 }
+      ]
+    });
+    renderAt("/speaking", studentAuthUser());
+
+    await screen.findByText("Language Appearance");
+    expect(await screen.findByText(/Done · 74\/90/)).toBeInTheDocument();
+  });
+
+  it("returns to the list from a question via Back to list", async () => {
+    await openFirstReadAloudQuestion();
+    fireEvent.click(screen.getByText("‹ Back to list"));
+    await screen.findByText(/Page 1 of 12/);
+    expect(screen.queryByText("Question 1 of 111")).not.toBeInTheDocument();
+  });
+
+  it("opens a question from the list with the passage visible and the answer hidden", async () => {
+    await openFirstReadAloudQuestion();
     expect(screen.getByRole("heading", { name: "Language Appearance" })).toBeInTheDocument();
     expect(screen.getByText(/It seems that language appeared from nowhere/)).toBeInTheDocument();
     // The passage itself is always visible (it's the question); it's the dedicated answer-reveal
@@ -82,14 +123,12 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
   });
 
   it("never calls the DB question API for Read Aloud — it is fully local content", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
     expect(api.questions).not.toHaveBeenCalled();
   });
 
   it("Show Answer reveals the exact answer field and can be hidden again", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
     fireEvent.click(screen.getByText("Show Answer"));
     await screen.findByText("Hide Answer");
     // Question and answer text happen to be identical in this dataset, so the assertion is scoped
@@ -102,8 +141,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
   });
 
   it("Next/Previous move through questions in order and update the counter; Previous is disabled on question 1", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
     expect(screen.getByText("Previous")).toBeDisabled();
 
     fireEvent.click(screen.getByText("Next"));
@@ -116,8 +154,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
   });
 
   it("resets recording and hides the answer again when moving to a new question", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
     fireEvent.click(screen.getByText("Show Answer"));
     await screen.findByText("Hide Answer");
 
@@ -127,8 +164,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
   });
 
   it("navigating past question 15 into the newly added PDF content shows the right question, and Previous returns correctly", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
 
     // Walk from question 1 to question 16 — the first of the 96 newly added questions.
     for (let i = 0; i < 15; i += 1) fireEvent.click(screen.getByText("Next"));
@@ -165,8 +201,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
         feedback: { strengths: ["Clear pace"], improvements: [], overall: "Good.", scoringMethod: "heuristic" }
       }
     });
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
 
     fireEvent.click(screen.getByText("Start Recording"));
     await screen.findByText("Stop Recording");
@@ -188,8 +223,7 @@ describe("Read Aloud practice flow (Practice → Speaking → Read Aloud)", () =
   // test timeout under full-suite parallel load (CPU shared across many concurrent test files) —
   // a resource-contention issue, not a logic problem, so this one test gets a longer budget.
   it("shows Practice Completed with an honest summary after Finish on question 111 — no fabricated score", async () => {
-    renderAt("/speaking", studentAuthUser());
-    await screen.findByText("Question 1 of 111");
+    await openFirstReadAloudQuestion();
 
     // 110 "Next" clicks walk from question 1 to question 111; the 111th question's own button is
     // now labeled "Finish" (since it's the last question), moving past it to the completion screen.

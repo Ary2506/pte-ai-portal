@@ -106,10 +106,11 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Read Aloud").closest(".practice-row"));
-    // Read Aloud now opens its own dedicated, locally-curated 111-question set (not the mocked
-    // "Read Aloud Q" DB question) — landing on its first question is the real navigation proof.
-    await screen.findByText("Question 1 of 111");
-    expect(screen.getByRole("heading", { name: "Language Appearance" })).toBeInTheDocument();
+    // Read Aloud opens its own dedicated, locally-curated 111-question set (not the mocked
+    // "Read Aloud Q" DB question), on the shared question list — landing on that list, with its
+    // own content in it, is the real navigation proof.
+    expect(await screen.findByText("Language Appearance")).toBeInTheDocument();
+    expect(screen.getByText(/Page 1 of 12/)).toBeInTheDocument();
   });
 
   it("clicking Write Essay navigates into the writing practice session", async () => {

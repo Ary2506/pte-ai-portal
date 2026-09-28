@@ -58,7 +58,7 @@ export const api = {
   },
   admin: {
     getStats: () => request("/admin/dashboard/stats"),
-    getAuditLog: (limit = 10) => request(`/admin/audit-log?limit=${limit}`),
+    getAuditLog: (limit = 10, page = 1) => request(`/admin/audit-log?limit=${limit}&page=${page}`),
     createUser: (body) => request("/admin/users", { method: "POST", body: JSON.stringify(body) }),
     listUsers: (params = {}) => {
       const q = new URLSearchParams(
@@ -135,7 +135,15 @@ export const api = {
   dashboard: () => request("/dashboard"),
   plan: () => request("/dashboard/study-plan"),
   questions: (section, type) => request(`/questions?section=${section || ""}&type=${type || ""}`),
-  history: () => request("/submissions/history"),
+  // Optional params, all narrowing: `summary: 1` drops answer/transcript/feedback (only safe for
+  // a caller that lists attempts without reopening one), `section`/`type` scope the rows to a
+  // single task. No params keeps the original full, unfiltered shape.
+  history: (params = {}) => {
+    const q = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== "" && v !== undefined && v !== null))
+    ).toString();
+    return request(`/submissions/history${q ? `?${q}` : ""}`);
+  },
   submit: (form) => request("/submissions", { method: "POST", body: form }),
   retryEvaluation: (submissionId) => request(`/submissions/${submissionId}/retry-evaluation`, { method: "POST" }),
   testSessions: {

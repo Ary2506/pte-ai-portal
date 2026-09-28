@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -66,5 +66,57 @@ describe("admin dashboard — question activity labels", () => {
     renderAdminDashboard();
     expect(await screen.findByText(/blocked/)).toBeInTheDocument();
     expect(screen.getByText("pte001")).toBeInTheDocument();
+  });
+});
+
+function activityPage(page, totalPages, username) {
+  return {
+    logs: [{ id: `l-${page}`, action: "USER_BLOCKED", admin: { username: "admin" }, target: { username }, metadata: {}, createdAt: "2026-09-01T00:00:00.000Z" }],
+    total: totalPages * 8,
+    page,
+    limit: 8,
+    totalPages
+  };
+}
+
+describe("admin dashboard — activity pagination", () => {
+  it("fetches a page only when its pager button is clicked, never ahead of time", async () => {
+    api.admin.getAuditLog.mockResolvedValue(activityPage(1, 3, "pte001"));
+    renderAdminDashboard();
+    await screen.findByText("pte001");
+
+    // The first paint costs exactly one page — nothing is prefetched.
+    expect(api.admin.getAuditLog).toHaveBeenCalledTimes(1);
+    expect(api.admin.getAuditLog).toHaveBeenLastCalledWith(8, 1);
+
+    api.admin.getAuditLog.mockResolvedValue(activityPage(2, 3, "pte002"));
+    fireEvent.click(screen.getByRole("button", { name: /Next/ }));
+
+    expect(await screen.findByText("pte002")).toBeInTheDocument();
+    expect(api.admin.getAuditLog).toHaveBeenCalledTimes(2);
+    expect(api.admin.getAuditLog).toHaveBeenLastCalledWith(8, 2);
+    expect(screen.getByText(/Page 2 of 3/)).toBeInTheDocument();
+  });
+
+  it("disables Previous on the first page and Next on the last", async () => {
+    api.admin.getAuditLog.mockResolvedValue(activityPage(3, 3, "pte003"));
+    renderAdminDashboard();
+    await screen.findByText("pte003");
+
+    expect(screen.getByRole("button", { name: /Next/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Previous/ })).not.toBeDisabled();
+  });
+
+  // A response with no paging fields at all is what every other admin test mocks, and what the
+  // endpoint returned before it was paged — it must still render as a single unpaged list.
+  it("hides the pager entirely when there is only one page", async () => {
+    api.admin.getAuditLog.mockResolvedValue({
+      logs: [{ id: "l1", action: "USER_BLOCKED", admin: { username: "admin" }, target: { username: "pte001" }, metadata: {}, createdAt: "2026-09-01T00:00:00.000Z" }]
+    });
+    renderAdminDashboard();
+    await screen.findByText("pte001");
+
+    expect(screen.queryByRole("button", { name: /Next/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Previous/ })).not.toBeInTheDocument();
   });
 });

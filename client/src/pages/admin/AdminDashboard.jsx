@@ -24,21 +24,48 @@ const ACTIVITY_LABELS = {
 };
 const QUESTION_ACTIVITY_ACTIONS = new Set(["QUESTION_CREATED", "QUESTION_UPDATED", "QUESTION_ACTIVATED", "QUESTION_DEACTIVATED", "QUESTION_DELETED"]);
 
+const ACTIVITY_PAGE_SIZE = 8;
+
 export function AdminDashboard({notify, goToUsers, goToQuestions}) {
   const [stats,setStats]=useState(null);
   const [questionStats,setQuestionStats]=useState(null);
   const [activity,setActivity]=useState([]);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
+  // Paging state for the activity feed only. Deliberately separate from `loading` above, which
+  // gates the whole dashboard: turning a page must not blank out the stat tiles and re-fetch
+  // them, and a failed page turn must not replace the dashboard with its full-page error state.
+  const [activityPage,setActivityPage]=useState(1);
+  const [activityTotal,setActivityTotal]=useState(0);
+  const [activityTotalPages,setActivityTotalPages]=useState(1);
+  const [activityLoading,setActivityLoading]=useState(false);
 
   useEffect(()=>{ load(); },[]);
 
+  function applyActivity(a) {
+    setActivity(a.logs);
+    setActivityPage(a.page || 1);
+    setActivityTotal(a.total ?? a.logs.length);
+    setActivityTotalPages(a.totalPages || 1);
+  }
+
   function load() {
     setLoading(true); setError("");
-    Promise.all([api.admin.getStats(), api.admin.getAuditLog(8), api.admin.questions.stats()])
-      .then(([s,a,q])=>{setStats(s);setActivity(a.logs);setQuestionStats(q)})
+    Promise.all([api.admin.getStats(), api.admin.getAuditLog(ACTIVITY_PAGE_SIZE, 1), api.admin.questions.stats()])
+      .then(([s,a,q])=>{setStats(s);applyActivity(a);setQuestionStats(q)})
       .catch(e=>{setError(e.message);notify("error",e.message)})
       .finally(()=>setLoading(false));
+  }
+
+  // Only ever called from the pager buttons — a page is fetched when it is actually asked for,
+  // never prefetched, so the dashboard's first paint costs exactly one page of activity.
+  function goToActivityPage(next) {
+    if (activityLoading || next < 1 || next > activityTotalPages) return;
+    setActivityLoading(true);
+    api.admin.getAuditLog(ACTIVITY_PAGE_SIZE, next)
+      .then(applyActivity)
+      .catch(e=>notify("error",e.message))
+      .finally(()=>setActivityLoading(false));
   }
 
   if (loading) return <div className="admin-dashboard">
@@ -81,11 +108,16 @@ export function AdminDashboard({notify, goToUsers, goToQuestions}) {
       </div>
     </>}
     <section className="panel">
-      <div className="panel-head"><div><h3>Recent admin activity</h3><p className="muted">Last {activity.length} action{activity.length===1?"":"s"}</p></div></div>
-      {activity.length ? <div className="activity-list">{activity.map(a=><div className="activity-row" key={a.id}>
+      <div className="panel-head"><div><h3>Recent admin activity</h3><p className="muted">{activityTotal} action{activityTotal===1?"":"s"} total</p></div></div>
+      {activityLoading ? <SkeletonRows count={ACTIVITY_PAGE_SIZE}/> : activity.length ? <div className="activity-list">{activity.map(a=><div className="activity-row" key={a.id}>
           <span className="activity-dot"/>
           <div><p><b>{a.admin?.username||"admin"}</b> {ACTIVITY_LABELS[a.action]||a.action.toLowerCase()} {a.target ? <b>{a.target.username}</b> : QUESTION_ACTIVITY_ACTIONS.has(a.action) && a.metadata?.title ? <b>"{a.metadata.title}"</b> : ""}</p><small className="muted">{fmtDateTime(a.createdAt)}</small></div>
         </div>)}</div> : <Empty text="No admin activity yet."/>}
+      {activityTotalPages > 1 && <div className="pager">
+        <button className="secondary" disabled={activityPage <= 1 || activityLoading} onClick={()=>goToActivityPage(activityPage - 1)}>‹ Previous</button>
+        <span className="muted">Page {activityPage} of {activityTotalPages} · {activityTotal} action{activityTotal===1?"":"s"}</span>
+        <button className="secondary" disabled={activityPage >= activityTotalPages || activityLoading} onClick={()=>goToActivityPage(activityPage + 1)}>Next ›</button>
+      </div>}
     </section>
   </div>
 }

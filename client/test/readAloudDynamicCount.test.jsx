@@ -43,6 +43,9 @@ beforeEach(() => {
 describe("Read Aloud total is dynamic, never a hardcoded count", () => {
   it("a 3-question content file drives a 3-question practice flow end to end", async () => {
     renderAt("/speaking", studentAuthUser());
+    // Read Aloud opens on the shared question list now, so the flow starts by picking the first
+    // question out of it rather than landing on it directly.
+    fireEvent.click(await screen.findByText("Mock One"));
     await screen.findByText("Question 1 of 3");
     expect(screen.getByRole("heading", { name: "Mock One" })).toBeInTheDocument();
 

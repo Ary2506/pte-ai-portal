@@ -14,8 +14,8 @@ const router = express.Router();
 async function weeklyActivity(userId) {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [submissions, completedSessions] = await Promise.all([
-    Submission.find({ user: userId, createdAt: { $gte: sevenDaysAgo } }).select("createdAt"),
-    TestSession.find({ user: userId, status: "COMPLETED", submittedAt: { $gte: sevenDaysAgo } }).select("submittedAt")
+    Submission.find({ user: userId, createdAt: { $gte: sevenDaysAgo } }).select("createdAt").lean(),
+    TestSession.find({ user: userId, status: "COMPLETED", submittedAt: { $gte: sevenDaysAgo } }).select("submittedAt").lean()
   ]);
   const activeDates = new Set([
     ...submissions.map(s => utcDateString(s.createdAt)),
@@ -28,7 +28,10 @@ async function weeklyActivity(userId) {
 }
 
 router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
-  const submissions = await Submission.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(100);
+  // Not field-limited like /study-plan below: `recent` hands the six newest rows to the client
+  // whole. .lean() is still safe — these are serialized straight to JSON and nothing calls a
+  // document method or .save() on them.
+  const submissions = await Submission.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(100).lean();
   const avg = submissions.length ? Math.round(submissions.reduce((a, s) => a + s.score, 0) / submissions.length) : 0;
   const bySection = ["speaking", "writing", "reading", "listening"].map(section => {
     const rows = submissions.filter(s => s.section === section);
@@ -50,7 +53,14 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
 router.get("/study-plan", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
   // Bounded the same way the "/" route above bounds its own Submission.find on this same model —
   // without a limit this grows unbounded with a student's full practice history.
-  const submissions = await Submission.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(100);
+  // Only `section` and `score` are ever read below and no row is returned to the client, so this
+  // fetches just those two fields rather than 100 whole submissions (each of which can carry a
+  // multi-KB `feedback` object and a 6000-character `answer`).
+  const submissions = await Submission.find({ user: req.user._id })
+    .select("section score")
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .lean();
   const sectionScores = ["speaking", "writing", "reading", "listening"].map(section => {
     const rows = submissions.filter(s => s.section === section);
     return { section, score: rows.length ? Math.round(rows.reduce((a, s) => a + s.score, 0) / rows.length) : 0 };

@@ -84,11 +84,24 @@ router.get("/dashboard/stats", asyncRoute(async (req, res) => {
 
 router.get("/audit-log", asyncRoute(async (req, res) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-  const logs = await AuditLog.find({})
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .populate("adminUser", "username name")
-    .populate("targetUser", "username name");
+  // Paged the same way GET /users is. `page` is additive: a caller that sends only `limit` (as
+  // the dashboard did before this) still gets the newest `limit` entries, exactly as before —
+  // the extra total/page/totalPages fields in the response are ignored by such a caller.
+  const page = Math.max(1, Number(req.query.page) || 1);
+
+  const [logs, total] = await Promise.all([
+    AuditLog.find({})
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("adminUser", "username name")
+      .populate("targetUser", "username name")
+      // Read-only: every document is reshaped into a plain response object below, and nothing
+      // calls a document method or .save() on one.
+      .lean(),
+    AuditLog.countDocuments({})
+  ]);
+
   res.json({
     logs: logs.map(l => ({
       id: l._id,
@@ -97,7 +110,11 @@ router.get("/audit-log", asyncRoute(async (req, res) => {
       target: l.targetUser ? { username: l.targetUser.username, name: l.targetUser.name } : null,
       metadata: l.metadata,
       createdAt: l.createdAt
-    }))
+    })),
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit))
   });
 }));
 

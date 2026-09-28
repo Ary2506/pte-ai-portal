@@ -123,6 +123,7 @@ function fmtRelativeDateTime(d) {
 }
 
 const HISTORY_SECTION_FILTERS = ["all", ...PRACTICE_SECTIONS];
+const PRACTICE_PAGE_SIZE = 10;
 
 function historyScoreCell(r) {
   if (r.evaluationStatus === "PENDING" || r.evaluationStatus === "PROCESSING")
@@ -141,20 +142,45 @@ export default function History() {
   const [mocks, setMocks] = useState([]);
   const [detailId, setDetailId] = useState(null);
   const [sectionFilter, setSectionFilter] = useState("all");
+  // The section filter is applied by the server, not by filtering `rows` in place as it once
+  // was. With a page of attempts rather than all of them, a client-side filter could only ever
+  // search the page currently loaded — picking "Speaking" would hide every speaking attempt that
+  // happened to sit on another page. Changing the filter therefore refetches from page 1, the
+  // same way the admin user/question tables already re-query on a filter change.
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [rowsLoading, setRowsLoading] = useState(true);
+
   useEffect(() => {
+    setRowsLoading(true);
     api
-      .history()
-      .then((d) => setRows(d.submissions))
-      .catch(() => {});
+      // summary: this table renders type/section/evaluationType/score/date and nothing else —
+      // the mock-attempt detail below fetches its own full rows from testSessions.details().
+      .history({ summary: 1, page, limit: PRACTICE_PAGE_SIZE, section: sectionFilter === "all" ? undefined : sectionFilter })
+      .then((d) => {
+        setRows(d.submissions);
+        setTotal(d.total ?? d.submissions.length);
+        setTotalPages(d.totalPages || 1);
+      })
+      .catch(() => {})
+      .finally(() => setRowsLoading(false));
+  }, [page, sectionFilter]);
+
+  useEffect(() => {
     api.testSessions
       .list()
       .then((d) => setMocks(d.testSessions))
       .catch(() => {});
   }, []);
-  const filteredRows =
-    sectionFilter === "all"
-      ? rows
-      : rows.filter((r) => r.section === sectionFilter);
+
+  function selectSection(s) {
+    if (s === sectionFilter) return;
+    // Back to page 1: staying on, say, page 4 while switching to a section that only has one
+    // page would land the student on an empty table.
+    setPage(1);
+    setSectionFilter(s);
+  }
   return (
     <Page
       title="Practice History"
@@ -227,7 +253,7 @@ export default function History() {
                   ? "question-list-filter active"
                   : "question-list-filter"
               }
-              onClick={() => setSectionFilter(s)}
+              onClick={() => selectSection(s)}
               style={{ textTransform: "capitalize" }}
             >
               {s === "all" ? "All" : SECTION_LABELS[s]}
@@ -247,7 +273,7 @@ export default function History() {
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map((r) => (
+            {rows.map((r) => (
               <tr key={r._id}>
                 <td>
                   <b>{r.type}</b>
@@ -266,16 +292,39 @@ export default function History() {
             ))}
           </tbody>
         </table>
-        {!filteredRows.length && (
+        {!rows.length && !rowsLoading && (
           <Empty
             text={
-              rows.length
+              // The server filters now, so an empty page under a section filter means that
+              // section genuinely has no attempts — not that a client-side filter hid them.
+              sectionFilter !== "all"
                 ? "No practice attempts match this filter."
                 : "No practice submissions yet. Start a task from the sidebar."
             }
           />
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="pager">
+          <button
+            className="secondary"
+            disabled={page <= 1 || rowsLoading}
+            onClick={() => setPage(page - 1)}
+          >
+            ‹ Previous
+          </button>
+          <span className="muted">
+            Page {page} of {totalPages} · {total} attempt{total === 1 ? "" : "s"}
+          </span>
+          <button
+            className="secondary"
+            disabled={page >= totalPages || rowsLoading}
+            onClick={() => setPage(page + 1)}
+          >
+            Next ›
+          </button>
+        </div>
+      )}
       {detailId && (
         <MockAttemptDetail id={detailId} onClose={() => setDetailId(null)} />
       )}

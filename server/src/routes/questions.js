@@ -22,12 +22,14 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
   // Defensive scalability cap, not pagination — response shape, filtering, and sort order are
   // all unchanged. At today's bank size this never triggers; it only guards against an
   // unbounded response if the bank grows substantially later.
-  const docs = await Question.find(filter).select(STUDENT_SAFE_FIELDS).sort({ createdAt: 1 }).limit(200);
-  const questions = docs.map((doc) => {
-    const question = doc.toObject();
+  // .lean() returns plain objects straight from the driver rather than hydrated Mongoose
+  // documents — which is both cheaper on this, the most-requested endpoint in the app, and
+  // exactly what the map below wanted anyway (it was calling .toObject() on every doc just to
+  // get a mutable copy it could delete `answer` off).
+  const questions = await Question.find(filter).select(STUDENT_SAFE_FIELDS).sort({ createdAt: 1 }).limit(200).lean();
+  for (const question of questions) {
     if (question.evaluationType === "objective") delete question.answer;
-    return question;
-  });
+  }
   res.json({ questions });
 }));
 
