@@ -777,15 +777,20 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .fill-blank-inline select{display:inline-block;width:auto;margin:0 4px;padding:5px 9px;border:1px solid var(--blue-softer);border-radius:var(--radius-sm);background:var(--blue-soft);color:var(--blue2);font:inherit;font-weight:700}
 
 /* Fill in the Blanks — drag-and-drop variant (also fully click/keyboard-operable). */
-.drag-fill-passage{line-height:2.6}
-.drag-fill-blank{display:inline-block;min-width:88px;margin:0 3px;padding:5px 10px;border:1.5px dashed var(--blue-softer);border-radius:var(--radius-sm);background:var(--blue-soft);color:var(--muted-soft);font:inherit;text-align:center;vertical-align:middle}
-.drag-fill-blank.filled{border-style:solid;border-color:var(--blue-softer);background:var(--surface);color:var(--ink);font-weight:700}
+.drag-fill-passage{line-height:2.8}
+.drag-fill-blank{display:inline-block;min-width:88px;margin:0 3px;padding:5px 10px;border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--muted-soft);font:inherit;text-align:center;vertical-align:middle}
+.drag-fill-blank.filled{border-color:var(--blue-softer);background:var(--surface);color:var(--ink);font-weight:700}
 .drag-fill-blank:hover:not(:disabled){border-color:var(--blue)}
+.drag-fill-blank.filled.correct{background:var(--success-bg);border-color:var(--success);color:var(--success)}
+.drag-fill-blank.filled.incorrect{background:var(--danger-bg);border-color:#f3c9c9;color:var(--danger)}
 .drag-fill-pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
 .drag-fill-chip{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);padding:8px 14px;font:inherit;font-size:var(--text-base);color:var(--ink-soft);cursor:grab}
 .drag-fill-chip:hover:not(:disabled){border-color:var(--blue-softer);color:var(--blue)}
 .drag-fill-chip.selected{border-color:var(--blue);background:var(--blue-soft);color:var(--blue);font-weight:700}
 .drag-fill-chip:disabled{cursor:default;opacity:.6}
+.drag-fill-toggles{display:flex;align-items:center;gap:16px;margin-top:12px}
+.drag-fill-toggles .answer-toggle{margin-top:0}
+.drag-fill-wrong-only{display:flex;align-items:center;gap:6px;font-size:var(--text-base);color:var(--ink-soft);cursor:pointer}
 
 /* ==========================================================================
    Auth (login)

@@ -301,7 +301,16 @@ function FillBlankInline({ passage, options, value, onChange, disabled }) {
 // null if empty. Real HTML5 drag-and-drop is layered on top of a click-to-select-then-click-to-
 // place interaction that is the primary path — every blank and every word is a native <button>,
 // so the whole thing is keyboard-operable (Tab + Enter/Space) without a separate code path.
-function DragFillBlanks({ passage, options, placement, setPlacement, disabled }) {
+//
+// `correctWords` (Phase 24 — UI redesign to match a client-supplied reference screenshot): one
+// correct word per blank, in passage order — only ever passed in once `disabled` (i.e. `result`
+// exists), derived from the just-submitted grading result's own `correctAnswerText`. This is
+// deliberate, not a shortcut: `question.answer` itself is never sent to the browser before a
+// submission for ANY objective question type, on standalone practice or Mock Test alike (see
+// STUDENT_SAFE_FIELDS in routes/questions.js — the answer key would otherwise be readable straight
+// out of the network tab). Revealing it only from the student's own scored result, after they've
+// submitted, is exactly the boundary ObjectiveResult already relies on elsewhere in this file.
+function DragFillBlanks({ passage, options, placement, setPlacement, disabled, correctWords, showAnswer, wrongOnly }) {
   const [selectedPool, setSelectedPool] = useState(null);
   const segments = passage.split("____");
   const blankCount = segments.length - 1;
@@ -339,17 +348,31 @@ function DragFillBlanks({ passage, options, placement, setPlacement, disabled })
 
   return <div className="drag-fill">
     <p className="passage drag-fill-passage">
-      {segments.map((seg, i) => <Fragment key={i}>
-        {seg}
-        {i < blankCount && <button type="button"
-          className={placement[i] !== null && placement[i] !== undefined ? "drag-fill-blank filled" : "drag-fill-blank"}
-          onClick={() => onBlankActivate(i)} onDragOver={e => e.preventDefault()} onDrop={e => onDrop(e, i)} disabled={disabled}
-          aria-label={placement[i] !== null && placement[i] !== undefined
-            ? `Blank ${i + 1}: ${options[placement[i]]}. Activate to clear it.`
-            : `Blank ${i + 1}: empty. Select a word below, then activate this blank to place it.`}>
-          {placement[i] !== null && placement[i] !== undefined ? options[placement[i]] : "＿＿＿＿"}
-        </button>}
-      </Fragment>)}
+      {segments.map((seg, i) => {
+        const isFilled = placement[i] !== null && placement[i] !== undefined;
+        const correctWord = correctWords?.[i];
+        const isCorrect = isFilled && correctWord !== undefined && options[placement[i]] === correctWord;
+        const isIncorrect = isFilled && correctWord !== undefined && options[placement[i]] !== correctWord;
+        let className = isFilled ? "drag-fill-blank filled" : "drag-fill-blank";
+        if (disabled && correctWords) className += isCorrect ? " correct" : isIncorrect ? " incorrect" : "";
+        // With "Wrong blanks only" on, a blank the student already got right stays quiet — the
+        // hint is only useful for the ones still worth reviewing.
+        const showHint = showAnswer && correctWord !== undefined && !(wrongOnly && isCorrect);
+        return <Fragment key={i}>
+          {seg}
+          {i < blankCount && <Fragment>
+            <button type="button"
+              className={className}
+              onClick={() => onBlankActivate(i)} onDragOver={e => e.preventDefault()} onDrop={e => onDrop(e, i)} disabled={disabled}
+              aria-label={isFilled
+                ? `Blank ${i + 1}: ${options[placement[i]]}. Activate to clear it.`
+                : `Blank ${i + 1}: empty. Select a word below, then activate this blank to place it.`}>
+              {isFilled ? options[placement[i]] : "＿＿＿＿"}
+            </button>
+            {showHint && <span className="highlight-word-answer"> (Answer: {correctWord})</span>}
+          </Fragment>}
+        </Fragment>;
+      })}
     </p>
     <div className="drag-fill-pool" role="listbox" aria-label="Available words">
       {poolIndices.map(i => <button type="button" key={i} draggable={!disabled}
@@ -369,6 +392,11 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Fill in the Blanks (Drag & Drop) only (Phase 24 — UI redesign to match a client-supplied
+  // reference screenshot): an "Answer" hint toggle and a "Wrong blanks only" filter on top of it,
+  // both no-ops unless correctAnswer below is non-null (i.e. never in Mock Test).
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [wrongOnly, setWrongOnly] = useState(false);
 
   useEffect(() => {
     const isReorderQ = question?.type === "reorder";
@@ -389,6 +417,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     setDragPlacement(isDragFillQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : Array(blankCount).fill(null)) : null);
     setResult(existingResult || null);
     setError("");
+    setShowAnswer(false);
+    setWrongOnly(false);
   }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No reading question is available in the library for this task yet." /></div>;
@@ -396,6 +426,12 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   const isMulti = question.type === "mcq-multiple";
   const isInlineFillBlank = question.type === "fill-blanks" && question.passage?.includes("____");
   const isDragFill = question.type === "fill-blanks-dragdrop";
+  // Only ever populated once `result` exists (i.e. after this question's own submission has been
+  // scored) — see the comment above DragFillBlanks for why `question.answer` itself is never
+  // available here pre-submission, on standalone practice or Mock Test alike.
+  const dragFillCorrectWords = isDragFill && result?.feedback?.correctAnswerText
+    ? result.feedback.correctAnswerText.split(", ")
+    : null;
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
@@ -410,6 +446,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     setResult(null);
     setError("");
     setBusy(false);
+    setShowAnswer(false);
+    setWrongOnly(false);
   }
 
   async function submit() {
@@ -441,7 +479,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : isDragFill
-      ? (dragPlacement && <DragFillBlanks passage={question.passage} options={question.options} placement={dragPlacement} setPlacement={setDragPlacement} disabled={!!result} />)
+      ? (dragPlacement && <DragFillBlanks passage={question.passage} options={question.options} placement={dragPlacement} setPlacement={setDragPlacement} disabled={!!result}
+          correctWords={dragFillCorrectWords} showAnswer={showAnswer} wrongOnly={wrongOnly} />)
       : isInlineFillBlank
       ? <FillBlankInline passage={question.passage} options={question.options} value={choice} onChange={setChoice} disabled={!!result} />
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
@@ -457,6 +496,25 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     {!testSessionId && <div className="task-actions">
       <button type="button" className="secondary" onClick={resetQuestion} disabled={busy}>Re-do</button>
     </div>}
+    {/* Drag & Drop only, and only once this question has actually been scored (dragFillCorrectWords
+        is null pre-submission — see the comment on it above). Matches the reference screenshot's
+        "Answer" / "Wrong blanks only" toggles: the first reveals each blank's correct word inline
+        (and the numbered list below); the second quiets that reveal for blanks already answered
+        correctly so only the ones worth reviewing stay visible. */}
+    {isDragFill && dragFillCorrectWords && <>
+      <div className="drag-fill-toggles">
+        <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(v => !v)}>
+          {showAnswer ? "Hide Answer" : "Answer"}
+        </button>
+        <label className="drag-fill-wrong-only">
+          <input type="checkbox" checked={wrongOnly} onChange={e => setWrongOnly(e.target.checked)} /> Wrong blanks only
+        </label>
+      </div>
+      {showAnswer && <div className="answer-reveal">
+        <b>Answer</b>
+        <p>{dragFillCorrectWords.map((w, i) => `${i + 1}.${w}`).join(", ")}</p>
+      </div>}
+    </>}
   </div>;
 }
 
