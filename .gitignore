@@ -1,6 +1,10 @@
 node_modules/
 dist/
 .env
+# Any local variant too (.env.local, .env.backup-*, ...) — the bare '.env' rule above matches
+# only that exact name, so a backup of it stayed untracked-but-committable, credentials and all.
+.env.*
+!.env.example
 uploads/
 server/public/
 *.log
