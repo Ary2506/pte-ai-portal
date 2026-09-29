@@ -389,7 +389,7 @@ export default function ReadAloudPractice() {
     return (
       <div className="panel task-main narrow">
         <div className="task-meta">
-          <span className="chip">Read Aloud</span>
+          <span className="chip">Speaking</span>
         </div>
         <h2>Practice Completed 🎉</h2>
         <p className="instruction">
@@ -469,7 +469,7 @@ export default function ReadAloudPractice() {
       <div className="task-layout">
         <section className="panel task-main">
           <div className="task-meta">
-            <span className="chip">Read Aloud</span>
+            <span className="chip">Speaking</span>
             <span
               className={
                 seconds >= RECORD_LIMIT_SECONDS

@@ -11,7 +11,7 @@ import { Empty, SkeletonRows } from "../components/common.jsx";
 import ReadAloudPractice from "./ReadAloudPractice.jsx";
 import { QuestionListView } from "./QuestionListView.jsx";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
-import { LOCAL_LISTENING_QUESTIONS } from "./listeningData/index.js";
+import { loadListeningQuestions } from "./listeningData/index.js";
 
 const SECTION_DESCRIPTIONS = {
   speaking:
@@ -42,11 +42,12 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       // Full rows (not summary) — these become `existingResult`, which restores a previous
       // answer and its feedback.
       Promise.resolve(api.history({ section, type: slug })).catch(() => ({ submissions: [] })),
+      // Fetches only this task's own content chunk, in parallel with the two requests above so
+      // it costs no extra wall-clock. A type with no local content resolves to an empty list and
+      // the database questions below are used instead, exactly as before.
+      section === "listening" ? loadListeningQuestions(slug) : Promise.resolve([]),
     ])
-      .then(([questionData, historyData]) => {
-        const localQuestions = section === "listening"
-          ? LOCAL_LISTENING_QUESTIONS.filter(question => question.type === slug)
-          : [];
+      .then(([questionData, historyData, localQuestions]) => {
         const loadedQuestions = localQuestions.length
           ? localQuestions
           : questionData?.questions || [];

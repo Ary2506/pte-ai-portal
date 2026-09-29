@@ -214,7 +214,10 @@ export default function Speaking({
     <div className="task-layout">
       <section className="panel task-main">
         <div className="task-meta">
-          <span className="chip">{type}</span>
+          {/* The section, matching ReadingTask's and ListeningTask's chips — not `type`, which
+              rendered the raw slug ("read-aloud", "describe-image") and is already shown, properly
+              capitalised, in the breadcrumb and the task tabs directly above this panel. */}
+          <span className="chip">Speaking</span>
           <span
             className={
               seconds >= limit

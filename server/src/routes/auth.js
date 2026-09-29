@@ -44,9 +44,6 @@ const loginAccountLimiter = rateLimit({
   // fall through to the IP key and are rejected by the route's own validation anyway.
   keyGenerator: (req) =>
     (req.body?.username || req.body?.userId || "").toString().toLowerCase().trim() || `ip:${req.ip}`,
-  // This key is a username, not an address, so express-rate-limit's IPv6-subnet check does not
-  // apply — it would otherwise warn about a custom keyGenerator that never handles IPs.
-  validate: { keyGeneratorIpFallback: false },
   message: RATE_LIMITED
 });
 

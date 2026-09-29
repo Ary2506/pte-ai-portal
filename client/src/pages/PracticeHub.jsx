@@ -9,14 +9,16 @@ import {
   SECTION_LABELS,
 } from "../practiceTaskRegistry.js";
 import { Page } from "../components/common.jsx";
-import { LOCAL_LISTENING_QUESTIONS } from "../practice/listeningData/index.js";
+import { LISTENING_TYPES } from "../practice/listeningData/index.js";
 
 // Read Aloud (Speaking) and several Listening task types are served from locally bundled
 // content (see Practice.jsx and listeningData/index.js) instead of the question database, so
 // the database-only availability check below never sees them on its own — merge these in.
+// LISTENING_TYPES is just the slugs, so this hub knows which types have local content without
+// loading any of that content; it used to read the same fact off every question in the bundle.
 const LOCALLY_BACKED_KEYS = new Set([
   "speaking:read-aloud",
-  ...new Set(LOCAL_LISTENING_QUESTIONS.map((q) => `listening:${q.type}`)),
+  ...LISTENING_TYPES.map((type) => `listening:${type}`),
 ]);
 
 const SECTION_ICONS = {

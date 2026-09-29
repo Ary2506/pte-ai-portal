@@ -719,7 +719,8 @@ const CLIENT_MCQ_MULTIPLE_CANDIDATES = [...clientMcqMultiple];
 // 4/Neighbor), confirmed on two different Whisper models and by differing file checksums (so it's
 // a genuine duplicate recording, not a copy/rename bug). File 04 is used for Question 4; file 03
 // is an unused spare. None of the client's 15 files contained Question 1's content ("...opaque,
-// vivid, brilliant, shiny?"), so its audio (answer-short-question-16.wav) was instead generated
+// vivid, brilliant, shiny?"), so its audio (answer-short-question-16.mp3, re-encoded from the original WAV by
+// src/compressWavAudio.js) was instead generated
 // with Higgsfield's seed_audio text-to-speech from Question 1's own prompt text verbatim, then
 // verified the same way — transcribed back and confirmed it actually says that text — before
 // being wired in. `answer` is the exact short answer the client provided per question (never
@@ -727,7 +728,7 @@ const CLIENT_MCQ_MULTIPLE_CANDIDATES = [...clientMcqMultiple];
 // `answer` is safe to expose as a revealable reference answer).
 // ---------------------------------------------------------------------------
 const clientAnswerShortQuestion = [
-  ["To which of our senses do all of the following words relate, opaque, vivid, brilliant, shiny?", "Vision", "answer-short-question-16.wav"],
+  ["To which of our senses do all of the following words relate, opaque, vivid, brilliant, shiny?", "Vision", "answer-short-question-16.mp3"],
   ["What clothing do people wear, such as students or nurses, to show that they belong to the same organizations?", "Uniform", "answer-short-question-01.mp3"],
   ["What kind of soup utensils do you use at table?", "Spoon / Spoons", "answer-short-question-02.mp3"],
   ["What do you call a person who lives next to your house or in your community?", "Neighbor", "answer-short-question-04.mp3"],
@@ -771,7 +772,9 @@ const CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES = [...clientAnswerShortQuestion];
 // OPENAI_API_KEY was configured in this environment — so that specific check is the one exception
 // to the usual verification bar for AI-generated audio in this project, disclosed here rather than
 // silently skipped. Files live at client/public/audio/respond-to-situation/respond-to-situation-
-// 01..22.wav (served at /audio/respond-to-situation/... by Vite's default publicDir).
+// 01..22.mp3 (served at /audio/respond-to-situation/... by Vite's default publicDir). These
+// shipped as uncompressed stereo WAV and were re-encoded to 48kbps mono MP3 — the same
+// encoding every other clip here uses — by src/compressWavAudio.js, cutting 35.9MB to 2.3MB.
 // ---------------------------------------------------------------------------
 const clientRespondToSituation = [
   [51, "Italian Food",
@@ -842,7 +845,7 @@ const clientRespondToSituation = [
     "Hi Jack, I wanted to let you know about an important dietary requirement before dinner tonight. My wife Lilly cannot have dairy products, so I thought it would be helpful to tell you in advance. Could you please make sure there are some suitable dairy-free options for her? Thank you for keeping this in mind, and please let me know if you need any information."]
 ].map(([num, label, prompt, answer], i) => ({
   section: "speaking", type: "respond-to-situation", title: `RTS #${num} — ${label}`,
-  prompt, answer, audioUrl: `/audio/respond-to-situation/respond-to-situation-${String(i + 1).padStart(2, "0")}.wav`,
+  prompt, answer, audioUrl: `/audio/respond-to-situation/respond-to-situation-${String(i + 1).padStart(2, "0")}.mp3`,
   difficulty: "medium"
 }));
 

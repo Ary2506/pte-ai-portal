@@ -11,7 +11,7 @@ export default function WriteEmailPdf() {
   return (
     <section className="panel task-main pdf-resource-panel">
       <div className="task-meta">
-        <span className="chip">write-email</span>
+        <span className="chip">Writing</span>
       </div>
       <h2>Write Email — Sample Emails</h2>
       <p className="instruction">

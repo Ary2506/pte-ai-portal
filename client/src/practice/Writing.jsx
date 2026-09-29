@@ -82,7 +82,9 @@ export default function Writing({
     <div className="task-layout">
       <section className="panel task-main">
         <div className="task-meta">
-          <span className="chip">{type}</span>
+          {/* The section, matching the other three task components — not `type`, which rendered
+              the raw slug ("swt", "essay") that the breadcrumb and task tabs already show. */}
+          <span className="chip">Writing</span>
           <WordCountBadge
             count={wordCount}
             range={WRITING_WORD_RANGES[question?.type]}

@@ -9,6 +9,7 @@
     2. /submissions/history ships far more than it displays --> done
     3. Zero .lean() across 47 query sites --> done
     4. added pagination --> done
+    5. rate limiting --> done
 
 // Aryan
 1. Speaking all
