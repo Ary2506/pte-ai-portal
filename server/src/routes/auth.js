@@ -12,12 +12,42 @@ import { asyncRoute } from "../utils/asyncRoute.js";
 
 const router = express.Router();
 
-const loginLimiter = rateLimit({
+const RATE_LIMITED = {
+  message: "Too many login attempts. Please wait a few minutes and try again.",
+  code: "RATE_LIMITED"
+};
+
+// Per-IP, and deliberately looser than the per-account limit below. A whole coaching centre —
+// or anyone on carrier-grade NAT, which most Indian mobile broadband uses — shares one public
+// address, so a tight per-IP cap punishes a roomful of students for each other's typos. Its job
+// is only to stop one address hammering many different accounts.
+const loginIpLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
-  max: 10,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Too many login attempts. Please wait a few minutes and try again.", code: "RATE_LIMITED" }
+  message: RATE_LIMITED
+});
+
+// Per-account, and the one that actually blunts a password-guessing attack. Keying on the
+// submitted username rather than the caller's address means spreading the attempt across a
+// botnet does not buy an attacker extra guesses against a single account — which the per-IP
+// limiter alone cannot do anything about. Five attempts per fifteen minutes is generous for a
+// student mistyping their own password and hopeless for guessing someone else's.
+const loginAccountLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: false, // The IP limiter above already sets these; two sets would conflict.
+  legacyHeaders: false,
+  // Mirrors the exact normalization the route itself applies below, so "Karan" and "karan "
+  // cannot be used as separate buckets against the same account. Requests with no username
+  // fall through to the IP key and are rejected by the route's own validation anyway.
+  keyGenerator: (req) =>
+    (req.body?.username || req.body?.userId || "").toString().toLowerCase().trim() || `ip:${req.ip}`,
+  // This key is a username, not an address, so express-rate-limit's IPv6-subnet check does not
+  // apply — it would otherwise warn about a custom keyGenerator that never handles IPs.
+  validate: { keyGeneratorIpFallback: false },
+  message: RATE_LIMITED
 });
 
 // One row per signin attempt, at the exact outcome already being returned to the caller — never
@@ -44,7 +74,7 @@ function registrationDisabled(_req, res) {
 router.post("/signup", registrationDisabled);
 router.post("/register", registrationDisabled);
 
-router.post("/signin", loginLimiter, async (req, res) => {
+router.post("/signin", loginIpLimiter, loginAccountLimiter, async (req, res) => {
   try {
     const username = (req.body.username || req.body.userId || "").toString().toLowerCase().trim();
     const password = req.body.password || "";

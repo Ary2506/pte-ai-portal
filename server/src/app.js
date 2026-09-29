@@ -17,6 +17,21 @@ import testSessionRoutes from "./routes/testSessions.js";
 import dashboardRoutes from "./routes/dashboard.js";
 
 export const app = express();
+
+// Every rate limiter in this app keys on req.ip, which is only meaningful if Express knows how
+// many reverse proxies sit in front of it. Behind one (Vercel, nginx, Cloudflare) and without
+// this, req.ip is the proxy's own address — identical for every visitor — so the login limiter
+// would count the whole world's attempts into a single bucket and lock everyone out after ten.
+//
+// The count matters and must not be guessed: `true` would trust the entire X-Forwarded-For
+// chain, letting a client forge a new "IP" per request by prepending one, which defeats the
+// limiter completely. So this is opt-in via TRUST_PROXY_HOPS, set to the number of proxies
+// actually in front (1 for Vercel), and stays off for local development where there are none.
+const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS);
+if (Number.isInteger(trustProxyHops) && trustProxyHops > 0) {
+  app.set("trust proxy", trustProxyHops);
+}
+
 // Mounted first so it covers every response below, including the static question-media mount.
 // Every API payload here is JSON — question lists, submission history, AI feedback — which is
 // exactly what gzip is best at; audio and images are already-compressed formats and are skipped
