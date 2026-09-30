@@ -705,6 +705,25 @@ const clientMcqMultiple = [
 const CLIENT_MCQ_MULTIPLE_CANDIDATES = [...clientMcqMultiple];
 
 // ---------------------------------------------------------------------------
+// Client-supplied Reading > Multiple Choice, Single Answer batch (4) — purely additive, unlike
+// the other CLIENT_* batches in this file. Sourced verbatim from the client's PDF
+// (Multiple_Choice_Single_Rephrased_Questions.pdf, 4 of 4 questions present). None of the
+// existing 16 reading/mcq-single questions (the original seed.js "Multiple Choice" plus the 15
+// placeholder `mcqSingle` questions above) share a topic with these 4 — checked by passage text —
+// so nothing existing is superseded or removed here; this only adds the 4 new questions.
+// ---------------------------------------------------------------------------
+const clientMcqSingle = [
+  ["German Luftwaffe", "The German Luftwaffe dropped thousands of bombs on London from 1939 to 1945, killing almost 30,000 people. More than 70,000 buildings were completely demolished, and another 1.7 million were damaged. The extent of the damage to each and every one of these buildings was logged and mapped in near-real-time by surveyors, architects, engineers, and construction workers. The result is an incredible collection of maps, color-coded by hand, that reveal the amount of the destruction in painstaking detail. Today, the maps remain an invaluable resource for academics, family historians, and even builders trying to avoid touching off unexploded bombs. The maps became the subject of a beautiful oversized book released earlier this year to commemorate the 75th anniversary of the end of the Blitz, a nine-month period during which London and other British cities were relentlessly attacked by the German air force. Visually, the maps are quite striking. The apparent randomness of the colors stands in contrast to the more orderly pattern of streets and buildings. The damage from World War II transformed London into the architecturally diverse city it is today. The maps show how widespread the destruction was, revealing both the scale of the devastation and its impact on the city.", "Which option most accurately summarizes the author's view in the text?", ["The author believes that the maps are a beautiful and accurate representation of pre-war London.", "The author believes that the maps are an accurate representation of post-war London.", "The author believes that the maps are a valuable piece of World War II history.", "The author believes that the maps are works of art that give information about London's destruction in World War II."], 3],
+  ["NASA's Curiosity", "Four Earth-years ago NASA's Curiosity rover successfully touched ground on Mars' dusty surface after surviving a nail-biting descent through the red planet's thin atmosphere. Since its triumphant arrival, the car-size “laboratory on wheels” has travelled more than 13.5 kilometers, taking pictures, collecting samples, and analyzing rocks along the way. Recent software upgrades let Curiosity autonomously choose which rocks it examines—and shoots with laser beams. Curiosity has spent more than 1,421 sols, or Martian days, exploring Gale Crater, a low-lying region that may have once held past life, if it existed. While the rover has yet to confirm any evidence of ancient life, it has found evidence of an ancient freshwater lake in the sediments of Yellowknife Bay, the lowest point of the crater, offering tantalizing insight into the planet's past habitability. Since September 2014, Curiosity has been examining Mount Sharp, a mountain of layered rocks towering more than five kilometres high in the middle of Gale Crater.", "Choose the sentence that best summarizes the passage.", ["Over the last four years, NASA's rover, Curiosity, has collected samples and taken photographs of Mars' surface which have revealed evidence of water but have not confirmed evidence of life.", "NASA's rover, Curiosity, has not had recent software upgrades that have let it explore new areas of Mars looking for evidence of life.", "Photographs of Mars' surface have not revealed evidence of water but have confirmed evidence of life.", "NASA's rover, Curiosity, has had recent software upgrades that have let it explore new areas of Mars looking for evidence of life."], 0],
+  ["Art", "Many argue that art cannot be defined. We could go about this in several ways. Art is often considered as the process or product of deliberately arranging elements in a way that appeals to the senses or emotions. It encompasses a diverse range of human activities, creations and ways of expression, including music, literature, film, sculpture and paintings. The meaning of art is explored in a branch of philosophy known as aesthetics. At least, that is what Wikipedia claims.", "What is the central idea of the passage?", ["Art is a difficult and complex form to explain.", "Wikipedia defines art under aesthetics, which is a branch of philosophy.", "Music, literature, film and sculpture do not define art.", "Art is directed in a way that it deliberately appeals to the emotions of people."], 0],
+  ["Climate Change", "Every day millions of lights and computers are left on in deserted offices, apartments, and houses. Environmental activists say that simply switching them off could cut Sydney's greenhouse gas emissions by five per cent over the next year. Per capita, Australia is one of the world's largest producers of carbon dioxide and other gases that many scientists believe are helping to warm the Earth's atmosphere, causing climate upset. A long-standing drought and serious water shortages in Australia have focused much attention on climate change. Some experts warn higher temperatures could leave this nation of 20 million people at the mercy of more severe droughts and damaging tropical cyclones.", "What does the passage indicate climate change will bring to Australia?", ["gas emissions", "environmental activists", "carbon dioxide", "drought"], 3]
+].map(([title, passage, prompt, options, answer]) => ({
+  section: "reading", type: "mcq-single", title, passage, prompt, options, answer, difficulty: "medium"
+}));
+
+const CLIENT_MCQ_SINGLE_CANDIDATES = [...clientMcqSingle];
+
+// ---------------------------------------------------------------------------
 // Client-supplied Answer Short Question batch (15) — replaces the old 20-question text-only set
 // (see the SUPERSEDED comment above `answerShortQuestion`). Audio for questions 2-15 is the
 // client's own TTS-generated clips, copied verbatim into client/public/audio/answer-short-question/
@@ -889,7 +908,7 @@ const PHASE18_ALL_CANDIDATES = [
   ...PHASE18_TEXT_ONLY_CANDIDATES, ...PHASE18_MEDIA_CANDIDATES,
   ...PHASE20_TEXT_CANDIDATES, ...PHASE22_MEDIA_CANDIDATES, ...PHASE23_TEXT_CANDIDATES,
   ...CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, ...CLIENT_CORE_P_CANDIDATES, ...CLIENT_SWT_CANDIDATES,
-  ...CLIENT_RESPOND_TO_SITUATION_CANDIDATES, ...CLIENT_MCQ_MULTIPLE_CANDIDATES
+  ...CLIENT_RESPOND_TO_SITUATION_CANDIDATES, ...CLIENT_MCQ_MULTIPLE_CANDIDATES, ...CLIENT_MCQ_SINGLE_CANDIDATES
   // CLIENT_FIB_DRAGDROP_CANDIDATES is deliberately NOT included here — see the comment above
   // clientFibDragdrop for why (intentional content-identical duplicates that this seeder's
   // signature dedup would silently collapse).
@@ -944,5 +963,5 @@ export {
   PHASE22_MEDIA_CANDIDATES, PHASE23_TEXT_CANDIDATES, CLIENT_DESCRIBE_IMAGE_CANDIDATES,
   CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES, CLIENT_CORE_P_CANDIDATES, CLIENT_SWT_CANDIDATES,
   CLIENT_RESPOND_TO_SITUATION_CANDIDATES, CLIENT_FIB_DRAGDROP_CANDIDATES,
-  CLIENT_MCQ_MULTIPLE_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
+  CLIENT_MCQ_MULTIPLE_CANDIDATES, CLIENT_MCQ_SINGLE_CANDIDATES, PHASE18_ALL_CANDIDATES, signature
 };
