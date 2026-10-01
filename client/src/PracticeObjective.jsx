@@ -238,7 +238,14 @@ function HighlightWords({ options, selected, toggle, disabled }) {
 //   - After submitting: a correctly-caught word turns green, a wrongly-picked word keeps the red
 //     "selected" look with an added "×", and a missed incorrect word gets a plain outline with the
 //     word the audio actually said appended after it.
-function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswer, corrections }) {
+// `answerIndexes` is which words were actually wrong in the recording, as a Set. It used to be
+// read off each segment's own `isIncorrect` flag, but that flag is the scoring key and no longer
+// reaches the browser before an attempt is graded — so with it gone, every branch below that
+// depended on it stopped firing and the only reachable outcome was "wrong pick", painting all of
+// a student's selections red and none of the right answers green. The server sends the indices
+// back with the score instead, which is also why this stays empty until there is a result.
+function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswer, corrections, answerIndexes }) {
+  const isAnswer = (index) => answerIndexes.has(index);
   return <p className="highlight-words highlight-words-passage" role="group" aria-label="Click every word that does not match what you heard">
     {segments.map((segment, i) => {
       if (segment.type === "text") return <span key={i}>{segment.value}</span>;
@@ -247,16 +254,16 @@ function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswe
       let marker = null;
       let suffix = null;
       if (disabled) {
-        if (segment.isIncorrect && isSelected) {
+        if (isAnswer(segment.index) && isSelected) {
           className += " correct-caught";
           marker = "✓ ";
-        } else if (segment.isIncorrect && !isSelected) {
+        } else if (isAnswer(segment.index) && !isSelected) {
           // Always shown in the same green as a caught answer — a missed one is still the correct
           // answer, and the student should see it plainly rather than a muted "you missed this"
           // box, especially when every one of their own picks turned out wrong.
           className += " correct-caught";
           suffix = <span className="highlight-word-answer"> (Answer: {corrections[segment.index]})</span>;
-        } else if (!segment.isIncorrect && isSelected) {
+        } else if (isSelected) {
           className += " wrong-pick";
           marker = "✕ ";
         }
@@ -265,7 +272,7 @@ function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswe
         // doesn't know yet whether this guess is right. Only resolves to a color that means
         // something (correct-caught green, wrong-pick red) once `disabled` above is true.
         className += " picked";
-      } else if (showAnswer && segment.isIncorrect) {
+      } else if (showAnswer && isAnswer(segment.index)) {
         className += " reveal";
       }
       return <Fragment key={i}>
@@ -543,26 +550,52 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     // the stored submission, never re-evaluated.
     setChoice(existingResult && isChoiceQ && submittedAnswer !== undefined ? submittedAnswer : "");
     setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
-    setBlankValues(question?.localBlankAnswers?.map((_, index) => Array.isArray(submittedAnswer) ? submittedAnswer[index] || "" : "") || []);
+    // Counted from the passage's own ____ markers. It used to be counted from localBlankAnswers,
+    // which is derived from the answer key and so is empty now that the key stays on the server.
+    const blankCount = (question?.passage?.match(/____/g) || []).length;
+    setBlankValues(Array.from({ length: blankCount }, (_, index) =>
+      Array.isArray(submittedAnswer) ? submittedAnswer[index] || "" : ""));
     setText(existingResult && !isChoiceQ && !isMultiQ ? (existingResult.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
     setResult(existingResult || null);
     setError("");
   }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No listening question is available in the library for this task yet." /></div>;
-  const isLocalFillBlanks = question.type === "fill-blanks" && Array.isArray(question.localBlankAnswers);
+  // Keyed on the type alone. It used to also require localBlankAnswers to be a populated array,
+  // which silently stopped matching once the answer key was removed from what the browser is
+  // sent — leaving these questions rendering as one free-text box instead of a field per blank.
+  const isTypedBlanks = question.type === "fill-blanks-typed";
   const isChoice = ["mcq-single", "select-missing-word"].includes(question.type);
   const isHighlight = question.type === "highlight-incorrect-words";
   const isMulti = question.type === "mcq-multiple" || isHighlight;
-  const isFreeText = !isChoice && !isMulti;
+  const isFreeText = !isChoice && !isMulti && !isTypedBlanks;
 
-  const answerText = question.localBlankAnswers?.length
-    ? question.localBlankAnswers.join(", ")
-    : question.localIncorrectIndexes?.length
-      ? question.localIncorrectIndexes.map(index => question.options?.[index]).join(", ")
-      : isChoice && question.options?.[question.answer] !== undefined
-        ? question.options[question.answer]
-        : question.answer || transcriptText;
+  // An objective question's scoring key never reaches the browser before submission — see the
+  // note on STUDENT_SAFE_FIELDS in routes/questions.js — so the reveal is whatever the server
+  // returned when it scored the attempt. This is the same rule Reading's drag-and-drop already
+  // follows, and it is why the Answer button below only appears once there is a result: before
+  // that there is genuinely nothing to show, and the old code was filling the gap with the
+  // answer key the question itself used to carry.
+  // A subjective task (Summarize Spoken Text) is different: its `answer` is a reference answer,
+  // not a scoring key, so it is never stripped and can be shown at any point.
+  const answerText =
+    result?.feedback?.correctAnswerText ||
+    (question.evaluationType === "subjective" ? question.answer || transcriptText : "");
+
+  // Which word the recording actually used, per incorrect word, shown inline once the attempt has
+  // been scored. Built from the same server-returned list as answerText, pairing each correct
+  // index with its word in order — the question no longer carries that mapping, by design.
+  // Which words were actually wrong in the recording, and what the recording said in their
+  // place. Both come back with the score: the question itself withholds its key until the
+  // attempt has been graded, so before that these are deliberately empty and the passage shows
+  // no colour at all.
+  const highlightAnswerIndexes = new Set(
+    isHighlight && Array.isArray(result?.feedback?.correctIndexes) ? result.feedback.correctIndexes : []
+  );
+  // Sent by the scorer as {wordIndex: "what the recording actually said"}. Pairing it up on the
+  // client from the joined answer text would have shown the student the wrong word they can
+  // already see in the passage, rather than the right one they missed.
+  const highlightCorrections = (isHighlight && result?.feedback?.corrections) || {};
 
   function toggleMulti(i) { setMulti(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]); }
 
@@ -588,22 +621,11 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
   }
 
   async function submit() {
-    if (isLocalFillBlanks) {
-      const answers = question.localBlankAnswers;
-      const correctCount = answers.reduce((count, answer, index) => count + (blankValues[index]?.trim().toLowerCase() === answer.trim().toLowerCase() ? 1 : 0), 0);
-      const exact = correctCount === answers.length;
-      const localResult = localObjectiveResult(
-        correctCount,
-        answers.length,
-        exact,
-        [exact ? "All blanks are correct." : `${correctCount} of ${answers.length} blanks are correct.`],
-        answers.join(", ")
-      );
-      setResult(localResult);
-      onAnswered?.(localResult);
-      persistLocalResult(localResult, blankValues);
-      return;
-    }
+    // Typed blanks used to be graded here in the browser, because the questions lived in a
+    // bundled file the server knew nothing about. They are real questions in the bank now, with
+    // their own server-side scorer (scoreTypedBlanks), so the typed words are submitted and the
+    // score comes back from the server like every other objective task — the client no longer
+    // holds the answer key, nor decides the mark.
     const persisted = isPersistedQuestionId(question._id);
     if (!persisted && !testSessionId) {
       const localResult = scoreLocalListeningQuestion(question, { choice, multi, text });
@@ -618,7 +640,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     const f = new FormData();
     f.append("section", "listening");
     f.append("type", question.type);
-    f.append("answer", JSON.stringify(isChoice ? choice : isMulti ? multi : text));
+    f.append("answer", JSON.stringify(isTypedBlanks ? blankValues : isChoice ? choice : isMulti ? multi : text));
     if (isFreeText) f.append("transcript", text);
     if (persisted) f.append("questionId", question._id);
     else if (!testSessionId) f.append("localQuestionId", question._id);
@@ -649,7 +671,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     setShowAnswer(false);
   }
 
-  const canSubmit = isLocalFillBlanks ? blankValues.every(value => value.trim()) : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
+  const canSubmit = isTypedBlanks ? blankValues.every(value => value.trim()) : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
 
   return <div className="panel task-main narrow">
     <div className="task-meta"><span className="chip">Listening</span><span>Audio practice</span></div>
@@ -663,16 +685,16 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
         the audio — ReadingTask has always shown its passage; this was the one place Listening
         never did. Harmless no-op for every other listening type, which never sets a passage. */}
-    {isLocalFillBlanks
+    {isTypedBlanks
       ? <ListeningFillBlanks passage={question.passage} values={blankValues} setValues={setBlankValues} disabled={!!result} />
       : question.passage && <div className="passage">{question.passage}</div>}
-    {isLocalFillBlanks ? null : isChoice
+    {isTypedBlanks ? null : isChoice
       ? <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>
       : isHighlight
       ? (Array.isArray(question.passageSegments)
-          ? <HighlightWordsPassage segments={question.passageSegments} selected={multi} toggle={toggleMulti} disabled={!!result} showAnswer={showAnswer} corrections={question.localWordCorrections || {}} />
+          ? <HighlightWordsPassage segments={question.passageSegments} selected={multi} toggle={toggleMulti} disabled={!!result} showAnswer={showAnswer} corrections={highlightCorrections} answerIndexes={highlightAnswerIndexes} />
           : <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />)
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />

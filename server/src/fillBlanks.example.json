@@ -1,0 +1,111 @@
+[
+  {
+    "id": "reading-fill-blanks-001",
+    "title": "Climate",
+    "transcript": "Climate is the word we use for weather over a long period of time. The desert has a dry climate because there is very little rain. The UK has a 'temperate climate', which means winters are, overall, mild and summers, generally, don't get too hot.",
+    "content": [
+      {
+        "text": "Climate is the word we",
+        "blankId": "blank-1"
+      },
+      {
+        "text": " for weather over a long period of time. The desert has a dry climate because there is very little rain. The UK",
+        "blankId": "blank-2"
+      },
+      {
+        "text": " a 'temperate climate',",
+        "blankId": "blank-3"
+      },
+      {
+        "text": " means winters are, overall, mild and",
+        "blankId": "blank-4"
+      },
+      {
+        "text": ", generally, don't get too hot."
+      }
+    ],
+    "blanks": [
+      {
+        "id": "blank-1",
+        "options": [
+          "estimate",
+          "predict",
+          "describe",
+          "use"
+        ],
+        "answer": "use"
+      },
+      {
+        "id": "blank-2",
+        "options": [
+          "is",
+          "are",
+          "has",
+          "be"
+        ],
+        "answer": "has"
+      },
+      {
+        "id": "blank-3",
+        "options": [
+          "what",
+          "these",
+          "that",
+          "which"
+        ],
+        "answer": "which"
+      },
+      {
+        "id": "blank-4",
+        "options": [
+          "summers",
+          "winter",
+          "desert",
+          "dessert"
+        ],
+        "answer": "summers"
+      }
+    ]
+  },
+  {
+    "id": "reading-fill-blanks-002",
+    "title": "Photosynthesis",
+    "difficulty": "easy",
+    "transcript": "Plants absorb sunlight and convert it into energy. This process releases oxygen into the air.",
+    "content": [
+      {
+        "text": "Plants absorb sunlight and",
+        "blankId": "blank-1"
+      },
+      {
+        "text": " it into energy. This process",
+        "blankId": "blank-2"
+      },
+      {
+        "text": " oxygen into the air."
+      }
+    ],
+    "blanks": [
+      {
+        "id": "blank-1",
+        "options": [
+          "convert",
+          "reject",
+          "delay",
+          "measure"
+        ],
+        "answer": "convert"
+      },
+      {
+        "id": "blank-2",
+        "options": [
+          "releases",
+          "absorbs",
+          "prevents",
+          "ignores"
+        ],
+        "answer": "releases"
+      }
+    ]
+  }
+]

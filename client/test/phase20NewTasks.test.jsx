@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { ListeningTask } from "../src/practice/Listening.jsx";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -148,17 +149,26 @@ describe("Phase 22 — Listening Fill in the Blanks shows the blanked passage al
   it("renders question.passage (previously invisible in ListeningTask) so the blank is actually readable", async () => {
     api.questions.mockResolvedValue({
       questions: [{
-        _id: "lfb1", section: "listening", type: "fill-blanks", title: "Library Hours",
-        prompt: "Listen to the recording, then choose the word that correctly completes the sentence.",
-        passage: "The library closes early on ____.", audioUrl: "https://example.com/lib.mp3",
-        options: ["Sundays", "Mondays", "Wednesdays", "Fridays"], evaluationType: "objective"
+        _id: "lfb1", section: "listening", type: "fill-blanks-typed", title: "Library Hours",
+        prompt: "Listen to the recording and type the missing words.",
+        passage: "The library closes early on ____ and opens late on ____.",
+        audioUrl: "https://example.com/lib.mp3",
+        // No options and no answer key: the student types each blank, and the key stays on the
+        // server until the attempt is scored.
+        content: [
+          { type: "text", value: "The library closes early on " }, { type: "blank" },
+          { type: "text", value: " and opens late on " }, { type: "blank" },
+          { type: "text", value: "." }
+        ],
+        evaluationType: "objective"
       }]
     });
-    renderAt("/listening?type=fill-blanks", studentAuthUser());
+    renderAt("/listening?type=fill-blanks-typed", studentAuthUser());
     await screen.findByText("Library Hours");
     expect(document.querySelector('audio[src="https://example.com/lib.mp3"]')).toBeInTheDocument();
-    expect(screen.getByText("The library closes early on ____.")).toBeInTheDocument();
-    expect(screen.getByText("Sundays")).toBeInTheDocument();
+    // One input per blank in the passage, rather than a single free-text box.
+    expect(document.querySelectorAll(".listening-fill-input").length).toBe(2);
+    expect(screen.getByLabelText("Blank 1")).toBeInTheDocument();
   });
 });
 
@@ -216,6 +226,6 @@ describe("Summarize Spoken Text transcript flow", () => {
     fireEvent.click(screen.getByRole("button", { name: /transcript/i }));
 
     expect(screen.getByText(/This is the transcript for the spoken passage/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /close/i }).length).toBeGreaterThan(0);
   });
 });

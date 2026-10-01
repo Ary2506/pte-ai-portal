@@ -1,0 +1,81 @@
+[
+  {
+    "id": "swt-944e6d",
+    "_order": 1,
+    "title": "Esports",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "In recent years, Esports has become increasingly accepted by schools as an educational opportunity rather than just entertainment. Many high schools and colleges now offer Esports programs, training spaces, and official teams, showing that educators understand the growing influence of gaming in society. These programs also allow students who are not interested in traditional sports to participate in group activities and feel welcomed at school.\n\nParticipating in Esports can help students build confidence, teamwork skills, and a sense of belonging. Team members learn how to communicate under pressure, practice regularly to improve their performance, and support each other just like athletes in physical sports. These experiences are especially valuable for students who might feel shy or disconnected, and success in competitions often motivates them to be more engaged and focused in their academic life.\n\nResearch and school reports show that Esports programs can even improve academic outcomes and increase graduation rates. Students involved in Esports are often more willing to attend classes, maintain passing grades, and plan for their future to stay eligible for the team. This suggests that competitive games are not a distraction, but instead a new pathway to help students stay engaged in school and build long-term goals for their careers.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e6f",
+    "_order": 2,
+    "title": "Coffee Shop",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "Most successful coffeehouses have strong foot traffic and large-volume sales. The majority will serve up to 500 customers per day and manage up to five customer turnovers during the lunch hour, despite having limited floor space and limited seating capacity. Profit margins for coffee and espresso drinks are extremely high – after all, you're dealing with a product that's more than 95 percent water. At the same time, your average ticket amount is around $3, so you need volume to reach and maintain profitability. Besides specialty roasted coffee by the cup, most coffeehouses also feature espresso-based drinks (cappuccinos, lattes, etc.), assorted teas, bottled water and fruit juices, along with an inviting assortment of baked goods, a selection of desserts and coffee beans by the pound.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e71",
+    "_order": 3,
+    "title": "Opening Day",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "Opening a new business is an exciting yet challenging endeavor that requires careful planning and strategic execution. One of the crucial aspects of launching a new business is making a lasting impression on your big day, also known as the grand opening. This event not only serves as the official introduction of your business to the public but also sets the tone for your brand's identity and customer experience. To ensure a successful grand opening, it is essential to offer enticing activities and incentives that will attract potential customers and create a buzz around your business.\n\nConsider offering special discounts or special promotions to attendees, which can encourage them to make purchases and spread the word about your business. Additionally, providing free samples or demonstrations of your products or services can give guests a firsthand experience of what your business has to offer. Hosting engaging activities, such as live music, games, or interactive workshops, can also enhance the overall atmosphere and make the event more enjoyable for guests.\n\nAnother effective strategy is to offer giveaways or raffles with attractive prizes, which can incentivize attendees to participate and stay longer at your event. Collaborating with local influencers or community leaders can further amplify your reach and attract a larger crowd. Ensuring that your event is well-organized and staffed will contribute to a positive experience for your guests, leaving a lasting impression that encourages them to return. Ultimately, a successful grand opening is about creating a welcoming and memorable experience for your guests, showcasing the unique value of your business, and building a foundation for long-term customer relationships. By offering appealing incentives and engaging activities, you can generate excitement and establish a strong presence in your community.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e73",
+    "_order": 4,
+    "title": "Microloan",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "Business microloans have emerged as an effective tool for supporting small enterprises and supporting economic growth, particularly in developing countries. These small, short-term loans are designed to provide entrepreneurs with the required capital to start or expand their businesses. Microloans often have lower interest rates compared to traditional loans, making them more accessible to individuals who might not qualify for conventional financing. The impact of microloans can be profound, as they enable entrepreneurs to purchase equipment, hire employees, and increase production, ultimately contributing to the overall economy. One of the key benefits of business microloans is their ability to empower marginalized groups, including women and minorities, by providing them with the financial resources to achieve economic independence. Many microloan programs specifically target these groups, recognizing that they often face greater barriers to accessing traditional financial services. By supporting these entrepreneurs, microloans can help reduce poverty and promote social inclusion.\n\nHowever, there are also challenges associated with microloans. Some critics argue that the small loan amounts and short repayment periods can place undue pressure on borrowers, potentially leading to financial strain and default. Additionally, the success of microloan programs often depends on the availability of complementary services, such as financial literacy training and business development support, to ensure that borrowers can effectively manage their loans and grow their businesses. Despite these challenges, business microloans remain a vital tool for promoting entrepreneurship and economic development. As more financial institutions and non-profit organizations recognize the value of microloans, it is essential to continue refining and expanding these programs to maximize their impact on communities around the world.",
+    "answer": "Microloans are small, accessible loans aimed at individuals or small businesses who lack access to traditional bank services. They support entrepreneurship, equipment purchase, and operating costs, promoting financial inclusion. Though limited in amounts, microloans can significantly help small businesses grow and sustain themselves when managed responsibly.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e75",
+    "_order": 5,
+    "title": "Preschool Education Programs",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "A recent policy proposal suggests cutting funding for preschool education programs. Proponents of the proposal argue that reallocating these funds to other educational sectors, such as primary and secondary education, could yield better lasting benefits. They believe that addressing issues like classroom overcrowding and teacher shortages in these sectors is more pressing. Additionally, some proponents argue that parents should take more responsibility for early childhood education, rather than relying on government programs.\n\nOn the other hand, critics of the proposal emphasize the important role of early childhood education in laying the foundation for future academic and social success. Numerous studies have shown that children who attend high quality preschool programs are more likely to perform better in school, graduate from high school, and have higher earning potential as adults. Critics also point out that cutting funding for preschool programs could disproportionately affect low-income families who rely on these services for affordable early childhood education. This reduction in funding could exacerbate existing inequalities in the education system.\n\nFurthermore, early childhood education programs provide essential support for working parents, enabling them to maintain stable employment while ensuring their children receive proper care and learning opportunities. The debate continues, with strong opinions on both sides regarding the best allocation of limited educational resources. Ultimately, the question remains whether the benefits of reallocating funds outweigh the potential long-term consequences of reducing support for early childhood education.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e77",
+    "_order": 6,
+    "title": "Outdoor Games",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "Playing outdoor games is important for children's physical and mental development. Engaging in activities such as soccer, tag, and hide-and-seek helps children improve their physical skills, coordination, and overall fitness. Outdoor play also provides opportunities for kids to socialize, develop teamwork and communication skills, and learn about cooperation and fair play. Additionally, being outside allows children to explore their environment, stimulate their imagination, and experience the benefits of fresh air and sunshine. Regular outdoor play can also reduce the risk of obesity and related health issues, while promoting a healthy and active lifestyle. In today's digital age, encouraging kids to participate in outdoor games is more important than ever to counteract the sedentary habits associated with screen time.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  },
+  {
+    "id": "swt-944e79",
+    "_order": 7,
+    "title": "Microloans",
+    "prompt": "Write one sentence summarizing the passage in 5–75 words.",
+    "passage": "Microloans are a kind of small loan designed to support individuals or small businesses that may not qualify for traditional bank loans. These loans are often part of microfinance programs that aim to promote financial access and economic development. Microloans can be used for a variety of purposes, such as starting a new business, purchasing equipment, or covering short-term operating costs. One of the key advantages of microloans is that they are generally easier to obtain than larger loans from banks, especially for borrowers with limited credit history or collateral. However, the loan amount is relatively small, typically ranging from a few hundred to a few thousand dollars. Despite their size, microloans can make a meaningful impact by helping small businesses grow and become self-sustaining. When considering whether microloans are suitable for you, it's important to assess your funding needs, repayment ability, and how the loan will support your business goals. Overall, microloans are a valuable financial product for entrepreneurs seeking modest but meaningful funding.",
+    "answer": "Microloans are small, accessible loans aimed at individuals or small businesses who lack access to traditional bank services. They support entrepreneurship, equipment purchase, and operating costs, promoting financial inclusion. Though limited in amounts, microloans can significantly help small businesses grow and sustain themselves when managed responsibly.",
+    "difficulty": "medium",
+    "evaluationType": "subjective",
+    "maxScore": 90,
+    "active": true
+  }
+]

@@ -6,6 +6,17 @@ const questionSchema = new mongoose.Schema({
   title: { type: String, required: true },
   prompt: { type: String, required: true },
   passage: String,
+  // What the audio says, word for word. Summarize Spoken Text reveals it on demand after
+  // answering; Write From Dictation and the blank-filling types use it as the reference text.
+  // Any question with audio may carry one, so it is not gated to a type.
+  transcript: String,
+  // The authored structure for types whose passage is more than a string — Fill in the Blanks
+  // (prose interleaved with blanks) and Highlight Incorrect Words (per-word isIncorrect flags).
+  // Deliberately stored as authored rather than as the render-ready shape: the client already
+  // derives segments, blank answers and incorrect-word indices from exactly this array (see
+  // practice/listeningData/shared.js), and freezing that derived shape into the database would
+  // mean a rendering change could only be made by rewriting every stored question.
+  content: mongoose.Schema.Types.Mixed,
   imageUrl: String,
   audioUrl: String,
   options: [String],

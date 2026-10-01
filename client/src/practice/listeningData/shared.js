@@ -15,39 +15,14 @@ export function audioUrl(folder, src) {
   return `${AUDIO_BASE}/audio/listening/${folder}/${src}`;
 }
 
-export function normalizeOptions(options) {
-  return (options || []).map(option => typeof option === "string" ? option : option.text);
-}
+export function applyStructuredContent(question, type, content) {
+  if (!content) return question;
 
-export function normalizeChoiceAnswer(options, answer) {
-  const index = (options || []).findIndex(option => option.id === answer);
-  return index >= 0 ? index : answer;
-}
-
-export function normalizeSubtype(subtype) {
-  return String(subtype || "").toLowerCase().replace(/_/g, " ");
-}
-
-export function localListeningQuestion(item, folder, type) {
-  const options = normalizeOptions(item.options);
-  const question = {
-    _id: String(item.id),
-    section: "listening",
-    type,
-    title: item.title,
-    prompt: item.question || item.prompt || "Listen to the recording and answer the question.",
-    audioUrl: audioUrl(folder, item.audio?.src),
-    transcript: item.audio?.transcript || "",
-    options,
-    answer: normalizeChoiceAnswer(item.options, item.answer),
-    subtype: normalizeSubtype(item.subtype),
-    difficulty: item.subtype === "core" ? "medium" : "easy",
-    evaluationType: type === "summarize-spoken-text" ? "subjective" : "objective",
-  };
-
-  if (type === "fill-blanks") {
-    const blanks = (item.content || []).filter(part => part.type === "blank");
-    question.passage = (item.content || []).map(part => part.type === "blank" ? "____" : (part.value || part.text || "")).join("");
+  // Listening's typed-blank variant. Reading keeps the "fill-blanks" name for its own
+  // pick-one-option task, which has no `content` array and never reaches this.
+  if (type === "fill-blanks-typed") {
+    const blanks = (content || []).filter(part => part.type === "blank");
+    question.passage = (content || []).map(part => part.type === "blank" ? "____" : (part.value || part.text || "")).join("");
     question.options = blanks.map(blank => blank.answer);
     question.localBlankAnswers = blanks.map(blank => blank.answer);
   }
@@ -64,7 +39,7 @@ export function localListeningQuestion(item, folder, type) {
     // and the selection state (toggle/multi) the scoring logic already uses are unchanged.
     let wordIndex = 0;
     const passageSegments = [];
-    for (const part of item.content || []) {
+    for (const part of content || []) {
       if (part.type === "word") {
         passageSegments.push({ type: "word", index: wordIndex, text: part.text, isIncorrect: !!part.isIncorrect, correction: part.answer || null });
         wordIndex += 1;

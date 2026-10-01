@@ -106,11 +106,10 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Read Aloud").closest(".practice-row"));
-    // Read Aloud opens its own dedicated, locally-curated 111-question set (not the mocked
-    // "Read Aloud Q" DB question), on the shared question list — landing on that list, with its
-    // own content in it, is the real navigation proof.
-    expect(await screen.findByText("Language Appearance")).toBeInTheDocument();
-    expect(screen.getByText(/Page 1 of 12/)).toBeInTheDocument();
+    // Read Aloud is served from the question bank like every other speaking task now, so the
+    // mocked DB question is what proves the navigation — it no longer has a bundled set of its
+    // own to fall back on.
+    expect(await screen.findByText("Read Aloud Q")).toBeInTheDocument();
   });
 
   it("clicking Write Essay navigates into the writing practice session", async () => {
@@ -131,12 +130,9 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Write From Dictation").closest(".practice-row"));
-    // Write From Dictation is served from its own locally-curated 30-question set too (not the
-    // single mocked "Dictation Q" DB question) — the same mechanism Read Aloud uses above. With
-    // more than one question it lands on the picker list first, so open question #1 from there.
-    const rows = await screen.findAllByText("WFD");
-    fireEvent.click(rows[0].closest(".question-list-row"));
-    await screen.findByText("Listen to the recording and write the sentence you hear.");
+    // Listening comes from the question bank now, so the mocked DB question is what loads — it
+    // no longer has a bundled set of its own to shadow it. One question means no picker list.
+    expect(await screen.findByText("Dictation Q")).toBeInTheDocument();
   });
 
   it("shows a PTE Core / PTE Academic-UKVI toggle without inventing a real content split", async () => {

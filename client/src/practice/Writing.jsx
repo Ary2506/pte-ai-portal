@@ -30,6 +30,8 @@ export default function Writing({
   const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Reset per question by the key={question._id} remount PracticeTask already does.
+  const [showAnswer, setShowAnswer] = useState(false);
   const [retrying, setRetrying] = useState(false);
 
   async function submit() {
@@ -128,6 +130,28 @@ export default function Writing({
               Re-do
             </button>
           </div>
+        )}
+        {/* Gated on a reference answer actually existing, not on the task type: Summarize Written
+            Text has one for some questions and Essay has none at all, so keying this on type
+            would either hide a real model answer or offer a button that reveals nothing.
+            Writing is AI-scored, so this is a reference to compare against — never a key the
+            student is marked on, which is why it can be shown before submitting. */}
+        {typeof question?.answer === "string" && question.answer.trim() && (
+          <>
+            <button
+              type="button"
+              className="secondary answer-toggle"
+              onClick={() => setShowAnswer((value) => !value)}
+            >
+              {showAnswer ? "Hide Answer" : "Show Answer"}
+            </button>
+            {showAnswer && (
+              <div className="answer-reveal">
+                <b>Sample answer</b>
+                <p>{question.answer}</p>
+              </div>
+            )}
+          </>
         )}
       </section>
       <aside className="panel tips">

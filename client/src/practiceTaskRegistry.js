@@ -33,7 +33,7 @@ export const PRACTICE_TASKS = {
   listening: [
     { slug: "summarize-spoken-text", label: "Summarize Spoken Text", supported: true, hasAI: true },
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },
-    { slug: "fill-blanks", label: "Fill in the Blanks", supported: true, hasAI: false },
+    { slug: "fill-blanks-typed", label: "Fill in the Blanks", supported: true, hasAI: false },
     { slug: "mcq-single", label: "Multiple Choice Single", supported: true, hasAI: false },
     { slug: "select-missing-word", label: "Select Missing Word", supported: true, hasAI: false },
     { slug: "highlight-incorrect-words", label: "Highlight Incorrect Words", supported: true, hasAI: false },

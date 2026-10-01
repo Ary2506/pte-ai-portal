@@ -1,0 +1,2822 @@
+[
+  {
+    "id": "fill-blanks-dragdrop-20b2f1",
+    "_order": 1,
+    "title": "Long-term Goal",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The long-term goal can be divided into short-term goals that are ____ and achievable. For example, ____ achieve a high grade, you need to set short-term objectives such as studying regularly, completing assignments on time, and actively participating in class. Achieving these short-term goals along the way will help you reach your long-term goal. And, timely ____ on feedback also plays an important role in this process.",
+    "options": [
+      "unrealistic",
+      "along the way",
+      "action",
+      "in order to",
+      "frequent",
+      "subsequently",
+      "realistic"
+    ],
+    "answer": [
+      6,
+      3,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2f3",
+    "_order": 2,
+    "title": "Online Learning",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "If you are interested in studying but have other ____, our online and distance learning courses offer an alternative flexible ____ of study. Teaching is conducted through a mixture of audio-visual, written and interactive materials. There are also ____ for online discussion and collaborative projects with tutors and other students. Some programmes include residential ____ taught on campus, giving you the ____ to meet and work alongside your tutors and fellow students face-to-face. Our Graduate School provides comprehensive support for distance and part-time researchers, many of whom study for up to six years or more.",
+    "options": [
+      "opportunities",
+      "rate",
+      "charges",
+      "mode",
+      "modules",
+      "commitments",
+      "requirements",
+      "chance"
+    ],
+    "answer": [
+      5,
+      3,
+      0,
+      4,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2f5",
+    "_order": 3,
+    "title": "Sports",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Sports were firstly part of survival skills, ____ linked to human existence, but now they are mainly for ____ purposes and enjoyment. For example, swimming, hunting, and fishing were ____ necessary for food, but today they have evolved into popular competitive sports. Some of them are actually seen as global competitions ____ millions of spectators.",
+    "options": [
+      "barely",
+      "originally",
+      "actually",
+      "tightly",
+      "recreational",
+      "untold",
+      "attracting",
+      "supporting"
+    ],
+    "answer": [
+      3,
+      4,
+      1,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2f7",
+    "_order": 4,
+    "title": "Bumble Bees",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "According to a research conducted by Cambridge University, flowers can find their own ways to attract insects to help them pollinate. Flowers will release an ____ smell. A scientist and her ____ did an experiment in which they used fake flowers to attract bees and insects. In their experiments, they freed many bumblebees from their ____ repeatedly and got the same results.",
+    "options": [
+      "origins",
+      "irresistible",
+      "subjects",
+      "colleagues",
+      "orchestral"
+    ],
+    "answer": [
+      1,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2f9",
+    "_order": 5,
+    "title": "A Letter",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "A letter from a mother to school officials. Because her son was ____ at home she explained his illness to them saying she did not want her son to ____ the disease to other children. She ____ that the authorities would be able to ____ on lessons to her son during this ____.",
+    "options": [
+      "sick",
+      "disabled",
+      "spread",
+      "discover",
+      "hoped",
+      "dictated",
+      "pass",
+      "period",
+      "cycle"
+    ],
+    "answer": [
+      0,
+      2,
+      4,
+      6,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2fb",
+    "_order": 6,
+    "title": "UN",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Founded after World War II by 51 \"peace-loving states\" combined to oppose future aggression, the United Nations now counts 192 member nations, ____ its newest members, Nauru, Kiribati, and Tonga in 1999, Tuvalu and Yugoslavia in 2000, Switzerland and East Timor in 2002, and Montenegro in 2006. United Nations Day has been ____ on October 24 since 1948 and celebrates the objectives and accomplishments of the organization, which was established on October 24, 1945. The UN ____ in peacekeeping and humanitarian missions across the globe. Though some say its ____ has declined in recent decades, the United Nations still plays a tremendous role in world politics. In 2001 the United Nations and Kofi Annan, then Secretary-General of the UN, won the Nobel Peace Prize \"for their work for a better organized and more peaceful world.\" Since 1948 there have been 63 UN peacekeeping operations, 16 are currently underway. Thus far, close to 130 nations have contributed personnel at various times; 119 are currently providing peacekeepers. As of August 31, 2008, there were 16 peacekeeping operations underway with a total of 88,230 personnel. The small island nation of Fiji has taken part in virtually every UN peacekeeping operation, as has Canada.",
+    "options": [
+      "observed",
+      "trades",
+      "engages",
+      "except",
+      "watched",
+      "influence",
+      "including",
+      "treatment"
+    ],
+    "answer": [
+      6,
+      0,
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2fd",
+    "_order": 7,
+    "title": "Electric Eels",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Electric eels are born to shock. Thanks to cells called electrocytes which, stacked like batteries, make up 80% of their bodies, these cunning South American ____ can deliver debilitating blows of up to 600 volts to their prey. But they've harnessed their electricity to pack even bigger punches. Last year, Vanderbilt University biologist Kenneth Catania revealed electric eels bring their positively charged head and negatively charged ____ closer together to generate a more powerful ____.",
+    "options": [
+      "objects",
+      "current",
+      "limb",
+      "hunters",
+      "tail",
+      "engine"
+    ],
+    "answer": [
+      3,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b2ff",
+    "_order": 8,
+    "title": "Melting Ice",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "At the end of the last ice age, the melting ice disrupted the ocean currents in the North Atlantic and ____ a drop in temperature of almost 5 degrees. Even ____ the rest of the planet was warming ____, the North Atlantic region remained in a cold period for 1300 years. The same thing happened ____ 8000 years ago, when the cooling lasted about a hundred years, and it ____ happen again today. Even a short period of cooling in the North Atlantic could have a dramatic effect on the wildlife, and the human populations, living there.",
+    "options": [
+      "forwent",
+      "up",
+      "never",
+      "caused",
+      "could",
+      "around",
+      "though",
+      "thorough"
+    ],
+    "answer": [
+      3,
+      6,
+      1,
+      5,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b301",
+    "_order": 9,
+    "title": "Sandra Lousada",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "London's National Portrait Gallery is currently celebrating the fifty-year ____ of photographer Sandra Lousada. The twenty-one portraits on display depict key ____ in literature, film and fashion from the early 1960s. Subsequent to the acquisition of forty portraits by Lousada, the ____ at The National Portrait Gallery highlights shots taken between 1960 and 1964, many of which feature in Lousada's book Public Faces Private Places (2008). Formal commissioned portraits are shown alongside behind-the-scenes photographs taken on film ____ and unguarded portraits of sitters captured at home.",
+    "options": [
+      "sets",
+      "elements",
+      "birthday",
+      "career",
+      "figures",
+      "cinemas",
+      "display",
+      "pictures"
+    ],
+    "answer": [
+      3,
+      4,
+      6,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b303",
+    "_order": 10,
+    "title": "Father in Family",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "With the increase in women's ____ in the labor force, many mothers have less time ____ to undertake domestic activities. At the same time, there has been increasing ____ that the father's ____ with a child is important. A father can have many ____ in the family, ranging from income provider to teacher, carer, and playmate. Therefore, balancing paid work and family responsibilities can be an important issue for both fathers and mothers in families.",
+    "options": [
+      "relationship",
+      "efficient",
+      "roles",
+      "separation",
+      "shares",
+      "participation",
+      "recognition",
+      "available"
+    ],
+    "answer": [
+      5,
+      7,
+      6,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b305",
+    "_order": 11,
+    "title": "Spokesman",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "A spokesman for the project said: \"a car mechanic for ____ could find at a glance where a part on a certain car model is so that it can be identified and repaired. For the motorist the system could ____ accident black spots or dangers on the road.\" In other cases the glasses could be worn by people going on a guided tour, ____ points of interest or by people looking at panoramas where all the sites could be identified.",
+    "options": [
+      "instance",
+      "indicating",
+      "describe",
+      "behalf",
+      "highlight",
+      "exemplifying"
+    ],
+    "answer": [
+      0,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b307",
+    "_order": 12,
+    "title": "E-Learning",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "E-Learning is the new way forward. We believe ____ in E-Learning. Our innovative approach opens up new ____ for busy professionals that simply did not previously exist – the ____ to combine a prestigious Masters programme with a demanding professional and personal ____. Our small virtual classrooms facilitate intensive ____ and collaboration among professionals from all over the world.",
+    "options": [
+      "investment",
+      "opportunities",
+      "interaction",
+      "passionately",
+      "course",
+      "life",
+      "proportionately",
+      "chance"
+    ],
+    "answer": [
+      3,
+      1,
+      7,
+      5,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b309",
+    "_order": 13,
+    "title": "Clear Plan",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "To invest, you need to ____ a clear plan, do your own research, ____ a margin of safety by always thinking about the ____ and, ultimately, be patient. By all means include some speculative picks if you ____, but ensure they are only a small part of your portfolio. Looking for an oil explorer whose shares double, treble and double again is exciting but such firms are very ____. There are a lot more which have a consistent record of paying out the dividends which really make the markets work for you, once they are reinvested.",
+    "options": [
+      "wish",
+      "valuation",
+      "build in",
+      "rare",
+      "violation",
+      "crash out",
+      "draw up",
+      "grow up",
+      "rear"
+    ],
+    "answer": [
+      6,
+      2,
+      1,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b30b",
+    "_order": 14,
+    "title": "Houston",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Houston is the fifth-largest metropolitan area in the United States and has an outsized ____ on the U.S. economy. More than 90 percent of U.S. offshore oil and gas ____ takes place in the Texas Gulf Coast area, and the Houston region contains the largest ____ of energy, petrochemical, and refining industries in the United States. Houston is home to 25 percent of the country's petroleum refining capability, 40 percent of the nation's capacity for downstream chemical production, and the fastest-growing liquefied natural gas industry in the nation.",
+    "options": [
+      "pollution",
+      "impact",
+      "classification",
+      "production",
+      "concentration",
+      "impetus"
+    ],
+    "answer": [
+      1,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b30d",
+    "_order": 15,
+    "title": "Dance",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Dance has played an important role in many musicals. In some ____ dance numbers are included as an excuse to add to the color and spectacle of the show, but dance is more effective when it forms an integral part of the ____. An early example is Richard Rodgers On Your Toes(1936) in which the story about classical ballet meeting the world of jazz enabled dance to be introduced in a way that ____, rather than interrupted, the drama.",
+    "options": [
+      "punctuated",
+      "plot",
+      "itineraries",
+      "judgement",
+      "enhanced",
+      "cases"
+    ],
+    "answer": [
+      5,
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b30f",
+    "_order": 16,
+    "title": "The University of Maryland",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The University of Maryland boasts 78 academic programs ____ in the top 25 nationally and 29 academic programs in the top 10 according to U.S. News and World report. By drawing top-notch faculty, attracting the brightest students and ____ in the quality of our academic programs, we are a force to ____ with on a national ____.",
+    "options": [
+      "perspective",
+      "agree",
+      "reckon",
+      "investing",
+      "ranked",
+      "participating",
+      "basis",
+      "ranged"
+    ],
+    "answer": [
+      4,
+      3,
+      2,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b311",
+    "_order": 17,
+    "title": "Physical Activity",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Participating regularly in physical activity has been shown to benefit an individual's health and ____. Regular ____ activity is important in reducing the risk of ____ diseases, such as heart disease and stroke, obesity, diabetes and some forms of cancer. The National Physical Activity Guidelines for Adults ____ at least 30 minutes of moderate-intensity physical activity, ____ every day of the week, to ____ health benefits.",
+    "options": [
+      "recruits",
+      "recommends",
+      "exploit",
+      "chronic",
+      "preferably",
+      "medicine",
+      "affordably",
+      "physical",
+      "obtain",
+      "wellbeing"
+    ],
+    "answer": [
+      9,
+      7,
+      3,
+      1,
+      4,
+      8
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 6,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b313",
+    "_order": 18,
+    "title": "Feature Films",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The universality of story Feature films are narratives – they tell stories. Even films based on ____ events will fictionalize them in order to produce drama, to telescope time, to avoid being filled up with too many ____ characters, or simply to be more entertaining. Even in the current welter of special-effect movies, feature films are usually summarized by their plots - in their first treatment (or outline of the script idea), in the advance publicity, in the TV guide, in reviews, and in conversations. Films may differ from other ____ of narrative- literary fiction or television drama, for instance in the medium used and the representational conventions. They do, however, ____ with literary fiction and television drama the basic structure and functions of narrative. Much work has been done by researchers in the field known as 'narratology' on exactly what constitutes the structures and functions of the narrative. Their conclusions are of great use to students of the feature film.",
+    "options": [
+      "share",
+      "true",
+      "columns",
+      "kinds",
+      "shape",
+      "contrived",
+      "minor",
+      "leading"
+    ],
+    "answer": [
+      1,
+      6,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b315",
+    "_order": 19,
+    "title": "Air Moving",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Wind is air moving around. Some winds can move as fast ____ a racing car, over 100 miles per ____. Wind can travel around the world. Wind ____ make you feel cold because you lose heat from your body ____ when it is windy. Weather forecasters need ____ know the speed and direction of the wind. The strength of wind is measured using the Beaufort scale from wind force 0 when there is no wind, to wind force 12 which can damage houses and buildings and is called hurricane force.",
+    "options": [
+      "hour",
+      "as",
+      "second",
+      "more",
+      "slower",
+      "with",
+      "to",
+      "faster",
+      "do",
+      "can"
+    ],
+    "answer": [
+      1,
+      0,
+      9,
+      7,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b317",
+    "_order": 20,
+    "title": "Absenteeism",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Absence from work is a costly and ____ problem for any organization. The cost of absenteeism in Australia has been put at 1.8 million hours per day or $1400 million annually. The study reported here was ____ in the Prince William Hospital in Brisbane, Australia, where, prior to this time, few active steps ____ been taken to measure, understand or manage the ____ of absenteeism.",
+    "options": [
+      "definitive",
+      "conduced",
+      "conducted",
+      "disruptive",
+      "occurrence",
+      "occupation",
+      "had",
+      "has"
+    ],
+    "answer": [
+      3,
+      2,
+      6,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b319",
+    "_order": 21,
+    "title": "Marketing Manager",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "I feel about about the opportunity to take on new challenges and ____ to the team. While I was working at my former job, I gained valuable experience that I believe will be beneficial in this role. I am eager to take a ____ at your esteemed company and I am ____ that my skills and experience make me a strong candidate. Please let me ____ if there are any additional steps I need to take or information I need to provide. I am looking ____ to your response.",
+    "options": [
+      "support",
+      "comfortable",
+      "position",
+      "ahead",
+      "opportunity",
+      "contribute",
+      "confident",
+      "forward",
+      "know"
+    ],
+    "answer": [
+      5,
+      2,
+      6,
+      8,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b31b",
+    "_order": 22,
+    "title": "Paper Label",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Make sure your shipping envelopes are clean and completely dry, and remember to remove any paper shipping labels before going to drop-off ____. Paper labels are detrimental to the Store Drop-off recycling ____. If the labels don't peel off easily, you can cut them off with ____.",
+    "options": [
+      "brushes",
+      "locations",
+      "process",
+      "prices",
+      "panels",
+      "scissors"
+    ],
+    "answer": [
+      1,
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b31d",
+    "_order": 23,
+    "title": "Museum Restaurant",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "This museum restaurant is a ____ place to ____ an event. You can have an event of 20-25 people. More people are ____ and prices ____ at $45.",
+    "options": [
+      "bad",
+      "normal",
+      "have",
+      "available",
+      "perfect",
+      "possible",
+      "up",
+      "start"
+    ],
+    "answer": [
+      4,
+      2,
+      5,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b31f",
+    "_order": 24,
+    "title": "Competitive Market",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "While ____ businesses struggle to adapt to today's competitive market, only a ____ have managed to really ____. Those that succeed often work alongside innovative partners who help ____ growth through collaboration and shared resources. Thriving in such environments requires not only resilience but also the ability to adapt and work effectively ____ others.",
+    "options": [
+      "along",
+      "within",
+      "few",
+      "lot",
+      "many",
+      "thrive",
+      "alongside",
+      "facilitate"
+    ],
+    "answer": [
+      4,
+      2,
+      5,
+      7,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b321",
+    "_order": 25,
+    "title": "Parent Invitation",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "We invite parents to take part in a program ____ three times a year. The details of the program will be ____ on our website. We ____ parents to ____ so that their children can ____.",
+    "options": [
+      "bold",
+      "expected",
+      "posted",
+      "success",
+      "held",
+      "expect",
+      "succeed",
+      "attend"
+    ],
+    "answer": [
+      4,
+      2,
+      5,
+      7,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b323",
+    "_order": 26,
+    "title": "Family Commitment",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The older you get, the more your ____ increase. Your commitment to your family and work grows, ____ you with less time for play and recreation. Neglecting recreation is a disservice to yourself, as it is essential for overall well-being. This can lead to ____ and fatigue. Remember, playing isn't just for kids – it's for adults too.",
+    "options": [
+      "relaxation",
+      "leaving",
+      "possessions",
+      "responsibilities",
+      "burnout",
+      "causing",
+      "success"
+    ],
+    "answer": [
+      3,
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b325",
+    "_order": 27,
+    "title": "Children Breakfast",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Children who eat breakfast consistently ____ more nutrients that are essential for healthy development. As a result, they are more likely to ____ both physically and mentally. Studies also show that such children ____ to behave better in school and maintain higher levels of concentration.",
+    "options": [
+      "absorb",
+      "thrive",
+      "increase",
+      "consume",
+      "tend",
+      "grow",
+      "prefer"
+    ],
+    "answer": [
+      3,
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b327",
+    "_order": 28,
+    "title": "Right Foundation",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "We ____ anyone can excel with the right foundation. By ____ the basis of information setting for knowledge, such as coding and other skills, participants gain essential expertise. Through 9-12 projects, you will ____ your portfolio, and upon ____ the program, you will have a strong showcase of your abilities.",
+    "options": [
+      "understanding",
+      "think",
+      "completing",
+      "work",
+      "believe",
+      "build",
+      "solving",
+      "lift"
+    ],
+    "answer": [
+      4,
+      0,
+      5,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b329",
+    "_order": 29,
+    "title": "Drugs",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "When that happens, staff will help the person – ____ out and now a little stressed – fish their drugs out of the rubbish. On their way out, they might have a blood test, their first ____ check-up in years, or just a hot cup of Milo. \"We enable people to inject in the centre because that's what they do,\" the medical director, Nico Clark, tells Guardian Australia during a latest visit to the North Richmond Community Health Centre. \"The majority are dependent on their ____. The purpose is not to be a place that facilitates injection per se. The ____ is to keep people alive.\"",
+    "options": [
+      "academic",
+      "purpose",
+      "matter",
+      "slung",
+      "view",
+      "substances",
+      "dental",
+      "strung"
+    ],
+    "answer": [
+      7,
+      6,
+      5,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b32b",
+    "_order": 30,
+    "title": "Reading and Writing",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The simplest ____ for practising writing is that it contributes to children's fluent reading. In reading and writing, a vivid ____ is often ____ to the author's prospects and success, deepening the reader's ____.",
+    "options": [
+      "image",
+      "reason",
+      "understanding",
+      "connection",
+      "system",
+      "tied",
+      "achieved"
+    ],
+    "answer": [
+      1,
+      0,
+      5,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b32d",
+    "_order": 31,
+    "title": "Brain Bus",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "These interesting questions and more will be revealed by University of Manchester scientists when they take to the road on their 'Brain Bus'. The bus is taking hands-on ____ to test the senses to the suburbs, to show young and old alike how the brain works and how science can answer some of life's most captivating questions. Organiser Dr Stuart Allan, lecturer at the Faculty of Life Sciences, explains: \"Three-year-olds and upwards can understand the senses and it's an area that is ____ to all ages.\" It's effort to get out of bed on a Saturday morning and go to the Museum. We are bringing science to your doorstep and going further afield this year in the hope of finding new and different ____. \"We want people to see that science is interesting as well as important in our lives, and to ____ people who may not consider it possible to go to University.\"",
+    "options": [
+      "activities",
+      "intriguing",
+      "challenging",
+      "categorize",
+      "schemes",
+      "encourage",
+      "audiences",
+      "groups"
+    ],
+    "answer": [
+      0,
+      1,
+      6,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b32f",
+    "_order": 32,
+    "title": "Organic Structures",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The theme of contrast evident in Blue Skies is typical of Ms Vu's work. She explores organic structures using the latest technologies. She is inspired by ____ detail but often works on a large scale. Her sculptures are ____, yet familiar, blurring the boundaries between the real and the artificial. 'Organic structures and spirals are the starting point for my creative exploration. But my work extends these concepts to explore the ____ between the real and the artificial, and how we often don't differentiate between the two, Ms Vu said.'",
+    "options": [
+      "high",
+      "minute",
+      "definite",
+      "ambiguous",
+      "overlap",
+      "gap"
+    ],
+    "answer": [
+      1,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b331",
+    "_order": 33,
+    "title": "Wrist Watch",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The wrist watch works by ____ information such as a person's pulse or movement. When it ____ a change in a person's health, the watch sends information to a touchscreen hub ____ in the home. The hub then ____ pre-determined contacts and calls for help immediately.",
+    "options": [
+      "administer",
+      "detects",
+      "hoisted",
+      "healthy",
+      "decides",
+      "located",
+      "tracking",
+      "alerts"
+    ],
+    "answer": [
+      6,
+      1,
+      5,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b333",
+    "_order": 34,
+    "title": "Mercury",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Mercury is not found in many common products that we buy because it can be extremely dangerous. The most common products that ____ mercury are batteries, powerful outdoor lights, disinfectants and thermometers, which are used to measure our body's temperature. It can also be found in barometers, which are used to measure air pressure and ____ changes in weather, and thermostats, which ____ the temperature of buildings. Mercury can also be found in printer and photocopier toners.",
+    "options": [
+      "fix",
+      "cover",
+      "constrain",
+      "regulate",
+      "contain",
+      "show"
+    ],
+    "answer": [
+      4,
+      5,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b335",
+    "_order": 35,
+    "title": "Students away from Home",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "For lots of first-year students, the University may be their first ____ living away from home for an long period. It is a ____ break from home. In my point of view, this is the best thing that you can do. I know you have to ____ for yourself, cook and clean after yourself, ____ look after yourself without your parents but the truth is some time in your life you are going to have to part with lovely mummy and daddy.",
+    "options": [
+      "vouch",
+      "exciting",
+      "easily",
+      "basically",
+      "definite",
+      "fend",
+      "experience",
+      "opportunity"
+    ],
+    "answer": [
+      6,
+      4,
+      5,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b337",
+    "_order": 36,
+    "title": "Student-run Restaurant",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The rest of Taylor's restaurant is student-run. Students in quantity food production and service management ____ make the carefully prepared dishes. \"We teach students to understand where a product comes from and to respect that product,\" Garmy said. Skeptics might doubt the ____ of a student-run restaurant, but one visit to Taylor's will immediately change their outlook. Dishes such as orecchiette and butternut squash, pappardelle with duck and bistro chicken will please any appetite while imparting the need to ____ for a second taste. Students are taught to use ratios and proportions rather than recipes when creating dishes. \"Understanding ratios and proportions when creating dishes instead of recipes makes students think and ____ teaches them how to cook, rather than just reading a recipe and not learning from it,\" Garmy said. Garmy said he believes in using all aspects of a product, which Taylor's ____ reflects.",
+    "options": [
+      "actually",
+      "quality",
+      "sign",
+      "separately",
+      "classes",
+      "register",
+      "menu",
+      "return",
+      "quantity",
+      "rosters"
+    ],
+    "answer": [
+      4,
+      1,
+      7,
+      0,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b339",
+    "_order": 37,
+    "title": "Body and Water",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Your body is nearly two-thirds water. And so it is very important that you ____ enough fluid to stay ____ and healthy. If you don't get enough fluid you may feel ____, get ____, and not perform at your best.",
+    "options": [
+      "enlist",
+      "headaches",
+      "tired",
+      "varied",
+      "hydrated",
+      "consume",
+      "humble",
+      "hardness"
+    ],
+    "answer": [
+      5,
+      4,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b33b",
+    "_order": 38,
+    "title": "Herbal",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "A herbal is a book of plants, describing their appearance, their properties and how they may be used for preparing ointments and medicines. The medical use of plants is ____ on fragments of papyrus and clay tablets from ancient Egypt, Samaria and China that date back 5,000 years but document traditions far older still. Over 700 herbal remedies were detailed in the Papyrus Ebers, an Egyptian text written in 1500 BC. Around 65 BC, a Greek physician called Dioscorides wrote a herbal that was ____ into Latin and Arabic. Known as 'De materia medica', it became the most influential work on medicinal plants in both Christian and Islamic worlds until the late 17th century. An illustrated manuscript copy of the text made in Constantinople (modern-day Istanbul) ____ from the sixth century. The first printed herbals date from the dawn of European printing in the 1480s. They provided useful information for apothecaries, whose job was to make the pills and potions ____ by physicians.",
+    "options": [
+      "prescribed",
+      "translated",
+      "recorded",
+      "initiated",
+      "removed",
+      "survives",
+      "discovered",
+      "suffers"
+    ],
+    "answer": [
+      2,
+      1,
+      5,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b33d",
+    "_order": 39,
+    "title": "City Design",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The way we design our cities needs a major rethink. After thousands of years of progress in urban development, we ____ some 60 years ago. Cities are not safer, healthier, more efficient, or more ____. They are getting worse on these measures. The statistics on chronic disease, rising road tolls and congestion in our urban environments paint a ____ future. The clues to why lie in how we think about and design our cities.",
+    "options": [
+      "broad",
+      "equitable",
+      "plateaued",
+      "recovered",
+      "bleak",
+      "retarded"
+    ],
+    "answer": [
+      2,
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b33f",
+    "_order": 40,
+    "title": "Tomato",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The tomato is probably the most widely grown ____ by the home gardener because of its ____ value, many uses, and comparative ease of ____. Originating in Central and South America, the tomato was domesticated in Mexico. There are many related ____ species in South America. \"Tomati\" was the name ____ by Native Americans.",
+    "options": [
+      "fruit",
+      "used",
+      "wild",
+      "stuff",
+      "culture",
+      "cooking",
+      "food",
+      "took",
+      "eating",
+      "vegetable"
+    ],
+    "answer": [
+      9,
+      6,
+      4,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b341",
+    "_order": 41,
+    "title": "Business",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "One notable feature of business is its economic character. In the world of business, we interact with each other not as family members, friends, or neighbors, but as buyers and sellers, employers and employees, and the like. Trading, for example, is often ____ by hard bargaining, in which both sides conceal their full hand and perhaps ____ in some bluffing. And a skilled salesperson is well-____ in the art of arousing a customer's attention (sometimes by a bit of puffery) to ____ the sale. Still, there is an \"ethics of trading\" that prohibits the use of false or deceptive claims and tricks such as \"bait-and-switch\" advertising.",
+    "options": [
+      "distinguishing",
+      "compliant",
+      "engage",
+      "distribute",
+      "versed",
+      "extinct",
+      "gauge",
+      "informed",
+      "accompanied",
+      "clinch"
+    ],
+    "answer": [
+      0,
+      8,
+      4,
+      9
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b343",
+    "_order": 42,
+    "title": "David Lynch",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "David Lynch is professor and head of education at Charles Darwin University. And prior to this he was sub dean in the Faculty of Education and Creative Arts at Central Queensland University and foundation head of the University's Noosa ____. David's career in education ____ as a primary school teacher in Queensland in the early 1980's, ____ to four principal positions before ____ higher education. David's research interests predominate in teacher education with particular interest in building teacher capability to meet a changed world.",
+    "options": [
+      "acted",
+      "beginning",
+      "campus",
+      "department",
+      "entering",
+      "began",
+      "progressing"
+    ],
+    "answer": [
+      2,
+      5,
+      6,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b345",
+    "_order": 43,
+    "title": "Electrons",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The electrons that orbit closest to the nucleus are strongly ____. They are called bound electrons. The electrons that are farther away from the pull of nucleus can be ____ out of their ____. These are called free electrons. Free electrons can move from one atom to another. This ____ is known as electron flow. Electricity is the movement or flow of electrons from one atom to another.",
+    "options": [
+      "orbits",
+      "sustained",
+      "forced",
+      "attracted",
+      "inclined",
+      "angles",
+      "put",
+      "phenomenon",
+      "point"
+    ],
+    "answer": [
+      3,
+      2,
+      0,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b347",
+    "_order": 44,
+    "title": "Bioenergy",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "A Graphic Introduction was put together by northern artists, who have ____ discussions with scientists from the Supergen Bioenergy Hub in a ____ of striking images which imagine alternative futures and explain some of the technology ____ and how it might be put into practice.",
+    "options": [
+      "involved",
+      "dreamed",
+      "discriminated",
+      "interpreted",
+      "forsook",
+      "system",
+      "series"
+    ],
+    "answer": [
+      3,
+      6,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b349",
+    "_order": 45,
+    "title": "Marshmallow Test",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Mischel is the creator of the marshmallow test, one of the most famous experiments in the history of psychology, which is often cited as evidence of the importance of self-control. In the original test, which was administered at the Bing Nursery School, at Stanford, in the nineteen-sixties, Mischel's team would present a child with a treat (marshmallows were just one option) and tell her that she could either eat the one treat ____ or wait alone in the room for several minutes until the researcher returned, at which point she could have two treats. The promised treats were always visible and the child knew that all she had to do to stop the agonizing wait was to ring a bell to call the experimenter back – although that ____, she wouldn't get the second treat. The longer a child delayed gratification, Mischel found – that is, the longer she was able to wait – the better she would fare later in life at numerous measures of what we now call executive function. She would ____ better academically, earn more money, and be healthier and happier. She would also be more likely to avoid a number of negative outcomes, including jail time, obesity, and drug use.",
+    "options": [
+      "frequently",
+      "perform",
+      "immediately",
+      "achieve",
+      "case",
+      "topic"
+    ],
+    "answer": [
+      2,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b34b",
+    "_order": 46,
+    "title": "Keith Haring",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Keith Haring began as an underground artist, literally. His first famous projects were pieces of ____ graffiti drawn in New York subway stations. Haring traveled from station to station, drawing with chalk and chatting with commuters about his work. These doodles helped him develop his classic style and he ____ so prolific, doing up to 40 drawings a day, that it was not long before fame and a measure of fortune followed. Soon, galleries and collectors from the art establishment wanted to buy full-sized pieces by Haring. The paintings ____ in price but this did not sit well with Haring's philosophy. He believed that art, or at least his art, was for everyone. Soon, Haring opened a store which he called the Pop Shop, which he hoped would attract a broad range of people. While somewhat controversial among street artists, some of whom ____ Haring of 'selling out,' the Pop Shop changed the way people thought about the relationship between art and business.",
+    "options": [
+      "skyrocketed",
+      "stylized",
+      "accused",
+      "framed",
+      "remained",
+      "grew",
+      "retrospected",
+      "recommended"
+    ],
+    "answer": [
+      1,
+      5,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b34d",
+    "_order": 47,
+    "title": "Sound Speed",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The speed of sound (otherwise known as Mach 1) varies with temperature. At sea level on a 'standard day,' the temperature is 59°F, and Mach 1 is approximately 761 mph. As the altitude increases, the temperature and speed of sound ____ decrease until about 36,000 feet, after which the temperature ____ steady until about 60,000 feet. Within that 36,000 – 60,000 foot range, Mach 1 is about 661 mph. Because of the ____, it is possible for an airplane flying supersonic at high altitude to be slower than a subsonic flight at sea level. The transonic band (the \"sound barrier\") extends ____ around Mach 0.8 – when the first supersonic shock waves form on the wing – to Mach 1.2, when the entire wing has gone supersonic.",
+    "options": [
+      "via",
+      "towards",
+      "both",
+      "from",
+      "variation",
+      "differences",
+      "either",
+      "remains",
+      "tends"
+    ],
+    "answer": [
+      2,
+      7,
+      4,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b34f",
+    "_order": 48,
+    "title": "Enlightments",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Of course there were many different Enlightenments, and scholars still argue about which was the real torch-bearer. However, despite their quarrelsome diversity, most Enlightenment thinkers shared certain intellectual traits - a / an ____ on intellectual autonomy, a ____ of tradition and authority as the infallible sources of truth, a ____ of bigotry and persecution, a ____ to free enquiry, a ____ that (in Francis Bacon's words) knowledge is power.",
+    "options": [
+      "conclusion",
+      "proposal",
+      "commitment",
+      "dislike",
+      "belief",
+      "insistence",
+      "rejection",
+      "though"
+    ],
+    "answer": [
+      5,
+      6,
+      3,
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b351",
+    "_order": 49,
+    "title": "Program",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Our program will develop your ____ knowledge of Computer Science and your problem-solving and ____ skills, while enabling you to achieve the ____ qualification for the IT professional. The program structure is extremely ____, enabling you to personalize your MSc through a wide range of electives.",
+    "options": [
+      "utmost",
+      "theoretical",
+      "uprising",
+      "ultimate",
+      "analogous",
+      "analytical",
+      "flexible"
+    ],
+    "answer": [
+      1,
+      5,
+      3,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b353",
+    "_order": 50,
+    "title": "Color Preference",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Many tests have shown that, in a very broad way, people in most parts of the world have similar color preferences. Blue is the most preferred and popular hue, followed in order by red, green, purple, yellow and orange. Overlying this basic order of color preference, ____, are the responses of individuals, which of course vary ____ and may also be very powerful. Children are likely to have strong preferences for some colors and aversions to others, but sometimes will not admit to them, since outside ____ may be influential in determining both color preferences and the way that they are expressed or suppressed. Current fashions in clothes and accessories, gender-stereotyping and peer-group pressure may all play a significant part. Boys in particular may be reluctant to admit to any strong preferences for colors ____ those of favorite football teams, because color awareness may be regarded by their peer-group as feminine.",
+    "options": [
+      "widely",
+      "however",
+      "other than",
+      "therefore",
+      "factors",
+      "thoroughly",
+      "counters",
+      "rather than"
+    ],
+    "answer": [
+      1,
+      0,
+      4,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b355",
+    "_order": 51,
+    "title": "Shrimp Farms",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Over the past two decades around a third of the world's mangrove swamps have been ____ for human use, with many turned into valuable shrimp farms. In 2007 an economic study of such shrimp farms in Thailand showed that the commercial profits per hectare were $9,632. If that were the only factor, conversion would seem an excellent idea. However, proper ____ shows that for each hectare government subsidies formed $8,412 of this figure and there were costs, too: $1,000 for pollution and $12,392 for losses to ecosystem services. These ____ damage to the supply of foods and medicines that people had taken from the forest, the loss of habitats for fish, and less buffering against storms. And because a given shrimp farm only stays ____ for three or four years, there was the additional cost of restoring them afterwards.",
+    "options": [
+      "regenerating",
+      "study",
+      "estimated",
+      "accounting",
+      "productivity",
+      "productive",
+      "converted",
+      "comprised"
+    ],
+    "answer": [
+      6,
+      3,
+      7,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b357",
+    "_order": 52,
+    "title": "Egyptian Music",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Music was as important to the ancient Egyptians as it is in our modern society. Although it is thought that music played a ____ throughout the history of Egypt, those that study the Egyptian writings have discovered that music ____ to become more important in what is called the 'pharaonic' ____ of their history. This was the time when the Egyptian dynasties of the pharaohs were ____ and music was found in many parts of everyday Egyptian life.",
+    "options": [
+      "need",
+      "period",
+      "showed",
+      "established",
+      "rank",
+      "seemed",
+      "history",
+      "space",
+      "role",
+      "utilized"
+    ],
+    "answer": [
+      8,
+      5,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b359",
+    "_order": 53,
+    "title": "Childcare",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Affordable early years education and childcare potentially enables parents, particularly mothers, to be in paid employment. International studies have found that countries with greater enrolment rates in publicly funded or provided childcare also have higher maternal employment rates, ____ untangling causal relationships is complex. From the point of view of the household, additional income, especially for the less well-off, is itself associated with better outcomes for children, as child poverty has been shown to be a key independent determinant of children's outcomes. And, ____ the point of view of the public purse, as mothers ____ employment they are likely to claim fewer benefits and to generate extra revenues ____ income tax and national insurance.",
+    "options": [
+      "from",
+      "except",
+      "although",
+      "through",
+      "call",
+      "at",
+      "against",
+      "enter"
+    ],
+    "answer": [
+      2,
+      0,
+      7,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b35b",
+    "_order": 54,
+    "title": "Country Definition",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "What is a country, and how is a country defined? When people ask how many countries there are in the world, they expect a simple answer. After ____, we've explored the whole planet, we have international travel, satellite navigation and plenty of global organizations like the United Nations, so we ____ really know how many countries there are! However, the answer to the question varies according to whom you ask. Most people say there are 192 countries, but others point out that there could be more like 260 of them. So why isn't there a straightforward answer? The problem ____ because there isn't a universally agreed definition of 'country' and because, for political reasons, some countries ____ it convenient to recognize or not recognize ____ countries.",
+    "options": [
+      "fear",
+      "should",
+      "arises",
+      "all",
+      "it",
+      "find",
+      "never",
+      "differs",
+      "other"
+    ],
+    "answer": [
+      3,
+      1,
+      2,
+      5,
+      8
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b35d",
+    "_order": 55,
+    "title": "Native Species",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Of the more than 1,000 bat species worldwide, 22 are ____ to North America. And while there are no pollinator bats in our area, gardeners should ____ those that do live here, because they're insectivorous. These bats ____ moths, beetles and mosquitoes, and can eat up to 500 mosquito-sized insects per hour. They also protect gardens and crops from such ____ as cucumber beetles, cutworms and leafhoppers.",
+    "options": [
+      "consume",
+      "champion",
+      "preys",
+      "objective",
+      "besiege",
+      "home",
+      "pests",
+      "native"
+    ],
+    "answer": [
+      7,
+      1,
+      0,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b35f",
+    "_order": 56,
+    "title": "John Milton",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "John Milton wrote in a wide range of genres, in ____ languages, and on an extraordinary range of subjects. His was a more general ____ than is offered at Cambridge these days, and it continued after his seven years here, equipping him with the tools to write some of the most ____ literature ever seen, and to engage as a polemicist on many different social, political, and theological ____.",
+    "options": [
+      "several",
+      "questions",
+      "groundbreaking",
+      "simulations",
+      "mediocre",
+      "education"
+    ],
+    "answer": [
+      0,
+      5,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b361",
+    "_order": 57,
+    "title": "Green Spaces",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Green spaces ____ significantly to a ____ of soil and aerial temperatures during spells of hot weather, so contributing to human wellbeing. In the garden ____, there is, however, little information as to what extent various types of plants ____ in their cooling potential and how certain planting combinations may maximize cooling under a scenario of ____ rainfall and minimal water inputs.",
+    "options": [
+      "addition",
+      "focus",
+      "background",
+      "low",
+      "differ",
+      "context",
+      "massive",
+      "reduction",
+      "contribute"
+    ],
+    "answer": [
+      8,
+      7,
+      5,
+      4,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b363",
+    "_order": 58,
+    "title": "Next Task",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Having tracked down research that is ____ to your area of interest, the next task is to actually ____ of that research. This section is intended to show you how to be critical of the research you ____ and how to check that the ____ is credible and represented appropriately. Unfortunately this means discussing the ways in which research findings may be misrepresented.",
+    "options": [
+      "make sense",
+      "have fun",
+      "statement",
+      "are reviewing",
+      "acceptable",
+      "relevant",
+      "evidence"
+    ],
+    "answer": [
+      5,
+      0,
+      3,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b365",
+    "_order": 59,
+    "title": "Customer Service",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Promoting good customer service must start at the ____. If management doesn't realize how important this aspect of their business is, they will be at an ____ disadvantage in their industry. Good customer response ____ to loyal customers, which are the ____ of any successful business. No matter how much money you invest in your marketing, if you don't have the fundamental elements of your business right, it's wasted money.",
+    "options": [
+      "top",
+      "cornerstone",
+      "instant",
+      "cost",
+      "equates",
+      "incomplete",
+      "equalizes"
+    ],
+    "answer": [
+      0,
+      2,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b367",
+    "_order": 60,
+    "title": "Britain's Past",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The transitions which occurred in Britain around 100 BC, and after 43 AD (when the Roman Army ____ Britain) represent the key points of socio-economic trend in Britain's past. During the first century BC, the traditional communal form of life ____ rapidly to a world where certain individuals became more important. During the first century AD, Britain ____ fully a part of the Roman Empire.",
+    "options": [
+      "invaded",
+      "shifted",
+      "became",
+      "entailed",
+      "enlarged",
+      "change",
+      "transferred"
+    ],
+    "answer": [
+      0,
+      1,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b369",
+    "_order": 61,
+    "title": "Sportswomen",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Sportswomen's records are valuable and need to be preserved. And if the paper records don't ____, we need to get out and start interviewing people, not to put too fine a ____ on it, while we still have a ____. After all, if the records aren't kept in some form or another, then the stories are ____ too.",
+    "options": [
+      "appear",
+      "focus",
+      "admit",
+      "exist",
+      "opportunity",
+      "point",
+      "chance",
+      "lost",
+      "disappear"
+    ],
+    "answer": [
+      3,
+      5,
+      6,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b36b",
+    "_order": 62,
+    "title": "Orchestra",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Far from the rumble of Shanghai's highways and the cacophony of the shopping districts, stroll down side streets filled with rows of tall brick ____. In the early evening or on a weekend morning, you'll hear the ____ of classical music ____ from a piano, played by a 10-year-old or a grandmother in her seventies. And, ____ down another alley toward concrete ____, and you'll hear Beethoven or Mozart flowing from a violin, or perhaps a cello, accordion or flute. In China, classical music is ____ as mightily as the 1812 Overture. Commanding ¥100-200 per hour, private music ____ in Shanghai can readily earn more than five times the average per capita monthly income.",
+    "options": [
+      "houses",
+      "skyscrapers",
+      "drifting",
+      "wander",
+      "sound",
+      "voice",
+      "booming",
+      "plummeting",
+      "climb",
+      "playing",
+      "tempo",
+      "chefs",
+      "teachers"
+    ],
+    "answer": [
+      0,
+      4,
+      2,
+      3,
+      1,
+      6,
+      12
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 7,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b36d",
+    "_order": 63,
+    "title": "Study Space",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "You can study anywhere. Clearly, some places are ____ than others. Libraries, study lounges or private rooms are best. Above all, the place you choose to study should not be ____. Distractions can ____ up, and the first thing you know, you're out of time and out of luck. Make choosing a suitable physical environment a ____ of your study ____.",
+    "options": [
+      "nice",
+      "attracting",
+      "part",
+      "better",
+      "rise",
+      "member",
+      "habits",
+      "traditions",
+      "distracting",
+      "build"
+    ],
+    "answer": [
+      3,
+      8,
+      9,
+      2,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b36f",
+    "_order": 64,
+    "title": "Wind",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Whether ____ or fierce, wind always begins in the same way. Wind is formed by the circulation of air. The sun heats up some parts of the sea and the land. The air among the ____ spots warms up and rises. The cold air drops because it is ____. Some wind circulates within a small area. Others blow in the ____ globe.",
+    "options": [
+      "heavy",
+      "soft",
+      "hot",
+      "warm",
+      "light",
+      "entire",
+      "all",
+      "weighted",
+      "cold",
+      "cool",
+      "gentle"
+    ],
+    "answer": [
+      10,
+      2,
+      0,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b371",
+    "_order": 65,
+    "title": "Environmentalists",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Although environmentalists have been ____ about this situation for decades, many other people are finally beginning to realise that if we don't act soon it will be too late. The good news is that more and more businesses and governments are beginning to ____ that without a healthy environment the global economy and everything that depends on it will be seriously endangered. And they are beginning to take ____ action.",
+    "options": [
+      "positive",
+      "explain",
+      "useful",
+      "neutral",
+      "warning",
+      "understand",
+      "caution"
+    ],
+    "answer": [
+      4,
+      5,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b373",
+    "_order": 66,
+    "title": "People Need Exercise",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "One thing is certain. Most people do not get enough exercise in their ____ routines. All of the advances of modern technology - from ____ can openers to power steering - have made life easier, more comfortable and ____ less physically ____. Yet our bodies need activity, especially if they are carrying around too much fat. Satisfying this need requires a definite plan, and a commitment.",
+    "options": [
+      "formal",
+      "demanding",
+      "original",
+      "electric",
+      "much",
+      "daily",
+      "requiring"
+    ],
+    "answer": [
+      5,
+      3,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b375",
+    "_order": 67,
+    "title": "Impressionist Painters",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Early impressionist painters were considered ____ in their time because they broke many of the rules of the picture-making that had been set by earlier ____. They found many of their ____ in life around them rather than in history, which was then the accepted ____ of subject matter for paintings.",
+    "options": [
+      "radical",
+      "outcome",
+      "subjects",
+      "conciliatory",
+      "generations",
+      "creatures",
+      "source"
+    ],
+    "answer": [
+      0,
+      4,
+      2,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b377",
+    "_order": 68,
+    "title": "Life Changes",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Research has suggested that major stressors in our lives are life ____, for example, moving house, marriage or relationship breakdown. Work-related factors, ____ unemployment and boredom, are also common ____ of stress. Differences in personality may also ____ a part.",
+    "options": [
+      "changes",
+      "results",
+      "causes",
+      "consisting",
+      "including",
+      "play",
+      "containing",
+      "account",
+      "experience"
+    ],
+    "answer": [
+      0,
+      4,
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b379",
+    "_order": 69,
+    "title": "Plagiarism",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "How is plagiarism detected? It is usually easy for lecturers to ____ plagiarism within students' work. The University also actively investigates plagiarism in students' assessed work through electronic detection software called Turnitin. This software ____ students' work ____ text on the Internet, in journal articles and within previously ____ work (from LSBU and other institutions) and highlights any matches it ____.",
+    "options": [
+      "to",
+      "finds",
+      "realizes",
+      "against",
+      "compares",
+      "submitted",
+      "committed",
+      "identify"
+    ],
+    "answer": [
+      7,
+      4,
+      3,
+      5,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b37b",
+    "_order": 70,
+    "title": "Climate",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Climate is the word we ____ for weather over a long period of time. The desert has a ____ climate, because there ____ very little rain. The UK ____ a temperate climate, which means winters are, overall, mild ____ summers, generally, don't get too hot.",
+    "options": [
+      "is",
+      "are",
+      "describe",
+      "use",
+      "dry",
+      "wet",
+      "forecast",
+      "has",
+      "or",
+      "and"
+    ],
+    "answer": [
+      3,
+      4,
+      0,
+      7,
+      9
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b37d",
+    "_order": 71,
+    "title": "Ancient Paintings",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Ancient paintings offer a fascinating glimpse into the lives, beliefs, and artistic skills of early civilizations. Many of these paintings were created on cave walls or pottery and have survived for thousands of years due to their ____. The subjects of ancient paintings often include animals, humans, and scenes from daily life. These artworks were not only meant for decoration but also had ____ significance. For instance, some cave paintings are believed to have been created for ritualistic purposes or to convey stories and ____. The use of natural pigments and ____ techniques highlights the resourcefulness and creativity of ancient artists. Despite the passage of time, the beauty and intricacy of ancient paintings continue to captivate and inspire modern audiences.",
+    "options": [
+      "religious",
+      "mysteries",
+      "traditional",
+      "fragility",
+      "elaborate",
+      "folklore",
+      "preservation",
+      "chronic"
+    ],
+    "answer": [
+      6,
+      0,
+      5,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b37f",
+    "_order": 72,
+    "title": "The Lute",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The lute is a plucked string instrument that ____ a central role in European music from the late Middle Ages to the Baroque period. Its pear-shaped body and fretted neck ____ it a versatile instrument, suitable both for solo performance and for ensemble playing. Unlike the modern guitar, the lute usually has courses of paired strings, which ____ a richer and more resonant sound. During the Renaissance, it was highly valued by both professional musicians and amateur players. In the 18th century, however, its popularity gradually declined as keyboard instruments ____ more fashionable. Nevertheless, for those interested in the practice of early music, it remains an important subject of study, and today it ____ still frequently featured in historically informed concerts.",
+    "options": [
+      "made",
+      "has",
+      "became",
+      "changed",
+      "is",
+      "record",
+      "produce",
+      "played"
+    ],
+    "answer": [
+      7,
+      0,
+      6,
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b381",
+    "_order": 73,
+    "title": "Pandemic",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The pandemic created an ____ situation, prompting unprecedented ____ to bolster the health ____, reform the pharmaceutical ____, and distribute relief ____ the country.",
+    "options": [
+      "additional",
+      "system",
+      "cost",
+      "urgent",
+      "contribution",
+      "concentration",
+      "sector",
+      "manufacturer",
+      "throughout"
+    ],
+    "answer": [
+      3,
+      4,
+      1,
+      6,
+      8
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b383",
+    "_order": 74,
+    "title": "Asking for Leave",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "My son is ____ to attend school. On the ____ night I found he was ____ and now I think it is better for him not to go to school so that we can avoid infection. I believe after some rest he will become ____ and will successfully pass his exam. And I am ____ to help him catch up on the missed lessons.",
+    "options": [
+      "unable",
+      "difficult",
+      "sick",
+      "well",
+      "painful",
+      "sorry",
+      "previous",
+      "happy"
+    ],
+    "answer": [
+      0,
+      6,
+      2,
+      3,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b385",
+    "_order": 75,
+    "title": "Recycling Notice",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Today, many companies emphasize ____ in their operations. For example, packaging should be made from recyclable materials to ensure proper ____. In households, using energy-efficient kitchen ____ helps reduce environmental impact.",
+    "options": [
+      "sustainability",
+      "maintenance",
+      "gauge",
+      "appliances",
+      "bargain",
+      "disposal"
+    ],
+    "answer": [
+      0,
+      5,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b387",
+    "_order": 76,
+    "title": "Healthy Workplace",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Employees should adhere to regulations that ____ conditions of the working environment to ensure a safe and healthy workplace. These measures are intended to ____ hazards in the workplace. In some countries, companies are ____ to purchase insurance to protect employees' rights and interests.",
+    "options": [
+      "needed",
+      "demonstrate",
+      "weaken",
+      "required",
+      "minimize",
+      "define"
+    ],
+    "answer": [
+      5,
+      4,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b389",
+    "_order": 77,
+    "title": "Robotic Surgery",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Robotic surgery allows the entire procedure to be recorded, helping to ____ detailed surgical information. This creates a valuable tool for ____, giving students and professionals the chance to learn from real operations. It also enables doctors to ____ remotely, a technique known as telesurgery.",
+    "options": [
+      "education",
+      "operate",
+      "store",
+      "preserve",
+      "training",
+      "control"
+    ],
+    "answer": [
+      3,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b38b",
+    "_order": 78,
+    "title": "License Change",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "New B.C. residents will only be required to provide their driver licence history — proof of insurance is no longer required. However, their premiums will be adjusted for the first three years ____ driving in B.C. ____ the increased risks associated with driving in a new area. Each year you remain crash-free, your discount increases. ICBC will ____ you with up to 15 years of driving experience (up from eight years) upon receipt of a driver's abstract ____ the original date that you received your license. When obtaining your B.C. license, you can provide your original driver's abstract in person at a driver licensing office.",
+    "options": [
+      "in",
+      "shown",
+      "due to",
+      "because",
+      "of",
+      "credit",
+      "deduct",
+      "showing"
+    ],
+    "answer": [
+      4,
+      2,
+      5,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b38d",
+    "_order": 79,
+    "title": "Cuypers Library",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The Cuypers Library is a research library in Amsterdam's famous Rijks museum. It is the oldest and largest of its kind in the country and aesthetically astounding. However, despite the streams of tourists that flow through the museum, far too ____ seem to trickle into its remarkable reading room. The 19th-century library, which has recently been ____, has been collecting content since 1885. Its ____ are stocked with manuscripts bound to entice any art history lover. While browsing its extensive collection, you'll come across books, journals, and periodicals, as well as catalogues about art auctions, exhibitions, trades, and collections. Following its renovations, the museum opened the library's reading room to visitors. Tourists, students, and art historians alike are welcome to delve into its rich collection. Tables on the ground floor allow people to hunker down with their research materials, surrounded by the library's aesthetically astounding walls of books.",
+    "options": [
+      "replenished",
+      "many",
+      "restored",
+      "collections",
+      "few",
+      "shelves"
+    ],
+    "answer": [
+      4,
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b38f",
+    "_order": 80,
+    "title": "Renting",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "My name is Tonia. My roommate and I are looking for a nice apartment near my college's campus. We are very quiet and study a lot. I study history, and my roommate studies French. We are very interested ____ renting your apartment. We can ____ the rent on time because we do a part-time work, too. Some of our friends live in the same building and have recommended your place to us. They mentioned that you are a kind and responsible landlord, and we hope to ____ the same positive experience. I would like to ____ an appointment to view the apartment in person. Our application form is ready, and we are prepared to proceed with the process quickly. We look ____ to hearing from you soon.",
+    "options": [
+      "on",
+      "borrow",
+      "pay",
+      "do",
+      "take",
+      "apply",
+      "in",
+      "have",
+      "forward",
+      "make"
+    ],
+    "answer": [
+      6,
+      2,
+      7,
+      9,
+      8
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b391",
+    "_order": 81,
+    "title": "Mathematics and Statistics",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Mathematics and statistics play ____ in almost all daily activities. They are at the ____ of advances in science and technology, as well as providing ____ problem-solving and decision-making tools in many ____ of life. They underpin the rigorous analysis and modelling required for new policies, designs and systems. Mathematical and statistical knowledge is much sought after by employers for a wide ____ of jobs, not least in teaching the subject, and a qualification in any one of the areas we offer can bring real benefits in your professional life.",
+    "options": [
+      "process",
+      "heart",
+      "areas",
+      "novel",
+      "part",
+      "indispensable",
+      "section",
+      "radius",
+      "variety"
+    ],
+    "answer": [
+      4,
+      1,
+      5,
+      2,
+      8
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b393",
+    "_order": 82,
+    "title": "Free Trade",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Over the years, to expand trade, numerous countries have created free trade agreements with other countries. Under the framework of General Agreement on Tariffs and Trade and World Trade Organization, countries opened up their borders and agreed to ____ trade barriers, which saw the emergence of International Trade and expanded economic globalization. For example, in 1994, the United States, Mexico, and Canada signed the North American Free Trade Agreement (NAFTA), which ultimately ____ all tariffs on trade goods between the three nations. This ____ globalization of goods and services, as well as people and ideas, between the three countries.",
+    "options": [
+      "allowed",
+      "remove",
+      "evacuate",
+      "removed",
+      "started",
+      "used"
+    ],
+    "answer": [
+      1,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b395",
+    "_order": 83,
+    "title": "Lake Turkana",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Lake Turkana is a large lake in Kenya, East Africa. This ____ of Africa was home to some of the first humans. Here, archaeologists have found piles of ____ (both human and animal) and collections of stones that humans used as ____. By carefully uncovering and ____ these remains, scientists have started to put together the story of our earliest ancestors. In 2001, a 4 million-year-old skeleton was uncovered in the area. Although a link between it and modern-day humans has not been established, the skeleton shows the species was walking upright.",
+    "options": [
+      "painting",
+      "bones",
+      "part",
+      "city",
+      "tools",
+      "examining",
+      "notches",
+      "weapons"
+    ],
+    "answer": [
+      2,
+      1,
+      4,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b397",
+    "_order": 84,
+    "title": "Recruitment",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Finding challenging or ____ employment may mean retraining and moving from a stale or boring job in order to find your ____ and pursue it. The idea is to think long range and anticipate an active lifestyle into later years - perhaps into one's 80s or 90s. Being personally productive may now mean anticipating retiring in stages. This might indicate going to an alternate ____ should a current career end by choice or economic change.",
+    "options": [
+      "passion",
+      "plan",
+      "rewarding",
+      "willing",
+      "direction",
+      "emotion"
+    ],
+    "answer": [
+      2,
+      0,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b399",
+    "_order": 85,
+    "title": "Coral Reefs",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Coral reefs support more sea life than any other ocean ecosystem and are, not ____, a favorite pursuit for many divers. But as well as being physically and biologically remarkable, coral reefs also ____ the livelihoods of over half a billion ____. What is more, this number is expected to ____ in coming decades while the area of high-quality reef is expected to halve. In combination with the very real threat of climate change, which could lead to increased seawater temperatures and ocean ____, we start to arrive at some quite frightening scenarios.",
+    "options": [
+      "decreasing",
+      "double",
+      "surprisingly",
+      "oppose",
+      "sustain",
+      "necessarily",
+      "people",
+      "acidification",
+      "human"
+    ],
+    "answer": [
+      2,
+      4,
+      6,
+      1,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b39b",
+    "_order": 86,
+    "title": "Donors",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Americans approached a record level of generosity last year. Of the $260.28bn given to charity in 2005, 76.5% of it came from individual ____. These people gave across the range of non-profit bodies, from museums to religious ____, with a heavy ____ on disaster relief after the Asian tsunami and US hurricanes. In total, Americans gave away 2.2% of their household income in 2005, slightly above the 40-year ____.",
+    "options": [
+      "emphasis",
+      "all",
+      "indebtedness",
+      "average",
+      "organizations",
+      "companies",
+      "donors"
+    ],
+    "answer": [
+      6,
+      4,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b39d",
+    "_order": 87,
+    "title": "Stress",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Stress - that tense feeling often connected to having too ____ to do, too ____ bills to pay and not ____ time or money - is a common emotion that knows few ____. About three-fourths of people in the US, Australia, Canada, France, Germany and Italy say they ____ stress on a daily basis, according to ____. The anxious feelings are even more intense during the holidays. Germans feel stress more intensely than those in other countries polled. People in the US cited financial pressure as the top worry.",
+    "options": [
+      "enough",
+      "few",
+      "lines",
+      "expect",
+      "polling",
+      "much",
+      "experience",
+      "borders",
+      "many",
+      "little"
+    ],
+    "answer": [
+      5,
+      8,
+      0,
+      7,
+      6,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 6,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b39f",
+    "_order": 88,
+    "title": "Locust",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Fancy a locust for lunch? Probably not, if you live in the west, but elsewhere it is a different story. Edible insects, termites, stick insects, dragonflies, grasshoppers and giant water bugs, are on the menu for an estimated 80 percent of the world's population. More than 1000 species of insects are served up around the world. For example, Kungu cakes, made from midges, are a ____ in parts of Africa. Mexico is an insect-eating, or entomophagous, hotspot, where more than 200 insect species are consumed. ____ is so high that 40 species are now under threat, including white agave worms. These caterpillars of the tequila giant-skipper butterfly ____ around $250 a kilogram. Eating insects make nutritional sense. Some contain more protein than meat or fish. The female gypsy moth, for instance, is about 80 percent protein. Insects can be a good ____ of vitamins and minerals too.",
+    "options": [
+      "resource",
+      "quality",
+      "fetch",
+      "Demand",
+      "delicacy",
+      "supply",
+      "source",
+      "carry"
+    ],
+    "answer": [
+      4,
+      3,
+      2,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3a1",
+    "_order": 89,
+    "title": "Modern Healthcare",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "In the fast-changing world of modern healthcare, the job of a doctor is more like the job of chief executive. The people who run hospitals and physicians' practices don't just need to know ____. They must also be ____ to balance budgets, motivate a large and diverse ____, and make difficult marketing and legal ____.",
+    "options": [
+      "stuff",
+      "decisions",
+      "staff",
+      "like",
+      "able",
+      "medicine",
+      "actions",
+      "pharmacy"
+    ],
+    "answer": [
+      5,
+      4,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3a3",
+    "_order": 90,
+    "title": "Blood Flow",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "All approaches aim to increase ____ flow to areas of tension and to release painful knots of muscle known as 'trigger points.' Trigger points are tense areas of muscle that are almost constantly contracting, says Kippen. The contraction causes pain, which in turn causes contraction, so you have a vicious circle. This is what deep tissue massage aims to break. The way to do this, as I found out under Ogedengbe's elbow, is to apply pressure to the point, stopping the blood flow, and then to release, which causes the brain to flood the affected ____ ____, encouraging the muscle to relax. At the same time, says Kippen, you can fool the tensed muscle into relaxing by applying pressure to a complementary one nearby.",
+    "options": [
+      "area",
+      "blood",
+      "with",
+      "place",
+      "muscle",
+      "of"
+    ],
+    "answer": [
+      1,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3a5",
+    "_order": 91,
+    "title": "Canada Gallery",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "An exhibit that brings together for the first ____ landscapes painted by French impressionist Pierre-Auguste Renoir ____ to the National Gallery of Canada this June. The ____ in Ottawa worked with the National Gallery of London and the Philadelphia Museum of Art to ____ together the collection of 60 Renoir ____ from 45 public and private collections.",
+    "options": [
+      "paintings",
+      "gets",
+      "masterpiece",
+      "muster",
+      "time",
+      "pull",
+      "comes",
+      "gallery"
+    ],
+    "answer": [
+      4,
+      6,
+      7,
+      5,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3a7",
+    "_order": 92,
+    "title": "Indian Onion",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "With its capacity for bringing down governments and scarring political careers, the onion plays an ____ role in Indian politics. This week, reports of rising onion prices have made front-page news and absorbed the attention of the governing elite. The most ____ ingredient in Indian cooking, the ____ element with which all dishes begin and, normally, the cheapest vegetable available, the pink onion is an essential item in the shopping basket of families of all classes. But in recent weeks, the onion has started to seem an unaffordable ____ for India's poor. Over the past few days, another sharp ____ in prices has begun to unsettle the influential urban middle classes. The sudden spike in prices has been caused by large exports to neighboring countries and a shortage of ____. But the increase follows a trend of rising consumer prices across the board - from diesel fuel to cement, from milk to lentils.",
+    "options": [
+      "surge",
+      "price",
+      "basic",
+      "supply",
+      "luxury",
+      "vital",
+      "afford",
+      "shortage",
+      "bland",
+      "attractive",
+      "explosive"
+    ],
+    "answer": [
+      10,
+      5,
+      2,
+      4,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 6,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3a9",
+    "_order": 93,
+    "title": "Music",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "What is music? In one sense, this is an easy ____. Even the least musical among us can recognize pieces of music when we hear them and name a few canonical ____. We know there are different kinds of music and, even if our ____ of music is restricted, we know which kinds we like and which kinds we do not.",
+    "options": [
+      "volume",
+      "question",
+      "examples",
+      "knowledge",
+      "issue",
+      "classes"
+    ],
+    "answer": [
+      1,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3ab",
+    "_order": 94,
+    "title": "Fresh Water",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Everybody needs fresh water. ____ water, people, animals and plants cannot live. Although a few plants and animals can make do with saltwater, all humans need a constant supply of fresh water to stay ____ and healthy. Of the total supply of water on the Earth, only about 3% of it is fresh, most of that is stored as ice and snow at the poles, or is so ____ under the surface of the Earth that we cannot get to it. Despite so much of the water being out of reach, we still have a million cubic miles of it that we ____ use. That's about 4,300,000 cubic kilometers of freshwater to share out between most of the plants, animals and people on the planet.",
+    "options": [
+      "With",
+      "Within",
+      "Without",
+      "fine",
+      "fit",
+      "far",
+      "deep",
+      "may",
+      "cannot",
+      "can"
+    ],
+    "answer": [
+      2,
+      4,
+      6,
+      9
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3ad",
+    "_order": 95,
+    "title": "National Portrait Gallery",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "The National Portrait Gallery's Conservation Department performs one of the Gallery's ____ functions, the long-term preservation of all Collection items, to make them ____ now and in future. The Collection ____ from the 8th century to the present day, and ____ of portraits in a variety of media, so the Gallery employs Conservators with ____ in a range of disciplines, including Framing, Painting, Paper, Sculpture and Photography.",
+    "options": [
+      "available",
+      "accessible",
+      "core",
+      "amazing",
+      "dates",
+      "rise",
+      "experience",
+      "expertise",
+      "contains",
+      "consists"
+    ],
+    "answer": [
+      2,
+      1,
+      4,
+      9,
+      7
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3af",
+    "_order": 96,
+    "title": "Climate",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Climate is the word we ____ for weather over a long period of time. The desert has a ____ climate, because there ____ very little rain. The UK ____ a temperate climate, which means winters are, overall, mild ____ summers, generally, don't get too hot.",
+    "options": [
+      "is",
+      "are",
+      "describe",
+      "use",
+      "dry",
+      "wet",
+      "forecast",
+      "has",
+      "or",
+      "and"
+    ],
+    "answer": [
+      3,
+      4,
+      0,
+      7,
+      9
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3b1",
+    "_order": 97,
+    "title": "Plagiarism",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "How is plagiarism detected? It is usually easy for lecturers to ____ plagiarism within students' work. The University also actively investigates plagiarism in students' assessed work through electronic detection software called Turnitin. This software ____ students' work ____ text on the Internet, in journal articles and within previously ____ work (from LSBU and other institutions) and highlights any matches it ____.",
+    "options": [
+      "to",
+      "finds",
+      "realizes",
+      "against",
+      "compares",
+      "submitted",
+      "committed",
+      "identify"
+    ],
+    "answer": [
+      7,
+      4,
+      3,
+      5,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3b3",
+    "_order": 98,
+    "title": "Life Changes",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Research has suggested that major stressors in our lives are life ____, for example, moving house, marriage or relationship breakdown. Work-related factors, ____ unemployment and boredom, are also common ____ of stress. Differences in personality may also ____ a part.",
+    "options": [
+      "changes",
+      "results",
+      "causes",
+      "consisting",
+      "including",
+      "play",
+      "containing",
+      "account",
+      "experience"
+    ],
+    "answer": [
+      0,
+      4,
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3b5",
+    "_order": 99,
+    "title": "Impressionist Painters",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Early impressionist painters were considered ____ in their time because they broke many of the rules of the picture-making that had been set by earlier ____. They found many of their ____ in life around them rather than in history, which was then the accepted ____ of subject matter for paintings.",
+    "options": [
+      "radical",
+      "outcome",
+      "subjects",
+      "conciliatory",
+      "generations",
+      "creatures",
+      "source"
+    ],
+    "answer": [
+      0,
+      4,
+      2,
+      6
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3b7",
+    "_order": 100,
+    "title": "People Need Exercise",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "One thing is certain. Most people do not get enough exercise in their ____ routines. All of the advances of modern technology - from ____ can openers to power steering - have made life easier, more comfortable and ____ less physically ____. Yet our bodies need activity, especially if they are carrying around too much fat. Satisfying this need requires a definite plan, and a commitment.",
+    "options": [
+      "formal",
+      "demanding",
+      "original",
+      "electric",
+      "much",
+      "daily",
+      "requiring"
+    ],
+    "answer": [
+      5,
+      3,
+      4,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3b9",
+    "_order": 101,
+    "title": "Environmentalists",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Although environmentalists have been ____ about this situation for decades, many other people are finally beginning to realise that if we don't act soon it will be too late. The good news is that more and more businesses and governments are beginning to ____ that without a healthy environment the global economy and everything that depends on it will be seriously endangered. And they are beginning to take ____ action.",
+    "options": [
+      "positive",
+      "explain",
+      "useful",
+      "neutral",
+      "warning",
+      "understand",
+      "caution"
+    ],
+    "answer": [
+      4,
+      5,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3bb",
+    "_order": 102,
+    "title": "Australia and New Zealand",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Australia and New Zealand have many common links. Both countries were recently settled by Europeans, are predominantly English speaking and in that sense, share a common cultural ____. Although in close proximity to one another, both countries are geographically isolated and have small populations by world ____. They have similar histories and enjoy close relations on many fronts. In terms of population ____, Australia and New Zealand have much in common. Both countries have minority indigenous populations, and during the latter half of the 20th century have seen a steady stream of migrants from a variety of regions throughout the world. Both countries have ____ similar declines in fertility since the high levels recorded during the baby boom, and alongside this have enjoyed the benefits of continually improving life expectancy. One consequence of these trends is that both countries are faced with an ageing population, and the ____ challenge of providing appropriate care and support for this growing group within the community.",
+    "options": [
+      "heritage",
+      "associated",
+      "witness",
+      "limitation",
+      "characteristics",
+      "history",
+      "experienced",
+      "standards",
+      "tradition",
+      "shared"
+    ],
+    "answer": [
+      0,
+      7,
+      4,
+      6,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3bd",
+    "_order": 103,
+    "title": "Colorful Poison Frogs",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Colorful poison frogs in the Amazon owe their great ____ to ancestors that leapt into the region from the Andes Mountains several times during the last 10 million years, a new study from The University of Texas at Austin suggests. This is the first study to show that the Andes have been a ____ source of diversity for the Amazon basin, one of the largest ____ of biological diversity on Earth. The finding runs ____ to the idea that Amazonian diversity is the result of evolution only within the ____ forest itself. \"Basically, the Amazon basin is a melting pot for South American frogs,\" says graduate student Juan Santos, lead author of the study. \"Poison frogs there have come from multiple places of origin, notably the Andes Mountains, over many millions of years. We have shown that you cannot understand Amazonian biodiversity by looking only in the basin. Adjacent regions have played a major role.\"",
+    "options": [
+      "reservoirs",
+      "essential",
+      "major",
+      "diversity",
+      "accordant",
+      "tropical",
+      "counter",
+      "territories",
+      "ruin"
+    ],
+    "answer": [
+      3,
+      2,
+      0,
+      6,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "fill-blanks-dragdrop-20b3bf",
+    "_order": 104,
+    "title": "Children Skip School",
+    "prompt": "Drag each word from the word bank into the correct blank.",
+    "passage": "Children who skip school are increasingly on family holidays, government figures revealed today. And, ____ children ____ truant this spring term compared with the spring term last year. Children missed 3m unauthorised days of school last term, compared with 3.7m days of school in the same period last year. But a ____ group of truants - 6% of the school population - who account for more than three-quarters of all those on unauthorised absence, are more likely to be on a family holiday than they were in the same ____ last year. Some 1.2% of all absence was for family holidays not ____ by their school last term, compared with 0.9% for the same term last year. More than 60% of all absences were for illness, the same figure as last year.",
+    "options": [
+      "hardcore",
+      "played",
+      "fewer",
+      "agreed",
+      "way",
+      "period",
+      "most",
+      "consent"
+    ],
+    "answer": [
+      2,
+      1,
+      0,
+      5,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  }
+]

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "mcq-single-c10a8a",
+    "_order": 1,
+    "title": "Multiple Choice",
+    "prompt": "What is one major benefit mentioned?",
+    "passage": "Renewable energy sources can reduce dependence on fossil fuels and help lower greenhouse gas emissions.",
+    "options": [
+      "Higher fuel consumption",
+      "Reduced dependence on fossil fuels",
+      "More greenhouse gases",
+      "Less access to energy"
+    ],
+    "answer": 1,
+    "explanation": "The passage directly states that renewable energy can reduce dependence on fossil fuels.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 1,
+    "active": false
+  },
+  {
+    "id": "mcq-single-438a36",
+    "_order": 2,
+    "title": "German Luftwaffe",
+    "prompt": "Which option most accurately summarizes the author's view in the text?",
+    "passage": "The German Luftwaffe dropped thousands of bombs on London from 1939 to 1945, killing almost 30,000 people. More than 70,000 buildings were completely demolished, and another 1.7 million were damaged. The extent of the damage to each and every one of these buildings was logged and mapped in near-real-time by surveyors, architects, engineers, and construction workers. The result is an incredible collection of maps, color-coded by hand, that reveal the amount of the destruction in painstaking detail. Today, the maps remain an invaluable resource for academics, family historians, and even builders trying to avoid touching off unexploded bombs. The maps became the subject of a beautiful oversized book released earlier this year to commemorate the 75th anniversary of the end of the Blitz, a nine-month period during which London and other British cities were relentlessly attacked by the German air force. Visually, the maps are quite striking. The apparent randomness of the colors stands in contrast to the more orderly pattern of streets and buildings. The damage from World War II transformed London into the architecturally diverse city it is today. The maps show how widespread the destruction was, revealing both the scale of the devastation and its impact on the city.",
+    "options": [
+      "The author believes that the maps are a beautiful and accurate representation of pre-war London.",
+      "The author believes that the maps are an accurate representation of post-war London.",
+      "The author believes that the maps are a valuable piece of World War II history.",
+      "The author believes that the maps are works of art that give information about London's destruction in World War II."
+    ],
+    "answer": 3,
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 1,
+    "active": true
+  },
+  {
+    "id": "mcq-single-438a38",
+    "_order": 3,
+    "title": "NASA's Curiosity",
+    "prompt": "Choose the sentence that best summarizes the passage.",
+    "passage": "Four Earth-years ago NASA's Curiosity rover successfully touched ground on Mars' dusty surface after surviving a nail-biting descent through the red planet's thin atmosphere. Since its triumphant arrival, the car-size “laboratory on wheels” has travelled more than 13.5 kilometers, taking pictures, collecting samples, and analyzing rocks along the way. Recent software upgrades let Curiosity autonomously choose which rocks it examines—and shoots with laser beams. Curiosity has spent more than 1,421 sols, or Martian days, exploring Gale Crater, a low-lying region that may have once held past life, if it existed. While the rover has yet to confirm any evidence of ancient life, it has found evidence of an ancient freshwater lake in the sediments of Yellowknife Bay, the lowest point of the crater, offering tantalizing insight into the planet's past habitability. Since September 2014, Curiosity has been examining Mount Sharp, a mountain of layered rocks towering more than five kilometres high in the middle of Gale Crater.",
+    "options": [
+      "Over the last four years, NASA's rover, Curiosity, has collected samples and taken photographs of Mars' surface which have revealed evidence of water but have not confirmed evidence of life.",
+      "NASA's rover, Curiosity, has not had recent software upgrades that have let it explore new areas of Mars looking for evidence of life.",
+      "Photographs of Mars' surface have not revealed evidence of water but have confirmed evidence of life.",
+      "NASA's rover, Curiosity, has had recent software upgrades that have let it explore new areas of Mars looking for evidence of life."
+    ],
+    "answer": 0,
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 1,
+    "active": true
+  },
+  {
+    "id": "mcq-single-438a3a",
+    "_order": 4,
+    "title": "Art",
+    "prompt": "What is the central idea of the passage?",
+    "passage": "Many argue that art cannot be defined. We could go about this in several ways. Art is often considered as the process or product of deliberately arranging elements in a way that appeals to the senses or emotions. It encompasses a diverse range of human activities, creations and ways of expression, including music, literature, film, sculpture and paintings. The meaning of art is explored in a branch of philosophy known as aesthetics. At least, that is what Wikipedia claims.",
+    "options": [
+      "Art is a difficult and complex form to explain.",
+      "Wikipedia defines art under aesthetics, which is a branch of philosophy.",
+      "Music, literature, film and sculpture do not define art.",
+      "Art is directed in a way that it deliberately appeals to the emotions of people."
+    ],
+    "answer": 0,
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 1,
+    "active": true
+  },
+  {
+    "id": "mcq-single-438a3c",
+    "_order": 5,
+    "title": "Climate Change",
+    "prompt": "What does the passage indicate climate change will bring to Australia?",
+    "passage": "Every day millions of lights and computers are left on in deserted offices, apartments, and houses. Environmental activists say that simply switching them off could cut Sydney's greenhouse gas emissions by five per cent over the next year. Per capita, Australia is one of the world's largest producers of carbon dioxide and other gases that many scientists believe are helping to warm the Earth's atmosphere, causing climate upset. A long-standing drought and serious water shortages in Australia have focused much attention on climate change. Some experts warn higher temperatures could leave this nation of 20 million people at the mercy of more severe droughts and damaging tropical cyclones.",
+    "options": [
+      "gas emissions",
+      "environmental activists",
+      "carbon dioxide",
+      "drought"
+    ],
+    "answer": 3,
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 1,
+    "active": true
+  }
+]

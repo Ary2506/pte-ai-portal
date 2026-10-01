@@ -1,0 +1,376 @@
+[
+  {
+    "id": "reorder-c10a8c",
+    "_order": 1,
+    "title": "Re-order Paragraphs",
+    "prompt": "Arrange these ideas into a logical order.",
+    "options": [
+      "Finally, the results were presented to the class.",
+      "First, the students collected information from several sources.",
+      "After that, they organized the information into categories.",
+      "They then prepared a short presentation."
+    ],
+    "answer": [
+      1,
+      2,
+      3,
+      0
+    ],
+    "explanation": "The sequence follows first, after that, then, finally.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944de1",
+    "_order": 2,
+    "title": "Reorder Paragraph 1",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, spread a thin layer of butter on each slice.",
+      "Finally, cut the sandwich in half and serve it.",
+      "First, lay two slices of bread on a clean plate.",
+      "Then, add your choice of fillings between the slices."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944de3",
+    "_order": 3,
+    "title": "Reorder Paragraph 2",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, make a shallow hole in the center.",
+      "Finally, water the soil and place the pot in sunlight.",
+      "First, fill a small pot with soil.",
+      "Then, place the seed into the hole and cover it gently."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944de5",
+    "_order": 4,
+    "title": "Reorder Paragraph 3",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, she gets out of bed and brushes her teeth.",
+      "Finally, she leaves the house to catch the morning bus.",
+      "First, the alarm clock rings at seven in the morning.",
+      "Then, she prepares a quick breakfast in the kitchen."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944de7",
+    "_order": 5,
+    "title": "Reorder Paragraph 4",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, apply soap using a soft sponge.",
+      "Finally, rinse off the soap and dry the car with a towel.",
+      "First, rinse the car with a hose to remove loose dirt.",
+      "Then, scrub the surface gently in circular motions."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944de9",
+    "_order": 6,
+    "title": "Reorder Paragraph 5",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, locate the book on the correct shelf.",
+      "Finally, show your library card to borrow the book.",
+      "First, search the library catalog for the book you want.",
+      "Then, bring the book to the front desk."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "easy",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944deb",
+    "_order": 7,
+    "title": "Reorder Paragraph 6",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, they wrote a detailed business plan to guide their strategy.",
+      "Finally, they opened their store to the public last spring.",
+      "First, the founders identified a gap in the local market.",
+      "After that, they secured a small loan to cover initial costs."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944ded",
+    "_order": 8,
+    "title": "Reorder Paragraph 7",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, she formed a hypothesis to explain the pattern.",
+      "Finally, she analyzed the results and published her findings.",
+      "First, the researcher observed an unusual pattern in the data.",
+      "After that, she designed an experiment to test her hypothesis."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944def",
+    "_order": 9,
+    "title": "Reorder Paragraph 8",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, the city council approved funding for the renovation.",
+      "Finally, the road reopened to traffic two months later.",
+      "First, engineers surveyed the site to assess its condition.",
+      "After that, construction crews began repairing the damaged road."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944df1",
+    "_order": 10,
+    "title": "Reorder Paragraph 9",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, she submitted the manuscript to several publishers.",
+      "Finally, the finished book was released in bookstores nationwide.",
+      "First, the author spent two years writing the manuscript.",
+      "After that, an editor worked with her to revise the text."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944df3",
+    "_order": 11,
+    "title": "Reorder Paragraph 10",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, they invited speakers with relevant expertise.",
+      "Finally, hundreds of attendees gathered for the two-day event.",
+      "First, the organizers selected a theme for the conference.",
+      "After that, they promoted the event through social media."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944df5",
+    "_order": 12,
+    "title": "Reorder Paragraph 11",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, they identified sections suitable for coral transplantation.",
+      "Finally, researchers monitored the reef's recovery over several years.",
+      "First, marine biologists surveyed the damaged reef.",
+      "After that, volunteers attached coral fragments to the reef structure."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944df7",
+    "_order": 13,
+    "title": "Reorder Paragraph 12",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, both boards reviewed the financial terms of the deal.",
+      "Finally, the merged company announced its new leadership structure.",
+      "First, the two companies began confidential merger discussions.",
+      "After that, regulators approved the merger following an antitrust review."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear first-next-then-finally sequence.",
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-944df9",
+    "_order": 14,
+    "title": "Reorder Paragraph 13",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, the bill was debated extensively in committee sessions.",
+      "Finally, the bill received royal assent and became law.",
+      "First, a member of parliament proposed a new bill addressing data privacy.",
+      "Then, the revised bill passed a full vote in parliament.",
+      "After that, several amendments were made to address industry concerns."
+    ],
+    "answer": [
+      2,
+      0,
+      4,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear chronological sequence of events.",
+    "difficulty": "hard",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-944dfb",
+    "_order": 15,
+    "title": "Reorder Paragraph 14",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, a small group of healthy volunteers received the drug in an initial trial.",
+      "Finally, the drug became available to the public following regulatory approval.",
+      "First, researchers conducted laboratory tests to assess the drug's basic safety.",
+      "Then, regulators reviewed the trial data for approval.",
+      "After that, a larger trial tested the drug's effectiveness among patients with the condition."
+    ],
+    "answer": [
+      2,
+      0,
+      4,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear chronological sequence of events.",
+    "difficulty": "hard",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-944dfd",
+    "_order": 16,
+    "title": "Reorder Paragraph 15",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Next, these paths gradually became formal routes as trade increased.",
+      "Finally, the routes evolved into a major network connecting distant regions.",
+      "First, early traders established informal paths between neighboring settlements.",
+      "Then, local rulers began taxing goods transported along these routes.",
+      "After that, merchants built rest stations along the routes to support long journeys."
+    ],
+    "answer": [
+      2,
+      0,
+      4,
+      3,
+      1
+    ],
+    "explanation": "The sentences form a clear chronological sequence of events.",
+    "difficulty": "hard",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  }
+]

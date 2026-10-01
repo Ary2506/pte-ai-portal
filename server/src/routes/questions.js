@@ -28,7 +28,21 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
   // get a mutable copy it could delete `answer` off).
   const questions = await Question.find(filter).select(STUDENT_SAFE_FIELDS).sort({ createdAt: 1 }).limit(200).lean();
   for (const question of questions) {
-    if (question.evaluationType === "objective") delete question.answer;
+    if (question.evaluationType !== "objective") continue;
+    delete question.answer;
+    // `content` carries the answer key too, inline: a Fill in the Blanks part is
+    // {type:"blank", answer:"excess"} and a Highlight Incorrect Words part is
+    // {type:"word", text:"...", isIncorrect:true}. That is the same scoring key `answer` holds,
+    // so it is stripped on the same terms — otherwise deleting `answer` above would be theatre
+    // while every correct response sat one level down in the network tab. The structure the
+    // client needs to render (where the blanks fall, which tokens are words) is untouched.
+    if (Array.isArray(question.content)) {
+      question.content = question.content.map((part) => {
+        if (part?.type === "blank") { const { answer, ...rest } = part; return rest; }
+        if (part?.type === "word") { const { isIncorrect, answer, ...rest } = part; return rest; }
+        return part;
+      });
+    }
   }
   res.json({ questions });
 }));

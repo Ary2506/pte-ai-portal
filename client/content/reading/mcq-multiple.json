@@ -1,0 +1,340 @@
+[
+  {
+    "id": "mcq-multiple-cab8b1",
+    "_order": 1,
+    "title": "Andalucia",
+    "prompt": "Which of the following words in the passages have the same meaning as 'residences'?",
+    "passage": "Here is a part of Spain's sun-baked Andalucia that is extraordinary not only because of its unspoiled terrain and authentic Spanish traditions but also because of its caves. These are not dark, damp holes, with dripping water and evil smells. They are residences, ancient Bronze Age dwellings now being refurbished for hundreds of 21st century Spaniards. In Galera, the region's most important village, it's estimated that there are at least 1,000 such habitations carved into its hillsides. We take old caves, renovate them, then sell them on, says Rob Oakley, office manager of leading developer Galera Enterprises. Our company was set up by someone who discovered the area of Galera when it was just a tourist attraction 15 years ago and saw its potential. The ancient abodes are transformed from rough caves into relatively luxurious homes, equipped with amenities like electricity and sewage, phone lines, running hot water, even internet connections.",
+    "options": [
+      "Abodes",
+      "Amenities",
+      "Connections",
+      "Dwellings",
+      "Habitations",
+      "Hillsides",
+      "Terrain"
+    ],
+    "answer": [
+      0,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8b3",
+    "_order": 2,
+    "title": "Ancient DNA",
+    "prompt": "What has been revealed by analysis of ancient DNA from one of Britain's best-preserved Neolithic tombs?",
+    "passage": "Analysis of ancient DNA from one of the best-preserved Neolithic tombs in Britain has revealed that most of the people buried there were from five continuous generations of a single extended family.\n\nBy analyzing DNA extracted from the bones and teeth of 35 individuals entombed at Hazleton North long cairn in the Cotswolds-Severn region, the research team was able to detect that 27 of them were close biological relatives. The group lived approximately 5700 years ago — around 3700-3600 BC — around 100 years after farming had been introduced to Britain.\n\nPublished in Nature, it is the first study to reveal in such detail how prehistoric families were structured, and the international team of archaeologists and geneticists say that the results provide new insights into kinship and burial practices in Neolithic times.",
+    "options": [
+      "The results provide new insights into neolithic art.",
+      "More than half of them were close relatives.",
+      "Agriculture hadn't been invented when the group were living.",
+      "All of the people buried in the neolithic tombs are descended from five generations of one extended family.",
+      "It reveals the details of the organization of the prehistoric family."
+    ],
+    "answer": [
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8b5",
+    "_order": 3,
+    "title": "Television",
+    "prompt": "What can we infer from the passage?",
+    "passage": "There's bad news for parents who frequently plop their kids in front of the TV to give themselves a break: It might actually end up leaving moms and dads more stressed.\n\nWhy? Because the more television that kids watch, the more they're exposed to advertising messages. The more advertising they see, the more likely they are to insist on purchasing items when they go with their parents to the store — and perhaps make a fuss if told \"no.\" All that, researchers say, may contribute to parents' overall stress levels, well beyond a single shopping trip.\n\nThe findings come from a University of Arizona-led study, published in the International Journal of Advertising, that explores the potential effects of children's television watching habits on their parents' stress levels.\n\n\"The more advertising children see, the more they ask for things and the more conflict is generated,\" said lead study author Matthew Lapierre, an assistant professor in the UArizona Department of Communication in the College of Social and Behavioral Sciences. \"What we haven't looked at before is what the potential effect is on parents. We know kids ask for things, we know it leads to conflict, but we wanted to ask the next question: Could this be contributing to parents' overall stress?\" The study suggests that it could. There are a few things parents can do, perhaps the most obvious of which is limiting screen time.",
+    "options": [
+      "When watching one television ad, children purchase one thing from it.",
+      "Children will ask for more things when they watch more ads, which can lead to more conflict.",
+      "Children's habit of watching TV has definitely no impact on parents' stress level.",
+      "For parents, putting their children in front of the TV tends to make themselves happy.",
+      "Parents can reduce their stress by limiting their children in watching TV."
+    ],
+    "answer": [
+      1,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8b7",
+    "_order": 4,
+    "title": "Taste Sensitivity",
+    "prompt": "Which of the following statements regarding the study are true?",
+    "passage": "What you eat influences your taste for what you might want to eat next. So claims a University of California, Riverside, study performed on fruit flies. The study offers a better understanding of neurophysiological plasticity of the taste system in flies. To maintain ideal health, animals require a balanced diet with optimum amounts of different nutrients. Macronutrients like carbohydrates and proteins are essential; indeed, an unbalanced intake of these nutrients can be detrimental to health. Flies require macronutrients such as sugars and amino acids for survival. They use the gustatory system, the sensory system responsible for the perception of taste, to sense these nutrients and begin feeding.\n\nIn their experiments in the lab, the researchers Anindya Ganguly and Manali Dey, led by Anupama Dahanukar, fed adult flies different diets: a balanced diet, a sugar-reduced and protein-enriched diet, and a sugar-enriched and protein-depleted diet. They ensured that all three diets were similar in total calorie content and tested the flies daily for a week to examine modifications in their food choice and taste sensitivity. The researchers report that diet affects dopamine and insulin signaling in the brain, which, in turn, affects the flies' peripheral sensory response, which is comprised of neurons directly involved in detecting external stimuli. This response then influences what the flies eat next.",
+    "options": [
+      "What you eat has little to do with what you want to eat next.",
+      "An unbalanced intake of macronutrients such as carbohydrates and protein is essential.",
+      "The fly senses macronutrients through its taste system.",
+      "In the experiment, the researchers made sure the total calories in all three diets were the same.",
+      "The researchers tested the flies every two days for a week.",
+      "Dopamine in the brain is closely related to diet."
+    ],
+    "answer": [
+      2,
+      5
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8b9",
+    "_order": 5,
+    "title": "Wound Healing",
+    "prompt": "Which of the following statements are wrong?",
+    "passage": "A protein named Agrin has been discovered to promote wound healing and repair, when it is triggered after skin tissue is injured. These findings could pave the way for the development of Agrin protein therapy to accelerate skin tissue healing for chronic wounds from diabetes or burns. The research, led by A*STAR's Institute of Molecular and Cell Biology (IMCB), was published in the journal Nature Communications on 3 November 2021.\n\nOne in 20 Singaporeans is afflicted with chronic wound conditions. Complications in the healing of chronic wounds are prevalent in patients suffering from diabetes or burn injuries, and are a leading cause of amputation and decreased emotional well-being for patients. During injury, a major chunk of extracellular matrix, which helps to rebuild tissue, is lost, therefore delaying wound healing. As such, the timely replenishment of key ECM proteins may accelerate wound healing.\n\nIn this study, researchers have shown that timely induction or exogenous supplementation of Agrin, an ECM protein, may promote accelerated healing of injured skin tissues. Using both human and pre-clinical models, they found that physical injury to the skin tissue enhanced the expression of Agrin, which preserves the mechanical architecture of injured skin layers by repairing the skin tissue.",
+    "options": [
+      "Agrin can heal the wound instantly.",
+      "Loss of ECM can delay wound healing.",
+      "The expression of Agrin was enhanced when skin tissue was physically damaged.",
+      "Chronic wound healing complications were the main reason for the decline of patients' emotional health.",
+      "One in 20 Singaporeans suffers from diabetes or burns."
+    ],
+    "answer": [
+      0,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8bb",
+    "_order": 6,
+    "title": "Smartphone-based Treatments",
+    "prompt": "Which of the following statements is correct?",
+    "passage": "Computer- and smartphone-based treatments appear to be effective in reducing symptoms of depression, and while it remains unclear whether they are as effective as face-to-face psychotherapy, they offer a promising alternative to address the growing mental health needs spawned by the COVID-19 pandemic.\n\nThe year 2020 marked 30 years since the first paper was published on a digital intervention for the treatment of depression. It also marked an unparalleled inflection point in the worldwide conversion of mental health services from face-to-face delivery to remote, digital solutions in response to the COVID-19 pandemic, said lead author Isaac Moshe, MA, a doctoral candidate at the University of Helsinki. \"Given the accelerated adoption of digital interventions, it is both timely and important to ask to what extent digital interventions are effective in the treatment of depression, whether they may provide viable alternatives to face-to-face psychotherapy beyond the lab and what are the key factors that moderate outcomes.\"\n\nDigital interventions typically require patients to log in to a software program, website or app to read, watch, listen to and interact with content structured as a series of modules or lessons. Individuals often receive homework assignments relating to the modules and regularly complete digitally administered questionnaires relevant to their presenting problems. This allows clinicians to monitor patients' progress and outcomes in cases where digital interventions include human support. Digital interventions are not the same as teletherapy, which has gotten much attention during the pandemic, according to Moshe. Teletherapy uses videoconferencing or telephone services to facilitate one-on-one psychotherapy.",
+    "options": [
+      "Digital interventions typically require patients to log into a software program without interaction.",
+      "Teletherapy is not identical with digital interventions.",
+      "Computer-based and smartphone-based therapy can be just as effective as face-to-face psychotherapy.",
+      "Videoconferencing can be a viable method in teletherapy to promote one-on-one psychotherapy.",
+      "Computer-based and smartphone-based treatments are the only solution to the growing mental health needs triggered by the COVID-19 pandemic."
+    ],
+    "answer": [
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8bd",
+    "_order": 7,
+    "title": "Forgiveness",
+    "prompt": "What did the study reveal?",
+    "passage": "A recent study suggests that teaching children to understand other people's perspectives could make it easier for them to learn how to forgive other people.\n\n\"Forgiveness is important in children and adults for restoring relationships and limiting future conflicts,\" says Kelly Lynn Mulvey, lead author of the study. \"But we didn't know much about what makes children more likely to forgive others, particularly from early childhood to adolescence.\"\n\nTo that end, Mulvey and her collaborators enlisted 185 children, between the ages of 5 and 14, in the study. Researchers conducted an in-depth interview with each child that collected background information and assessed the child's \"theory of mind\" skills.\n\nResearchers then led each child through a series of scenarios involving other children who are \"in group\" and \"out group.\" Specifically, each study participant was told they were part of a group, such as the green team. During interviews, researchers described some children in the scenarios as also being on the green team, while other children in the scenarios were on the yellow team. In each scenario, interviewers asked study participants whether they were willing to forgive a group that left them out of a game or activity.\n\nThere were three main findings. First, children are more likely to forgive someone if they have apologized. Second, children are more likely to forgive people who are \"in group.\" Third, the more advanced a child's Theory of Mind skills are, the more likely they are to forgive others.",
+    "options": [
+      "Children are more likely to forgive those who are \"in the group\".",
+      "Forgiveness can help restore their relationship and reduce future conflict.",
+      "Children are more likely to forgive the person who apologizes.",
+      "Children can forgive just like adults.",
+      "The more advanced the theory of mind skills, the less likely a child is to forgive."
+    ],
+    "answer": [
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8bf",
+    "_order": 8,
+    "title": "Amazon Protection",
+    "prompt": "According to the passage, which of the following statements about the Amazon protection is correct?",
+    "passage": "Using laws governing human rights may be the best way of harnessing international legislation and tribunals to protect the Amazon, a new study shows.\n\nSafeguarding the rainforest is a critical priority because of the ecosystem's planetary importance. Recent increases in deforestation and fires in the region have made this even more urgent.\n\nThe new research, published in the Review of European, Comparative and International Environmental Law (RECIEL), says using human rights law to protect the Amazon is more likely to have stronger prospects, as campaigners wouldn't need to submit information about more than one nation for it to be upheld. Courts would only need to judge that environmental damage violated the rights of either certain individuals or tribal and indigenous peoples.\n\nThe experts behind the study hope it will be used as a comprehensive guide for those working to protect the Amazon. It assesses the potential for litigation in international courts and tribunals, examining the possible claims, the risks associated with each of these and which are more likely to be successful.\n\nThe protection of the Amazon poses particular challenges for international law because global ways of protecting the environment exist alongside the territorial jurisdiction of the Amazon nations, which have permanent sovereignty over natural resources.\n\nThe hurdles in jurisdiction and evidence often prevent a clear-cut judgment and Amazon states from being compelled to take the urgent and direct measures needed to bring the ecosystem back from the brink.",
+    "options": [
+      "The best way to protect the Amazon is to use laws governing human rights and probably international legislation.",
+      "Protecting the rainforest is a vital top priority.",
+      "Using human rights law to protect the Amazon is more likely to prove promising.",
+      "The increase in regional deforestation and fires has made the protection more urgent.",
+      "Protecting the Amazon is a common challenge of international law."
+    ],
+    "answer": [
+      0,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8c1",
+    "_order": 9,
+    "title": "Traffic Lights",
+    "prompt": "What are the purposes of traffic lights that absorb kinetic energy?",
+    "passage": "Game-changing technology to design traffic lights that absorb kinetic energy, stopping them from crumpling when hit by a vehicle, will prevent thousands of fatalities and injuries each year and make our roads much safer.\n\nThat's the prediction from University of South Australia (UniSA) senior lecturer and research lead Dr Mohammad Uddin, who is partnering with manufacturing company Impact Absorbing Systems (IAS) on a new project to minimise collision-related injuries as well as damage to traffic lights and vehicles.\n\nThe $640,000 project, partially funded by the Innovative Manufacturing CRC (IMCRC), will leverage IAS's expertise in road safety and UniSA's engineering design and advanced manufacturing skills to ensure traffic lights absorb a high-impact crash, remain undamaged and operational, and save pedestrian and motorists' lives.\n\nThe technology involves replicating existing IAS-fabricated energy absorbing bollards and tuning the design to better suit the shape, length and size of common traffic lights, while satisfying regulatory standards.\n\nRecent statistics show that in Australia, traffic light collisions cost $18.5 million a year in fatalities, $53.7 million for injuries and up to $16 million annually to repair, install and maintain traffic lights, Dr Uddin says. Worldwide, the figure is much higher.",
+    "options": [
+      "Increase collision damage.",
+      "Save the lives of pedestrians and drivers.",
+      "Meet regulatory standards.",
+      "The normal operation.",
+      "Make our roads safer."
+    ],
+    "answer": [
+      1,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8c3",
+    "_order": 10,
+    "title": "Regent Honeyeater",
+    "prompt": "Which of the following statements about the regent honeyeater is true?",
+    "passage": "New research from The Australian National University (ANU) shows unless conservation actions are urgently stepped up, one of our most beautiful songbirds, the regent honeyeater, will be extinct within 20 years.\n\nThe new study reveals current, already intensive, conservation efforts are not sufficient, and a huge redoubling of effort is needed if we are to save these birds from extinction.\n\nThe regent honeyeater population has been decimated by the loss of over 90 per cent of their preferred woodland habitats, lead author Professor Rob Heinsohn from ANU said.\n\nLess than 80 years ago, it was one of the most commonly encountered species, ranging from Adelaide to Rockhampton. Now it is on track to follow the Dodo into extinction.\n\nToday there are fewer than 300 regent honeyeaters left, making it one of our rarest bird species. Habitat loss has forced them to compete with larger species for remaining habitat.\n\nThe ANU team commenced a large-scale project in 2015 to better understand the regent honeyeater population decline, but found they are an exceptionally difficult bird to study in the wild. As nomads, they wander long distances in search of nectar. After 6 years of intensive fieldwork, the team discovered that the birds' breeding success has declined due to predation at the nest by species such as pied currawongs, noisy miners and possums.",
+    "options": [
+      "The regent honeyeater has gone extinct.",
+      "The regent honeyeater will be extinct within 20 years.",
+      "It used to be one of the most common species.",
+      "The regent honeyeater decreased because they were difficult to study in the wild.",
+      "The decrease of habitat is the main reason for the decrease of the regent honeyeater."
+    ],
+    "answer": [
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8c5",
+    "_order": 11,
+    "title": "Creativity",
+    "prompt": "Which of the following statements are incorrect?",
+    "passage": "Teaching children in a way that encourages them to empathize with others measurably improves their creativity, and could potentially lead to several other beneficial learning outcomes, new research suggests.\n\nThe findings are from a year-long University of Cambridge study with Design and Technology (D&T) year 9 pupils at two inner London schools. Pupils at one school spent the year following curriculum-prescribed lessons, while the other group's D&T lessons used a set of engineering design thinking tools which aim to foster students' ability to think creatively and to engender empathy, while solving real-world problems.\n\nBoth sets of pupils were assessed for creativity at both the start and end of the school year using the Torrance Test of Creative Thinking: a well-established psychometric test.\n\nThe results showed a statistically significant increase in creativity among pupils at the intervention school, where the thinking tools were used. At the start of the year, the creativity scores of pupils in the control school, which followed the standard curriculum, were 11% higher than those at the intervention school. By the end, however, the situation had completely changed: creativity scores among the intervention group were 78% higher than the control group.\n\nThe researchers also examined specific categories within the Torrance Test that are indicative of emotional or cognitive empathy: such as 'emotional expressiveness' and 'open-mindedness'. Pupils from the intervention school again scored much higher in these categories, indicating that a marked improvement in empathy was driving the overall creativity scores.",
+    "options": [
+      "The significant improvement of empathy promotes the overall creativity score.",
+      "Torrance Test of Creative Thinking can assess creativity.",
+      "The study lasted two years.",
+      "Torrance Test of Creative Thinking can solve real-world problems.",
+      "Educating children in a way that encourages them to sympathize with others can improve their creativity."
+    ],
+    "answer": [
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8c7",
+    "_order": 12,
+    "title": "Skin Cancer",
+    "prompt": "Which of the following statements are wrong?",
+    "passage": "Research by the Oregon State University College of Pharmacy suggests that a vaccine stimulating production of a protein critical to the skin's antioxidant network could help people bolster their defenses against skin cancer.\n\nUltraviolet radiation from the sun leads to oxidative stress, which increases the risk of skin cancers such as melanoma, explains Arup Indra, professor of pharmaceutical sciences at OSU and the study's leader.\n\nA messenger RNA vaccine, like the Moderna and Pfizer vaccines for COVID-19, that promoted production of the protein, TR1, in skin cells could mitigate the risk of UV-induced cancers and other skin problems, he said.\n\nFindings of the research, in which Arup and collaborators used a mouse model to probe TR1's role in skin cells' health and stability, were published in the Journal of Investigative Dermatology.\n\nSkin cancer is the most common cancer in the United States, according to the Centers for Disease Control and Prevention. Melanoma, the most lethal type of skin cancer, is a form in which malignant cells form in skin cells known as melanocytes; melanocytes produce the pigment melanin, which determines skin color.\n\nMost cases of skin cancer, the CDC says, are linked to UV radiation exposure. People become tan from exposure to the sun or tanning beds because producing melanin is the body's way of trying to protect the skin from burning.",
+    "options": [
+      "The body's way of trying to protect skin from burning is by producing melanin.",
+      "Most cases of skin cancer are linked to exposure to ultraviolet radiation.",
+      "The vaccine could help people boost their defenses against skin cancer.",
+      "Skin cancer is the most common cancer in the United States, and Melanoma is the least deadly form of skin cancer.",
+      "Ultraviolet radiation from the sun certainly causes skin cancer."
+    ],
+    "answer": [
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8c9",
+    "_order": 13,
+    "title": "Hydropower",
+    "prompt": "Which of the following statements are true?",
+    "passage": "Hydropower is the dominant source of energy in the Amazon region, the world's largest river basin and a hotspot for future hydropower development. However, a new Global Environmental Change study warns that in the coming decades, climate change-driven reductions in precipitation and river discharge will diminish the Amazon's hydropower capacity.\n\nThe study's authors examined 351 proposed hydropower projects in the Amazon basin. Their findings suggest that hydrologic shifts by midcentury will reduce hydropower generation at many locations. As river discharge becomes increasingly variable and hydropower output declines, alternative energy sources like solar and wind are expected to become ever more important.\n\nHydropower needs to be designed to operate in concert with alternative energy sources like solar and wind so periods of low river flows do not disrupt electrical grids that supply vital power to cities and industries. New hydropower facilities should be carefully sited in locations of more reliable flows, and designed to operate over a broader range of flows than historical experience would indicate.\n\nAlmeida concludes, \"Energy planners need to focus on climate resilience. Brazil, for example, has over 200 million people and hydropower is the dominant energy source. This year, Brazilian hydropower reservoirs are at record lows due to extreme drought; as a result, Brazil might need to start rationing power. Ensuring energy security into the future will require diversifying energy sources to include solar and wind, and adapting hydropower plans to suit future -- not historic -- river flows.\"",
+    "options": [
+      "Hydrologic changes will reduce hydropower generation in many places by the middle of the century.",
+      "New hydropower facilities should be carefully sited where the flow is less reliable.",
+      "Hydroelectric reservoirs in Brazil are at record lows due to extreme drought.",
+      "Hydropower is the only source of energy in the Amazon.",
+      "Alternative energy sources such as solar and wind will become increasingly important."
+    ],
+    "answer": [
+      0,
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8cb",
+    "_order": 14,
+    "title": "Persistent Back Pain",
+    "prompt": "What are the key findings of the study?",
+    "passage": "People with persistent back pain or persistent headaches are twice as likely to suffer from both disorders, a new study from the University of Warwick has revealed.\n\nThe results, published in the Journal of Headache and Pain, suggest an association between the two types of pain that could point to a shared treatment for both.\n\nThe researchers from Warwick Medical School who are funded by the National Institute for Health Research (NIHR) led a systematic review of fourteen studies with a total of 460,195 participants that attempt to quantify the association between persistent headaches and persistent low back pain. They found an association between having persistent low back pain and having persistent (chronic) headaches, with patients experiencing one typically being twice as likely to experience the other compared to people without either headaches or back pain. The association is also stronger for people affected by migraine.\n\nThe researchers focused on people with chronic headache disorders, those who will have had headaches on most days for at least three months, and people with persistent low back pain that experience that pain day after day. These are two very common disorders that are leading causes of disability worldwide.\n\nAround one in five people have persistent low back pain and one in 30 have chronic headaches. The researchers estimate that just over one in 100 people (or well over half a million people) in the UK have both.",
+    "options": [
+      "In the UK, one in 100 people have both persistent back pain and persistent headaches.",
+      "There is a link between persistent back pain and persistent headache.",
+      "Headaches are the only cause of disability.",
+      "People with persistent back pain or headaches are half as likely to develop either condition.",
+      "The relationship between persistent headache and persistent low back pain is not quantifiable."
+    ],
+    "answer": [
+      0,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 2,
+    "active": true
+  },
+  {
+    "id": "mcq-multiple-cab8cd",
+    "_order": 15,
+    "title": "Bone Protection",
+    "prompt": "Which of the following statements are correct?",
+    "passage": "Drugs we take can weaken our bones and so can aging, and scientists working to prevent both have some of the first evidence that the best target may not be the logical one.\n\nThey are finding that in aging bone, the mineralocorticoid receptor, better known for its role in blood pressure regulation, is a key factor in bone health, says Dr. Meghan E. McGee-Lawrence, biomedical engineer in the Department of Cellular Biology and Anatomy at the Medical College of Georgia. And drugs that block the receptor, like the hypertension medications spironolactone and eplerenone, may help protect bone cells.\n\nDrugs like prednisone are glucocorticoids, which are better known for their roles in reducing inflammation and suppressing the immune response, which is why they work so well for problems like irritable bowel syndrome and arthritis. But, like aging, they can also disrupt the healthy, ongoing dynamic of bone being made and being destroyed.\n\nOur natural glucocorticoid levels increase with age, and bone, at least when we are young, has more glucocorticoid receptors than mineralocorticoid receptors. Glucocorticoids actually coax stem cells to make bone-forming osteoblasts, but it also causes those osteoblasts to store more fat, and too much fat in the bone, like anywhere on our body, is probably not good and typically correlates with bone loss.\n\nSo reducing the impact of glucocorticoid receptors seemed like a logical way to protect bone.",
+    "options": [
+      "Glucocorticoids work so bad for arthritis.",
+      "Aging can weaken our bones.",
+      "When we are young, there are fewer mineralocorticoid receptors in the bones than glucocorticoid receptors.",
+      "Reducing the effect of glucocorticoid receptor must be a reasonable way to protect bone.",
+      "Bone cells may be protected by drugs that block receptors."
+    ],
+    "answer": [
+      1,
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  }
+]

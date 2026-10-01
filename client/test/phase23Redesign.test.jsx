@@ -45,11 +45,13 @@ describe("Phase 23 — header search is real, not decorative", () => {
     const result = await screen.findByRole("option", { name: /Read Aloud/ });
     expect(result).toBeInTheDocument();
 
-    // Read Aloud is a real, always-populated destination (its own locally-curated 111-question
-    // set, not a DB fetch that could come back empty) — clicking it lands on that task's own
-    // question list, with its real first question in it.
+    // Read Aloud is served from the question bank now, so what proves the navigation is that the
+    // speaking practice page loads for that task — not any particular bundled question.
+    api.questions.mockResolvedValue({
+      questions: [{ _id: "ra1", section: "speaking", type: "read-aloud", title: "Read Aloud 1", prompt: "Read it aloud.", passage: "A passage." }]
+    });
     fireEvent.click(result);
-    expect(await screen.findByText("Language Appearance")).toBeInTheDocument();
+    expect(await screen.findByText("Read Aloud 1")).toBeInTheDocument();
   });
 
   it("shows an honest 'no matches' state instead of fabricating results", async () => {

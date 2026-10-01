@@ -8,10 +8,9 @@ import {
   supportedTasksFor,
 } from "../practiceTaskRegistry.js";
 import { Empty, SkeletonRows } from "../components/common.jsx";
-import ReadAloudPractice from "./ReadAloudPractice.jsx";
 import { QuestionListView } from "./QuestionListView.jsx";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
-import { loadListeningQuestions } from "./listeningData/index.js";
+import { applyStructuredContent } from "./listeningData/shared.js";
 
 const SECTION_DESCRIPTIONS = {
   speaking:
@@ -30,6 +29,7 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [progress, setProgress] = useState(new Map());
+  const [finished, setFinished] = useState(false);
 
   function load() {
     setLoading(true);
@@ -42,15 +42,20 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       // Full rows (not summary) — these become `existingResult`, which restores a previous
       // answer and its feedback.
       Promise.resolve(api.history({ section, type: slug })).catch(() => ({ submissions: [] })),
-      // Fetches only this task's own content chunk, in parallel with the two requests above so
-      // it costs no extra wall-clock. A type with no local content resolves to an empty list and
-      // the database questions below are used instead, exactly as before.
-      section === "listening" ? loadListeningQuestions(slug) : Promise.resolve([]),
     ])
-      .then(([questionData, historyData, localQuestions]) => {
-        const loadedQuestions = localQuestions.length
-          ? localQuestions
-          : questionData?.questions || [];
+      .then(([questionData, historyData]) => {
+        // Every section now comes from the question bank. Listening used to be served from
+        // bundled JSON that shadowed the database entirely — questions in the bank for those
+        // types were unreachable in practice, and the bundled ones could never appear in a mock
+        // test. The only thing left from that path is the derivation below.
+        const loadedQuestions = (questionData?.questions || []).map((question) =>
+          // Fill in the Blanks and Highlight Incorrect Words store their passage as the authored
+          // `content` array; everything the renderer needs (segments, blank answers, incorrect
+          // word indices) is derived from it here, exactly as it was for bundled content.
+          question.content
+            ? applyStructuredContent({ ...question }, question.type, question.content)
+            : question
+        );
         const map = new Map();
         for (const submission of historyData?.submissions || []) {
           // localQuestionId matches bundled local content (e.g. Listening) that has no real
@@ -105,6 +110,41 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   if (!TaskComponent)
     return <Empty text="This practice section is not configured yet." />;
 
+  if (finished) {
+    // Counted from `progress`, which is this student's real submission history for this task —
+    // so the summary reflects everything they have ever answered here, not only what they did
+    // in the current sitting. A question with no submission simply isn't counted.
+    const attempts = questions.map((q) => progress.get(q._id)).filter(Boolean);
+    const scored = attempts.filter((a) => a.evaluationStatus === "COMPLETED" && a.maxScore);
+    const average = scored.length
+      ? Math.round(scored.reduce((sum, a) => sum + (a.score / a.maxScore) * 90, 0) / scored.length)
+      : null;
+    return (
+      <div className="panel task-main narrow">
+        <div className="task-meta">
+          <span className="chip">{SECTION_LABELS[section]}</span>
+        </div>
+        <h2>Practice Completed 🎉</h2>
+        <p className="instruction">
+          You've gone through all {questions.length} {label} question
+          {questions.length === 1 ? "" : "s"}.
+        </p>
+        <p className="muted">
+          {attempts.length} of {questions.length} answered
+          {average !== null && ` · average score ${average}/90`}
+        </p>
+        <div className="task-actions">
+          <button className="secondary" onClick={() => { setFinished(false); setIdx(null); }}>
+            Back to list
+          </button>
+          <button className="primary" onClick={() => { setFinished(false); setIdx(0); }}>
+            Start again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {questions.length > 1 && (
@@ -132,15 +172,24 @@ function PracticeTask({ section, label, slug, taskComponents }) {
               >
                 <ChevronLeft size={15} /> Previous
               </button>
-              <button
-                className="secondary"
-                onClick={() =>
-                  setIdx((i) => Math.min(questions.length - 1, i + 1))
-                }
-                disabled={idx === questions.length - 1}
-              >
-                Next <ChevronRight size={15} />
-              </button>
+              {/* On the last question Next becomes Finish, which shows the summary below
+                  instead of dead-ending on a disabled button. Speaking only, where a student
+                  works through a task end to end; the other sections' Next simply disables. */}
+              {section === "speaking" && idx === questions.length - 1 ? (
+                <button className="primary" onClick={() => setFinished(true)}>
+                  Finish
+                </button>
+              ) : (
+                <button
+                  className="secondary"
+                  onClick={() =>
+                    setIdx((i) => Math.min(questions.length - 1, i + 1))
+                  }
+                  disabled={idx === questions.length - 1}
+                >
+                  Next <ChevronRight size={15} />
+                </button>
+              )}
             </div>
           </div>
           <div
@@ -209,12 +258,7 @@ export default function Practice({ section, taskComponents }) {
         ))}
       </div>
       {type ? (
-        section === "speaking" && type.slug === "read-aloud" ? (
-          // A fixed, client-curated 15-question set (see client/content/speaking/read-aloud) with
-          // its own counter/navigation/completion screen — bypasses the generic DB-backed
-          // PracticeTask flow used by every other task type, which is unaffected by this branch.
-          <ReadAloudPractice />
-        ) : section === "writing" && type.slug === "write-email" ? (
+        section === "writing" && type.slug === "write-email" ? (
           // Write Email's content is the client's own PDF of 12 sample emails, shown and
           // downloadable as-is — same bypass pattern as Read Aloud above, and equally isolated
           // from every other task type's DB-backed PracticeTask flow.

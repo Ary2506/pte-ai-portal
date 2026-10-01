@@ -41,6 +41,13 @@ export const QUESTION_TYPES = {
   },
   "fill-blanks-dragdrop": {
     label: "Fill in the Blanks (Drag and Drop)", evaluationType: "objective", shape: "drag-fill", sections: ["reading"]
+  },
+  // Listening's Fill in the Blanks, which is a different exercise from Reading's despite the
+  // shared name: the student types a word into each of several blanks instead of picking one
+  // option. It carried that name only because its questions used to live in a bundled file and
+  // were scored in the browser, so nothing server-side ever had to tell the two apart.
+  "fill-blanks-typed": {
+    label: "Fill in the Blanks (Typed)", evaluationType: "objective", shape: "typed-blanks", sections: ["listening"]
   }
 };
 

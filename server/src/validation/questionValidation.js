@@ -64,6 +64,20 @@ export function validateAndNormalizeQuestion(input) {
     if (typeof input.answer !== "string" || !input.answer.trim()) errors.push("The exact sentence is required as the answer for a dictation question.");
     if (!input.audioUrl?.trim()) errors.push("An audio URL is required for a dictation question.");
     normalized.maxScore = typeof input.answer === "string" && input.answer.trim() ? Math.max(1, input.answer.trim().split(/\s+/).length) : 1;
+  } else if (meta.shape === "typed-blanks") {
+    // `answer` is the correct word per blank, in passage order; `content` is the authored passage
+    // those blanks sit in. maxScore is derived from the answer key rather than trusted from the
+    // input, the same way dictation and drag-fill derive theirs.
+    if (!Array.isArray(input.answer) || !input.answer.length) {
+      errors.push("A correct word is required for each blank.");
+    } else if (input.answer.some(word => typeof word !== "string" || !word.trim())) {
+      errors.push("Every blank's answer must be a non-empty word.");
+    }
+    if (!Array.isArray(input.content) || !input.content.length) {
+      errors.push("The passage content is required for a typed-blanks question.");
+    }
+    if (!input.audioUrl?.trim()) errors.push("An audio URL is required for this listening task.");
+    normalized.maxScore = Array.isArray(input.answer) ? Math.max(1, input.answer.length) : 1;
   } else if (meta.shape === "prompt-audio") {
     if (!input.audioUrl?.trim()) errors.push("An audio URL is required for this listening task.");
     normalized.maxScore = 90;

@@ -39,7 +39,12 @@ export function scoreMultipleChoice(question, answer) {
     correct: right === correctSet.size && wrong === 0,
     feedback: [`You selected ${right} correct and ${wrong} incorrect option(s).`, question.explanation].filter(Boolean),
     studentAnswerText: selected.map(i => optionText(question.options, i)).filter(Boolean).join(", ") || null,
-    correctAnswerText: [...correctSet].map(i => optionText(question.options, i)).filter(Boolean).join(", ") || null
+    correctAnswerText: [...correctSet].map(i => optionText(question.options, i)).filter(Boolean).join(", ") || null,
+    // The positions behind correctAnswerText, in the same order. Highlight Incorrect Words marks
+    // the right words inline in the passage, which needs indices rather than a joined string, and
+    // the question itself cannot supply them: its answer key is withheld from the browser until
+    // the attempt has been scored.
+    correctIndexes: [...correctSet]
   };
 }
 
@@ -157,4 +162,70 @@ export function scoreDictation(question, answer) {
     studentAnswerText: typeof answer === "string" && answer.trim() ? answer.trim() : null,
     correctAnswerText: question.answer
   };
+}
+
+// Listening's Fill in the Blanks: the student types a word into each blank, rather than picking
+// from options the way Reading's same-named task does. That difference is why it needs its own
+// scorer — routed through scoreSingleChoice it would compare an array of typed words against a
+// single option index and mark every attempt wrong.
+//
+// `question.answer` is the correct word per blank, in passage order. Partial credit per blank,
+// matching how every other multi-part objective task here scores.
+export function scoreTypedBlanks(question, answer) {
+  const correct = Array.isArray(question.answer) ? question.answer : [];
+  if (!correct.length) {
+    return {
+      score: 0,
+      maxScore: 1,
+      correct: false,
+      invalid: true,
+      feedback: ["This question has no answer key configured and cannot be scored."]
+    };
+  }
+  const submitted = Array.isArray(answer) ? answer : [];
+  const maxScore = Math.max(1, correct.length);
+  // Compared through the same normalizer scoreDictation uses, so capitalisation and trailing
+  // punctuation never cost a student a blank they actually got right.
+  let score = 0;
+  for (let i = 0; i < correct.length; i += 1) {
+    if (normalizeText(submitted[i]) && normalizeText(submitted[i]) === normalizeText(correct[i])) score += 1;
+  }
+  return {
+    score,
+    maxScore,
+    correct: score === maxScore,
+    feedback: [
+      score === maxScore
+        ? "All blanks are correct."
+        : `${score} of ${maxScore} blanks are correct.`
+    ],
+    correctAnswerText: correct.join(", ")
+  };
+}
+
+// Highlight Incorrect Words scores exactly like a multi-select — the displayed words are the
+// options, the wrong ones are the correct selections — so it delegates rather than duplicating
+// that. What it adds is the correction for each wrong word: the passage shows "came" where the
+// recording said "returned", and showing the student only "came" back tells them nothing they
+// could not already see. That pairing lives in the authored `content` array, which is why this
+// needs the question rather than just the option list.
+export function scoreHighlightIncorrectWords(question, answer) {
+  const result = scoreMultipleChoice(question, answer);
+  const corrections = {};
+  let wordIndex = 0;
+  for (const part of question.content || []) {
+    if (part?.type === "word") {
+      if (part.isIncorrect && part.answer) corrections[wordIndex] = part.answer;
+      wordIndex += 1;
+      continue;
+    }
+    // Plain prose is tokenised the same way the client splits it, so the running index stays in
+    // step with the word positions the student actually clicked.
+    const raw = part?.value || part?.text || "";
+    for (const token of raw.split(/(\s+)/)) {
+      if (token === "" || /^\s+$/.test(token)) continue;
+      wordIndex += 1;
+    }
+  }
+  return { ...result, corrections };
 }

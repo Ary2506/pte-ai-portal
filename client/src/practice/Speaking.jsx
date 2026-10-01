@@ -16,6 +16,50 @@ const SPEAKING_DURATION_LIMITS = {
 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
 
+// Advice that actually differs by task. A type with no entry falls back to GENERIC_TIPS, so
+// adding a speaking type never leaves an empty panel. Read Aloud's wording is carried over from
+// the dedicated component this one replaced, so its students see the same guidance as before.
+const GENERIC_TIPS = [
+  "Maintain steady fluency.",
+  "Pronounce words clearly.",
+  "Avoid long pauses.",
+  "Focus on the whole prompt.",
+];
+const TASK_TIPS = {
+  "read-aloud": [
+    "Read at a natural, steady pace.",
+    "Pronounce every word clearly.",
+    "Use natural intonation, not a flat monotone.",
+    "Don't rush — fluency matters more than speed.",
+  ],
+  "repeat-sentence": [
+    "Listen to the whole sentence before speaking.",
+    "Match the speaker's rhythm and stress.",
+    "Repeat it in one go, without restarting.",
+  ],
+  "describe-image": [
+    "Open by saying what kind of image it is.",
+    "Give the highest and lowest values, or the main trend.",
+    "Close with one sentence of interpretation.",
+  ],
+  "answer-short-question": [
+    "Answer in one or two words — nothing more is expected.",
+    "Reply as soon as the audio ends.",
+  ],
+  "respond-to-situation": [
+    "Address the person and the situation directly.",
+    "Keep a polite, natural register.",
+    "Cover every part of what you were asked to say.",
+  ],
+};
+const TASK_TIP_HEADINGS = {
+  "read-aloud": "Read Aloud",
+  "repeat-sentence": "Repeat Sentence",
+  "describe-image": "Describe Image",
+  "answer-short-question": "Answer Short Question",
+  "respond-to-situation": "Respond to a Situation",
+};
+
 function formatMMSS(milliseconds) {
   const total = Math.max(0, Math.ceil(milliseconds / 1000));
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
@@ -41,6 +85,12 @@ export default function Speaking({
   // because PracticeTask remounts this component via key={question._id}, the same mechanism that
   // already resets recording/result state.
   const [showAnswer, setShowAnswer] = useState(false);
+  // Lets the student hear back what they just recorded before submitting it. Derived from `blob`
+  // rather than created alongside it, so the one cleanup below covers every way a recording can
+  // go away — a new take, Re-do clearing it, or the component unmounting — instead of each of
+  // those having to remember to revoke the URL itself.
+  const [replayUrl, setReplayUrl] = useState(null);
+  const replayRef = useRef(null);
   const recorder = useRef(null);
   const chunks = useRef([]);
   const timer = useRef(null);
@@ -69,6 +119,19 @@ export default function Speaking({
     recognition.current?.stop();
     recognition.current = null;
   }, []);
+
+  useEffect(() => {
+    // Guarded rather than assumed: replay is a convenience, so a context without the Blob
+    // object-URL APIs should simply not offer it. Calling through unguarded threw during render
+    // and took the whole speaking task down with it — recording and submitting included.
+    if (!blob || typeof URL.createObjectURL !== "function") {
+      setReplayUrl(null);
+      return undefined;
+    }
+    const url = URL.createObjectURL(blob);
+    setReplayUrl(url);
+    return () => URL.revokeObjectURL?.(url);
+  }, [blob]);
 
   function stop() {
     if (!recorder.current) return;
@@ -245,6 +308,10 @@ export default function Speaking({
               "Your speaking question will load from the practice library."}
           </p>
         )}
+        {/* The text a Read Aloud question asks the student to read, in its own bordered block
+            rather than as an instruction line — `prompt` says what to do, `passage` is the
+            material, the same split Reading tasks use. Any speaking type may carry one. */}
+        {question?.passage && <div className="passage">{question.passage}</div>}
         {question?.imageUrl && (
           question?.type === "describe-image" ? (
             <div className="describe-image-frame">
@@ -305,6 +372,16 @@ export default function Speaking({
             >
               {recording ? "Stop Recording" : "Start Recording"}
             </button>
+            {replayUrl && (
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => replayRef.current?.play()}
+                disabled={recording || busy}
+              >
+                Replay Recording
+              </button>
+            )}
             <button
               className="primary"
               disabled={!blob || busy}
@@ -314,6 +391,7 @@ export default function Speaking({
             </button>
           </div>
         )}
+        {replayUrl && <audio ref={replayRef} src={replayUrl} style={{ display: "none" }} />}
         {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is
             untouched (gated on testSessionId, exactly as Mock always passes it and standalone
             practice never does). Always available, including after AI evaluation. */}
@@ -329,7 +407,7 @@ export default function Speaking({
             </button>
           </div>
         )}
-        {(question?.type === "describe-image" || question?.type === "respond-to-situation" || question?.type === "answer-short-question") && (
+        {(question?.type === "describe-image" || question?.type === "respond-to-situation" || question?.type === "answer-short-question" || question?.type === "read-aloud") && (
           question?.answer ? (
             <>
               <button
@@ -366,12 +444,11 @@ export default function Speaking({
         )}
       </section>
       <aside className="panel tips">
-        <h3>Speaking tips</h3>
+        <h3>{TASK_TIP_HEADINGS[question?.type] || "Speaking"} tips</h3>
         <ul>
-          <li>Maintain steady fluency.</li>
-          <li>Pronounce words clearly.</li>
-          <li>Avoid long pauses.</li>
-          <li>Focus on the whole prompt.</li>
+          {(TASK_TIPS[question?.type] || GENERIC_TIPS).map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
         </ul>
         <div className="tip-box">
           <Sparkles size={18} />

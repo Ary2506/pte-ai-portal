@@ -1,4 +1,4 @@
-import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag } from "./objective.js";
+import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag, scoreTypedBlanks, scoreHighlightIncorrectWords } from "./objective.js";
 import { evaluateSubjective } from "../services/ai/index.js";
 
 const OBJECTIVE_SCORERS = {
@@ -12,8 +12,12 @@ const OBJECTIVE_SCORERS = {
   // words are the options, the wrong ones are the "correct" selections) — both reuse the
   // existing, already-tested scorers rather than duplicating the same logic under a new name.
   "select-missing-word": scoreSingleChoice,
-  "highlight-incorrect-words": scoreMultipleChoice,
-  "fill-blanks-dragdrop": scoreFillDrag
+  "highlight-incorrect-words": scoreHighlightIncorrectWords,
+  "fill-blanks-dragdrop": scoreFillDrag,
+  // Listening's many-blank, free-text variant. Reading's "fill-blanks" above stays on
+  // scoreSingleChoice: same name, different exercise, which is exactly why this needed its own
+  // type rather than sharing one.
+  "fill-blanks-typed": scoreTypedBlanks
 };
 
 function subjectiveFeedback(result, extra = {}) {
@@ -63,7 +67,16 @@ export async function evaluateAnswer(question, { answer, text, durationSeconds }
         feedback: result.feedback,
         invalid: !!result.invalid,
         studentAnswerText: result.studentAnswerText ?? null,
-        correctAnswerText: result.correctAnswerText ?? null
+        correctAnswerText: result.correctAnswerText ?? null,
+        // Positions rather than text, for the types that mark their answers inside a passage
+        // instead of listing them: Highlight Incorrect Words needs to know *which* words were
+        // wrong to colour them, and what the recording said in their place. Both are null for
+        // every other type. This object is an allow-list — a field a scorer returns but that is
+        // not named here never reaches the client, which is exactly how these two were lost on
+        // their first outing: the score came back correct while the passage rendered as if every
+        // pick had been wrong.
+        correctIndexes: result.correctIndexes ?? null,
+        corrections: result.corrections ?? null
       }
     };
   }

@@ -780,7 +780,8 @@ const CLIENT_ANSWER_SHORT_QUESTION_CANDIDATES = [...clientAnswerShortQuestion];
 // are not deleted, so they remain recoverable if ever needed.
 //
 // prompt/answer text is copied verbatim from the client's PDFs (question numbers correspond to
-// the client's own numbering, kept in the title for traceability, e.g. "RTS #51 — Italian Food").
+// the client's own numbering. It is no longer put in the title — the section already says what
+// task this is, so "RTS #51 — Italian Food" only made the list harder to scan than "Italian Food".
 // Audio was generated with Higgsfield's seed_audio text-to-speech directly from each question's
 // own `prompt` text below (one consistent preset voice, "Arthur"), so prompt and audio match by
 // construction — the DB `prompt` field is the exact string given to the TTS engine, not a
@@ -863,7 +864,7 @@ const clientRespondToSituation = [
     "You and your family are going to your friend's home for dinner. Your wife Lilly cannot consume dairy products, and you are unsure whether your friend knows about this restriction. You decide to call ahead and inform your friend. What would you say?",
     "Hi Jack, I wanted to let you know about an important dietary requirement before dinner tonight. My wife Lilly cannot have dairy products, so I thought it would be helpful to tell you in advance. Could you please make sure there are some suitable dairy-free options for her? Thank you for keeping this in mind, and please let me know if you need any information."]
 ].map(([num, label, prompt, answer], i) => ({
-  section: "speaking", type: "respond-to-situation", title: `RTS #${num} — ${label}`,
+  section: "speaking", type: "respond-to-situation", title: label,
   prompt, answer, audioUrl: `/audio/respond-to-situation/respond-to-situation-${String(i + 1).padStart(2, "0")}.mp3`,
   difficulty: "medium"
 }));

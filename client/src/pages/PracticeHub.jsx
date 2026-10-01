@@ -9,18 +9,6 @@ import {
   SECTION_LABELS,
 } from "../practiceTaskRegistry.js";
 import { Page } from "../components/common.jsx";
-import { LISTENING_TYPES } from "../practice/listeningData/index.js";
-
-// Read Aloud (Speaking) and several Listening task types are served from locally bundled
-// content (see Practice.jsx and listeningData/index.js) instead of the question database, so
-// the database-only availability check below never sees them on its own — merge these in.
-// LISTENING_TYPES is just the slugs, so this hub knows which types have local content without
-// loading any of that content; it used to read the same fact off every question in the bundle.
-const LOCALLY_BACKED_KEYS = new Set([
-  "speaking:read-aloud",
-  ...LISTENING_TYPES.map((type) => `listening:${type}`),
-]);
-
 const SECTION_ICONS = {
   speaking: Mic,
   writing: PenLine,
@@ -81,7 +69,11 @@ export default function PracticeHub() {
           .catch(() => ({ section, questions: [] })),
       ),
     ).then((results) => {
-      const set = new Set(LOCALLY_BACKED_KEYS);
+      // Availability is now decided purely by what the question bank returns. Read Aloud and
+      // the listening types used to be merged in here as "locally backed", because they were
+      // served from bundled files the database knew nothing about; both are ordinary bank-backed
+      // tasks now, so a type with no questions correctly shows as having no content yet.
+      const set = new Set();
       results.forEach(({ section, questions }) =>
         questions.forEach((question) => set.add(`${section}:${question.type}`)),
       );
