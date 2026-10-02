@@ -35,9 +35,14 @@ function signature(q) {
   // imageUrl/audioUrl matter too: Describe Image, Repeat Sentence, and Summarize Spoken Text all
   // reuse the exact same boilerplate instruction as their `prompt` across every question of that
   // type — the media file is the only thing that actually distinguishes one from another.
+  // `content` matters for the same reason: the blank-filling types keep their sentence there
+  // rather than in `passage`, and they share one boilerplate prompt across every question — so
+  // without it, sixteen different questions reduce to one signature and fifteen are discarded
+  // as duplicates of the first.
   return [
     q.type, normalizeText(q.prompt), normalizeText(q.passage), normalizeOptions(q.options),
-    normalizeAnswer(q.answer), normalizeText(q.imageUrl), normalizeText(q.audioUrl)
+    normalizeAnswer(q.answer), normalizeText(q.imageUrl), normalizeText(q.audioUrl),
+    q.content ? JSON.stringify(q.content) : ""
   ].join("::");
 }
 
@@ -229,10 +234,24 @@ const fillBlanks = [
   ["The report concludes that economic inequality, ____, could undermine long-term social stability.", ["if left unaddressed", "unless it was addressed", "even though not addressed", "despite being addressed"], 0, "'if left unaddressed' correctly forms a reduced conditional clause matching the sentence's meaning.", "hard"],
   ["The committee members, ____ opinions differed sharply, eventually reached a compromise.", ["whose", "which", "who", "that"], 0, "'Whose' correctly shows possession, referring to the committee members' opinions.", "hard"],
   ["Not until the final results were announced ____ the true scale of the victory.", ["did anyone realize", "anyone realized", "anyone did realize", "realized anyone"], 0, "The negative inversion after 'Not until...' requires the auxiliary-subject-verb order 'did anyone realize'.", "hard"]
-].map(([passage, options, answer, explanation, difficulty], i) => ({
-  section: "reading", type: "fill-blanks", title: `Fill in the Blanks ${i + 1}`,
-  passage, prompt: "Choose the word or phrase that best completes the sentence.", options, answer, explanation, difficulty
-}));
+].map(([passage, options, answer, explanation, difficulty], i) => {
+  // Reading's single-blank "fill-blanks" type was retired in favour of fib-dropdown, which
+  // renders every blank inline with its own options — a one-blank question is just that type
+  // with one blank. The source rows below are unchanged; only the shape they build has moved.
+  const [before, after] = String(passage).split("____");
+  return {
+    section: "reading", type: "fib-dropdown", title: `Fill in the Blanks ${i + 1}`,
+    prompt: "Choose the word or phrase that best completes the sentence.",
+    content: [
+      ...(before ? [{ type: "text", value: before }] : []),
+      { type: "blank", options, answer: options[answer] },
+      ...(after ? [{ type: "text", value: after }] : [])
+    ],
+    // One option index per blank, which is what scoreDropdownBlanks compares against.
+    answer: [answer],
+    explanation, difficulty
+  };
+});
 
 // ---------------------------------------------------------------------------
 // READING — Reorder Paragraph (15). `answer` is the array of original-position indices in the
@@ -893,10 +912,17 @@ const selectMissingWord = [
 
 const listeningFillBlanks = [
   {
-    section: "listening", type: "fill-blanks", title: "Listening Fill in the Blanks 1 — Library Hours",
-    prompt: "Listen to the recording, then choose the word that correctly completes the sentence.",
+    // Listening's Fill in the Blanks is the typed variant: the student writes the word rather
+    // than picking it, which is why it has content and an answer array instead of options.
+    section: "listening", type: "fill-blanks-typed", title: "Library Hours",
+    prompt: "Listen to the recording and type the missing word.",
     passage: "The library closes early on ____.",
-    options: ["Sundays", "Mondays", "Wednesdays", "Fridays"], answer: 0,
+    content: [
+      { type: "text", value: "The library closes early on " },
+      { type: "blank", answer: "Sundays" },
+      { type: "text", value: "." }
+    ],
+    answer: ["Sundays"],
     explanation: "The recording states that the library closes early on Sundays.",
     audioUrl: "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260904_113050_6bdcccc8-d4e8-4f72-a0dc-2c23f8a7e907.wav",
     difficulty: "easy"
@@ -935,7 +961,9 @@ export async function seedPhase18Content(candidates = PHASE18_ALL_CANDIDATES) {
 }
 
 async function runSeed(candidates) {
-  const existing = await Question.find({}).select("type prompt passage options answer imageUrl audioUrl");
+  // Every field signature() reads must be selected here, or a stored question is compared using
+  // a blank where the candidate has a value and nothing ever matches.
+  const existing = await Question.find({}).select("type prompt passage options answer imageUrl audioUrl content");
   const seen = new Set(existing.map(signature));
   let inserted = 0, skippedDuplicate = 0, skippedInvalid = 0;
   const invalidReport = [];

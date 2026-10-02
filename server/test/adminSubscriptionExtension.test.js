@@ -26,7 +26,11 @@ describe("admin subscription extension — individual", () => {
   it("lets an admin extend an active subscription by exactly N days", async () => {
     const admin = await createAdmin({ username: "extadmin1" });
     const adminToken = await tokenFor(admin);
-    const target = await createUser({ username: "extuser1", subscriptionEndDate: new Date("2026-09-30T00:00:00.000Z") });
+    // Relative to now, not a fixed calendar date: only an *active* subscription can be extended,
+    // so a hardcoded end date silently became an expired one once that day passed and the route
+    // began refusing it — a failure about the calendar, not about extending.
+    const startEnd = daysFromNow(10);
+    const target = await createUser({ username: "extuser1", subscriptionEndDate: startEnd });
 
     const res = await request(app)
       .post(`/api/admin/subscription-extension/users/${target._id}`)
@@ -35,8 +39,9 @@ describe("admin subscription extension — individual", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(new Date(res.body.newExpiry).toISOString()).toBe("2026-10-07T00:00:00.000Z");
-    expect(res.body.user.subscriptionEndDate).toBe("2026-10-07T00:00:00.000Z");
+    const expected = new Date(startEnd.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    expect(new Date(res.body.newExpiry).toISOString()).toBe(expected);
+    expect(res.body.user.subscriptionEndDate).toBe(expected);
     expect(res.body.extensionId).toMatch(/^EXT-\d{4}-\d{3}$/);
   });
 
@@ -164,7 +169,8 @@ describe("admin subscription extension — bulk", () => {
     const admin = await createAdmin({ username: "bulkadmin1" });
     const adminToken = await tokenFor(admin);
 
-    const activeA = await createUser({ username: "bulkactivea", subscriptionEndDate: new Date("2026-09-30T00:00:00.000Z") });
+    const activeAEnd = daysFromNow(10);
+    const activeA = await createUser({ username: "bulkactivea", subscriptionEndDate: activeAEnd });
     const activeB = await createUser({ username: "bulkactiveb", subscriptionEndDate: new Date("2026-10-15T00:00:00.000Z") });
     const expiredDate = daysFromNow(-3);
     const expired = await createUser({ username: "bulkexpired", subscriptionEndDate: expiredDate });
@@ -184,7 +190,7 @@ describe("admin subscription extension — bulk", () => {
 
     const a = await request(app).get(`/api/admin/users/${activeA._id}`).set("Authorization", `Bearer ${adminToken}`);
     const b = await request(app).get(`/api/admin/users/${activeB._id}`).set("Authorization", `Bearer ${adminToken}`);
-    expect(a.body.user.subscriptionEndDate).toBe("2026-10-07T00:00:00.000Z");
+    expect(a.body.user.subscriptionEndDate).toBe(new Date(activeAEnd.getTime() + 7 * 864e5).toISOString());
     expect(b.body.user.subscriptionEndDate).toBe("2026-10-22T00:00:00.000Z");
 
     const e = await request(app).get(`/api/admin/users/${expired._id}`).set("Authorization", `Bearer ${adminToken}`);
@@ -221,7 +227,8 @@ describe("admin subscription extension — bulk", () => {
   it("prevents a duplicate bulk extension from applying twice for the same client request id", async () => {
     const admin = await createAdmin({ username: "bulkadmin3" });
     const adminToken = await tokenFor(admin);
-    const user = await createUser({ username: "bulkduptest", subscriptionEndDate: new Date("2026-09-30T00:00:00.000Z") });
+    const dupEnd = daysFromNow(10);
+    const user = await createUser({ username: "bulkduptest", subscriptionEndDate: dupEnd });
 
     const first = await request(app)
       .post("/api/admin/subscription-extension/bulk")
@@ -241,7 +248,7 @@ describe("admin subscription extension — bulk", () => {
 
     const reloaded = await request(app).get(`/api/admin/users/${user._id}`).set("Authorization", `Bearer ${adminToken}`);
     // Extended exactly once (+7), never twice (+14).
-    expect(reloaded.body.user.subscriptionEndDate).toBe("2026-10-07T00:00:00.000Z");
+    expect(reloaded.body.user.subscriptionEndDate).toBe(new Date(dupEnd.getTime() + 7 * 864e5).toISOString());
 
     const rows = await SubscriptionExtension.find({ user: user._id });
     expect(rows.length).toBe(1);

@@ -30,28 +30,28 @@ describe("login attempt auditing — failure scenarios recorded", () => {
     expect(attempts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("a device mismatch produces a DEVICE_NOT_REGISTERED audit event", async () => {
+  // DEVICE_NOT_REGISTERED and ACCOUNT_ALREADY_ACTIVE no longer occur: a different device is
+  // allowed, and a second sign-in takes over instead of being refused. What is audited now is
+  // that the takeover happened, so an account being used in two places is still visible in the
+  // login history rather than silently looking like one ordinary sign-in after another.
+  it("a sign-in that displaces a live session is audited as SESSION_TAKEN_OVER", async () => {
     const user = await createUser({ username: "audit2", password: "password123" });
-    await loginWithDevice("audit2", "password123", "device-A3");
-    const rejected = await loginWithDevice("audit2", "password123", "device-A4");
-    expect(rejected.status).toBe(403);
-    expect(rejected.body.code).toBe("DEVICE_NOT_REGISTERED");
+    const first = await loginWithDevice("audit2", "password123", "device-A3");
+    expect(first.status).toBe(200);
 
-    const attempts = await LoginAttempt.find({ user: user._id, reason: "DEVICE_NOT_REGISTERED" });
+    const second = await loginWithDevice("audit2", "password123", "device-A4");
+    expect(second.status).toBe(200);
+
+    const attempts = await LoginAttempt.find({ user: user._id, reason: "SESSION_TAKEN_OVER" });
     expect(attempts).toHaveLength(1);
-    expect(attempts[0].success).toBe(false);
+    // Recorded as a success: the person did sign in. The reason is what marks it as a takeover.
+    expect(attempts[0].success).toBe(true);
   });
 
-  it("rejection because the account is already active on another device is audited as ACCOUNT_ALREADY_ACTIVE", async () => {
+  it("a first sign-in with nothing to displace records no takeover", async () => {
     const user = await createUser({ username: "audit3", password: "password123" });
-    await loginWithDevice("audit3", "password123", "device-A5");
-    const rejected = await loginWithDevice("audit3", "password123", "device-A5");
-    expect(rejected.status).toBe(409);
-    expect(rejected.body.code).toBe("ACCOUNT_ALREADY_ACTIVE");
-
-    const attempts = await LoginAttempt.find({ user: user._id, reason: "ACCOUNT_ALREADY_ACTIVE" });
-    expect(attempts).toHaveLength(1);
-    expect(attempts[0].success).toBe(false);
+    expect((await loginWithDevice("audit3", "password123", "device-A5")).status).toBe(200);
+    expect(await LoginAttempt.countDocuments({ user: user._id, reason: "SESSION_TAKEN_OVER" })).toBe(0);
   });
 
   it("a blocked account's login attempt is audited as ACCOUNT_BLOCKED", async () => {

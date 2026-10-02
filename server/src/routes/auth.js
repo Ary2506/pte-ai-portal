@@ -44,6 +44,12 @@ const loginAccountLimiter = rateLimit({
   // fall through to the IP key and are rejected by the route's own validation anyway.
   keyGenerator: (req) =>
     (req.body?.username || req.body?.userId || "").toString().toLowerCase().trim() || `ip:${req.ip}`,
+  // Only failed attempts count. This limiter exists to blunt password guessing, and a sign-in
+  // that succeeded was not a guess — counting it meant five legitimate sign-ins in a quarter of
+  // an hour locked the account out. That is easy to reach now that signing in elsewhere takes
+  // over rather than being refused: someone moving between a phone, a laptop and a lab machine
+  // is doing exactly what the product invites them to do.
+  skipSuccessfulRequests: true,
   message: RATE_LIMITED
 });
 
@@ -113,33 +119,34 @@ router.post("/signin", loginIpLimiter, loginAccountLimiter, async (req, res) => 
       });
     }
 
-    // One-device/one-browser enforcement, reusing the same client-generated X-Device-Id every
-    // request already carries — never IP address, never a fingerprinting library. Registered on
-    // this account's first successful sign-in; every later sign-in must present the same value.
-    // A missing header never satisfies an existing registration (that would let a client bypass
-    // the check just by omitting it). Admin accounts are exempt, matching every other per-student
-    // restriction in this project (subscription checks, single-session limit).
-    if (user.role !== "admin") {
-      const incomingDeviceId = (req.headers["x-device-id"] || "").toString().trim() || null;
-      if (!user.registeredDeviceId) {
-        user.registeredDeviceId = incomingDeviceId;
-        await user.save();
-      } else if (user.registeredDeviceId !== incomingDeviceId) {
-        await recordLoginAttempt(req, { user, success: false, reason: "DEVICE_NOT_REGISTERED" });
-        return res.status(403).json({
-          message: "Your account is restricted to the device and browser where it was first registered. Please use your registered device and browser to continue.\n\nIf you need to change your device or browser, please contact the administrator.",
-          code: "DEVICE_NOT_REGISTERED"
-        });
-      }
+    // One account, one live session — on any device, in any browser. Signing in somewhere new is
+    // allowed and takes over: whatever was signed in before is revoked here, and its next request
+    // comes back SESSION_REVOKED, which the client already treats as a forced sign-out.
+    //
+    // This replaces two earlier rules. The first bound an account permanently to the device it
+    // first signed in from and rejected every other one, which made a new laptop an administrator
+    // ticket. The second rejected a second sign-in outright while a session was live, which left
+    // an account stranded for up to seven days after a closed tab or a lost phone, since nothing
+    // revokes a session when a browser simply goes away.
+    //
+    // Neither applied to administrators, which is why the same admin account could be signed in
+    // to two browsers at once. Takeover applies to every role: one person, one session.
+    const incomingDeviceId = (req.headers["x-device-id"] || "").toString().trim() || null;
+    const revoked = await Session.updateMany(
+      { user: user._id, revokedAt: null, expiresAt: { $gt: new Date() } },
+      { $set: { revokedAt: new Date() } }
+    );
+    if (revoked.modifiedCount) {
+      // Recorded as its own outcome so "signed in, which signed someone else out" is visible in
+      // the login history rather than looking like an ordinary sign-in.
+      await recordLoginAttempt(req, { user, success: true, reason: "SESSION_TAKEN_OVER" });
     }
 
-    const activeSession = await Session.findOne({ user: user._id, revokedAt: null, expiresAt: { $gt: new Date() } });
-    if (activeSession && user.role !== "admin") {
-      await recordLoginAttempt(req, { user, success: false, reason: "ACCOUNT_ALREADY_ACTIVE" });
-      return res.status(409).json({
-        message: "This account is already active on another device. Ask the administrator to sign you out of the other device if this wasn't you.",
-        code: "ACCOUNT_ALREADY_ACTIVE"
-      });
+    // Still tracked, no longer enforced: the admin user list shows whether an account has a
+    // device on record, and it now reflects where that account was last used.
+    if (user.registeredDeviceId !== incomingDeviceId) {
+      user.registeredDeviceId = incomingDeviceId;
+      await user.save();
     }
 
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

@@ -67,14 +67,24 @@ describe("login", () => {
     expect(me.body.user.passwordHash).toBeUndefined();
   });
 
-  it("rejects a second simultaneous login for the same account", async () => {
+  // A second sign-in takes over rather than being refused. Refusing it stranded an account for
+  // up to seven days whenever a browser was simply closed, since nothing revokes a session when
+  // the tab goes away — the person had to wait out the session or ask an administrator.
+  it("lets a second login take over, leaving the first session revoked", async () => {
     await createUser({ username: "student6", password: "password123" });
     const first = await request(app).post("/api/auth/signin").send({ username: "student6", password: "password123" });
     expect(first.status).toBe(200);
 
     const second = await request(app).post("/api/auth/signin").send({ username: "student6", password: "password123" });
-    expect(second.status).toBe(409);
-    expect(second.body.code).toBe("ACCOUNT_ALREADY_ACTIVE");
+    expect(second.status).toBe(200);
+
+    // The first token is dead: its next request is rejected, which is what signs that browser out.
+    const withOldToken = await request(app).get("/api/auth/me").set("Authorization", `Bearer ${first.body.token}`);
+    expect(withOldToken.status).toBe(401);
+    expect(withOldToken.body.code).toBe("SESSION_REVOKED");
+
+    // The new one still works.
+    expect((await request(app).get("/api/auth/me").set("Authorization", `Bearer ${second.body.token}`)).status).toBe(200);
   });
 });
 

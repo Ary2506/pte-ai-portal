@@ -32,27 +32,28 @@ describe("one-device/one-browser enforcement", () => {
     expect(second.status).toBe(200);
   });
 
-  it("rejects a login from a different device/browser once one is already registered, and creates no new session", async () => {
+  // An account is no longer bound to the device it first signed in from. Moving to a new laptop
+  // or browser is allowed; what is enforced is that only one session is live at a time.
+  it("allows a login from a different device/browser, and revokes the previous session", async () => {
     await createUser({ username: "device3", password: "password123" });
     const first = await loginWithDevice("device3", "password123", "device-C");
     expect(first.status).toBe(200);
-    await Session.updateMany({}, { revokedAt: new Date() });
 
-    const sessionsBefore = await Session.countDocuments({});
     const second = await loginWithDevice("device3", "password123", "device-D");
-    expect(second.status).toBe(403);
-    expect(second.body.code).toBe("DEVICE_NOT_REGISTERED");
-    const sessionsAfter = await Session.countDocuments({});
-    expect(sessionsAfter).toBe(sessionsBefore);
+    expect(second.status).toBe(200);
+    expect(second.body.token).toBeTruthy();
+
+    const live = await Session.countDocuments({ revokedAt: null, expiresAt: { $gt: new Date() } });
+    expect(live).toBe(1);
   });
 
-  it("rejects a login with no device header at all once a device is already registered — a missing header can never satisfy an existing registration", async () => {
+  it("accepts a login with no device header, since the device no longer gates access", async () => {
     await createUser({ username: "device4", password: "password123" });
-    await loginWithDevice("device4", "password123", "device-E");
-    await Session.updateMany({}, { revokedAt: new Date() });
+    expect((await loginWithDevice("device4", "password123", "device-E")).status).toBe(200);
 
-    const res = await loginWithDevice("device4", "password123", undefined);
-    expect(res.status).toBe(403);
-    expect(res.body.code).toBe("DEVICE_NOT_REGISTERED");
+    // The header is still recorded for the admin view; it simply is not a gate any more.
+    const bare = await request(app).post("/api/auth/signin").send({ username: "device4", password: "password123" });
+    expect(bare.status).toBe(200);
+    expect(await Session.countDocuments({ revokedAt: null, expiresAt: { $gt: new Date() } })).toBe(1);
   });
 });

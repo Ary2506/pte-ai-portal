@@ -48,7 +48,9 @@ describe("seedPhase18Content (Phase 18 idempotent content seeder)", () => {
       expect(["easy", "medium", "hard"]).toContain(q.difficulty);
       expect(q.prompt?.trim()).toBeTruthy();
       expect(q.active).toBe(true);
-      if (["mcq-single", "mcq-multiple", "fill-blanks", "reorder", "fill-blanks-dragdrop", "select-missing-word", "highlight-incorrect-words"].includes(q.type)) {
+      // Reading's "fill-blanks" was retired; fib-dropdown and fill-blanks-typed replaced it for
+      // reading and listening respectively. All three are machine-scored like the rest of this list.
+      if (["mcq-single", "mcq-multiple", "fib-dropdown", "fill-blanks-typed", "reorder", "fill-blanks-dragdrop", "select-missing-word", "highlight-incorrect-words"].includes(q.type)) {
         expect(q.evaluationType).toBe("objective");
       } else {
         expect(q.evaluationType).toBe("subjective");

@@ -10,17 +10,20 @@ function loginWithDevice(username, password, deviceId) {
 }
 
 describe("logout does not release the device binding", () => {
-  it("logging out and attempting to log back in from a different device is still rejected — logout cannot be used to bypass the restriction", async () => {
+  it("logging out and back in from a different device works, and updates the recorded device", async () => {
     await createUser({ username: "device5", password: "password123" });
     const login = await loginWithDevice("device5", "password123", "device-F");
-    const token = login.body.token;
 
-    const logout = await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${token}`);
+    const logout = await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${login.body.token}`);
     expect(logout.status).toBe(200);
 
-    const attemptFromOtherDevice = await loginWithDevice("device5", "password123", "device-G");
-    expect(attemptFromOtherDevice.status).toBe(403);
-    expect(attemptFromOtherDevice.body.code).toBe("DEVICE_NOT_REGISTERED");
+    const fromOtherDevice = await loginWithDevice("device5", "password123", "device-G");
+    expect(fromOtherDevice.status).toBe(200);
+
+    // registeredDeviceId is kept for the admin view and now tracks where the account was last
+    // used, rather than pinning it to wherever it was first used.
+    const user = await User.findOne({ username: "device5" });
+    expect(user.registeredDeviceId).toBe("device-G");
   });
 });
 

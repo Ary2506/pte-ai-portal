@@ -56,15 +56,15 @@ Your MyPTEScore account is ready.
 
 ⚠️ IMPORTANT NOTE
 
-Your account is device restricted. It will only work on one device and one browser.
+Your account can only be signed in one place at a time.
 
-👉 Please log in from the device and browser you plan to use every day.
+👉 You can use any device or browser — a laptop today, a phone tomorrow.
 
-Once logged in, your account will automatically be locked to that device and browser. You will not be able to access your account from another device or browser.
+Signing in somewhere new will sign you out everywhere else, so only one person can be using the account at any moment.
 
-🔒 This restriction helps protect your account and prevents account sharing.
+🔒 This prevents account sharing while still letting you switch devices freely.
 
-If you need to change your device or browser, please contact the administrator for assistance.
+If you are unexpectedly signed out, someone else may be using your login — contact the administrator.
 
 Please log in and start practicing. Feel free to reach out if you need any help! 😊`;
 }
@@ -111,7 +111,7 @@ function CredentialMessageModal({ title, description, message, onClose }) {
 function AccountCreatedModal({ account, onClose }) {
   return <CredentialMessageModal
     title="Account created"
-    description="Copy this message and send it to the student — it includes their login details and explains the one-device/one-browser policy."
+    description="Copy this message and send it to the student — it includes their login details and explains the one-session-at-a-time policy."
     message={buildAccountCreatedMessage(account)}
     onClose={onClose}
   />;

@@ -108,7 +108,10 @@ router.get("/audit-log", asyncRoute(async (req, res) => {
       action: l.action,
       admin: l.adminUser ? { username: l.adminUser.username, name: l.adminUser.name } : null,
       target: l.targetUser ? { username: l.targetUser.username, name: l.targetUser.name } : null,
-      metadata: l.metadata,
+      // Defaulted here because this query is .lean(): Mongoose applies the schema default {}
+      // when it hydrates a document, but lean returns the raw record, so a log written without
+      // metadata arrives as undefined and every caller reading log.metadata.x throws.
+      metadata: l.metadata ?? {},
       createdAt: l.createdAt
     })),
     total,

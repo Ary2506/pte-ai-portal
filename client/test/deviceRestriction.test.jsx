@@ -37,27 +37,29 @@ beforeEach(() => {
 });
 
 describe("Login page — one device/one browser notice", () => {
-  it("shows the device/browser policy notice on the login page", () => {
+  // The login notice now describes session takeover rather than a permanent device lock, because
+  // that is what the server actually enforces: any device is allowed, one session at a time.
+  it("shows the one-session policy notice on the login page", () => {
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
-    expect(screen.getByText("⚠️ One Device & One Browser Policy")).toBeInTheDocument();
-    expect(screen.getByText(/Your account is restricted to one device and one browser\./)).toBeInTheDocument();
+    expect(screen.getByText("One session at a time")).toBeInTheDocument();
+    expect(screen.getByText(/Signing in somewhere new will sign you out everywhere else/)).toBeInTheDocument();
   });
 
   it("still shows a rejected-login error alongside the notice, without replacing it", async () => {
-    api.auth.signin.mockRejectedValue(Object.assign(new Error("Your account is restricted to the device and browser where it was first registered."), { code: "DEVICE_NOT_REGISTERED" }));
+    api.auth.signin.mockRejectedValue(Object.assign(new Error("Invalid User ID or password"), { code: "INVALID_CREDENTIALS" }));
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
 
     fireEvent.change(screen.getByPlaceholderText("e.g. pte001"), { target: { value: "pte001" } });
     fireEvent.change(screen.getByPlaceholderText("Your password"), { target: { value: "pw" } });
     fireEvent.click(screen.getByText("Sign In"));
 
-    expect(await screen.findByText(/restricted to the device and browser where it was first registered/)).toBeInTheDocument();
-    expect(screen.getByText("⚠️ One Device & One Browser Policy")).toBeInTheDocument();
+    expect(await screen.findByText("Invalid User ID or password")).toBeInTheDocument();
+    expect(screen.getByText("One session at a time")).toBeInTheDocument();
   });
 });
 
 describe("Admin — account-created message", () => {
-  it("shows a copyable account-created message containing the one-device/one-browser warning after creating a user", async () => {
+  it("shows a copyable account-created message containing the one-session warning after creating a user", async () => {
     api.admin.createUser.mockResolvedValue({ user: { username: "pte099" }, temporaryPassword: "Tmp12345" });
     renderAt("/admin", adminAuthUser());
     fireEvent.click(await screen.findByText("Users"));
@@ -70,8 +72,11 @@ describe("Admin — account-created message", () => {
     const messageBox = document.querySelector("textarea[readonly]");
     expect(messageBox.value).toContain("👤 Username: pte099");
     expect(messageBox.value).toContain("🔑 Password: Tmp12345");
-    expect(messageBox.value).toContain("Your account is device restricted. It will only work on one device and one browser.");
-    expect(messageBox.value).toContain("If you need to change your device or browser, please contact the administrator for assistance.");
+    // The message a student actually receives has to match what the server enforces — it used to
+    // promise a permanent device lock that no longer exists.
+    expect(messageBox.value).toContain("Your account can only be signed in one place at a time.");
+    expect(messageBox.value).toContain("Signing in somewhere new will sign you out everywhere else");
+    expect(messageBox.value).not.toContain("device restricted");
     expect(messageBox.value).toContain("MyPTEScore");
   });
 

@@ -40,12 +40,17 @@ describe("login attempt auditing — admin-only visibility", () => {
 });
 
 describe("login attempt auditing does not affect existing security mechanisms", () => {
-  it("existing device binding is still enforced exactly as before (mismatch still rejected with 403)", async () => {
+  // Device binding was replaced by session takeover: a different device is allowed, and the
+  // session it displaces is revoked. Auditing is unaffected either way, which is what this
+  // file is actually about.
+  it("a sign-in from a different device takes over rather than being rejected", async () => {
     await createUser({ username: "audit12", password: "password123" });
-    await loginWithDevice("audit12", "password123", "device-A13");
-    const rejected = await loginWithDevice("audit12", "password123", "device-A14");
-    expect(rejected.status).toBe(403);
-    expect(rejected.body.code).toBe("DEVICE_NOT_REGISTERED");
+    const first = await loginWithDevice("audit12", "password123", "device-A13");
+    const second = await loginWithDevice("audit12", "password123", "device-A14");
+    expect(second.status).toBe(200);
+
+    const withOldToken = await request(app).get("/api/auth/me").set("Authorization", `Bearer ${first.body.token}`);
+    expect(withOldToken.body.code).toBe("SESSION_REVOKED");
   });
 
   it("logout still works and still revokes the session as before", async () => {

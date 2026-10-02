@@ -1097,3 +1097,12 @@ html[data-theme="dark"] button:active{color:inherit}
 .dropdown-blank.is-right select,.dropdown-blank.is-wrong select{color:inherit}
 .dropdown-blank-mark{font-weight:700;font-size:.9em}
 .dropdown-blank-answer{color:var(--success);font-weight:700;white-space:nowrap}
+
+/* Holds the sign-in message's space whether or not there is a message, so the User ID and
+   Password fields never shift as one appears or clears. The slot sits below the fields rather
+   than above them, so even a long message (a blocked account, an expired subscription) can grow
+   without moving anything the person is typing into. min-height covers a single line, which is
+   every common case, so the button below stays put too. */
+.auth-message-slot{min-height:62px;display:flex;flex-direction:column;justify-content:center}
+.auth-message-slot:empty{min-height:62px}
+.auth-message-slot .alert{margin:10px 0;width:100%}
