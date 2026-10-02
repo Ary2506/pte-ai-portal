@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { PRACTICE_TASKS } from "../src/practiceTaskRegistry.js";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -107,7 +108,11 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     api.history.mockResolvedValue({ submissions: [] });
     renderAt("/reading", studentAuthUser());
     await screen.findByText("Done 0, Found 2 questions");
-    const banner = screen.getByRole("heading", { name: "Fill in the Blanks" }).closest(".question-list-banner");
+    // Opening /reading with no ?type= lands on whichever task the registry lists first, so the
+    // name is read from there — hardcoding it made this fail whenever the menu was reordered,
+    // which has nothing to do with whether the banner renders.
+    const firstTask = PRACTICE_TASKS.reading[0].label;
+    const banner = screen.getByRole("heading", { name: firstTask }).closest(".question-list-banner");
     expect(banner).toBeInTheDocument();
     expect(banner.querySelector(".question-list-banner-icon svg")).toBeInTheDocument();
   });

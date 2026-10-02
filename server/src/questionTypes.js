@@ -13,7 +13,6 @@ export const QUESTION_TYPES = {
   // Reused for both sections: same shape/scorer either way, the only difference is that the
   // listening variant needs an audio clip (already enforced generically — see
   // validation/questionValidation.js's section==="listening" check on the choice-single branch).
-  "fill-blanks": { label: "Fill in the Blanks", evaluationType: "objective", shape: "choice-single", sections: ["reading", "listening"] },
   reorder: { label: "Re-order Paragraphs", evaluationType: "objective", shape: "reorder", sections: ["reading"] },
   "summarize-spoken-text": { label: "Summarize Spoken Text", evaluationType: "subjective", shape: "prompt-audio", sections: ["listening"] },
   "write-dictation": { label: "Write From Dictation", evaluationType: "objective", shape: "dictation", sections: ["listening"] },
@@ -46,6 +45,12 @@ export const QUESTION_TYPES = {
   // shared name: the student types a word into each of several blanks instead of picking one
   // option. It carried that name only because its questions used to live in a bundled file and
   // were scored in the browser, so nothing server-side ever had to tell the two apart.
+  // Reading & Writing: Fill in the Blanks. Every blank carries its own four or five options, so
+  // unlike fill-blanks-dragdrop there is no shared word bank and unlike fill-blanks there is more
+  // than one blank — which is why it needs a type rather than bending either of those.
+  "fib-dropdown": {
+    label: "Fill in the Blanks (Dropdown)", evaluationType: "objective", shape: "dropdown-blanks", sections: ["reading"]
+  },
   "fill-blanks-typed": {
     label: "Fill in the Blanks (Typed)", evaluationType: "objective", shape: "typed-blanks", sections: ["listening"]
   }

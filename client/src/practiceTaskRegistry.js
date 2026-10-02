@@ -24,10 +24,10 @@ export const PRACTICE_TASKS = {
     { slug: "essay", label: "Write Essay", supported: true, hasAI: true }
   ],
   reading: [
-    { slug: "fill-blanks", label: "Fill in the Blanks", supported: true, hasAI: false },
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },
     { slug: "reorder", label: "Reorder Paragraph", supported: true, hasAI: false },
     { slug: "fill-blanks-dragdrop", label: "Fill in the Blanks Drag/Drop", supported: true, hasAI: false },
+    { slug: "fib-dropdown", label: "Fill in the Blanks Dropdown", supported: true, hasAI: false },
     { slug: "mcq-single", label: "Multiple Choice Single", supported: true, hasAI: false }
   ],
   listening: [

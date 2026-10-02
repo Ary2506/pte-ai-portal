@@ -229,3 +229,42 @@ export function scoreHighlightIncorrectWords(question, answer) {
   }
   return { ...result, corrections };
 }
+
+// Reading & Writing: Fill in the Blanks. Each blank has its own dropdown, so an answer is one
+// option index per blank — `question.answer[i]` indexes into the i-th blank's own `options`, not
+// into a shared pool the way fill-blanks-dragdrop does.
+//
+// Partial credit per blank, like every other multi-part objective task here.
+export function scoreDropdownBlanks(question, answer) {
+  const correct = Array.isArray(question.answer) ? question.answer : [];
+  if (!correct.length) {
+    return {
+      score: 0,
+      maxScore: 1,
+      correct: false,
+      invalid: true,
+      feedback: ["This question has no answer key configured and cannot be scored."]
+    };
+  }
+  const submitted = Array.isArray(answer) ? answer : [];
+  const maxScore = Math.max(1, correct.length);
+  let score = 0;
+  for (let i = 0; i < correct.length; i += 1) {
+    if (submitted[i] !== null && submitted[i] !== undefined && Number(submitted[i]) === Number(correct[i])) score += 1;
+  }
+  // The blanks in passage order, so the client can label each one with the word it should have
+  // held. The question's own key is withheld from the browser until this point.
+  const blanks = (question.content || []).filter(part => part?.type === "blank");
+  const correctWords = correct.map((optionIndex, i) => blanks[i]?.options?.[optionIndex] ?? null);
+  return {
+    score,
+    maxScore,
+    correct: score === maxScore,
+    // Just the tally. Each blank is already marked in place with the word it should have held,
+    // and correctAnswerText lists them — appending the question's full completed passage on top
+    // of that buried both under a paragraph of prose.
+    feedback: [score === maxScore ? "All blanks are correct." : `${score} of ${maxScore} blanks are correct.`],
+    correctAnswerText: correctWords.filter(Boolean).join(", ") || null,
+    correctIndexes: correct
+  };
+}

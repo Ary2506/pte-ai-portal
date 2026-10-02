@@ -36,17 +36,27 @@ beforeEach(() => {
   api.history.mockResolvedValue({ submissions: [] });
 });
 
+// Reading's single-blank "fill-blanks" was retired: fib-dropdown renders every blank inline with
+// its own options, so the one-blank case is just that type with one blank. The behaviour this
+// test protected — a real <select> in the sentence rather than a separate option list — is
+// covered for the replacement in fibDropdown.test.jsx.
 describe("Phase 20 — Fill in the Blanks, inline dropdown (reading)", () => {
-  it("renders the blank as a real <select> inside the sentence, not a separate option list", async () => {
+  it("renders the blank inline as a select, not as a separate option list", async () => {
     api.questions.mockResolvedValue({
-      questions: [{ _id: "fb1", section: "reading", type: "fill-blanks", title: "FIB", prompt: "Choose the word.", passage: "The committee will ____ the proposal.", options: ["review", "ignore", "reject"] }]
+      questions: [{
+        _id: "fb1", section: "reading", type: "fib-dropdown", title: "FIB",
+        prompt: "Choose the word.", evaluationType: "objective", maxScore: 1,
+        content: [
+          { type: "text", value: "The committee will " },
+          { type: "blank", options: ["review", "ignore", "reject"] },
+          { type: "text", value: " the proposal." }
+        ]
+      }]
     });
-    renderAt("/reading?type=fill-blanks", studentAuthUser());
+    renderAt("/reading?type=fib-dropdown", studentAuthUser());
     await screen.findByText("FIB");
-    const select = document.querySelector(".fill-blank-inline select");
-    expect(select).toBeInTheDocument();
+    expect(document.querySelector(".dropdown-blank select")).toBeInTheDocument();
     expect(screen.getByText(/The committee will/)).toBeInTheDocument();
-    // Not rendered as the generic radio-option list.
     expect(document.querySelector(".options")).not.toBeInTheDocument();
   });
 });

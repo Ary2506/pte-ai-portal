@@ -64,6 +64,22 @@ export function validateAndNormalizeQuestion(input) {
     if (typeof input.answer !== "string" || !input.answer.trim()) errors.push("The exact sentence is required as the answer for a dictation question.");
     if (!input.audioUrl?.trim()) errors.push("An audio URL is required for a dictation question.");
     normalized.maxScore = typeof input.answer === "string" && input.answer.trim() ? Math.max(1, input.answer.trim().split(/\s+/).length) : 1;
+  } else if (meta.shape === "dropdown-blanks") {
+    // `content` is the passage, with each {type:"blank"} part carrying its own option list and
+    // the answer chosen from it. `answer` is the option index per blank, in passage order, which
+    // is what the scorer compares against — a word is never matched by text here.
+    const blanks = Array.isArray(input.content) ? input.content.filter(p => p?.type === "blank") : [];
+    if (!blanks.length) {
+      errors.push("The passage content with at least one blank is required.");
+    } else if (blanks.some(b => !Array.isArray(b.options) || b.options.length < 2)) {
+      errors.push("Every blank needs at least 2 options to choose between.");
+    }
+    if (!Array.isArray(input.answer) || input.answer.length !== blanks.length) {
+      errors.push("One correct option index is required for each blank.");
+    } else if (input.answer.some((optionIndex, i) => !Number.isInteger(optionIndex) || !blanks[i]?.options?.[optionIndex])) {
+      errors.push("Every blank's answer must point at one of that blank's own options.");
+    }
+    normalized.maxScore = Math.max(1, blanks.length);
   } else if (meta.shape === "typed-blanks") {
     // `answer` is the correct word per blank, in passage order; `content` is the authored passage
     // those blanks sit in. maxScore is derived from the answer key rather than trusted from the

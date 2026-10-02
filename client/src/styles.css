@@ -1075,3 +1075,25 @@ html[data-theme="dark"] .hero-status{background:rgba(42,40,91,.75);border-color:
 
 /* Prevent the browser's default flash-white on :active in dark mode */
 html[data-theme="dark"] button:active{color:inherit}
+
+/* Reading & Writing: Fill in the Blanks — a dropdown per blank, inline in the prose. The passage
+   keeps normal line-height so the selects sit in the text rather than forcing the lines apart. */
+.dropdown-blanks{line-height:2.4}
+.dropdown-blank{display:inline-flex;align-items:center;gap:4px;margin:0 3px;padding:2px 6px;border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);vertical-align:middle}
+.dropdown-blank select{min-width:92px;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;padding:3px 2px}
+/* The open list is drawn by the browser, which takes its background from the select's own. A
+   transparent select leaves that undefined, so Chrome falls back to white canvas and the options
+   stay light even in dark mode — these two rules give the popup real colours to use. The select
+   itself stays transparent so it blends into the blank's border, including when that border turns
+   red or green after scoring. */
+.dropdown-blank option{background:var(--surface);color:var(--ink);font-weight:600}
+.dropdown-blank option:checked{background:var(--blue-soft);color:var(--ink)}
+.dropdown-blank select:focus{outline:2px solid var(--blue);outline-offset:2px;border-radius:3px}
+.dropdown-blank select:disabled{color:inherit;opacity:1}
+/* Marked in place once scored, so a student reads the correction in the sentence it belongs to
+   rather than matching numbers against a list below the passage. */
+.dropdown-blank.is-right{border-color:var(--success);background:var(--success-bg);color:var(--success)}
+.dropdown-blank.is-wrong{border-color:#f3c9c9;background:var(--danger-bg);color:var(--danger)}
+.dropdown-blank.is-right select,.dropdown-blank.is-wrong select{color:inherit}
+.dropdown-blank-mark{font-weight:700;font-size:.9em}
+.dropdown-blank-answer{color:var(--success);font-weight:700;white-space:nowrap}

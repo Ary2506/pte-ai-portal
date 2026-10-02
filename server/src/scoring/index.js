@@ -1,9 +1,8 @@
-import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag, scoreTypedBlanks, scoreHighlightIncorrectWords } from "./objective.js";
+import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag, scoreTypedBlanks, scoreHighlightIncorrectWords, scoreDropdownBlanks } from "./objective.js";
 import { evaluateSubjective } from "../services/ai/index.js";
 
 const OBJECTIVE_SCORERS = {
   "mcq-single": scoreSingleChoice,
-  "fill-blanks": scoreSingleChoice,
   "mcq-multiple": scoreMultipleChoice,
   reorder: scoreReorder,
   "write-dictation": scoreDictation,
@@ -17,7 +16,8 @@ const OBJECTIVE_SCORERS = {
   // Listening's many-blank, free-text variant. Reading's "fill-blanks" above stays on
   // scoreSingleChoice: same name, different exercise, which is exactly why this needed its own
   // type rather than sharing one.
-  "fill-blanks-typed": scoreTypedBlanks
+  "fill-blanks-typed": scoreTypedBlanks,
+  "fib-dropdown": scoreDropdownBlanks
 };
 
 function subjectiveFeedback(result, extra = {}) {

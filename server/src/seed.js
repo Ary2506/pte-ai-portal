@@ -31,11 +31,14 @@ const questions = [
     difficulty: "easy", evaluationType: "objective", maxScore: 1
   },
   {
-    section: "reading", type: "fill-blanks", title: "Fill in the Blanks",
-    passage: "Good study habits improve concentration and help learners manage their time more ____.",
-    prompt: "Choose the best word.",
-    options: ["effectively", "effect", "effective", "effects"],
-    answer: 0,
+    section: "reading", type: "fib-dropdown", title: "Study Habits",
+    prompt: "Choose the word that best completes each blank.",
+    content: [
+      { type: "text", value: "Good study habits improve concentration and help learners manage their time more " },
+      { type: "blank", options: ["effectively", "effect", "effective", "effects"], answer: "effectively" },
+      { type: "text", value: "." }
+    ],
+    answer: [0],
     explanation: "The adverb 'effectively' correctly modifies the verb phrase 'manage their time'.",
     difficulty: "easy", evaluationType: "objective", maxScore: 1
   },

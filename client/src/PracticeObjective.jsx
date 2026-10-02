@@ -285,6 +285,50 @@ function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswe
   </p>;
 }
 
+// Reading & Writing: Fill in the Blanks — one dropdown per blank, each with its own options,
+// rendered inline so the passage still reads as prose. `content` is the stored passage: text
+// parts verbatim, blank parts carrying their own option list.
+//
+// After scoring, every blank is marked where it sits rather than in a list underneath: a wrong
+// pick turns red with a cross and is followed by the word it should have been, a right one turns
+// green with a tick. `correctIndexes` arrives with the score — the question itself withholds its
+// answer key until then, so before submitting there is nothing to mark.
+function DropdownBlanks({ content, values, setValues, disabled, correctIndexes }) {
+  let blankNumber = -1;
+  return <p className="passage dropdown-blanks">
+    {(content || []).map((part, i) => {
+      if (part.type !== "blank") return <span key={i}>{part.value}</span>;
+      blankNumber += 1;
+      const position = blankNumber;
+      const picked = values[position];
+      const expected = correctIndexes?.[position];
+      const graded = disabled && expected !== undefined && expected !== null;
+      const isRight = graded && Number(picked) === Number(expected);
+      const className = !graded ? "dropdown-blank" : isRight ? "dropdown-blank is-right" : "dropdown-blank is-wrong";
+      return <Fragment key={i}>
+        <span className={className}>
+          {graded && <span className="dropdown-blank-mark">{isRight ? "✓" : "✕"}</span>}
+          <select
+            value={picked ?? ""}
+            onChange={event => setValues(current => current.map((value, index) =>
+              index === position ? (event.target.value === "" ? null : Number(event.target.value)) : value))}
+            disabled={disabled}
+            aria-label={`Blank ${position + 1}`}
+          >
+            {/* The not-yet-chosen state. `hidden` keeps it out of the open list — an unlabelled
+                blank row there reads as a broken option — while it stays the select's initial
+                value, so a blank shows empty until the student picks and Submit cannot enable on
+                an answer nobody chose. Dropping it entirely would preselect the first word. */}
+            <option value="" hidden></option>
+            {(part.options || []).map((option, index) => <option key={index} value={index}>{option}</option>)}
+          </select>
+        </span>
+        {graded && <span className="dropdown-blank-answer"> (Answer: {part.options?.[expected]})</span>}
+      </Fragment>;
+    })}
+  </p>;
+}
+
 // Fill in the Blanks — inline dropdown (Phase 20, Part 6): question.passage carries the sentence
 // with a single "____" blank; renders it as real prose with a native <select> standing in for the
 // blank, instead of listing the options as a separate generic choice list below the passage.
@@ -396,6 +440,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   const [multi, setMulti] = useState([]);
   const [order, setOrder] = useState(null);
   const [dragPlacement, setDragPlacement] = useState(null);
+  // One chosen option index per blank, in passage order; null until the student picks.
+  const [dropdownValues, setDropdownValues] = useState([]);
   const [result, setResult] = useState(() => existingResult || null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -422,6 +468,10 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
     setOrder(isReorderQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : (question.options || []).map((_, i) => i)) : null);
     setDragPlacement(isDragFillQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : Array(blankCount).fill(null)) : null);
+    const dropdownCount = (question?.content || []).filter(part => part?.type === "blank").length;
+    setDropdownValues(existingResult && Array.isArray(submittedAnswer) && dropdownCount
+      ? submittedAnswer
+      : Array(dropdownCount).fill(null));
     setResult(existingResult || null);
     setError("");
     setShowAnswer(false);
@@ -431,8 +481,11 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   if (!question) return <div className="panel task-main narrow"><Empty text="No reading question is available in the library for this task yet." /></div>;
   const isReorder = question.type === "reorder";
   const isMulti = question.type === "mcq-multiple";
-  const isInlineFillBlank = question.type === "fill-blanks" && question.passage?.includes("____");
+  // Retired: reading's single-blank fill-blanks became fib-dropdown, which renders every blank
+  // inline with its own options. Kept as a constant so the render branches below stay readable.
+  const isInlineFillBlank = false;
   const isDragFill = question.type === "fill-blanks-dragdrop";
+  const isDropdownBlanks = question.type === "fib-dropdown";
   // Only ever populated once `result` exists (i.e. after this question's own submission has been
   // scored) — see the comment above DragFillBlanks for why `question.answer` itself is never
   // available here pre-submission, on standalone practice or Mock Test alike.
@@ -450,6 +503,11 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     setMulti([]);
     setOrder(isReorderQ ? (question.options || []).map((_, i) => i) : null);
     setDragPlacement(isDragFillQ ? Array(blankCount).fill(null) : null);
+    // Counted from `content`, so the array keeps its length and every dropdown returns to the
+    // unchosen placeholder. Clearing it to [] instead would leave the selects rendering their
+    // previous words, because each reads values[position] and undefined is not a reset.
+    const dropdownCount = (question?.content || []).filter(part => part?.type === "blank").length;
+    setDropdownValues(Array(dropdownCount).fill(null));
     setResult(null);
     setError("");
     setBusy(false);
@@ -462,7 +520,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     const f = new FormData();
     f.append("section", "reading");
     f.append("type", question.type);
-    f.append("answer", JSON.stringify(isReorder ? order : isMulti ? multi : isDragFill ? dragPlacement : choice));
+    f.append("answer", JSON.stringify(isReorder ? order : isMulti ? multi : isDragFill ? dragPlacement : isDropdownBlanks ? dropdownValues : choice));
     if (question._id) f.append("questionId", question._id);
     if (testSessionId) f.append("testSessionId", testSessionId);
     try {
@@ -473,6 +531,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   }
 
   const canSubmit = isReorder ? !!order : isMulti ? multi.length > 0
+    : isDropdownBlanks ? dropdownValues.length > 0 && dropdownValues.every(v => v !== null && v !== undefined)
     : isDragFill ? !!dragPlacement && dragPlacement.every(v => v !== null && v !== undefined)
     : choice !== "";
 
@@ -481,7 +540,10 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
     {question.passage && !isInlineFillBlank && !isDragFill && <div className="passage">{question.passage}</div>}
-    {isReorder
+    {isDropdownBlanks
+      ? <DropdownBlanks content={question.content} values={dropdownValues} setValues={setDropdownValues}
+          disabled={!!result} correctIndexes={result?.feedback?.correctIndexes} />
+      : isReorder
       ? <ReorderList options={question.options} order={order} setOrder={setOrder} disabled={!!result} />
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
@@ -662,7 +724,11 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
   function resetQuestion() {
     setChoice("");
     setMulti([]);
-    setBlankValues(question?.localBlankAnswers?.map(() => "") || []);
+    // Counted from the passage's own ____ markers, matching how the mount effect seeds it.
+    // Reading it off localBlankAnswers emptied the array instead, because that is derived from
+    // the answer key and the key no longer reaches the browser — which also enabled Submit, since
+    // [].every() is true.
+    setBlankValues(Array((question?.passage?.match(/____/g) || []).length).fill(""));
     setText("");
     setResult(null);
     setError("");
@@ -671,7 +737,10 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     setShowAnswer(false);
   }
 
-  const canSubmit = isTypedBlanks ? blankValues.every(value => value.trim()) : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
+  // The length check matters: `[].every(...)` is true, so an empty array would read as "every
+  // blank is filled" and enable Submit on a question with nothing typed in it.
+  const canSubmit = isTypedBlanks ? blankValues.length > 0 && blankValues.every(value => value.trim())
+    : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
 
   return <div className="panel task-main narrow">
     <div className="task-meta"><span className="chip">Listening</span><span>Audio practice</span></div>
