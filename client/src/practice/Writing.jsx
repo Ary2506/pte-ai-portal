@@ -3,6 +3,7 @@ import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 
 const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
+const WRITING_TASK_NAMES = { swt: "Summarize Written Text", essay: "Write Essay", email: "Write Email" };
 
 function WordCountBadge({ count, range }) {
   if (!range) return <span className="word-count">{count} words</span>;
@@ -80,6 +81,12 @@ export default function Writing({
   }
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+  // Counted the same way the badge is, so the panel and the badge can never disagree.
+  const sentenceCount = text.trim() ? text.trim().split(/[.!?]+(?:\s|$)/).filter(Boolean).length : 0;
+  const range = WRITING_WORD_RANGES[question?.type];
+  const tone = range ? (wordCount < range[0] ? "low" : wordCount > range[1] ? "high" : "good") : "good";
+  // The scale runs a little past the maximum so going over is visible rather than pinned at full.
+  const overMax = range ? range[1] * 1.25 : 1;
   return (
     <div className="task-layout">
       <section className="panel task-main">
@@ -154,9 +161,42 @@ export default function Writing({
           </>
         )}
       </section>
-      <aside className="panel tips">
-        <h3>Writing tips</h3>
-        <ul>
+      <aside className="panel compose-panel">
+        <span className="stat-label">Composition</span>
+        <h3>{WRITING_TASK_NAMES[question?.type] || "Your response"}</h3>
+
+        {range ? (
+          <div className="compose-target">
+            <div className="compose-target__head">
+              <span className="muted">Word target</span>
+              <b className="num-mono">{range[0]}–{range[1]}</b>
+            </div>
+            {/* The range drawn as a band, so being under, inside or over it is something the
+                student sees rather than has to work out from two numbers. */}
+            <div className="compose-target__track" role="img"
+              aria-label={`${wordCount} words written, target ${range[0]} to ${range[1]}`}>
+              <span className="compose-target__band"
+                style={{ left: `${(range[0] / overMax) * 100}%`, width: `${((range[1] - range[0]) / overMax) * 100}%` }}/>
+              <span className={`compose-target__fill is-${tone}`}
+                style={{ width: `${Math.min(100, (wordCount / overMax) * 100)}%` }}/>
+            </div>
+            <p className={`compose-target__verdict is-${tone}`}>
+              {tone === "low" ? `${range[0] - wordCount} more word${range[0] - wordCount === 1 ? "" : "s"} to reach the minimum.`
+                : tone === "high" ? `${wordCount - range[1]} word${wordCount - range[1] === 1 ? "" : "s"} over the maximum.`
+                : "Within the target range."}
+            </p>
+          </div>
+        ) : (
+          <p className="muted">This task has no fixed word target — answer it fully and concisely.</p>
+        )}
+
+        <dl className="compose-stats">
+          <div><dt>Words</dt><dd className="num-mono">{wordCount}</dd></div>
+          <div><dt>Characters</dt><dd className="num-mono">{text.length}</dd></div>
+          <div><dt>Sentences</dt><dd className="num-mono">{sentenceCount}</dd></div>
+        </dl>
+
+        <ul className="compose-tips">
           <li>Answer the exact task.</li>
           <li>Use clear sentence structure.</li>
           <li>Check grammar and spelling.</li>

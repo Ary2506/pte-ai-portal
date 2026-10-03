@@ -50,7 +50,7 @@ describe("empty and error states", () => {
     expect(screen.getByText("Network down")).toBeInTheDocument();
 
     api.history.mockResolvedValue({ submissions: [], total: 0 });
-    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(api.history).toHaveBeenCalledTimes(2));
   });
 });

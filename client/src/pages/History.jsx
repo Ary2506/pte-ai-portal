@@ -3,6 +3,8 @@ import { Badge, Empty, Page } from "../components/common.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
+import { EmptyState, PerformanceTable, Delta, titleCase, taskLabel, formatDuration } from "../components/analytics.jsx";
+import { pct } from "../analytics/derive.js";
 
 function describeAnswer(r) {
   const opts = r.question?.options;
@@ -181,6 +183,22 @@ export default function History() {
     setPage(1);
     setSectionFilter(s);
   }
+  // Change against the previous attempt at the SAME task type. The table is paginated server
+  // side, so an attempt whose predecessor sits on another page has no comparison available here —
+  // that is reported as a dash rather than silently compared against an unrelated task.
+  const withChange = (() => {
+    const oldestFirst = [...rows].reverse();
+    const lastByType = new Map();
+    const changes = new Map();
+    for (const row of oldestFirst) {
+      const value = pct(row);
+      const previous = lastByType.get(row.type);
+      changes.set(row._id, value !== null && previous !== undefined ? value - previous : null);
+      if (value !== null) lastByType.set(row.type, value);
+    }
+    return rows.map((r) => ({ ...r, id: r._id, change: changes.get(r._id) ?? null }));
+  })();
+
   return (
     <Page
       title="Practice History"
@@ -261,48 +279,42 @@ export default function History() {
           ))}
         </div>
       </div>
-      <div className="panel table-wrap" style={{ marginTop: 14 }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Section</th>
-              <th>Evaluation</th>
-              <th>Score</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r._id}>
-                <td>
-                  <b>{r.type}</b>
-                </td>
-                <td style={{ textTransform: "capitalize" }}>{r.section}</td>
-                <td>
-                  {r.evaluationType === "subjective" ? (
-                    <Badge tone="info">AI Evaluation</Badge>
-                  ) : (
-                    <Badge tone="neutral">Objective</Badge>
-                  )}
-                </td>
-                <td>{historyScoreCell(r)}</td>
-                <td>{fmtRelativeDateTime(r.createdAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!rows.length && !rowsLoading && (
-          <Empty
-            text={
+      <div className="panel" style={{ marginTop: 14 }}>
+        <PerformanceTable
+          columns={[
+            { key: "date", label: "Date", render: (r) => fmtRelativeDateTime(r.createdAt) },
+            { key: "section", label: "Section", render: (r) => titleCase(r.section) },
+            { key: "task", label: "Task", render: (r) => <b>{r.question?.title || taskLabel(r.type)}</b> },
+            {
+              key: "evaluation", label: "Evaluation",
+              render: (r) => r.evaluationType === "subjective"
+                ? <Badge tone="info">AI Evaluation</Badge>
+                : <Badge tone="neutral">Objective</Badge>
+            },
+            { key: "score", label: "Score", align: "right", render: (r) => historyScoreCell(r) },
+            {
+              key: "change", label: "Change", align: "right",
+              render: (r) => r.change === null
+                ? <span className="muted" title="No earlier attempt at this task on this page">—</span>
+                : <Delta value={r.change} />
+            },
+            {
+              key: "duration", label: "Duration", align: "right",
+              render: (r) => formatDuration(r.durationSeconds) || <span className="muted">—</span>
+            }
+          ]}
+          rows={withChange}
+          empty={
+            <EmptyState
               // The server filters now, so an empty page under a section filter means that
               // section genuinely has no attempts — not that a client-side filter hid them.
-              sectionFilter !== "all"
-                ? "No practice attempts match this filter."
-                : "No practice submissions yet. Start a task from the sidebar."
-            }
-          />
-        )}
+              title={sectionFilter !== "all" ? "No attempts in this section" : "No practice attempts yet"}
+              body={sectionFilter !== "all"
+                ? "Try another section, or clear the filter to see everything."
+                : "Start a task from the sidebar and your attempts will be listed here."}
+            />
+          }
+        />
       </div>
       {totalPages > 1 && (
         <div className="pager">

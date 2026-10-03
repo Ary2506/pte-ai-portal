@@ -146,7 +146,7 @@ describe("Read Aloud through the shared Speaking task", () => {
 
     // Last question: Next has become Finish.
     fireEvent.click(screen.getByText("Finish"));
-    await screen.findByText("Practice Completed 🎉");
+    await screen.findByText("Practice complete");
     expect(screen.getByText(/0 of 2 answered/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Back to list"));

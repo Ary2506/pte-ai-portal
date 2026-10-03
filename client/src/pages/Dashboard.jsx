@@ -6,7 +6,7 @@ import { Badge, Empty, Page } from "../components/common.jsx";
 import { Trajectory } from "../components/charts.jsx";
 import {
   AnalyticsSkeleton, EmptyState, FocusAreas, Metric, MetricStrip, PerformanceTable,
-  ScoreRing, SectionHeader, SkillSpectrum, titleCase
+  ScoreRing, SectionHeader, SkillSpectrum, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import {
   bySection, focusAreas, improvement, pct, scored, skillBalance, summarize, targetGap, trajectory
@@ -297,7 +297,7 @@ export default function Dashboard({ user }) {
           columns={[
             { key: "when", label: "Date", render: (r) => new Date(r.createdAt).toLocaleDateString() },
             { key: "section", label: "Section", render: (r) => titleCase(r.section) },
-            { key: "task", label: "Task", render: (r) => r.question?.title || titleCase(r.type) },
+            { key: "task", label: "Task", render: (r) => r.question?.title || taskLabel(r.type) },
             { key: "score", label: "Score", align: "right", render: (r) => <b className="num-mono">{pct(r)}</b> },
             { key: "raw", label: "Raw", align: "right", render: (r) => <span className="num-mono muted">{r.score}/{r.maxScore}</span> }
           ]}

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "../api.js";
 import {
   PRACTICE_SECTIONS,
   SECTION_LABELS,
   supportedTasksFor,
 } from "../practiceTaskRegistry.js";
-import { Empty, SkeletonRows } from "../components/common.jsx";
+import { Empty } from "../components/common.jsx";
+import { AnalyticsSkeleton, EmptyState, ErrorState, Metric, MetricStrip } from "../components/analytics.jsx";
+import { pct } from "../analytics/derive.js";
 import { QuestionListView } from "./QuestionListView.jsx";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { applyStructuredContent } from "./listeningData/shared.js";
@@ -22,6 +24,51 @@ const SECTION_DESCRIPTIONS = {
   listening:
     "Summarize, transcribe and answer questions from real audio passages.",
 };
+
+// Each section's workspace identity. The four practice areas do genuinely different work, and
+// the header is where that difference is stated — the task components below it stay as they are.
+const WORKSPACE = {
+  speaking:  { kicker: "AI Speech Lab",            note: "Record your answer; your transcript is evaluated." },
+  writing:   { kicker: "Writing Workspace",        note: "Drafted, timed and scored against PTE criteria." },
+  reading:   { kicker: "Reading Analysis",         note: "Objective scoring, with the answer key shown after you submit." },
+  listening: { kicker: "Listening Lab",            note: "Audio-led tasks scored on what you heard." }
+};
+
+/**
+ * The header above every practice workspace: where you are, and how you have done at this exact
+ * task type so far.
+ *
+ * The figures come from `progress` — the student's own submissions for this task, which the
+ * shell already loads to mark questions done. Nothing extra is fetched, and a student with no
+ * attempts sees dashes rather than zeros.
+ */
+function WorkspaceHeader({ section, label, questions, progress, position }) {
+  const identity = WORKSPACE[section] || {};
+  const attempts = questions.map((q) => progress.get(q._id)).filter(Boolean);
+  const scores = attempts
+    .filter((a) => a.evaluationStatus === "COMPLETED")
+    .map(pct)
+    .filter((n) => n !== null);
+  const average = scores.length ? Math.round(scores.reduce((a, n) => a + n, 0) / scores.length) : null;
+
+  return (
+    <header className="workspace-head" data-section={section}>
+      <div className="workspace-head__id">
+        <span className="stat-label">{SECTION_LABELS[section]}</span>
+        <h2>{identity.kicker}</h2>
+        <p className="muted">{identity.note}</p>
+      </div>
+      <MetricStrip>
+        <Metric label="Questions" value={questions.length || null}
+          hint={position ? `Viewing ${position}` : undefined} />
+        <Metric label="Answered" value={attempts.length || null}
+          hint={questions.length ? `of ${questions.length}` : undefined} />
+        <Metric label="Your average" value={average} hint={scores.length ? `${scores.length} scored` : "Nothing scored yet"} />
+        <Metric label="Best" value={scores.length ? Math.max(...scores) : null} />
+      </MetricStrip>
+    </header>
+  );
+}
 
 function PracticeTask({ section, label, slug, taskComponents }) {
   const [questions, setQuestions] = useState([]);
@@ -77,31 +124,36 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   if (loading)
     return (
       <div className="panel question-list-panel">
-        <SkeletonRows count={6} />
+        <AnalyticsSkeleton rows={6} />
       </div>
     );
   if (error)
     return (
-      <div className="panel error-state">
-        <AlertCircle size={30} />
-        <h4>Unable to load your questions</h4>
-        <p>Please check your connection and try again.</p>
-        <button className="secondary" onClick={load}>
-          Retry
-        </button>
-      </div>
+      <ErrorState
+        title="Unable to load your questions"
+        body="Please check your connection and try again."
+        onRetry={load}
+      />
     );
   if (!questions.length)
-    return <Empty text="No practice questions available yet." />;
+    return (
+      <EmptyState
+        title="No questions in this task yet"
+        body="This task type has no active questions in the library. Try another task, or check back once more are published."
+      />
+    );
   if (idx === null)
     return (
-      <QuestionListView
-        questions={questions}
-        progress={progress}
-        onSelect={setIdx}
-        section={section}
-        label={label}
-      />
+      <>
+        <WorkspaceHeader section={section} label={label} questions={questions} progress={progress} />
+        <QuestionListView
+          questions={questions}
+          progress={progress}
+          onSelect={setIdx}
+          section={section}
+          label={label}
+        />
+      </>
     );
 
   const question = questions[idx];
@@ -116,22 +168,24 @@ function PracticeTask({ section, label, slug, taskComponents }) {
     // in the current sitting. A question with no submission simply isn't counted.
     const attempts = questions.map((q) => progress.get(q._id)).filter(Boolean);
     const scored = attempts.filter((a) => a.evaluationStatus === "COMPLETED" && a.maxScore);
+    // Percentage, like every other score in the product. This previously scaled to /90, which
+    // made the same attempt read as a different number here than on the dashboard.
     const average = scored.length
-      ? Math.round(scored.reduce((sum, a) => sum + (a.score / a.maxScore) * 90, 0) / scored.length)
+      ? Math.round(scored.reduce((sum, a) => sum + (a.score / a.maxScore) * 100, 0) / scored.length)
       : null;
     return (
       <div className="panel task-main narrow">
         <div className="task-meta">
           <span className="chip">{SECTION_LABELS[section]}</span>
         </div>
-        <h2>Practice Completed 🎉</h2>
+        <h2>Practice complete</h2>
         <p className="instruction">
           You've gone through all {questions.length} {label} question
           {questions.length === 1 ? "" : "s"}.
         </p>
         <p className="muted">
           {attempts.length} of {questions.length} answered
-          {average !== null && ` · average score ${average}/90`}
+          {average !== null && ` · average score ${average}%`}
         </p>
         <div className="task-actions">
           <button className="secondary" onClick={() => { setFinished(false); setIdx(null); }}>

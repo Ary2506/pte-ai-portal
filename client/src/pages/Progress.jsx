@@ -5,7 +5,7 @@ import { Page } from "../components/common.jsx";
 import { Trajectory } from "../components/charts.jsx";
 import {
   AnalyticsSkeleton, Delta, EmptyState, ErrorState, FocusAreas, Metric, MetricStrip,
-  PerformanceTable, ScoreRing, SectionHeader, SkillSpectrum, StatLabel, formatDuration, titleCase
+  PerformanceTable, ScoreRing, SectionHeader, SkillSpectrum, StatLabel, formatDuration, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import {
   bySection, byTaskType, changeOverDays, focusAreas, improvement, pct, scored,
@@ -165,7 +165,7 @@ export default function Progress({ user }) {
         description="Weakest first. A task type needs several attempts before its average is treated as reliable."/>
       <PerformanceTable
         columns={[
-          { key: "type", label: "Task type", render: r => titleCase(r.type) },
+          { key: "type", label: "Task type", render: r => taskLabel(r.type) },
           { key: "section", label: "Section", render: r => titleCase(r.section) },
           { key: "attempts", label: "Attempts", align: "right" },
           { key: "average", label: "Average", align: "right", render: r => <b className="num-mono">{r.average}</b> },
@@ -189,7 +189,7 @@ export default function Progress({ user }) {
         columns={[
           { key: "when", label: "Date", render: r => new Date(r.createdAt).toLocaleDateString() },
           { key: "section", label: "Section", render: r => titleCase(r.section) },
-          { key: "task", label: "Task", render: r => r.question?.title || titleCase(r.type) },
+          { key: "task", label: "Task", render: r => r.question?.title || taskLabel(r.type) },
           { key: "score", label: "Score", align: "right", render: r => <b className="num-mono">{pct(r)}</b> },
           { key: "raw", label: "Raw", align: "right", render: r => <span className="num-mono muted">{r.score}/{r.maxScore}</span> },
           { key: "duration", label: "Duration", align: "right", render: r => formatDuration(r.durationSeconds) || <span className="muted">—</span> }

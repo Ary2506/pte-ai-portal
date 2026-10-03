@@ -16,6 +16,40 @@ const SPEAKING_DURATION_LIMITS = {
 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
 
+// The five states a speaking attempt moves through, and what each one tells the student. The
+// disclosure about transcript-only evaluation lives in READY, where it is read before recording
+// rather than after — it is the one thing a student needs to know up front.
+const RECORD_STATES = {
+  ready: {
+    label: "Ready",
+    title: "Record your answer",
+    note: "Speak naturally and clearly. Your browser can transcribe speech when supported. Only your transcript is evaluated — pronunciation and audio quality are not analyzed."
+  },
+  recording: {
+    label: "Recording",
+    title: "Recording...",
+    note: "Keep speaking until you are finished, or stop early when you are done."
+  },
+  recorded: {
+    label: "Recorded",
+    title: "Ready to submit",
+    note: "Replay it if you want to check, or send it for AI feedback."
+  },
+  evaluating: {
+    label: "Evaluating",
+    title: "Scoring your answer",
+    note: "Your transcript is being evaluated. This usually takes a few seconds."
+  },
+  result: {
+    label: "Scored",
+    title: "Evaluation complete",
+    note: "Your feedback is below. Re-do the question to try again."
+  }
+};
+
+// A fixed seed, so the waveform is a stable shape rather than re-randomising on every render.
+const RECORD_WAVE = [26, 48, 70, 38, 88, 56, 94, 44, 66, 82, 34, 72, 50, 90, 40, 62, 78, 30, 58, 86];
+
 // Advice that actually differs by task. A type with no entry falls back to GENERIC_TIPS, so
 // adding a speaking type never leaves an empty panel. Read Aloud's wording is carried over from
 // the dedicated component this one replaced, so its students see the same guidance as before.
@@ -272,7 +306,11 @@ export default function Speaking({
 
   const durationLabel = recording
     ? `${formatMMSS(seconds * 1000)} / ${formatMMSS(limit * 1000)}`
-    : `Ready · limit ${formatMMSS(limit * 1000)}`;
+    : `Limit ${formatMMSS(limit * 1000)}`;
+
+  // One source of truth for which of the five states the workspace is in, read in priority
+  // order: a scored result wins over everything, then evaluation, then live recording.
+  const recordState = result ? "result" : busy ? "evaluating" : recording ? "recording" : blob ? "recorded" : "ready";
   return (
     <div className="task-layout">
       <section className="panel task-main">
@@ -332,27 +370,29 @@ export default function Speaking({
         {question?.audioUrl && (
           <audio className="audio" controls src={question.audioUrl} />
         )}
-        <div className="record-box">
-          {recording ? (
-            <>
-              <div className="pulse">
-                <Mic size={30} />
-              </div>
-              <h3>Recording...</h3>
-            </>
+        {/* The speech lab's state machine. Each state looks different on purpose: a student
+            mid-recording, a student waiting on the evaluator and a student who has not started
+            are three different situations, and the box used to render the last two identically. */}
+        <div className={`record-box is-${recordState}`} data-state={recordState}>
+          <div className="record-box__status">
+            <span className="stat-label">{RECORD_STATES[recordState].label}</span>
+            <span className="record-box__timer num-mono">{durationLabel}</span>
+          </div>
+
+          {recordState === "recording" ? (
+            <div className="record-wave" aria-hidden="true">
+              {RECORD_WAVE.map((h, i) => (
+                <span key={i} className="record-wave__bar" style={{ "--h": `${h}%`, "--i": i }} />
+              ))}
+            </div>
           ) : (
-            <>
-              <div className="mic-circle">
-                <Mic size={30} />
-              </div>
-              <h3>Record your answer</h3>
-              <p className="muted">
-                Speak naturally and clearly. Your browser can transcribe speech
-                when supported. Only your transcript is evaluated —
-                pronunciation and audio quality are not analyzed.
-              </p>
-            </>
+            <div className={recordState === "evaluating" ? "mic-circle is-working" : "mic-circle"}>
+              <Mic size={28} />
+            </div>
           )}
+
+          <h3>{RECORD_STATES[recordState].title}</h3>
+          <p className="muted">{RECORD_STATES[recordState].note}</p>
         </div>
         {transcript && (
           <div className="transcript">

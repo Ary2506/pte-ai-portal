@@ -406,8 +406,10 @@ router.get("/:id/audio", requireAuth, asyncRoute(async (req, res) => {
 // reason a single row can reach ~8KB (see the size caps in services/ai/validate.js), and the
 // practice-history table renders none of them. `question` and `localQuestionId` stay: they are
 // what a row is matched back to its question by.
+// durationSeconds is included deliberately: it is a single number, it is what the history table's
+// Duration column reads, and leaving it out meant that column could only ever render a dash.
 const HISTORY_SUMMARY_FIELDS =
-  "type section evaluationType evaluationStatus score maxScore createdAt question localQuestionId";
+  "type section evaluationType evaluationStatus score maxScore durationSeconds createdAt question localQuestionId";
 
 router.get("/history", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
   // Coerced to strings before they reach the query. Express's default 'extended' query parser

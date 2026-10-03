@@ -70,25 +70,29 @@ describe("Speaking duration cap — per-type limits", () => {
   it("shows the 60s limit for Respond to a Situation", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
     renderAt("/speaking?type=respond-to-situation", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 01:00")).toBeInTheDocument();
+    await screen.findByText("Record your answer");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 01:00");
   });
 
   it("shows the 15s limit for Repeat Sentence", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("repeat-sentence", "Repeat Sentence")] });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 00:15")).toBeInTheDocument();
+    await screen.findByText("Record your answer");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:15");
   });
 
   it("shows the 60s limit for Describe Image", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("describe-image", "Describe Image")] });
     renderAt("/speaking?type=describe-image", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 01:00")).toBeInTheDocument();
+    await screen.findByText("Record your answer");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 01:00");
   });
 
   it("shows the 10s limit for Answer Short Question", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("answer-short-question", "Answer Short Question")] });
     renderAt("/speaking?type=answer-short-question", studentAuthUser());
-    expect(await screen.findByText("Ready · limit 00:10")).toBeInTheDocument();
+    await screen.findByText("Record your answer");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:10");
   });
 });
 

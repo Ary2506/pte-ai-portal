@@ -1,6 +1,18 @@
 import React from "react";
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import { formatDuration, titleCase } from "../analytics/derive.js";
+import { PRACTICE_SECTIONS, PRACTICE_TASKS } from "../practiceTaskRegistry.js";
+
+// slug -> display name, built once from the registry that already owns every task's real name.
+// Without it a raw type like "mcq-single" title-cases to "Mcq Single", which reads worse than
+// the slug it replaced.
+const TASK_LABELS = new Map(
+  PRACTICE_SECTIONS.flatMap(section => PRACTICE_TASKS[section].map(task => [task.slug, task.label])));
+
+/** The human name for a task type, falling back to title case for anything not in the registry. */
+export function taskLabel(type) {
+  return TASK_LABELS.get(type) || titleCase(type);
+}
 
 // The analytics vocabulary shared by every page in the product. These exist so that a score, a
 // trend or a gap is rendered the same way wherever it appears — the thing that makes a set of
@@ -145,7 +157,7 @@ export function FocusAreas({ areas, onPractice }) {
     {areas.map((area, i) => <li className="focus-item" key={area.type}>
       <span className="focus-item__index num-mono">{String(i + 1).padStart(2, "0")}</span>
       <div className="focus-item__body">
-        <h4>{titleCase(area.type)}</h4>
+        <h4>{taskLabel(area.type)}</h4>
         <p className="muted">
           Averaging <b className="num-mono">{area.average}</b> over {area.attempts} attempts —{" "}
           <b className="num-mono">{Math.round(area.gap)}</b> below your {titleCase(area.section)} average
@@ -200,11 +212,11 @@ export function AnalyticsSkeleton({ rows = 3 }) {
 }
 
 /** A professional error state: what happened, and a way forward. */
-export function ErrorState({ title = "Something went wrong", body, onRetry }) {
+export function ErrorState({ title = "Something went wrong", body, onRetry, retryLabel = "Retry" }) {
   return <div className="error-state" role="alert">
     <h4>{title}</h4>
     {body && <p>{body}</p>}
-    {onRetry && <button type="button" className="secondary" onClick={onRetry}>Try again</button>}
+    {onRetry && <button type="button" className="secondary" onClick={onRetry}>{retryLabel}</button>}
   </div>;
 }
 
