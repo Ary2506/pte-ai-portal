@@ -1,9 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Activity, Play, Trophy, AlertCircle, CreditCard, Flame, ArrowUpRight, Target, ListChecks } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Play, Trophy, AlertCircle, CreditCard } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
-import { Badge, Empty, Page, SkeletonRows } from "../components/common.jsx";
+import { Badge, Empty, Page } from "../components/common.jsx";
 import { Trajectory } from "../components/charts.jsx";
+import {
+  AnalyticsSkeleton, EmptyState, FocusAreas, Metric, MetricStrip, PerformanceTable,
+  ScoreRing, SectionHeader, SkillSpectrum, titleCase
+} from "../components/analytics.jsx";
+import {
+  bySection, focusAreas, improvement, pct, scored, skillBalance, summarize, targetGap, trajectory
+} from "../analytics/derive.js";
 
 function fmtLongDate(d) {
   return d
@@ -71,61 +78,6 @@ function SubscriptionCard({ user }) {
     </div>
   );
 }
-// A headline metric. Every one of these is read straight off the dashboard payload — there is no
-// rank, percentile or month-over-month delta on this product, and inventing one would put a
-// number on screen that nothing could ever reconcile.
-function MetricCard({ icon: Icon, label, value, unit, sub, to }) {
-  return (
-    <div className="metric-card">
-      <div className="metric-card-head">
-        <Icon size={15} />
-        <span>{label}</span>
-        {to && (
-          <NavLink to={to} className="metric-card-link" aria-label={`Open ${label}`}>
-            <ArrowUpRight size={15} />
-          </NavLink>
-        )}
-      </div>
-      <div className="metric-card-value">
-        <strong className="num-mono">{value}</strong>
-        {unit && <span className="metric-card-unit">{unit}</span>}
-      </div>
-      {sub && <p className="metric-card-sub">{sub}</p>}
-    </div>
-  );
-}
-
-// Scores of the most recent attempts, oldest first, so the line reads left to right as time.
-// `recent` arrives newest-first and excludes mock-test answers.
-function ScoreProgress({ recent, target }) {
-  const series = [...(recent || [])]
-    .reverse()
-    .map((s) => (typeof s.maxScore === "number" && s.maxScore > 0 ? Math.round((s.score / s.maxScore) * 100) : s.score))
-    .filter((n) => Number.isFinite(n));
-
-  return (
-    <section className="panel progress-panel">
-      <div className="panel-head">
-        <div>
-          <h3>Score progress</h3>
-          <p className="muted">
-            {series.length > 1
-              ? `Your last ${series.length} practice attempts, oldest first.`
-              : "Your attempts will chart here once you have a few."}
-          </p>
-        </div>
-        <span className="progress-target num-mono">Target {target || 79}</span>
-      </div>
-      {series.length > 1 ? (
-        <div className="progress-chart">
-          <Trajectory points={series} width={560} height={150} />
-        </div>
-      ) : (
-        <Empty text="Complete a few practice questions to see your trend." />
-      )}
-    </section>
-  );
-}
 
 const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -189,64 +141,74 @@ function StreakCard({ streak, weeklyActivity }) {
   );
 }
 
-// Per-section averages against the student's target, which is the question the four numbers are
-// actually there to answer: which skill is furthest from where it needs to be.
-function SectionPerformance({ bySection, target }) {
-  const rows = bySection || [];
-  if (!rows.length) return null;
-  const goal = target || 79;
-
-  return (
-    <section className="panel section-perf">
-      <div className="panel-head">
-        <div>
-          <h3>Section performance</h3>
-          <p className="muted">Average score per section, against your target of {goal}.</p>
-        </div>
-      </div>
-      <div className="section-perf-rows">
-        {rows.map((row) => {
-          const pct = Math.max(0, Math.min(100, row.score));
-          const gap = goal - row.score;
-          return (
-            <div className="section-perf-row" key={row.section} data-section={row.section}>
-              <span className="section-perf-name">{row.section}</span>
-              <span className="section-perf-track">
-                <span className="section-perf-fill" style={{ width: `${pct}%` }} />
-                <span className="section-perf-goal" style={{ left: `${Math.min(100, goal)}%` }} aria-hidden="true" />
-              </span>
-              <span className="section-perf-score num-mono">{row.score}</span>
-              <span className={gap > 0 ? "section-perf-gap is-behind" : "section-perf-gap"}>
-                {gap > 0 ? `${gap} to target` : "On target"}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
+// Dashboard — the student's command centre. It answers, in order: where am I, how far from
+// target, am I improving, how consistent am I, which skill is weak, what should I practise next,
+// and what did I just do.
+//
+// Two requests in parallel: /dashboard for the server's own rollup (streak, weekly activity) and
+// one page of /history, which is what makes the derived analytics — trajectory, task-type gaps,
+// focus areas — possible without a new endpoint. Either failing degrades the page rather than
+// breaking it, because both are caught and every component renders an empty state for absent data.
 export default function Dashboard({ user }) {
   const [data, setData] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(() => {
     const notice = sessionStorage.getItem("pte_access_denied_notice");
     sessionStorage.removeItem("pte_access_denied_notice");
     return notice || "";
   });
+  const navigate = useNavigate();
+
   useEffect(() => {
-    api
-      .dashboard()
-      .then(setData)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    let live = true;
+    // Started inside a promise so a SYNCHRONOUS throw becomes a rejection too, not just a
+    // rejected request. Without that, anything that fails before the fetch is even made escapes
+    // the catch below and takes the whole page down — which is the opposite of degrading.
+    const safely = (run) => Promise.resolve().then(run).catch(() => null);
+    Promise.all([
+      safely(() => api.dashboard()),
+      safely(() => api.history({ limit: 100, page: 1 }))
+    ]).then(([dash, hist]) => {
+      if (!live) return;
+      setData(dash);
+      setHistory(hist?.submissions || []);
+      setLoading(false);
+    });
+    return () => { live = false; };
   }, []);
+
   const stats = data?.stats;
+  const target = stats?.targetScore;
+
+  // Derived from the student's own attempts — analytics/derive.js holds the thresholds that
+  // decide when each of these is allowed to say anything at all.
+  const derived = useMemo(() => summarize(history), [history]);
+  const series = useMemo(() => trajectory(history), [history]);
+  const trend = useMemo(() => improvement(history), [history]);
+  const sections = useMemo(() => bySection(history), [history]);
+  const balance = useMemo(() => skillBalance(history), [history]);
+  const areas = useMemo(() => focusAreas(history, { limit: 2 }), [history]);
+  const gap = useMemo(() => targetGap(derived.average, target), [derived.average, target]);
+
+  if (loading) {
+    return (
+      <Page title="Welcome back" subtitle="Keep practicing to achieve your target PTE score.">
+        <AnalyticsSkeleton rows={5} />
+      </Page>
+    );
+  }
+
+  const subtitle = gap
+    ? gap.met
+      ? `You are ${gap.gap} point${gap.gap === 1 ? "" : "s"} above your target of ${gap.target}.`
+      : `You are ${Math.abs(gap.gap)} point${Math.abs(gap.gap) === 1 ? "" : "s"} away from your target of ${gap.target}.`
+    : "Keep practicing to achieve your target PTE score.";
+
   return (
     <Page
       title="Welcome back"
-      subtitle="Keep practicing to achieve your target PTE score."
+      subtitle={subtitle}
       actions={
         <NavLink className="primary" to="/speaking">
           <Play size={16} /> Continue practice
@@ -259,62 +221,98 @@ export default function Dashboard({ user }) {
           {accessDenied}
         </div>
       )}
-      <div className="metric-row">
-        <MetricCard icon={Target} label="Overall score" value={stats?.overall ?? 0}
-          sub={`Practice average · target ${stats?.targetScore || 79}`} to="/history" />
-        <MetricCard icon={ListChecks} label="Practice attempts" value={stats?.practiceCount ?? 0}
-          sub="Questions you have answered" to="/history" />
-        <MetricCard icon={Flame} label="Day streak" value={data?.streak?.currentStreak ?? 0} unit="days"
-          sub={data?.streak?.learnedToday ? "Practised today" : "Practise today to keep it"} />
-      </div>
 
+      {/* --- Where am I ------------------------------------------------------------------- */}
+      <section className="command-hero">
+        <ScoreRing value={derived.average} max={100} size={172} caption="Practice average" />
+        <div className="command-hero__metrics">
+          <MetricStrip>
+            <Metric label="Target score" value={target ?? null} hint="Set on your profile" />
+            <Metric label="Best score" value={derived.best} hint={`Across ${derived.attempts} attempts`} />
+            <Metric label="Attempts" value={stats?.practiceCount ?? derived.attempts ?? null} />
+            <Metric
+              label="Overall change"
+              value={trend ? `${trend.delta > 0 ? "+" : ""}${trend.delta}` : null}
+              hint={trend ? `Over ${trend.points} attempts` : "Needs more attempts"}
+            />
+          </MetricStrip>
+        </div>
+      </section>
+
+      {/* --- Am I improving, and how consistent am I -------------------------------------- */}
       <div className="dashboard-split">
-        <ScoreProgress recent={data?.recent} target={stats?.targetScore} />
+        <section className="panel">
+          <SectionHeader
+            label="Score trajectory"
+            title="Your recent attempts"
+            description={series ? "Each point is one scored attempt, oldest first." : "A trend needs a few more attempts."}
+            actions={<NavLink to="/progress" className="link">Full analysis</NavLink>}
+          />
+          {series ? (
+            <div className="progress-chart">
+              <Trajectory points={series} width={560} height={160} />
+            </div>
+          ) : (
+            <EmptyState
+              title="Not enough attempts to chart a trend"
+              body="Keep practising — your trajectory appears once there is enough to show a direction."
+            />
+          )}
+        </section>
+
         <StreakCard streak={data?.streak} weeklyActivity={data?.weeklyActivity} />
       </div>
 
+      {/* --- Which skill is weak, and what to do about it ---------------------------------- */}
+      <div className="dashboard-split">
+        <section className="panel">
+          <SectionHeader
+            label="Skill profile"
+            title="Section comparison"
+            description={
+              balance
+                ? `${titleCase(balance.strongest.section)} leads ${titleCase(balance.weakest.section)} by ${balance.spread} points.`
+                : "Practise in more than one section to compare them."
+            }
+          />
+          <SkillSpectrum sections={sections} target={target} />
+        </section>
+
+        <section className="panel">
+          <SectionHeader label="Next best practice" title="What to work on" />
+          <FocusAreas areas={areas} onPractice={(area) => navigate(`/${area.section}`)} />
+        </section>
+      </div>
+
       <SubscriptionCard user={user} />
-      <SectionPerformance bySection={data?.bySection} target={stats?.targetScore} />
+
+      {/* --- What did I just do ------------------------------------------------------------ */}
       <section className="panel">
-        <div className="panel-head">
-          <div>
-            <h3>Recent Results</h3>
-            <p className="muted">Your latest submissions</p>
-          </div>
-          <NavLink to="/history" className="link">
-            View all
-          </NavLink>
-        </div>
-        {loading ? (
-          <SkeletonRows count={3} />
-        ) : (data?.recent || []).length ? (
-          <div className="recent-list">
-            {data.recent.map((s) => (
-              <div className="recent" key={s._id}>
-                <div className="recent-icon">
-                  <Activity size={16} />
-                </div>
-                <div>
-                  <b>{s.type}</b>
-                  <small>{s.section}</small>
-                </div>
-                <strong>{s.score}</strong>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <Empty text="Your practice attempts will appear here." />
-        )}
+        <SectionHeader
+          label="Recent performance"
+          title="Latest attempts"
+          actions={<NavLink to="/history" className="link">View all</NavLink>}
+        />
+        <PerformanceTable
+          columns={[
+            { key: "when", label: "Date", render: (r) => new Date(r.createdAt).toLocaleDateString() },
+            { key: "section", label: "Section", render: (r) => titleCase(r.section) },
+            { key: "task", label: "Task", render: (r) => r.question?.title || titleCase(r.type) },
+            { key: "score", label: "Score", align: "right", render: (r) => <b className="num-mono">{pct(r)}</b> },
+            { key: "raw", label: "Raw", align: "right", render: (r) => <span className="num-mono muted">{r.score}/{r.maxScore}</span> }
+          ]}
+          rows={scored(history).slice(0, 6).map((r) => ({ ...r, id: r._id }))}
+          empty={<Empty text="Your practice attempts will appear here." />}
+        />
       </section>
+
       <div className="mock-cta-banner">
         <div className="mock-cta-banner-icon">
           <Trophy size={22} />
         </div>
         <div className="mock-cta-banner-text">
           <h3>Ready for the real thing?</h3>
-          <p className="muted">
-            Take a full mock test and get a section-by-section practice report.
-          </p>
+          <p className="muted">Take a full mock test and get a section-by-section practice report.</p>
         </div>
         <NavLink className="primary" to="/mock">
           Start Mock Test

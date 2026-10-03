@@ -14,6 +14,7 @@ import DashboardPage from "./pages/Dashboard.jsx";
 import ProfilePage from "./pages/Profile.jsx";
 import MockPage from "./pages/Mock.jsx";
 import HistoryPage from "./pages/History.jsx";
+import ProgressPage from "./pages/Progress.jsx";
 import AdminPage from "./pages/Admin.jsx";
 import { ReadingTask } from "./practice/Reading.jsx";
 import { ListeningTask } from "./practice/Listening.jsx";
@@ -213,7 +214,9 @@ function StudentSidebarNav({ user, onNavigate }) {
     <div className="nav-group-label">Practice</div>
     <PteMegaMenu onNavigate={onNavigate}/>
     <NavLink to="/mock" className={cls} onClick={onNavigate}><Trophy size={18}/><span>Take Mock Test</span></NavLink>
+    <div className="nav-group-label">Performance</div>
     <NavLink to="/history" className={cls} onClick={onNavigate}><BarChart3 size={18}/><span>My Results</span></NavLink>
+    <NavLink to="/progress" className={cls} onClick={onNavigate}><Activity size={18}/><span>Progress</span></NavLink>
     <MoreMenu onNavigate={onNavigate}/>
     {user?.role === "admin" && <div className="nav-group-label">Admin</div>}
     {user?.role === "admin" && <NavLink to="/admin" className="nav-item admin-panel-link" onClick={onNavigate}><Shield size={18}/><span>Admin Panel</span></NavLink>}
@@ -227,6 +230,7 @@ function useSearchDestinations(user) {
       { label: "PTE Practice", group: "Pages", to: "/practice" },
       { label: "Mock Tests", group: "Pages", to: "/mock" },
       { label: "Practice History", group: "Pages", to: "/history" },
+      { label: "Performance Intelligence", group: "Pages", to: "/progress" },
       { label: "AI Study Plan", group: "Pages", to: "/plan" },
       { label: "Profile", group: "Pages", to: "/profile" }
     ];
@@ -319,6 +323,7 @@ function topbarLabel(pathname) {
   if (pathname === "/dashboard") return "Dashboard";
   if (pathname === "/mock") return "Mock Tests";
   if (pathname === "/history") return "Practice History";
+  if (pathname === "/progress") return "Performance Intelligence";
   if (pathname === "/plan") return "AI Study Plan";
   if (pathname === "/profile") return "Profile";
   if (pathname.startsWith("/admin")) return "Admin";
@@ -426,6 +431,7 @@ export default function App() {
     <Route path="/listening" element={<PracticePage section="listening" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
     <Route path="/mock" element={<MockPage/>}/>
     <Route path="/plan" element={<Plan/>}/>
+    <Route path="/progress" element={<ProgressPage user={auth.user}/>}/>
     <Route path="/history" element={<HistoryPage/>}/>
     <Route path="/profile" element={<ProfilePage user={auth.user}/>}/>
     <Route path="/admin" element={<AdminRoute user={auth.user}><AdminPage/></AdminRoute>}/>
