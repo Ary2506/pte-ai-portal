@@ -4,6 +4,9 @@ import { BookOpen, CheckCircle2, Clock3, Headphones, Mic, PenLine, Trophy } from
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { Page } from "../components/common.jsx";
+import {
+  EmptyState, Metric, MetricStrip, PerformanceTable, ScoreRing, SectionHeader, taskLabel, titleCase
+} from "../components/analytics.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
 import { ReadingTask } from "../practice/Reading.jsx";
 import { ListeningTask } from "../practice/Listening.jsx";
@@ -11,15 +14,6 @@ import SpeakingTaskModule from "../practice/Speaking.jsx";
 import WritingTaskModule from "../practice/Writing.jsx";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
-
-function ScoreRing({ value, max, size }) {
-  const percent = max ? Math.round((value / max) * 100) : 0;
-  return <div className={`score-ring ${size === "lg" ? "large" : ""}`} style={{ "--score": `${percent}%` }}><strong>{value}</strong><small>/{max}</small></div>;
-}
-
-function ScoreCard({ title, value, sub }) {
-  return <div className="score-card"><span>{title}</span><strong>{value}</strong><small>{sub}</small></div>;
-}
 
 function formatMMSS(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -65,6 +59,8 @@ function Mock() {
   const [idx,setIdx]=useState(0);
   const [answered,setAnswered]=useState({});
   const [result,setResult]=useState(null);
+  const [resultRows,setResultRows]=useState([]);
+  const [pastSessions,setPastSessions]=useState([]);
   const [starting,setStarting]=useState(false);
   const [finishing,setFinishing]=useState(false);
   const [error,setError]=useState("");
@@ -88,11 +84,21 @@ function Mock() {
     } catch(e){ setError(e.message); } finally { setStarting(false); }
   }
 
+  useEffect(() => {
+    // Context for the start screen only — if it fails the student can still sit a mock.
+    Promise.resolve()
+      .then(() => api.testSessions.list())
+      .then(d => setPastSessions(d?.testSessions || []))
+      .catch(() => {});
+  }, []);
+
   async function finish() {
     setFinishing(true); setError(""); setPoliteAnnouncement("Finishing your test…");
     try {
       const d = await api.testSessions.complete(session.testSession._id);
       setResult(d.testSession);
+      // Already in the response; the old report threw them away and showed section totals only.
+      setResultRows(d.results || []);
       setPoliteAnnouncement("Your mock test has been completed and scored.");
     } catch(e){
       if (e.code === "TEST_SESSION_EXPIRED") { setTerminal("EXPIRED"); setAssertiveAnnouncement("Your test session has expired."); }
@@ -136,12 +142,75 @@ function Mock() {
   </>;
 
   if (result) {
+    const overallPct = result.totalMaxScore
+      ? Math.round((result.totalScore / result.totalMaxScore) * 100) : null;
+    // Section rows, each as a percentage of its own maximum so sections of different lengths can
+    // actually be compared with one another.
+    const sectionRows = (result.sectionScores || []).map(s => ({
+      ...s,
+      percent: s.maxScore ? Math.round((s.score / s.maxScore) * 100) : null
+    }));
+    const ranked = sectionRows.filter(s => s.percent !== null).sort((a, b) => b.percent - a.percent);
+    const correct = resultRows.filter(r => r.maxScore && r.score >= r.maxScore).length;
+
     return <>{liveRegions}<Page title="Mock Test Complete" subtitle="Here is your practice report.">
-      <div className="mock-result">
-        <ScoreRing value={result.totalScore} max={result.totalMaxScore} size="lg"/>
-        <h2>Practice Score</h2>
-        <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
-        <div className="score-grid">{result.sectionScores.map(s=><ScoreCard key={s.section} title={s.section} value={`${s.score}/${s.maxScore}`} sub="Section score"/>)}</div>
+      <section className="exam-report__hero">
+        <ScoreRing value={overallPct} max={100} size={184} caption="Overall"/>
+        <div className="exam-report__summary">
+          <h2>Practice Score</h2>
+          <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
+          <MetricStrip>
+            <Metric label="Raw score" value={`${result.totalScore}/${result.totalMaxScore}`}/>
+            <Metric label="Questions" value={resultRows.length || null}/>
+            <Metric label="Full marks" value={resultRows.length ? correct : null}
+              hint={resultRows.length ? `of ${resultRows.length} questions` : undefined}/>
+            <Metric label="Strongest" value={ranked.length ? titleCase(ranked[0].section) : null}
+              hint={ranked.length ? `${ranked[0].percent}%` : undefined}/>
+          </MetricStrip>
+        </div>
+      </section>
+
+      <section className="panel">
+        <SectionHeader label="Section comparison" title="How each section scored"
+          description={ranked.length > 1
+            ? `${titleCase(ranked[0].section)} was your strongest; ${titleCase(ranked[ranked.length - 1].section)} your weakest.`
+            : "Each section as a percentage of its own maximum."}/>
+        <div className="skill-spectrum">
+          {sectionRows.map(row => (
+            <div className="skill-row" key={row.section} data-section={row.section}>
+              <span className="skill-row__name">{titleCase(row.section)}</span>
+              <span className="skill-row__track">
+                {row.percent !== null && <span className="skill-row__fill" style={{ width: `${row.percent}%` }}/>}
+              </span>
+              <span className="skill-row__value num-mono">{row.percent ?? "—"}</span>
+              <span className="skill-row__meta num-mono">{row.score}/{row.maxScore}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <SectionHeader label="Question level" title="Every answer in this attempt"/>
+        <PerformanceTable
+          columns={[
+            { key: "section", label: "Section", render: r => titleCase(r.section) },
+            { key: "task", label: "Task", render: r => r.question?.title || taskLabel(r.type) },
+            { key: "score", label: "Score", align: "right", render: r => <b className="num-mono">{r.score}/{r.maxScore}</b> },
+            { key: "status", label: "Result", render: r => r.evaluationStatus === "COMPLETED"
+                ? (r.maxScore && r.score >= r.maxScore
+                    ? <span className="exam-mark is-full">Full marks</span>
+                    : r.score > 0 ? <span className="exam-mark is-part">Partial</span>
+                    : <span className="exam-mark is-none">No marks</span>)
+                : <span className="muted">{titleCase(r.evaluationStatus || "pending")}</span> }
+          ]}
+          rows={resultRows.map((r, i) => ({ ...r, id: r._id || i }))}
+          empty={<EmptyState title="Question-level detail is not available for this attempt"
+            body="Your section scores above still reflect everything you answered."/>}
+        />
+      </section>
+
+      <div className="task-actions">
+        <NavLink className="secondary" to="/history">View all attempts</NavLink>
         <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
       </div>
     </Page></>;
@@ -170,18 +239,55 @@ function Mock() {
   }
 
   if (!session) {
-    return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a compact PTE test experience.">
-      <div className="mock-card panel">
-        <div className="mock-icon-badge"><Trophy size={30}/></div>
-        <h2>Full PTE Practice Mock</h2>
-        <p>One question per section, scored from your actual answers — not a preset result.</p>
-        <div className="mock-section-chips">
-          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
+    // Previous attempts, scored as percentages so attempts of different lengths compare. Every
+    // figure here is counted from completed sessions the server returned — a student who has
+    // never finished a mock sees dashes, not zeros.
+    const done = (pastSessions || []).filter(m => m.totalMaxScore);
+    const percents = done.map(m => Math.round((m.totalScore / m.totalMaxScore) * 100));
+    const best = percents.length ? Math.max(...percents) : null;
+    const latest = percents.length ? percents[0] : null;
+    const average = percents.length
+      ? Math.round(percents.reduce((a, n) => a + n, 0) / percents.length) : null;
+
+    return <>{liveRegions}<Page title="Mock Tests" subtitle="Sit a compact, timed test and get a sectioned report.">
+      <section className="exam-center">
+        <div className="mock-card panel">
+          <div className="mock-icon-badge"><Trophy size={30}/></div>
+          <h2>Full PTE Practice Mock</h2>
+          <p>One question per section, scored from your actual answers — not a preset result.</p>
+          <div className="mock-section-chips">
+            {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
+          </div>
+          <p className="muted">20 minutes total for this compact mock.</p>
+          {error && <div className="alert error">{error}</div>}
+          <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
         </div>
-        <p className="muted">20 minutes total for this compact mock.</p>
-        {error && <div className="alert error">{error}</div>}
-        <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
-      </div>
+
+        <div className="panel">
+          <SectionHeader label="Your mock record" title="Previous attempts"/>
+          <MetricStrip>
+            <Metric label="Completed" value={done.length || null}/>
+            <Metric label="Best" value={best} unit={best === null ? "" : "%"}/>
+            <Metric label="Latest" value={latest} unit={latest === null ? "" : "%"}/>
+            <Metric label="Average" value={average} unit={average === null ? "" : "%"}/>
+          </MetricStrip>
+          {done.length ? (
+            <PerformanceTable
+              columns={[
+                { key: "date", label: "Date", render: m => new Date(m.submittedAt).toLocaleDateString() },
+                { key: "score", label: "Score", align: "right",
+                  render: m => <b className="num-mono">{Math.round((m.totalScore / m.totalMaxScore) * 100)}%</b> },
+                { key: "raw", label: "Raw", align: "right",
+                  render: m => <span className="num-mono muted">{m.totalScore}/{m.totalMaxScore}</span> }
+              ]}
+              rows={done.slice(0, 5).map(m => ({ ...m, id: m._id }))}
+            />
+          ) : (
+            <EmptyState title="No completed mock tests yet"
+              body="Finish a mock and your attempts, best score and average appear here."/>
+          )}
+        </div>
+      </section>
     </Page></>;
   }
 

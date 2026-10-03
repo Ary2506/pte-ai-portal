@@ -1,5 +1,8 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Badge, Page } from "../components/common.jsx";
+import { api } from "../api.js";
+import { Metric, MetricStrip, ScoreRing, SectionHeader, SkillSpectrum, formatDuration, titleCase } from "../components/analytics.jsx";
+import { bySection, scored, skillBalance, summarize, targetGap } from "../analytics/derive.js";
 function fmtDate(d) {
   return d ? new Date(d).toLocaleDateString() : "—";
 }
@@ -23,6 +26,27 @@ function subscriptionTone(status) {
 }
 export default function Profile({ user }) {
   const isAdmin = user.role === "admin";
+  const [history, setHistory] = useState([]);
+
+  // Practice statistics on the account page come from the student's own attempts, like everywhere
+  // else. Failure is silent and the section simply does not render — an account page should not
+  // break because an analytics request did.
+  useEffect(() => {
+    if (isAdmin) return undefined;
+    let live = true;
+    Promise.resolve()
+      .then(() => api.history({ limit: 100, page: 1 }))
+      .then((d) => { if (live) setHistory(d?.submissions || []); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [isAdmin]);
+
+  const stats = useMemo(() => summarize(history), [history]);
+  const sections = useMemo(() => bySection(history), [history]);
+  const balance = useMemo(() => skillBalance(history), [history]);
+  const gap = useMemo(() => targetGap(stats.average, user?.targetScore), [stats.average, user?.targetScore]);
+  const hasPractice = scored(history).length > 0;
+
   return (
     <Page title="Profile" subtitle="Manage your account.">
       <div className="profile-card panel">
@@ -82,6 +106,44 @@ export default function Profile({ user }) {
           </p>
         )}
       </div>
+
+      {!isAdmin && hasPractice && (
+        <>
+          <section className="command-hero">
+            <ScoreRing value={stats.average} max={100} size={156} caption="Practice average" />
+            <div className="command-hero__metrics">
+              <MetricStrip>
+                <Metric label="Target score" value={user.targetScore ?? null} />
+                <Metric
+                  label="Gap to target"
+                  value={gap ? (gap.gap > 0 ? `+${gap.gap}` : gap.gap) : null}
+                  hint={gap?.met ? "Above target" : "Below target"}
+                />
+                <Metric label="Best score" value={stats.best} />
+                <Metric label="Attempts" value={stats.attempts || null} />
+                <Metric
+                  label="Time measured"
+                  value={formatDuration(stats.totalSeconds)}
+                  hint={stats.timedAttempts ? `${stats.timedAttempts} timed attempts` : "No timed attempts"}
+                />
+              </MetricStrip>
+            </div>
+          </section>
+
+          <section className="panel">
+            <SectionHeader
+              label="Practice statistics"
+              title="Section profile"
+              description={
+                balance
+                  ? `${titleCase(balance.strongest.section)} is your strongest section, ${titleCase(balance.weakest.section)} your weakest.`
+                  : "Practise in more than one section to compare them."
+              }
+            />
+            <SkillSpectrum sections={sections} target={user.targetScore} />
+          </section>
+        </>
+      )}
     </Page>
   );
 }

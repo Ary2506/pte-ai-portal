@@ -15,6 +15,7 @@ import ProfilePage from "./pages/Profile.jsx";
 import MockPage from "./pages/Mock.jsx";
 import HistoryPage from "./pages/History.jsx";
 import ProgressPage from "./pages/Progress.jsx";
+import StudyPlanPage from "./pages/StudyPlan.jsx";
 import AdminPage from "./pages/Admin.jsx";
 import { ReadingTask } from "./practice/Reading.jsx";
 import { ListeningTask } from "./practice/Listening.jsx";
@@ -389,11 +390,6 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   </div>
 }
 
-function Plan() {
-  const [data,setData]=useState(null);useEffect(()=>{api.plan().then(setData).catch(()=>{})},[]);
-  return <Page title="Personal Study Plan" subtitle="Your plan adapts to your practice history."><div className="plan-hero panel"><div className="plan-icon"><Brain/></div><div><span className="eyebrow">FOCUS AREA</span><h2>{data?.weakest||"Speaking"}</h2><p>Build consistency in your weakest section first.</p></div></div><div className="two-col"><section className="panel"><h3>Today's tasks</h3>{(data?.tasks||["Complete 10 speaking questions","Review mistakes","Learn 10 words","Take a mini test"]).map((x,i)=><div className="check-row" key={i}><CheckCircle2 size={19}/><span>{x}</span></div>)}</section><section className="panel"><h3>Section performance</h3>{(data?.sectionScores||[]).map(x=><div className="bar-row" key={x.section}><span>{x.section}</span><div><i style={{width:`${Math.min(100,x.score)}%`}}/></div><b>{x.score}</b></div>)}</section></div></Page>
-}
-
 export function ToastHost({toasts,dismiss}) {
   if(!toasts.length) return null;
   return <div className="toast-host" role="status" aria-live="polite">{toasts.map(t=><button key={t.id} type="button" className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}<span className="sr-only"> — dismiss</span></button>)}</div>
@@ -430,7 +426,7 @@ export default function App() {
     <Route path="/reading" element={<PracticePage section="reading" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
     <Route path="/listening" element={<PracticePage section="listening" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
     <Route path="/mock" element={<MockPage/>}/>
-    <Route path="/plan" element={<Plan/>}/>
+    <Route path="/plan" element={<StudyPlanPage user={auth.user}/>}/>
     <Route path="/progress" element={<ProgressPage user={auth.user}/>}/>
     <Route path="/history" element={<HistoryPage/>}/>
     <Route path="/profile" element={<ProfilePage user={auth.user}/>}/>
