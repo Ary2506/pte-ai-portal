@@ -27,6 +27,45 @@ async function weeklyActivity(userId) {
   });
 }
 
+// Per-day practice activity for the profile's streak calendar, from the day the student joined
+// to today. Same definition of "active" the streak itself uses — a Submission or a COMPLETED
+// TestSession on that UTC calendar date — so the calendar and the streak can never disagree.
+//
+// Two deliberate bounds. The window is capped at MAX_CALENDAR_DAYS so an old account cannot ask
+// the database for an unbounded range, and the response carries only the days that HAVE activity
+// rather than one entry per day: a year of practice is a few hundred bytes instead of a 365-entry
+// array that is mostly zeroes. The client fills the empty days in.
+const MAX_CALENDAR_DAYS = 371; // 53 weeks, the span a GitHub-style calendar shows
+
+router.get("/activity", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
+  const joined = req.user.createdAt ? new Date(req.user.createdAt) : new Date();
+  const earliestAllowed = new Date(Date.now() - (MAX_CALENDAR_DAYS - 1) * 86400000);
+  const from = joined > earliestAllowed ? joined : earliestAllowed;
+  // Start of that UTC day, so the first day is included whole rather than from the join time.
+  from.setUTCHours(0, 0, 0, 0);
+
+  const [submissions, completedSessions] = await Promise.all([
+    Submission.find({ user: req.user._id, createdAt: { $gte: from } }).select("createdAt").lean(),
+    TestSession.find({ user: req.user._id, status: "COMPLETED", submittedAt: { $gte: from } })
+      .select("submittedAt").lean()
+  ]);
+
+  const counts = {};
+  for (const row of submissions) counts[utcDateString(row.createdAt)] = (counts[utcDateString(row.createdAt)] || 0) + 1;
+  for (const row of completedSessions) counts[utcDateString(row.submittedAt)] = (counts[utcDateString(row.submittedAt)] || 0) + 1;
+
+  res.json({
+    from: utcDateString(from),
+    to: utcDateString(new Date()),
+    // The real join date, so the UI can say when the record actually starts rather than implying
+    // the capped window is the whole history.
+    joinedAt: req.user.createdAt ? utcDateString(new Date(req.user.createdAt)) : null,
+    truncated: joined < earliestAllowed,
+    days: counts,
+    streak: getStreakInfo(req.user)
+  });
+}));
+
 router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
   // Not field-limited like /study-plan below: `recent` hands the six newest rows to the client
   // whole. .lean() is still safe — these are serialized straight to JSON and nothing calls a

@@ -307,7 +307,9 @@ describe("Mock test — Finish button loading state", () => {
     await waitFor(() => expect(api.testSessions.complete).toHaveBeenCalledTimes(1));
     const restoredButton = await screen.findByText("Finish Test");
     expect(restoredButton).not.toBeDisabled();
-    expect(screen.getByText("Network error")).toBeInTheDocument();
+    // The failure is a toast now: the test is still on screen and still finishable, so the
+    // message belongs beside the page rather than pushing the question layout around.
+    expect(screen.getByText("Network error").closest(".toast")).toHaveClass("toast-error");
   });
 });
 

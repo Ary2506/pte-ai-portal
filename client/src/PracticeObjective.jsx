@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { CheckCircle2, FileText } from "lucide-react";
 import { api } from "./api.js";
+import { useToast } from "./components/toast.jsx";
 import { audioUrl } from "./practice/listeningData/shared.js";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
@@ -489,7 +490,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   // One chosen option index per blank, in passage order; null until the student picks.
   const [dropdownValues, setDropdownValues] = useState([]);
   const [result, setResult] = useState(() => existingResult || null);
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   // Fill in the Blanks (Drag & Drop) only (Phase 24 — UI redesign to match a client-supplied
   // reference screenshot): an "Answer" hint toggle and a "Wrong blanks only" filter on top of it,
@@ -519,7 +520,6 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       ? submittedAnswer
       : Array(dropdownCount).fill(null));
     setResult(existingResult || null);
-    setError("");
     setShowAnswer(false);
     setWrongOnly(false);
   }, [question?._id]);
@@ -552,14 +552,13 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     const dropdownCount = (question?.content || []).filter(part => part?.type === "blank").length;
     setDropdownValues(Array(dropdownCount).fill(null));
     setResult(null);
-    setError("");
     setBusy(false);
     setShowAnswer(false);
     setWrongOnly(false);
   }
 
   async function submit() {
-    setBusy(true); setError("");
+    setBusy(true);
     const f = new FormData();
     f.append("section", "reading");
     f.append("type", question.type);
@@ -570,7 +569,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       const d = await api.submit(f);
       setResult(d.submission);
       onAnswered?.(d.submission);
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
+    } catch (e) { toast.error(e.message); } finally { setBusy(false); }
   }
 
   const canSubmit = isReorder ? !!order : isMulti ? multi.length > 0
@@ -599,7 +598,6 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>}
-    {error && <div className="alert error">{error}</div>}
     {result
       ? <ObjectiveResult result={result} />
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Submitting..." : "Submit Answer"}</button>}
@@ -637,7 +635,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
   const [blankValues, setBlankValues] = useState([]);
   const [text, setText] = useState("");
   const [result, setResult] = useState(() => existingResult || null);
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -663,7 +661,6 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       Array.isArray(submittedAnswer) ? submittedAnswer[index] || "" : ""));
     setText(existingResult && !isChoiceQ && !isMultiQ ? (existingResult.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
     setResult(existingResult || null);
-    setError("");
   }, [question?._id]);
 
   if (!question) return <div className="panel task-main narrow"><Empty text="No listening question is available in the library for this task yet." /></div>;
@@ -742,7 +739,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
         return;
       }
     }
-    setBusy(true); setError("");
+    setBusy(true);
     const f = new FormData();
     f.append("section", "listening");
     f.append("type", question.type);
@@ -755,13 +752,13 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       const d = await api.submit(f);
       setResult(d.submission);
       onAnswered?.(d.submission);
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
+    } catch (e) { toast.error(e.message); } finally { setBusy(false); }
   }
 
   async function retry() {
-    setRetrying(true); setError("");
+    setRetrying(true);
     try { setResult((await api.retryEvaluation(result._id)).submission); }
-    catch (e) { setError(e.message); }
+    catch (e) { toast.error(e.message); }
     finally { setRetrying(false); }
   }
 
@@ -775,7 +772,6 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     setBlankValues(Array((question?.passage?.match(/____/g) || []).length).fill(""));
     setText("");
     setResult(null);
-    setError("");
     setBusy(false);
     setRetrying(false);
     setShowAnswer(false);
@@ -812,7 +808,6 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : <textarea className="answer-area compact" value={text} onChange={e => setText(e.target.value)} placeholder="Type your response..." disabled={!!result} />}
-    {error && <div className="alert error">{error}</div>}
     {result
       ? (question.evaluationType === "objective" ? <ObjectiveResult result={result} /> : <Result result={result} onRetry={retry} retrying={retrying} />)
       : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Evaluating..." : "Submit"}</button>}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
+import { useToast } from "../components/toast.jsx";
 
 const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
 const WRITING_TASK_NAMES = { swt: "Summarize Written Text", essay: "Write Essay", email: "Write Email" };
@@ -29,7 +30,7 @@ export default function Writing({
       (typeof existingResult?.answer === "string" ? existingResult.answer : ""),
   );
   const [result, setResult] = useState(() => existingResult || null);
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   // Reset per question by the key={question._id} remount PracticeTask already does.
   const [showAnswer, setShowAnswer] = useState(false);
@@ -37,11 +38,10 @@ export default function Writing({
 
   async function submit() {
     if (!text.trim()) {
-      setError("Write a response before submitting.");
+      toast.error("Write a response before submitting.");
       return;
     }
     setBusy(true);
-    setError("");
     const form = new FormData();
     form.append("section", "writing");
     form.append("type", type);
@@ -54,7 +54,7 @@ export default function Writing({
       setResult(data.submission);
       onAnswered?.(data.submission);
     } catch (submitError) {
-      setError(submitError.message);
+      toast.error(submitError.message);
     } finally {
       setBusy(false);
     }
@@ -62,11 +62,10 @@ export default function Writing({
 
   async function retry() {
     setRetrying(true);
-    setError("");
     try {
       setResult((await api.retryEvaluation(result._id)).submission);
     } catch (retryError) {
-      setError(retryError.message);
+      toast.error(retryError.message);
     } finally {
       setRetrying(false);
     }
@@ -75,7 +74,6 @@ export default function Writing({
   function resetQuestion() {
     setText("");
     setResult(null);
-    setError("");
     setBusy(false);
     setRetrying(false);
   }
@@ -111,7 +109,6 @@ export default function Writing({
           placeholder="Type your answer here..."
           disabled={!!result}
         />
-        {error && <div className="alert error">{error}</div>}
         {result ? (
           <Result result={result} onRetry={retry} retrying={retrying} />
         ) : (

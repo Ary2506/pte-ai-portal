@@ -46,20 +46,20 @@ My pick for what to do next: #1 (compression) and the immutable cache headers to
 
 ###############  To-do  #################
 
-1. befiore migrating to R2 make sure all images and audios are compressed
-
-
-
-5. move practice streak section in profile, user can see 1 month streak, user can streak data from when he joined to current date like how github and other coding platform shows
-6. add create target, update target, reset target
-7. in Take mock test section in center you show Full PTE Practice Mock below that you show Previous attempts with pagination
+11. start recording -> didn't submit and click re-do then discard the recorded audio no need to store anywhere
+1. before migrating to R2 make sure all images and audios are compressed
 
 
 
 ###############  Done  ###############
 
+1 month streak, user can streak data from when he joined to current date like how github and other coding platform shows
+2. add pagination in my results -> Practice History, progress -> latest attempts in that add view all clicking on that redirect to my results -> Practice attempts section this same thing you have alredy implemented for dashboard -> Latest attempts
 3. smooth scorlling on landing page
 4. footer on every page
-2. add pagination in my results -> Practice History, progress -> latest attempts in that add view all clicking on that redirect to my results -> Practice attempts section this same thing you have alredy implemented for dashboard -> Latest attempts
+5. move practice streak section in profile, user can see
+6. add create target, update target, reset target 
+7. in Take mock test section in center you show Full PTE Practice Mock below that you show Previous attempts with pagination
 8. use landing page PTE Core AI logo in whole website
 9. add pagination in my results -> Mock test attempts and add completed, best, latest,average analytics. remove test mock test -> Previous attempts
+10. error toaster

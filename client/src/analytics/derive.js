@@ -8,6 +8,17 @@
 // `null` from anything here means "not enough data to say" and the UI must render an empty state
 // for it. It never means zero.
 
+// PTE Core reports 10-90. AI-evaluated speaking and writing attempts are stored on that same
+// scale (maxScore 90), so their scores ARE comparable to a student's target. Objective reading
+// and listening attempts are stored as raw marks (1/1, 2/4, 3/9), which only mean anything as a
+// percentage — a 1/1 is "100% accurate on a one-mark question", not a score of 100.
+//
+// Keeping those two apart is the whole point of this section. Averaging them together and then
+// subtracting a PTE target from the result produced statements like "you are 66 points away from
+// your target of 80", which compares an accuracy percentage with an exam score.
+export const PTE_MAX_SCORE = 90;
+export const MIN_FOR_PTE_AVERAGE = 2;
+
 export const MIN_FOR_TREND = 4;      // a direction needs enough points to not be noise
 export const MIN_FOR_TASK_STAT = 3;  // a per-task-type average below this is one bad day
 
@@ -181,4 +192,32 @@ export function titleCase(value) {
   return String(value || "")
     .replace(/[-_]/g, " ")
     .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+
+/** Attempts scored on the PTE scale — AI-evaluated speaking and writing only. */
+export function pteScaled(submissions) {
+  return scored(submissions).filter(s => Number(s.maxScore) === PTE_MAX_SCORE);
+}
+
+/**
+ * The student's average on the PTE scale, and their best. This is the only average that may be
+ * compared with a target score.
+ *
+ * Returns null below MIN_FOR_PTE_AVERAGE attempts: a single AI-scored essay is not an estimate
+ * of anybody's exam performance, and presenting it beside a target would invite that reading.
+ */
+export function ptePerformance(submissions, { min = MIN_FOR_PTE_AVERAGE } = {}) {
+  const rows = pteScaled(submissions);
+  const scores = rows.map(s => Number(s.score)).filter(Number.isFinite);
+  if (scores.length < min) {
+    return { attempts: rows.length, average: null, best: null, enough: false, needed: min };
+  }
+  return {
+    attempts: rows.length,
+    average: Math.round(scores.reduce((a, n) => a + n, 0) / scores.length),
+    best: Math.max(...scores),
+    enough: true,
+    needed: min
+  };
 }

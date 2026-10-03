@@ -5,12 +5,11 @@ import { Page } from "../components/common.jsx";
 import { AdminDashboard } from "./admin/AdminDashboard.jsx";
 import { AdminUsers } from "./admin/AdminUsers.jsx";
 import { AdminTestSessions } from "./admin/AdminTestSessions.jsx";
-import { ToastHost } from "../App.jsx";
+import { useToast } from "../components/toast.jsx";
 
 export default function Admin() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [tab,setTabState]=useState(() => searchParams.get("tab") || "dashboard");
-	const [toasts,setToasts]=useState([]);
 	const [usersFilter,setUsersFilter]=useState(null);
 
 	useEffect(() => {
@@ -23,11 +22,9 @@ export default function Admin() {
 		setSearchParams(next === "dashboard" ? {} : { tab: next });
 	}
 
-	function notify(type, message) {
-		const id = Date.now()+Math.random();
-		setToasts(t=>[...t,{id,type,message}]);
-		setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)), 6000);
-	}
+	// Same host, same timings as the rest of the product — see components/toast.jsx.
+	const toast = useToast();
+	function notify(type, message) { toast.toast(message, type); }
 	function goToUsers(filters) { setUsersFilter(filters); setTab("users"); }
 
 	return <Page title="Admin Panel" subtitle="Manage users and the practice content library.">
@@ -41,6 +38,5 @@ export default function Admin() {
 		{tab==="users" && <div className="panel"><AdminUsers notify={notify} initialFilters={usersFilter} onFiltersApplied={()=>setUsersFilter(null)}/></div>}
 		{tab==="questions" && <div className="panel"><AdminQuestionsPanel notify={notify}/></div>}
 		{tab==="testSessions" && <div className="panel"><AdminTestSessions/></div>}
-		<ToastHost toasts={toasts} dismiss={id=>setToasts(t=>t.filter(x=>x.id!==id))}/>
 	</Page>;
 }

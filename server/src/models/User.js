@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   // renewed or its dates are changed by an admin (routes/admin.js), so a later, unrelated cycle
   // is never mislabeled from a stale cancellation.
   subscriptionCancelledAt: { type: Date, default: null },
-  targetScore: { type: Number, default: 79 },
+  targetScore: { type: Number, default: 90 },
   lastLoginAt: { type: Date, default: null },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   // The client-generated, per-browser id already sent as X-Device-Id on every request (see

@@ -139,10 +139,13 @@ describe("filters", () => {
     expect(await screen.findByText("No task types match these filters")).toBeInTheDocument();
   });
 
-  it("filters by status", async () => {
+  it("offers no status filter — the status is shown on each row instead", async () => {
     renderHub();
     await screen.findByText("Read Aloud");
-    fireEvent.click(screen.getByRole("button", { name: "Completed" }));
-    expect(await screen.findByText("No task types match these filters")).toBeInTheDocument();
+    for (const label of ["Any status", "Not started", "In progress", "Completed"]) {
+      expect(screen.queryByRole("button", { name: label })).not.toBeInTheDocument();
+    }
+    // The per-row status itself stays: it is information, not a control.
+    expect(document.querySelector(".practice-row-status")).not.toBeNull();
   });
 });

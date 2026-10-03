@@ -176,6 +176,29 @@ router.post("/signin", loginIpLimiter, loginAccountLimiter, async (req, res) => 
 
 router.get("/me", requireAuth, (req, res) => res.json({ user: publicUser(req.user) }));
 
+// The student's own target score. PTE Core reports 10-90, so anything outside that is rejected
+// rather than stored — a target of 400 would quietly poison every gap calculation in the product.
+// Scoped to the caller's own account: there is no user id in the path, so this can only ever
+// change the target of whoever is signed in.
+export const TARGET_SCORE_MIN = 10;
+export const TARGET_SCORE_MAX = 90;
+export const TARGET_SCORE_DEFAULT = 90;
+
+router.patch("/target-score", requireAuth, asyncRoute(async (req, res) => {
+  const value = Number(req.body?.targetScore);
+
+  if (!Number.isInteger(value) || value < TARGET_SCORE_MIN || value > TARGET_SCORE_MAX) {
+    return res.status(400).json({
+      message: `Target score must be a whole number between ${TARGET_SCORE_MIN} and ${TARGET_SCORE_MAX}.`,
+      code: "VALIDATION_ERROR"
+    });
+  }
+
+  req.user.targetScore = value;
+  await req.user.save();
+  res.json({ user: publicUser(req.user) });
+}));
+
 router.post("/logout", requireAuth, asyncRoute(async (req, res) => {
   req.session.revokedAt = new Date();
   await req.session.save();

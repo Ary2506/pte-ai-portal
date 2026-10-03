@@ -122,7 +122,6 @@ export default function PracticeHub() {
   const [history, setHistory] = useState([]);
   const [term, setTerm] = useState("");
   const [sectionFilter, setSectionFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     // Still exactly one request per section — the question bank is what decides availability.
@@ -177,12 +176,8 @@ export default function PracticeHub() {
     s => sectionFilter === "all" || s === sectionFilter);
 
   function tasksFor(section) {
-    return PRACTICE_TASKS[section].filter((task) => {
-      if (query && !task.label.toLowerCase().includes(query)) return false;
-      if (statusFilter === "all") return true;
-      const p = progress.get(`${section}:${task.slug}`);
-      return (p?.status || "new") === statusFilter;
-    });
+    return PRACTICE_TASKS[section].filter(
+      (task) => !query || task.label.toLowerCase().includes(query));
   }
 
   const anyVisible = visibleSections.some(s => tasksFor(s).length > 0);
@@ -223,17 +218,6 @@ export default function PracticeHub() {
             </button>
           ))}
         </div>
-        <div className="filter-group" role="group" aria-label="Filter by status">
-          {[["all", "Any status"], ["new", "Not started"], ["progress", "In progress"], ["done", "Completed"]].map(
-            ([value, label]) => (
-              <button key={value} type="button"
-                className={statusFilter === value ? "filter-chip is-active" : "filter-chip"}
-                aria-pressed={statusFilter === value}
-                onClick={() => setStatusFilter(value)}>
-                {label}
-              </button>
-            ))}
-        </div>
       </div>
 
       <div className="panel practice-hub-panel">
@@ -254,7 +238,7 @@ export default function PracticeHub() {
         {!anyVisible ? (
           <EmptyState
             title="No task types match these filters"
-            body="Try a different section, clear the status filter, or search for another task."
+            body="Try a different section, or search for another task."
           />
         ) : (
           <div className="practice-columns">

@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge, Page } from "../components/common.jsx";
 import { api } from "../api.js";
-import { Metric, MetricStrip, ScoreRing, SectionHeader, SkillSpectrum, formatDuration, titleCase } from "../components/analytics.jsx";
-import { bySection, scored, skillBalance, summarize, targetGap } from "../analytics/derive.js";
+import { Metric, MetricStrip, SectionHeader } from "../components/analytics.jsx";
+import StreakCalendar from "../components/StreakCalendar.jsx";
+import { useToast } from "../components/toast.jsx";
 function fmtDate(d) {
   return d ? new Date(d).toLocaleDateString() : "—";
 }
@@ -24,126 +25,180 @@ function subscriptionTone(status) {
       ? "bad"
       : "neutral";
 }
-export default function Profile({ user }) {
+const TARGET_MIN = 10;
+const TARGET_MAX = 90;
+
+/**
+ * Set or change the student's target score.
+ *
+ * This lives on the profile because the target is account state, not page state: the dashboard,
+ * study plan and performance pages all *read* it to compute a gap, and giving each of them its
+ * own editor would mean three ways to change one number.
+ */
+function TargetScoreEditor({ user, onUserChange }) {
+  const current = user.targetScore ?? null;
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(current ?? TARGET_MAX);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+
+  async function commit(targetScore) {
+    setBusy(true);
+    try {
+      const data = await api.auth.setTargetScore(targetScore);
+      onUserChange?.(data.user);
+      setValue(data.user.targetScore);
+      setEditing(false);
+      toast.success("Target score updated.");
+    } catch (e) {
+      // Stays in the editor with the attempt intact, so the student can correct and retry.
+      toast.error(e.message || "Could not save your target score.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="target-editor">
+        <div className="target-editor__value">
+          <span className="num-mono">{current ?? "—"}</span>
+          {current !== null && <small>of {TARGET_MAX}</small>}
+        </div>
+        <div className="target-editor__actions">
+          <button type="button" className="secondary" onClick={() => { setValue(current ?? TARGET_MAX); setEditing(true); }}>
+            {current === null ? "Set target" : "Change target"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className="target-editor is-editing"
+      onSubmit={(e) => { e.preventDefault(); commit(Number(value)); }}
+    >
+      <label className="target-editor__field">
+        <span className="sr-only">Target score</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={TARGET_MIN}
+          max={TARGET_MAX}
+          step={1}
+          value={value}
+          autoFocus
+          onChange={(e) => setValue(e.target.value)}
+          aria-label="Target score"
+        />
+      </label>
+      <span className="target-editor__hint">{TARGET_MIN}–{TARGET_MAX}</span>
+      <button type="submit" className="primary" disabled={busy}>{busy ? "Saving..." : "Save"}</button>
+      <button type="button" className="secondary" disabled={busy} onClick={() => setEditing(false)}>
+        Cancel
+      </button>
+    </form>
+  );
+}
+
+export default function Profile({ user, onUserChange }) {
   const isAdmin = user.role === "admin";
-  const [history, setHistory] = useState([]);
+  const [activity, setActivity] = useState(null);
 
   // Practice statistics on the account page come from the student's own attempts, like everywhere
   // else. Failure is silent and the section simply does not render — an account page should not
   // break because an analytics request did.
   useEffect(() => {
-    if (isAdmin) return undefined;
     let live = true;
     Promise.resolve()
-      .then(() => api.history({ limit: 100, page: 1 }))
-      .then((d) => { if (live) setHistory(d?.submissions || []); })
+      .then(() => api.activity())
+      .then((act) => { if (live) setActivity(act); })
       .catch(() => {});
     return () => { live = false; };
-  }, [isAdmin]);
+  }, []);
 
-  const stats = useMemo(() => summarize(history), [history]);
-  const sections = useMemo(() => bySection(history), [history]);
-  const balance = useMemo(() => skillBalance(history), [history]);
-  const gap = useMemo(() => targetGap(stats.average, user?.targetScore), [stats.average, user?.targetScore]);
-  const hasPractice = scored(history).length > 0;
 
   return (
     <Page title="Profile" subtitle="Manage your account.">
-      <div className="profile-card panel">
-        <div className="profile-header">
-          <div className="profile-avatar">
-            {user.name.slice(0, 1).toUpperCase()}
+      <div className="page-stack">
+        <div className="profile-card panel">
+          <div className="profile-header">
+            <div className="profile-avatar">
+              {user.name.slice(0, 1).toUpperCase()}
+            </div>
+            <div>
+              <h2>{user.name}</h2>
+              <p className="muted">User ID: {user.username}</p>
+            </div>
           </div>
-          <div>
-            <h2>{user.name}</h2>
-            <p className="muted">User ID: {user.username}</p>
-          </div>
-        </div>
-        <div className="detail-grid cols-2">
-          <section>
-            <h4>Account information</h4>
-            <dl>
-              <dt>Role</dt>
-              <dd style={{ textTransform: "capitalize" }}>{user.role}</dd>
-              <dt>Email</dt>
-              <dd>{user.email || "—"}</dd>
-              <dt>Target score</dt>
-              <dd>{user.targetScore ?? "—"}</dd>
-              <dt>Member since</dt>
-              <dd>{fmtDate(user.createdAt)}</dd>
-              <dt>Last login</dt>
-              <dd>{fmtDateTime(user.lastLoginAt)}</dd>
-            </dl>
-          </section>
-          <section>
-            <h4>Subscription</h4>
-            {isAdmin ? (
-              <p className="muted">
-                Administrator accounts are not subject to subscription limits.
-              </p>
-            ) : (
+          <div className="detail-grid cols-2">
+            <section>
+              <h4>Account information</h4>
               <dl>
-                <dt>Status</dt>
-                <dd>
-                  <Badge tone={subscriptionTone(user.subscriptionStatus)}>
-                    {(user.subscriptionStatus || "").replace("_", " ")}
-                  </Badge>
-                </dd>
-                <dt>Started</dt>
-                <dd>{fmtDate(user.subscriptionStartDate)}</dd>
-                <dt>Access until</dt>
-                <dd>{fmtDate(user.subscriptionEndDate)}</dd>
-                <dt>Days remaining</dt>
-                <dd>{daysRemaining(user)}</dd>
+                <dt>Role</dt>
+                <dd style={{ textTransform: "capitalize" }}>{user.role}</dd>
+                <dt>Email</dt>
+                <dd>{user.email || "—"}</dd>
+                <dt>Target score</dt>
+                <dd><TargetScoreEditor user={user} onUserChange={onUserChange} /></dd>
+                <dt>Member since</dt>
+                <dd>{fmtDate(user.createdAt)}</dd>
+                <dt>Last login</dt>
+                <dd>{fmtDateTime(user.lastLoginAt)}</dd>
               </dl>
-            )}
-          </section>
+            </section>
+            <section>
+              <h4>Subscription</h4>
+              {isAdmin ? (
+                <p className="muted">
+                  Administrator accounts are not subject to subscription limits.
+                </p>
+              ) : (
+                <dl>
+                  <dt>Status</dt>
+                  <dd>
+                    <Badge tone={subscriptionTone(user.subscriptionStatus)}>
+                      {(user.subscriptionStatus || "").replace("_", " ")}
+                    </Badge>
+                  </dd>
+                  <dt>Started</dt>
+                  <dd>{fmtDate(user.subscriptionStartDate)}</dd>
+                  <dt>Access until</dt>
+                  <dd>{fmtDate(user.subscriptionEndDate)}</dd>
+                  <dt>Days remaining</dt>
+                  <dd>{daysRemaining(user)}</dd>
+                </dl>
+              )}
+            </section>
+          </div>
+          {!isAdmin && (
+            <p className="muted profile-footnote">
+              To change your password or extend access, contact your
+              administrator.
+            </p>
+          )}
         </div>
-        {!isAdmin && (
-          <p className="muted profile-footnote">
-            To change your password or extend access, contact your
-            administrator.
-          </p>
+
+        {activity?.streak && (
+          <section className="panel streak-panel">
+            <SectionHeader
+              label="Practice streak"
+              title="Your practice record"
+              description="A day counts when you complete any practice question or finish a mock test."
+            />
+            <MetricStrip>
+              <Metric label="Current streak" value={activity.streak.currentStreak ?? null} unit="days"
+                hint={activity.streak.learnedToday ? "Practised today" : "Practise today to keep it going"} />
+              <Metric label="Longest streak" value={activity.streak.longestStreak || null} unit="days" />
+              <Metric label="Last activity" value={activity.streak.lastLearningDate || null} />
+              <Metric label="Days practised" value={Object.keys(activity.days || {}).length || null}
+                hint={activity.joinedAt ? `Since ${activity.joinedAt}` : undefined} />
+            </MetricStrip>
+            <StreakCalendar activity={activity} />
+          </section>
         )}
       </div>
-
-      {!isAdmin && hasPractice && (
-        <>
-          <section className="command-hero">
-            <ScoreRing value={stats.average} max={100} size={156} caption="Practice average" />
-            <div className="command-hero__metrics">
-              <MetricStrip>
-                <Metric label="Target score" value={user.targetScore ?? null} />
-                <Metric
-                  label="Gap to target"
-                  value={gap ? (gap.gap > 0 ? `+${gap.gap}` : gap.gap) : null}
-                  hint={gap?.met ? "Above target" : "Below target"}
-                />
-                <Metric label="Best score" value={stats.best} />
-                <Metric label="Attempts" value={stats.attempts || null} />
-                <Metric
-                  label="Time measured"
-                  value={formatDuration(stats.totalSeconds)}
-                  hint={stats.timedAttempts ? `${stats.timedAttempts} timed attempts` : "No timed attempts"}
-                />
-              </MetricStrip>
-            </div>
-          </section>
-
-          <section className="panel">
-            <SectionHeader
-              label="Practice statistics"
-              title="Section profile"
-              description={
-                balance
-                  ? `${titleCase(balance.strongest.section)} is your strongest section, ${titleCase(balance.weakest.section)} your weakest.`
-                  : "Practise in more than one section to compare them."
-              }
-            />
-            <SkillSpectrum sections={sections} target={user.targetScore} />
-          </section>
-        </>
-      )}
     </Page>
   );
 }

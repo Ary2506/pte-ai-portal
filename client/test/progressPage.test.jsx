@@ -32,6 +32,11 @@ const attempt = (over = {}) => ({
   _id: Math.random().toString(36).slice(2), section: "reading", type: "mcq-single",
   score: 8, maxScore: 10, evaluationStatus: "COMPLETED", createdAt: day(1), ...over
 });
+// AI-evaluated speaking/writing, stored on the real 0-90 PTE scale. Only these may be compared
+// with a target score; objective attempts above are raw marks and mean nothing beside one.
+const aiAttempt = (score, over = {}) => attempt({
+  section: "writing", type: "essay", evaluationType: "subjective", score, maxScore: 90, ...over
+});
 
 beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); sessionStorage.clear(); });
 
@@ -56,21 +61,32 @@ describe("empty and error states", () => {
 });
 
 describe("figures come from the attempts themselves", () => {
-  it("computes the average, best and target gap from real rows", async () => {
+  it("compares the target against the PTE-scale average, not against accuracy", async () => {
     api.history.mockResolvedValue({
       submissions: [
-        attempt({ score: 6, maxScore: 10, createdAt: day(5) }),
-        attempt({ score: 9, maxScore: 10, createdAt: day(4) }),
-        attempt({ score: 7, maxScore: 10, createdAt: day(3) }),
+        aiAttempt(76, { createdAt: day(5) }),
+        aiAttempt(84, { createdAt: day(4) }),
+        attempt({ score: 10, maxScore: 10, createdAt: day(3) }),  // 100% accurate, 1 raw mark
         attempt({ score: 10, maxScore: 10, createdAt: day(2) })
       ], total: 4
     });
     renderProgress();
-    // (60+90+70+100)/4 = 80 against a target of 79 → one point above.
-    await screen.findByText(/You are averaging/);
+    // AI average is (76+84)/2 = 80 against a target of 79 → one point above. Accuracy across all
+    // four attempts is 90%, which must not be what the target is measured against.
+    await screen.findByText(/Your AI-scored speaking and writing average/);
     expect(screen.getByText(/1 point above it\./)).toBeInTheDocument();
-    const ring = document.querySelector(".score-ring__body strong");
-    expect(ring).toHaveTextContent("80");
+    expect(document.querySelector(".score-ring__body strong")).toHaveTextContent("80");
+  });
+
+  it("will not compare a target against reading and listening alone", async () => {
+    api.history.mockResolvedValue({
+      submissions: [attempt({ score: 10, maxScore: 10 }), attempt({ score: 10, maxScore: 10 })],
+      total: 2
+    });
+    renderProgress();
+    expect(await screen.findByText(/cannot be compared with a target/)).toBeInTheDocument();
+    // No invented score in the ring either.
+    expect(document.querySelector(".score-ring__empty")).not.toBeNull();
   });
 
   it("will not chart a trend from too few attempts", async () => {
@@ -134,14 +150,16 @@ describe("filtering", () => {
     api.history.mockResolvedValue({
       submissions: [
         attempt({ section: "reading", score: 10, maxScore: 10 }),
-        attempt({ section: "speaking", score: 2, maxScore: 10, type: "read-aloud" })
-      ], total: 2
+        aiAttempt(60, { section: "speaking", type: "read-aloud" }),
+        aiAttempt(80, { section: "speaking", type: "read-aloud" })
+      ], total: 3
     });
     renderProgress();
-    await screen.findByText(/You are averaging/);
-    expect(document.querySelector(".score-ring__body strong")).toHaveTextContent("60");
+    await screen.findByText("Performance by task");
+    expect(document.querySelector(".score-ring__body strong")).toHaveTextContent("70");
 
+    // Reading has no AI-scored attempts, so there is no PTE average to show for it.
     fireEvent.click(screen.getByRole("button", { name: "Reading" }));
-    await waitFor(() => expect(document.querySelector(".score-ring__body strong")).toHaveTextContent("100"));
+    await waitFor(() => expect(document.querySelector(".score-ring__empty")).not.toBeNull());
   });
 });

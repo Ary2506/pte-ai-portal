@@ -4,6 +4,7 @@ import { BookOpen, CheckCircle2, Clock3, Headphones, Mic, PenLine, Trophy } from
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { Page } from "../components/common.jsx";
+import { useToast } from "../components/toast.jsx";
 import {
   EmptyState, Metric, MetricStrip, PerformanceTable, ScoreRing, SectionHeader, taskLabel, titleCase
 } from "../components/analytics.jsx";
@@ -62,7 +63,7 @@ function Mock() {
   const [resultRows,setResultRows]=useState([]);
   const [starting,setStarting]=useState(false);
   const [finishing,setFinishing]=useState(false);
-  const [error,setError]=useState("");
+  const toast = useToast();
   const [remainingMs,setRemainingMs]=useState(null);
   const [timeUp,setTimeUp]=useState(false);
   const [terminal,setTerminal]=useState(null);
@@ -74,17 +75,17 @@ function Mock() {
   const lowTimeAnnouncedRef=useRef(false);
 
   async function start() {
-    setStarting(true); setError("");
+    setStarting(true);
     try {
       const d = await api.testSessions.start();
       autoSubmittedRef.current=false; lowTimeAnnouncedRef.current=false;
       setSession(d); setIdx(0); setAnswered({}); setTimeUp(false); setTerminal(null); setRemainingMs(null);
       setPoliteAnnouncement(""); setAssertiveAnnouncement("");
-    } catch(e){ setError(e.message); } finally { setStarting(false); }
+    } catch(e){ toast.error(e.message); } finally { setStarting(false); }
   }
 
   async function finish() {
-    setFinishing(true); setError(""); setPoliteAnnouncement("Finishing your test…");
+    setFinishing(true); setPoliteAnnouncement("Finishing your test…");
     try {
       const d = await api.testSessions.complete(session.testSession._id);
       setResult(d.testSession);
@@ -94,7 +95,7 @@ function Mock() {
     } catch(e){
       if (e.code === "TEST_SESSION_EXPIRED") { setTerminal("EXPIRED"); setAssertiveAnnouncement("Your test session has expired."); }
       else if (e.code === "SESSION_ALREADY_COMPLETED") { setTerminal("ALREADY_COMPLETED"); setPoliteAnnouncement("This test was already completed."); }
-      else setError(e.message);
+      else toast.error(e.message);
     } finally { setFinishing(false); }
   }
 
@@ -239,7 +240,6 @@ function Mock() {
           {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
         </div>
         <p className="muted">20 minutes total for this compact mock.</p>
-        {error && <div className="alert error">{error}</div>}
         <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
         <NavLink className="link mock-card__history" to="/history">See your previous attempts</NavLink>
       </div>
@@ -278,7 +278,6 @@ function Mock() {
     {q.section==="writing" && <WritingTaskModule type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="reading" && <ReadingTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="listening" && <ListeningTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    {error && <div className="alert error">{error}</div>}
     <div className="mock-nav">
       <button className="secondary" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>‹ Previous</button>
       {!isLast && <button className="primary" onClick={()=>setIdx(i=>i+1)}>Next ›</button>}

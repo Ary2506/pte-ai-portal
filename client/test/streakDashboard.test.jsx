@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -13,7 +13,7 @@ vi.mock("../src/api.js", () => ({
       updateUser: vi.fn(), setStatus: vi.fn(), setSubscription: vi.fn(), renew: vi.fn(), resetPassword: vi.fn(), revokeSessions: vi.fn(),
       questions: { types: vi.fn(), stats: vi.fn(), list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), setStatus: vi.fn(), remove: vi.fn() }
     },
-    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), history: vi.fn(), submit: vi.fn(), retryEvaluation: vi.fn(),
+    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), history: vi.fn(), activity: vi.fn(), submit: vi.fn(), retryEvaluation: vi.fn(),
     testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
   },
   forceLogout: vi.fn()
@@ -34,77 +34,128 @@ const studentUser = {
 
 beforeEach(() => { vi.clearAllMocks(); });
 
-describe("dashboard — real daily learning streak", () => {
-  it("shows the current streak, longest streak, and a 'learned today' badge", async () => {
-    api.dashboard.mockResolvedValue({
-      stats: { overall: 60, practiceCount: 4, targetScore: 79 },
-      bySection: [], recent: [],
-      streak: { currentStreak: 5, longestStreak: 12, lastLearningDate: "2026-08-31", learnedToday: true },
-      weeklyActivity: []
-    });
-    renderAt("/dashboard", studentUser);
+const today = new Date().toISOString().slice(0, 10);
+const daysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 
-    // The card is plain data now — no flame emoji, no cheerleading line. The facts it has to
-    // carry are unchanged: current streak, longest streak, and whether today is done.
-    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
-    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("5");
-    expect(screen.getByText("Done today")).toBeInTheDocument();
-    expect(screen.getByText("12 days")).toBeInTheDocument();
+function activity({ days = {}, streak, from = daysAgo(40), joinedAt = daysAgo(40), truncated = false } = {}) {
+  return { from, to: today, joinedAt, truncated, days, streak };
+}
+
+// The streak moved from the dashboard to the profile, where it now has room for a full
+// contribution-style calendar. What it has to report is unchanged: current streak, longest
+// streak, whether today is done, and which days actually had practice.
+describe("profile — real daily learning streak", () => {
+  beforeEach(() => {
+    api.history.mockResolvedValue({ submissions: [], total: 0 });
   });
 
-  it("shows the not-learned-today prompt when the student hasn't practiced yet today", async () => {
-    api.dashboard.mockResolvedValue({
-      stats: { overall: 0, practiceCount: 0, targetScore: 79 },
-      bySection: [], recent: [],
-      streak: { currentStreak: 3, longestStreak: 3, lastLearningDate: "2026-08-30", learnedToday: false },
-      weeklyActivity: []
-    });
-    renderAt("/dashboard", studentUser);
+  it("shows the current streak, longest streak, and that today is done", async () => {
+    api.activity.mockResolvedValue(activity({
+      days: { [today]: 2 },
+      streak: { currentStreak: 5, longestStreak: 12, lastLearningDate: today, learnedToday: true }
+    }));
+    renderAt("/profile", studentUser);
 
-    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
-    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("3");
-    expect(screen.getByText("Not yet today")).toBeInTheDocument();
+    await screen.findByText("Your practice record");
+    const strip = document.querySelector(".streak-panel .metric-strip");
+    expect(strip).toHaveTextContent("5");
+    expect(strip).toHaveTextContent("12");
+    expect(strip).toHaveTextContent("Practised today");
   });
 
-  it("shows a zero-day streak state for a student with no learning activity yet", async () => {
-    api.dashboard.mockResolvedValue({
-      stats: { overall: 0, practiceCount: 0, targetScore: 79 },
-      bySection: [], recent: [],
-      streak: { currentStreak: 0, longestStreak: 0, lastLearningDate: null, learnedToday: false },
-      weeklyActivity: []
-    });
-    renderAt("/dashboard", studentUser);
+  it("prompts when the student has not practised yet today", async () => {
+    api.activity.mockResolvedValue(activity({
+      days: { [daysAgo(1)]: 1 },
+      streak: { currentStreak: 3, longestStreak: 3, lastLearningDate: daysAgo(1), learnedToday: false }
+    }));
+    renderAt("/profile", studentUser);
 
-    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
-    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("0");
+    await screen.findByText("Your practice record");
+    expect(screen.getByText("Practise today to keep it going")).toBeInTheDocument();
   });
 
-  it("renders the weekly activity indicator with one entry per returned day", async () => {
-    api.dashboard.mockResolvedValue({
-      stats: { overall: 0, practiceCount: 0, targetScore: 79 },
-      bySection: [], recent: [],
-      streak: { currentStreak: 1, longestStreak: 1, lastLearningDate: "2026-08-31", learnedToday: true },
-      weeklyActivity: [
-        { date: "2026-08-25", active: false },
-        { date: "2026-08-26", active: true },
-        { date: "2026-08-27", active: true },
-        { date: "2026-08-28", active: false },
-        { date: "2026-08-29", active: true },
-        { date: "2026-08-30", active: false },
-        { date: "2026-08-31", active: true }
-      ]
-    });
-    renderAt("/dashboard", studentUser);
+  it("shows dashes, not zeros, for a student with no learning activity yet", async () => {
+    api.activity.mockResolvedValue(activity({
+      days: {},
+      streak: { currentStreak: 0, longestStreak: 0, lastLearningDate: null, learnedToday: false }
+    }));
+    renderAt("/profile", studentUser);
 
-    expect(await screen.findByText("Last 7 days")).toBeInTheDocument();
-    // 4 active + 3 inactive days in the fixture above. A missed day is an empty cell rather than
-    // a red cross, so the two states are told apart by class, and each day names itself for a
-    // screen reader instead of relying on colour.
-    const days = document.querySelectorAll(".streak-day");
-    expect(days).toHaveLength(7);
-    expect(document.querySelectorAll(".streak-day.is-active")).toHaveLength(4);
-    expect(screen.getByText("4 of 7")).toBeInTheDocument();
-    expect(screen.getByText("2026-08-26: practised")).toBeInTheDocument();
-    expect(screen.getByText("2026-08-25: no practice")).toBeInTheDocument();
+    await screen.findByText("Your practice record");
+    const strip = document.querySelector(".streak-panel .metric-strip");
+    // Longest streak, last activity and days practised have nothing to report.
+    expect(strip.querySelectorAll(".metric-empty").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("draws one cell per day in the range and marks only the days with real activity", async () => {
+    api.activity.mockResolvedValue(activity({
+      from: daysAgo(6), joinedAt: daysAgo(6),
+      days: { [today]: 1, [daysAgo(2)]: 4, [daysAgo(5)]: 12 },
+      streak: { currentStreak: 1, longestStreak: 2, lastLearningDate: today, learnedToday: true }
+    }));
+    renderAt("/profile", studentUser);
+
+    await screen.findByText("Your practice record");
+    // Seven real days; the rest of the grid is padding outside the recorded range.
+    const real = document.querySelectorAll(".streak-cal__grid .streak-cal__day:not(.is-empty)");
+    expect(real.length).toBe(7);
+    // Three of them had practice, at three different intensities.
+    expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l1").length).toBe(1);
+    expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l2").length).toBe(1);
+    expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l4").length).toBe(1);
+    expect(screen.getByText(/Practised on/)).toHaveTextContent("3");
+  });
+
+  it("labels each day the way a person reads a date, for the hover tooltip", async () => {
+    api.activity.mockResolvedValue(activity({
+      from: "2026-10-01", joinedAt: "2026-10-01",
+      days: { "2026-10-03": 8, "2026-10-01": 1 },
+      streak: { currentStreak: 1, longestStreak: 1, lastLearningDate: "2026-10-03", learnedToday: false }
+    }));
+    renderAt("/profile", studentUser);
+
+    await screen.findByText("Your practice record");
+    const cells = [...document.querySelectorAll(".streak-cal__grid .streak-cal__day[aria-label]")];
+    const labels = cells.map((c) => c.getAttribute("aria-label"));
+    expect(labels).toContain("8 activities on October 3rd");
+    expect(labels).toContain("1 activity on October 1st");
+    expect(labels).toContain("No practice on October 2nd");
+
+    // Hovering a day shows that same text in a single tooltip over the calendar — not a
+    // pseudo-element inside the scroller, which clipped the text at the container's edge.
+    const third = cells.find((c) => c.getAttribute("aria-label") === "8 activities on October 3rd");
+    fireEvent.mouseEnter(third);
+    expect(document.querySelector(".streak-cal__tip")).toHaveTextContent("8 activities on October 3rd");
+    expect(document.querySelectorAll(".streak-cal__tip").length).toBe(1);
+
+    fireEvent.mouseLeave(document.querySelector(".streak-cal"));
+    expect(document.querySelector(".streak-cal__tip")).toBeNull();
+  });
+
+  it("offers a since-joining view as well as the last 30 days", async () => {
+    api.activity.mockResolvedValue(activity({
+      from: daysAgo(6), joinedAt: daysAgo(6),
+      days: { [today]: 1 },
+      streak: { currentStreak: 1, longestStreak: 1, lastLearningDate: today, learnedToday: true }
+    }));
+    renderAt("/profile", studentUser);
+
+    await screen.findByText("Your practice record");
+    expect(screen.getByRole("button", { name: "Last 30 days" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Since joining" })).toBeInTheDocument();
+  });
+
+  it("never draws blank days before the account existed", async () => {
+    // A week-old account asked for a 30-day window would otherwise show three weeks of empty
+    // cells that read as missed practice.
+    api.activity.mockResolvedValue(activity({
+      from: daysAgo(6), joinedAt: daysAgo(6),
+      days: { [today]: 1 },
+      streak: { currentStreak: 1, longestStreak: 1, lastLearningDate: today, learnedToday: true }
+    }));
+    renderAt("/profile", studentUser);
+
+    await screen.findByText("Your practice record");
+    expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day:not(.is-empty)").length).toBe(7);
   });
 });

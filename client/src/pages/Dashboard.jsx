@@ -9,7 +9,8 @@ import {
   ScoreRing, SectionHeader, SkillSpectrum, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import {
-  bySection, focusAreas, improvement, pct, scored, skillBalance, summarize, targetGap, trajectory
+  bySection, focusAreas, improvement, pct, ptePerformance, scored, skillBalance, summarize,
+  targetGap, trajectory, PTE_MAX_SCORE
 } from "../analytics/derive.js";
 
 function fmtLongDate(d) {
@@ -79,68 +80,6 @@ function SubscriptionCard({ user }) {
   );
 }
 
-const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"];
-
-// Practice consistency. Deliberately plain: no flame art, no emoji, no red crosses for the days
-// someone did not practise. A missed day is an empty cell, not a failure mark — this is a record
-// of effort, and scolding a student for Tuesday is not what makes them open the app on Wednesday.
-function StreakCard({ streak, weeklyActivity }) {
-  if (!streak) return null;
-  const days = weeklyActivity || [];
-  const activeDays = days.filter((d) => d.active).length;
-
-  return (
-    <section className="panel streak-card">
-      <div className="panel-head">
-        <div>
-          <h3>Practice streak</h3>
-          <p className="muted">One practice activity a day keeps it running.</p>
-        </div>
-        <Badge tone={streak.learnedToday ? "good" : "warn"}>
-          {streak.learnedToday ? "Done today" : "Not yet today"}
-        </Badge>
-      </div>
-
-      <div className="streak-figure">
-        <strong className="num-mono">{streak.currentStreak}</strong>
-        <span>consecutive {streak.currentStreak === 1 ? "day" : "days"}</span>
-      </div>
-
-      {!!days.length && (
-        <div className="streak-week">
-          <div className="streak-week-head">
-            <span className="stat-label">Last 7 days</span>
-            <span className="muted">{activeDays} of {days.length}</span>
-          </div>
-          <ol className="streak-week-strip">
-            {days.map((d) => {
-              const weekday = DAY_INITIALS[new Date(`${d.date}T00:00:00Z`).getUTCDay()];
-              return (
-                <li key={d.date} className={d.active ? "streak-day is-active" : "streak-day"}>
-                  <span className="streak-day-mark" aria-hidden="true" />
-                  <span className="streak-day-label" aria-hidden="true">{weekday}</span>
-                  <span className="sr-only">{d.date}: {d.active ? "practised" : "no practice"}</span>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      )}
-
-      <dl className="streak-stats">
-        <div>
-          <dt>Longest streak</dt>
-          <dd className="num-mono">{streak.longestStreak} {streak.longestStreak === 1 ? "day" : "days"}</dd>
-        </div>
-        <div>
-          <dt>Last activity</dt>
-          <dd className="num-mono">{streak.lastLearningDate || "—"}</dd>
-        </div>
-      </dl>
-    </section>
-  );
-}
-
 // Dashboard — the student's command centre. It answers, in order: where am I, how far from
 // target, am I improving, how consistent am I, which skill is weak, what should I practise next,
 // and what did I just do.
@@ -189,7 +128,11 @@ export default function Dashboard({ user }) {
   const sections = useMemo(() => bySection(history), [history]);
   const balance = useMemo(() => skillBalance(history), [history]);
   const areas = useMemo(() => focusAreas(history, { limit: 2 }), [history]);
-  const gap = useMemo(() => targetGap(derived.average, target), [derived.average, target]);
+  // On the PTE scale, from AI-evaluated attempts only — the one average a target may be compared
+  // with. `derived.average` is accuracy across every attempt, including one-mark objective
+  // questions, and subtracting a target from that produced nonsense like "66 points away".
+  const pte = useMemo(() => ptePerformance(history), [history]);
+  const gap = useMemo(() => targetGap(pte.average, target), [pte.average, target]);
 
   if (loading) {
     return (
@@ -201,9 +144,9 @@ export default function Dashboard({ user }) {
 
   const subtitle = gap
     ? gap.met
-      ? `You are ${gap.gap} point${gap.gap === 1 ? "" : "s"} above your target of ${gap.target}.`
-      : `You are ${Math.abs(gap.gap)} point${Math.abs(gap.gap) === 1 ? "" : "s"} away from your target of ${gap.target}.`
-    : "Keep practicing to achieve your target PTE score.";
+      ? `Your AI-scored average is ${gap.gap} point${gap.gap === 1 ? "" : "s"} above your target of ${gap.target}.`
+      : `Your AI-scored average is ${Math.abs(gap.gap)} point${Math.abs(gap.gap) === 1 ? "" : "s"} below your target of ${gap.target}.`
+    : `Complete ${pte.needed} AI-scored speaking or writing tasks to compare against your target.`;
 
   return (
     <Page
@@ -222,46 +165,47 @@ export default function Dashboard({ user }) {
         </div>
       )}
 
+      <div className="page-stack">
+
       {/* --- Where am I ------------------------------------------------------------------- */}
       <section className="command-hero">
-        <ScoreRing value={derived.average} max={100} size={172} caption="Practice average" />
+        {/* The ring shows the PTE-scale average, because that is what the target beside it means.
+            Accuracy across every attempt is a different measure and is labelled as such below. */}
+        <ScoreRing value={pte.average} max={PTE_MAX_SCORE} size={172} caption="AI-scored average" />
         <div className="command-hero__metrics">
           <MetricStrip>
             <Metric label="Target score" value={target ?? null} hint="Set on your profile" />
-            <Metric label="Best score" value={derived.best} hint={`Across ${derived.attempts} attempts`} />
-            <Metric label="Attempts" value={stats?.practiceCount ?? derived.attempts ?? null} />
-            <Metric
-              label="Overall change"
-              value={trend ? `${trend.delta > 0 ? "+" : ""}${trend.delta}` : null}
-              hint={trend ? `Over ${trend.points} attempts` : "Needs more attempts"}
-            />
+            <Metric label="Best AI score" value={pte.best}
+              hint={pte.enough ? `Across ${pte.attempts} AI-scored attempts` : `Needs ${pte.needed} AI-scored attempts`} />
+            <Metric label="Practice accuracy" value={derived.average === null ? null : `${derived.average}%`}
+              hint={`Across all ${derived.attempts} attempts`} />
+            <Metric label="Practice attempts" value={derived.attempts || null}
+              hint="Mock test answers are counted in My Results" />
+            <Metric label="Day streak" value={data?.streak?.currentStreak ?? null} unit="days"
+              hint={data?.streak?.learnedToday ? "Practised today" : "Not yet today"} />
           </MetricStrip>
         </div>
       </section>
 
       {/* --- Am I improving, and how consistent am I -------------------------------------- */}
-      <div className="dashboard-split">
-        <section className="panel">
-          <SectionHeader
-            label="Score trajectory"
-            title="Your recent attempts"
-            description={series ? "Each point is one scored attempt, oldest first." : "A trend needs a few more attempts."}
-            actions={<NavLink to="/progress" className="link">Full analysis</NavLink>}
+      <section className="panel">
+        <SectionHeader
+          label="Score trajectory"
+          title="Your recent attempts"
+          description={series ? "Each point is one scored attempt, oldest first." : "A trend needs a few more attempts."}
+          actions={<NavLink to="/progress" className="link">Full analysis</NavLink>}
+        />
+        {series ? (
+          <div className="progress-chart">
+            <Trajectory points={series} width={820} height={170} />
+          </div>
+        ) : (
+          <EmptyState
+            title="Not enough attempts to chart a trend"
+            body="Keep practising — your trajectory appears once there is enough to show a direction."
           />
-          {series ? (
-            <div className="progress-chart">
-              <Trajectory points={series} width={560} height={160} />
-            </div>
-          ) : (
-            <EmptyState
-              title="Not enough attempts to chart a trend"
-              body="Keep practising — your trajectory appears once there is enough to show a direction."
-            />
-          )}
-        </section>
-
-        <StreakCard streak={data?.streak} weeklyActivity={data?.weeklyActivity} />
-      </div>
+        )}
+      </section>
 
       {/* --- Which skill is weak, and what to do about it ---------------------------------- */}
       <div className="dashboard-split">
@@ -317,6 +261,7 @@ export default function Dashboard({ user }) {
         <NavLink className="primary" to="/mock">
           Start Mock Test
         </NavLink>
+        </div>
       </div>
     </Page>
   );

@@ -3,6 +3,7 @@ import { Clock3, Mic, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { RECORDER_OPTIONS } from "./recording.js";
+import { useToast } from "../components/toast.jsx";
 
 const SPEAKING_DURATION_LIMITS = {
   "read-aloud": 60,
@@ -111,7 +112,7 @@ export default function Speaking({
   const [blob, setBlob] = useState(null);
   const [transcript, setTranscript] = useState("");
   const [result, setResult] = useState(() => existingResult || null);
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
   // Describe Image, Respond to a Situation, and Answer Short Question only — no other Speaking
@@ -178,7 +179,6 @@ export default function Speaking({
   }
 
   function start() {
-    setError("");
     setResult(null);
     setBlob(null);
     setTranscript("");
@@ -227,19 +227,16 @@ export default function Speaking({
         }
       })
       .catch(() =>
-        setError(
-          "Microphone permission is required. Check your browser permissions and try again.",
-        ),
+        toast.error("Microphone permission is required. Check your browser permissions and try again."),
       );
   }
 
   async function submit() {
     if (!blob) {
-      setError("Record an answer first.");
+      toast.error("Record an answer first.");
       return;
     }
     setBusy(true);
-    setError("");
     const form = new FormData();
     form.append("audio", blob, "speaking.webm");
     form.append("section", "speaking");
@@ -253,7 +250,7 @@ export default function Speaking({
       setResult(data.submission);
       onAnswered?.(data.submission);
     } catch (submitError) {
-      setError(submitError.message);
+      toast.error(submitError.message);
     } finally {
       setBusy(false);
     }
@@ -261,11 +258,10 @@ export default function Speaking({
 
   async function retry() {
     setRetrying(true);
-    setError("");
     try {
       setResult((await api.retryEvaluation(result._id)).submission);
     } catch (retryError) {
-      setError(retryError.message);
+      toast.error(retryError.message);
     } finally {
       setRetrying(false);
     }
@@ -294,7 +290,6 @@ export default function Speaking({
     setBlob(null);
     setTranscript("");
     setResult(null);
-    setError("");
     setBusy(false);
     setRetrying(false);
     setShowAnswer(false);
@@ -400,7 +395,6 @@ export default function Speaking({
             <p>{transcript}</p>
           </div>
         )}
-        {error && <div className="alert error">{error}</div>}
         {result ? (
           <Result result={result} onRetry={retry} retrying={retrying} />
         ) : (

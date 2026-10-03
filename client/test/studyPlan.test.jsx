@@ -63,8 +63,10 @@ describe("the week is ordered by real weakness", () => {
     const days = document.querySelectorAll(".plan-day");
     expect(days).toHaveLength(7);
     expect(days[0].querySelector(".plan-day__focus").textContent).toBe("Speaking");
-    // The last day is reserved for a full mock, which practice alone does not rehearse.
-    expect(days[6].querySelector(".plan-day__focus").textContent).toBe("Mock test");
+    // Saturday is the mock and Sunday is review; both are fixed days of the calendar week now,
+    // not whichever day the rolling window happened to end on.
+    expect(days[5].querySelector(".plan-day__focus").textContent).toBe("Mock test");
+    expect(days[6].querySelector(".plan-day__focus").textContent).toBe("Review");
   });
 
   it("marks a day done from a real scored attempt in that section on that date", async () => {
@@ -80,12 +82,24 @@ describe("the week is ordered by real weakness", () => {
     expect(document.querySelectorAll(".plan-day.is-done")).toHaveLength(0);
   });
 
-  it("states the target gap from the student's own average", async () => {
+  it("states the target gap from AI-scored attempts, not from reading accuracy", async () => {
+    api.history.mockResolvedValue({
+      submissions: [
+        attempt({ score: 7, maxScore: 10 }),  // 70% accurate, but raw marks — not comparable
+        attempt({ section: "writing", type: "essay", evaluationType: "subjective", score: 68, maxScore: 90 }),
+        attempt({ section: "writing", type: "essay", evaluationType: "subjective", score: 72, maxScore: 90 })
+      ], total: 3
+    });
+    renderPlan();
+    // AI average is 70 against a target of 79 → 9 points to go.
+    expect(await screen.findByText(/9 points from your target of 79, on AI-scored tasks/)).toBeInTheDocument();
+  });
+
+  it("says what is missing rather than comparing a target to objective accuracy", async () => {
     api.history.mockResolvedValue({
       submissions: Array.from({ length: 4 }, () => attempt({ score: 7, maxScore: 10 })), total: 4
     });
     renderPlan();
-    // 70% average against a target of 79 → 9 points to go.
-    expect(await screen.findByText(/9 points to your target of 79/)).toBeInTheDocument();
+    expect(await screen.findByText(/AI-scored speaking or writing tasks to track progress/)).toBeInTheDocument();
   });
 });

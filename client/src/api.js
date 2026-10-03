@@ -54,6 +54,9 @@ export const api = {
   auth: {
     signin: (body) => request("/auth/signin", { method: "POST", body: JSON.stringify(body) }),
     me: () => request("/auth/me"),
+    // The caller's own target score.
+    setTargetScore: (targetScore) =>
+      request("/auth/target-score", { method: "PATCH", body: JSON.stringify({ targetScore }) }),
     logout: () => request("/auth/logout", { method: "POST" }).catch(() => {})
   },
   admin: {
@@ -134,6 +137,8 @@ export const api = {
   },
   dashboard: () => request("/dashboard"),
   plan: () => request("/dashboard/study-plan"),
+  // Per-day practice activity since the student joined, for the profile streak calendar.
+  activity: () => request("/dashboard/activity"),
   questions: (section, type) => request(`/questions?section=${section || ""}&type=${type || ""}`),
   // Optional params, all narrowing: `summary: 1` drops answer/transcript/feedback (only safe for
   // a caller that lists attempts without reopening one), `section`/`type` scope the rows to a

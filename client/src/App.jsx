@@ -23,6 +23,7 @@ import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
 import Landing from "./landing/Landing.jsx";
+import { ToastProvider } from "./components/toast.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
@@ -71,6 +72,12 @@ function useAuth() {
     localStorage.setItem("pte_user", JSON.stringify(data.user));
     setUser(data.user);
   };
+  // Replaces the stored user after a self-service change (currently the target score). Writes the
+  // same localStorage key sign-in does, so a reload keeps the new value.
+  const updateUser = (next) => {
+    localStorage.setItem("pte_user", JSON.stringify(next));
+    setUser(next);
+  };
   const logout = () => {
     api.auth.logout();
     localStorage.removeItem("pte_token"); localStorage.removeItem("pte_user"); setUser(null);
@@ -85,7 +92,7 @@ function useAuth() {
     const timer = setTimeout(() => forceLogout(SUBSCRIPTION_EXPIRED_MESSAGE), Math.min(msRemaining, MAX_TIMEOUT_MS));
     return () => clearTimeout(timer);
   }, [user?.id, user?.subscriptionEndDate, user?.subscriptionStatus, user?.role]);
-  return { user, save, logout };
+  return { user, save, updateUser, logout };
 }
 
 function subscriptionLabel(user) {
@@ -342,11 +349,6 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   </div>
 }
 
-export function ToastHost({toasts,dismiss}) {
-  if(!toasts.length) return null;
-  return <div className="toast-host" role="status" aria-live="polite">{toasts.map(t=><button key={t.id} type="button" className={`toast toast-${t.type}`} onClick={()=>dismiss(t.id)}>{t.message}<span className="sr-only"> — dismiss</span></button>)}</div>
-}
-
 // The one and only gate for the admin surface (there is a single /admin route today — the
 // Users/Questions/Test Sessions tabs inside it are React state, not separate routes, so there is
 // nothing nested left to separately guard). The role checked here is req.user.role as returned by
@@ -368,8 +370,11 @@ export default function App() {
   const { theme, toggleTheme } = useTheme();
   // Signed out, every path renders the public landing surface, which carries its own nav,
   // theme toggle and the sign-in sheet. Unchanged: the auth gate itself and what follows it.
-  if(!auth.user) return <Routes><Route path="*" element={<Landing save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
-  return <Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
+  // ToastProvider wraps both surfaces, so a toast works on the landing page and inside the
+  // workspace alike. It lives here rather than in main.jsx so that anything rendering <App/> —
+  // every test among other things — gets a real toast host rather than a silent no-op.
+  if(!auth.user) return <ToastProvider><Routes><Route path="*" element={<Landing save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes></ToastProvider>;
+  return <ToastProvider><Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<DashboardPage user={auth.user}/>}/>
     <Route path="/practice" element={<PracticeHubPage/>}/>
@@ -381,8 +386,8 @@ export default function App() {
     <Route path="/plan" element={<StudyPlanPage user={auth.user}/>}/>
     <Route path="/progress" element={<ProgressPage user={auth.user}/>}/>
     <Route path="/history" element={<HistoryPage/>}/>
-    <Route path="/profile" element={<ProfilePage user={auth.user}/>}/>
+    <Route path="/profile" element={<ProfilePage user={auth.user} onUserChange={auth.updateUser}/>}/>
     <Route path="/admin" element={<AdminRoute user={auth.user}><AdminPage/></AdminRoute>}/>
     <Route path="*" element={<Navigate to="/dashboard"/>}/>
-  </Routes></Layout>
+  </Routes></Layout></ToastProvider>
 }

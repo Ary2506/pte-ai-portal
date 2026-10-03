@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   pct, scored, summarize, trajectory, improvement, changeOverDays,
   byTaskType, bySection, focusAreas, skillBalance, targetGap, formatDuration,
+  pteScaled, ptePerformance,
   MIN_FOR_TREND, MIN_FOR_TASK_STAT
 } from "../src/analytics/derive.js";
 
@@ -180,5 +181,45 @@ describe("formatDuration", () => {
     expect(formatDuration(125)).toBe("2m 5s");
     expect(formatDuration(0)).toBeNull();
     expect(formatDuration(undefined)).toBeNull();
+  });
+});
+
+describe("PTE-scale performance is kept apart from accuracy", () => {
+  // Objective attempts are raw marks (1/1 is 100% accurate, not a score of 100); AI-evaluated
+  // speaking and writing are stored on the real 0-90 scale. Only the latter may be compared
+  // with a target.
+  const objective = (over = {}) => sub({ score: 1, maxScore: 1, section: "reading", ...over });
+  const ai = (score) => sub({ score, maxScore: 90, section: "writing", type: "essay", evaluationType: "subjective" });
+
+  it("selects only attempts stored on the 90-point scale", () => {
+    const rows = [objective(), objective(), ai(70), ai(80)];
+    expect(pteScaled(rows)).toHaveLength(2);
+  });
+
+  it("averages those on their own scale, never as percentages", () => {
+    const result = ptePerformance([objective(), ai(70), ai(80)]);
+    expect(result.average).toBe(75);   // not (100 + 78 + 89) / 3
+    expect(result.best).toBe(80);
+    expect(result.enough).toBe(true);
+  });
+
+  it("refuses to estimate from a single AI-scored attempt", () => {
+    const result = ptePerformance([objective(), objective(), ai(80)]);
+    expect(result.average).toBeNull();
+    expect(result.best).toBeNull();
+    expect(result.enough).toBe(false);
+    expect(result.attempts).toBe(1);
+  });
+
+  it("gives null, not zero, when nothing has been AI-scored at all", () => {
+    expect(ptePerformance([objective(), objective()]).average).toBeNull();
+  });
+
+  it("a target gap is only ever computed against the PTE-scale average", () => {
+    const rows = [objective(), objective(), ai(70), ai(80)];
+    // Accuracy across everything is much higher than the PTE average, which is exactly why the
+    // two must not be mixed: the gap against a target of 90 is -15, not -40.
+    expect(summarize(rows).average).toBeGreaterThan(ptePerformance(rows).average);
+    expect(targetGap(ptePerformance(rows).average, 90)).toMatchObject({ gap: -15, met: false });
   });
 });
