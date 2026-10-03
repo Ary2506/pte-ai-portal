@@ -35,86 +35,55 @@ beforeEach(() => {
   api.questions.mockResolvedValue({ questions: [] });
 });
 
-describe("PTE Practice mega-menu", () => {
-  it("opens when clicked, showing every section and the Speaking task list", async () => {
+// The sidebar's PTE Practice mega-menu was replaced by a direct link to the Practice Hub. The
+// dropdown listed every section and task; the hub lists the same things with availability,
+// progress and filters attached, so the menu was a second, thinner view of one destination.
+// What these pin is that nothing the menu could reach became unreachable.
+describe("PTE Practice goes straight to the Practice Hub", () => {
+  it("is a direct sidebar link, not a menu to open", async () => {
     renderAt("/dashboard", studentAuthUser());
-    const trigger = await screen.findByText("PTE Practice");
-    expect(trigger.closest("button")).toHaveAttribute("aria-expanded", "false");
-
-    fireEvent.click(trigger);
-    expect(trigger.closest("button")).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-    expect(screen.getByText("Reorder Paragraph")).toBeInTheDocument();
+    const sidebar = document.querySelector(".sidebar");
+    const link = within(sidebar).getByRole("link", { name: "PTE Practice" });
+    expect(link).toHaveAttribute("href", "/practice");
+    expect(within(sidebar).queryByRole("button", { name: /PTE Practice/ })).not.toBeInTheDocument();
   });
 
-  it("closes when the trigger is clicked a second time", async () => {
+  it("navigates to the hub without a page reload", async () => {
     renderAt("/dashboard", studentAuthUser());
-    const trigger = await screen.findByText("PTE Practice");
-    fireEvent.click(trigger);
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-    fireEvent.click(trigger);
-    expect(screen.queryByText("Read Aloud")).not.toBeInTheDocument();
+    const sidebar = document.querySelector(".sidebar");
+    fireEvent.click(within(sidebar).getByRole("link", { name: "PTE Practice" }));
+    expect(await screen.findByRole("heading", { name: "PTE Practice" })).toBeInTheDocument();
   });
 
-  it("closes on Escape and returns focus to the trigger", async () => {
-    renderAt("/dashboard", studentAuthUser());
-    const trigger = await screen.findByText("PTE Practice");
-    fireEvent.click(trigger);
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-
-    fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByText("Read Aloud")).not.toBeInTheDocument();
-  });
-
-  it("closes when clicking outside the panel", async () => {
-    renderAt("/dashboard", studentAuthUser());
-    const trigger = await screen.findByText("PTE Practice");
-    fireEvent.click(trigger);
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-
-    fireEvent.mouseDown(document.body);
-    expect(screen.queryByText("Read Aloud")).not.toBeInTheDocument();
-  });
-
-  it("is keyboard-focusable and opens via a native button activation", async () => {
-    renderAt("/dashboard", studentAuthUser());
-    const trigger = (await screen.findByText("PTE Practice")).closest("button");
-    trigger.focus();
-    expect(document.activeElement).toBe(trigger);
-    fireEvent.click(trigger); // Enter/Space on a focused native <button> dispatch a click event
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-  });
-
-  it("shows both PTE Academic/UKVI and PTE Core, honestly disclosing the library isn't split by variant", async () => {
-    renderAt("/dashboard", studentAuthUser());
-    fireEvent.click(await screen.findByText("PTE Practice"));
-    expect(screen.getByText("PTE Academic / UKVI")).toBeInTheDocument();
-    const core = screen.getByText("PTE Core");
-    expect(core).toBeInTheDocument();
-    expect(core).toHaveAttribute("title", expect.stringContaining("isn't split by exam variant"));
-  });
-
-  it("Phase 20: every PTE Practice task is now genuinely supported — none show as Coming Soon here", async () => {
-    renderAt("/dashboard", studentAuthUser());
-    fireEvent.click(await screen.findByText("PTE Practice"));
-    // Respond to a Situation, Write Email, Fill in the Blanks (Drag and Drop), Select Missing
-    // Word, and Highlight Incorrect Words were the last unsupported task types — now real,
-    // clickable mega-menu entries, not disabled "Coming Soon" spans.
-    for (const label of ["Respond to a Situation", "Write Email", "Fill in the Blanks Drag/Drop", "Select Missing Word", "Highlight Incorrect Words"]) {
-      const item = screen.getByText(label).closest("button, span");
-      expect(item.tagName).toBe("BUTTON");
-      expect(item).not.toHaveClass("disabled");
+  it("still exposes every section and task type, now on the hub itself", async () => {
+    api.questions.mockImplementation((section) => Promise.resolve({
+      questions: section === "speaking" ? [{ _id: "s1", type: "read-aloud", title: "Read Aloud Q" }] : []
+    }));
+    renderAt("/practice", studentAuthUser());
+    await screen.findByRole("heading", { name: "PTE Practice" });
+    for (const label of ["Speaking", "Writing", "Reading", "Listening"]) {
+      expect(screen.getByRole("heading", { name: label })).toBeInTheDocument();
     }
-    // "Coming Soon" still exists as a mechanism (unrelated More-menu features like Vocabulary
-    // remain genuinely unbuilt) — just not for any PTE Practice task type any more.
-    expect(screen.queryByText("Respond to a Situation")?.closest("span")).toBeNull();
+    // A task the menu used to list is still listed, and still reachable.
+    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
+  });
+
+  it("keeps both exam variants disclosed on the hub", async () => {
+    renderAt("/practice", studentAuthUser());
+    await screen.findByRole("heading", { name: "PTE Practice" });
+    expect(screen.getByText("PTE Core")).toBeInTheDocument();
+    expect(screen.getByText("PTE Academic / UKVI")).toBeInTheDocument();
+  });
+
+  it("still reaches a specific task directly from global search", async () => {
+    renderAt("/dashboard", studentAuthUser());
+    const input = await screen.findByLabelText("Search anything");
+    fireEvent.change(input, { target: { value: "Read Aloud" } });
+    const option = await screen.findByRole("option", { name: /Read Aloud/ });
+    expect(option).toBeInTheDocument();
   });
 });
 
-// The sidebar's "More" dropdown was replaced by a direct AI Study Plan link. Of the three real
-// destinations it held, Mock Tests and Practice History already had their own sidebar entries,
-// so Study Plan was the only one the sidebar could not otherwise reach. The remaining items were
-// all "Coming Soon" placeholders, which are still listed in the Practice Hub's own More section.
 describe("AI Study Plan replaces the More dropdown", () => {
   it("is a direct sidebar link, not a menu to open", async () => {
     renderAt("/dashboard", studentAuthUser());

@@ -23,10 +23,9 @@ import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
 import Landing from "./landing/Landing.jsx";
-import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, supportedTasksFor } from "./practiceTaskRegistry.js";
+import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
-const PRACTICE_PATHS = new Set(["/practice", "/speaking", "/writing", "/reading", "/listening"]);
 
 const SUBSCRIPTION_EXPIRED_MESSAGE = "Your 30-day subscription has expired. Please contact the administrator to renew your access.";
 // setTimeout's delay is coerced to a 32-bit signed int — anything past this fires almost
@@ -113,58 +112,6 @@ function useDropdown() {
   return { open, setOpen, panelRef, triggerRef };
 }
 
-function PteMegaMenu({ onNavigate }) {
-  const { open, setOpen, panelRef, triggerRef } = useDropdown();
-  const [accordionOpen, setAccordionOpen] = useState(() => new Set());
-  const navigate = useNavigate();
-  const location = useLocation();
-  const active = PRACTICE_PATHS.has(location.pathname);
-  function go(section, slug) { setOpen(false); onNavigate?.(); navigate(slug ? `/${section}?type=${slug}` : `/${section}`); }
-  function toggleAccordion(section) { setAccordionOpen(prev => { const next = new Set(prev); next.has(section) ? next.delete(section) : next.add(section); return next; }); }
-  return <div className="mega-menu-wrap">
-    <button ref={triggerRef} className={active ? "nav-item active" : "nav-item"} aria-expanded={open} aria-haspopup="true" aria-controls="pte-practice-panel" onClick={() => setOpen(o => !o)}>
-      <Trophy size={18} /><span>PTE Practice</span><ChevronDown size={14} className={open ? "chev open" : "chev"} />
-    </button>
-    {open && <div className="mega-menu-backdrop" aria-hidden="true"/>}
-    {open && <div id="pte-practice-panel" ref={panelRef} role="region" aria-label="PTE Practice menu" className="mega-menu">
-      <div className="mega-menu-head">
-        <span className="tab active">PTE Academic / UKVI</span>
-        <span className="tab" title="This portal's practice library isn't split by exam variant yet — the same available questions are shown for both.">PTE Core</span>
-      </div>
-      <div className="mega-menu-grid">
-        {PRACTICE_SECTIONS.map(section => <div className="mega-menu-col" key={section}>
-          <button className="mega-menu-col-head" onClick={() => toggleAccordion(section)} aria-expanded={accordionOpen.has(section)} aria-controls={`mega-col-${section}`}>
-            {SECTION_LABELS[section]}<ChevronDown size={14} className="chev mobile-only" />
-          </button>
-          <div id={`mega-col-${section}`} className={accordionOpen.has(section) ? "mega-menu-col-list open" : "mega-menu-col-list"}>
-            {PRACTICE_TASKS[section].map(t => t.supported
-              ? <button key={t.slug} className="mega-menu-link" onClick={() => go(section, t.slug)}>{t.label}</button>
-              : <span key={t.slug} className="mega-menu-link disabled">{t.label}<Badge tone="neutral">Coming Soon</Badge></span>
-            )}
-          </div>
-        </div>)}
-      </div>
-      <div className="mega-menu-foot">
-        <NavLink to="/practice" className="link" onClick={() => { setOpen(false); onNavigate?.(); }}>Open the full Practice Hub →</NavLink>
-      </div>
-    </div>}
-  </div>;
-}
-
-// The "More" dropdown (Part 2/3) — Vocabulary/Shadowing/AI Score Report Analysis/Study
-// Materials genuinely don't exist yet in this portal and are rendered disabled with a Coming
-// Soon badge rather than a dead link; AI Study Plan/Mock Tests/Practice History reuse their
-// existing routes unchanged.
-// The two sidebar variants are structurally distinct, not the same nav with a relabeled item:
-// the admin one has no PTE Practice mega-menu / More menu at all (those are student concerns),
-// and the student one's Admin Panel link — only ever shown to an actual admin — is a normal,
-// visible top-level nav item rather than buried at the bottom next to Logout.
-// Reads the admin tab straight from the URL (Admin() itself keeps the two in sync — see its own
-// useSearchParams wiring) so a sidebar link and a browser back/forward action always agree on
-// which tab is "active", without prop-drilling tab state down from Admin(). Distinct labels from
-// the in-page tab strip ("Manage Users" vs "Users", "Question Library" vs "Questions", "Mock
-// Attempts" vs "Test Sessions") are deliberate — both are real, working destinations, just named
-// for their different context (quick sidebar access vs. the page's own tab strip).
 function AdminSidebarNav({ onNavigate }) {
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "dashboard";
@@ -192,7 +139,10 @@ function StudentSidebarNav({ user, onNavigate }) {
     <div className="nav-group-label">Main</div>
     <NavLink to="/dashboard" className={cls} onClick={onNavigate}><Home size={18}/><span>Dashboard</span></NavLink>
     <div className="nav-group-label">Practice</div>
-    <PteMegaMenu onNavigate={onNavigate}/>
+    {/* Straight to the Practice Hub. This was a mega-menu listing every section and task; the hub
+        lists the same things with availability, progress and filters attached, so the dropdown was
+        a second, thinner view of one destination. */}
+    <NavLink to="/practice" className={cls} onClick={onNavigate}><Trophy size={18}/><span>PTE Practice</span></NavLink>
     <NavLink to="/mock" className={cls} onClick={onNavigate}><Trophy size={18}/><span>Take Mock Test</span></NavLink>
     <div className="nav-group-label">Performance</div>
     <NavLink to="/history" className={cls} onClick={onNavigate}><BarChart3 size={18}/><span>My Results</span></NavLink>
