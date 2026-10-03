@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
+import { openSignIn } from "./openSignIn.js";
 import { api } from "../src/api.js";
 
 vi.mock("../src/api.js", () => ({
@@ -39,8 +40,9 @@ beforeEach(() => {
 describe("Login page — one device/one browser notice", () => {
   // The login notice now describes session takeover rather than a permanent device lock, because
   // that is what the server actually enforces: any device is allowed, one session at a time.
-  it("shows the one-session policy notice on the login page", () => {
+  it("shows the one-session policy notice on the login page", async () => {
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    await openSignIn();
     expect(screen.getByText("One session at a time")).toBeInTheDocument();
     expect(screen.getByText(/Signing in somewhere new will sign you out everywhere else/)).toBeInTheDocument();
   });
@@ -48,6 +50,7 @@ describe("Login page — one device/one browser notice", () => {
   it("still shows a rejected-login error alongside the notice, without replacing it", async () => {
     api.auth.signin.mockRejectedValue(Object.assign(new Error("Invalid User ID or password"), { code: "INVALID_CREDENTIALS" }));
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    await openSignIn();
 
     fireEvent.change(screen.getByPlaceholderText("e.g. pte001"), { target: { value: "pte001" } });
     fireEvent.change(screen.getByPlaceholderText("Your password"), { target: { value: "pw" } });

@@ -4,7 +4,7 @@ import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
-  Eye, EyeOff, Moon, Sun
+  Eye, EyeOff, Moon, Sun, PanelLeft, Search as SearchIcon
 } from "lucide-react";
 import { api, forceLogout } from "./api.js";
 import { Result, ObjectiveResult } from "./PracticeObjective.jsx";
@@ -20,6 +20,7 @@ import { ListeningTask } from "./practice/Listening.jsx";
 import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
+import Landing from "./landing/Landing.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
@@ -93,32 +94,6 @@ function subscriptionLabel(user) {
   if (!user.subscriptionEndDate || user.subscriptionStatus !== "ACTIVE") return "No active subscription";
   const daysLeft = Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000));
   return `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
-}
-
-function Auth({ save, theme, toggleTheme }) {
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
-  const [notice] = useState(() => {
-    const n = sessionStorage.getItem("pte_login_notice");
-    sessionStorage.removeItem("pte_login_notice");
-    return n || "";
-  });
-  const [busy, setBusy] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-  async function submit(e) {
-    e.preventDefault(); setError(""); setBusy(true);
-    try {
-      const data = await api.auth.signin({ username: form.username, password: form.password });
-      save(data);
-      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
-    } catch (e) { setError(e.message); } finally { setBusy(false); }
-  }
-  return <div className="auth-page">
-    <div className="auth-theme-control"><ThemeToggle theme={theme} onToggle={toggleTheme}/></div>
-    <div className="auth-visual"><div className="brand large"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE CORE</span> AI</span></div><h1>Practice smarter.<br/>Reach your target score.</h1><p>One workspace for speaking, writing, reading, listening, mock tests and personalized AI feedback.</p><div className="auth-features"><div className="auth-feature"><CheckCircle2 size={16}/> All four PTE sections, one practice library</div><div className="auth-feature"><CheckCircle2 size={16}/> Objective scoring for every reading/listening task</div><div className="auth-feature"><CheckCircle2 size={16}/> Full-length mock tests with a real practice report</div></div><div className="visual-card"><Sparkles size={20}/><b>AI-powered practice</b><span>Track every attempt and understand exactly what to improve.</span></div></div>
-    <div className="auth-card"><div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE CORE</span> AI</span></div><h2>Welcome back</h2><p className="muted">Sign in with the User ID and password provided by your administrator.</p><div className="alert notice"><AlertCircle size={17}/><span><b>One session at a time</b><br/>You can sign in from any device or browser, but only one at a time. Signing in somewhere new will sign you out everywhere else.</span></div><form onSubmit={submit}><label>User ID<input required autoCapitalize="none" autoCorrect="off" value={form.username} onChange={e=>setForm({...form,username:e.target.value})} placeholder="e.g. pte001"/></label><label>Password<div className="password-field"><input required type={showPassword ? "text" : "password"} value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="Your password"/><button type="button" className="password-toggle" onClick={()=>setShowPassword(s=>!s)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} tabIndex={-1}>{showPassword ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></label><div className="auth-message-slot" role="alert" aria-live="polite">{notice && <div className="alert error"><AlertCircle size={17}/>{notice}</div>}{error && <div className="alert error"><AlertCircle size={17}/>{error}</div>}</div><button className="primary full" disabled={busy}>{busy ? "Signing in..." : "Sign In"}</button></form><p className="muted" style={{marginTop:18}}>Don't have an account? Contact your administrator to get access.</p></div>
-  </div>;
 }
 
 function useDropdown() {
@@ -268,7 +243,11 @@ function useSearchDestinations(user) {
   }, [user?.role]);
 }
 
+// Matching how every other product spells this shortcut: ⌘K on a Mac, Ctrl K elsewhere.
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || "");
+
 function HeaderSearch({ user }) {
+  const inputRef = useRef(null);
   const [term, setTerm] = useState("");
   const [highlight, setHighlight] = useState(0);
   const { open, setOpen, panelRef, triggerRef } = useDropdown();
@@ -285,6 +264,17 @@ function HeaderSearch({ user }) {
     setTerm(""); setOpen(false);
     navigate(to);
   }
+  useEffect(() => {
+    function onShortcut(e) {
+      if (e.key?.toLowerCase() !== "k" || !(e.metaKey || e.ctrlKey)) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+    document.addEventListener("keydown", onShortcut);
+    return () => document.removeEventListener("keydown", onShortcut);
+  }, []);
+
   function onKeyDown(e) {
     if (!results.length) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setHighlight(h => Math.min(results.length - 1, h + 1)); }
@@ -293,8 +283,9 @@ function HeaderSearch({ user }) {
   }
 
   return <div className="search" ref={triggerRef}>
-    <span aria-hidden="true">⌕</span>
+    <SearchIcon size={15} aria-hidden="true"/>
     <input
+      ref={inputRef}
       placeholder="Search anything..."
       value={term}
       onChange={e => { setTerm(e.target.value); setOpen(true); setHighlight(0); }}
@@ -305,6 +296,9 @@ function HeaderSearch({ user }) {
       aria-controls="header-search-results"
       aria-label="Search anything"
     />
+    {/* The shortcut that actually focuses this input, shown so it is discoverable rather than
+        a secret. Hidden from assistive tech, which gets the same thing from the label. */}
+    <kbd className="search-kbd" aria-hidden="true">{isMac ? "⌘" : "Ctrl"} K</kbd>
     {open && term.trim() && <div className="search-results" id="header-search-results" ref={panelRef} role="listbox">
       {results.length
         ? Object.entries(grouped).map(([group, items]) => <div key={group}>
@@ -334,10 +328,24 @@ function topbarLabel(pathname) {
 
 function Layout({ user, logout, children, theme, toggleTheme }) {
   const [mobile, setMobile] = useState(false);
+  // Remembered per browser: someone who works with the rail collapsed wants it collapsed next
+  // time too. Read defensively — a private window can throw on storage access.
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("pte_sidebar_collapsed") === "1"; } catch { return false; }
+  });
   const location = useLocation();
   const inAdminSection = user?.role === "admin" && location.pathname === "/admin";
   const closeMobile = () => setMobile(false);
-  return <div className="app-shell">
+
+  function toggleCollapsed() {
+    setCollapsed(value => {
+      const next = !value;
+      try { localStorage.setItem("pte_sidebar_collapsed", next ? "1" : "0"); } catch { /* not fatal */ }
+      return next;
+    });
+  }
+
+  return <div className={collapsed ? "app-shell is-collapsed" : "app-shell"}>
     <aside className={mobile ? "sidebar mobile-open" : "sidebar"}>
       <div className="sidebar-top">
         {/* "Admin Mode", not "Admin Panel" — the Admin component's own <Page title="Admin Panel">
@@ -359,11 +367,17 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
       <header className="topbar">
         <div className="topbar-left">
           <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)} aria-label="Open menu"><Menu size={21}/></button>
+          <button type="button" className="icon-btn panel-toggle" onClick={toggleCollapsed}
+            aria-pressed={collapsed} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+            <PanelLeft size={18}/>
+          </button>
           <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
         </div>
         <HeaderSearch user={user}/>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} compact/>
-        <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
+        <div className="topbar-right">
+          <ThemeToggle theme={theme} onToggle={toggleTheme} compact/>
+          <div className="top-user"><div className="avatar">{user?.name?.slice(0,1).toUpperCase()}</div><div><b>{user?.name}</b><small>{subscriptionLabel(user)}</small></div><ChevronDown size={15}/></div>
+        </div>
       </header>
       <div className="content">{children}</div>
     </main>
@@ -399,7 +413,9 @@ const PRACTICE_TASK_COMPONENTS = { speaking: SpeakingTaskModule, writing: Writin
 export default function App() {
   const auth=useAuth();
   const { theme, toggleTheme } = useTheme();
-  if(!auth.user) return <Routes><Route path="*" element={<Auth save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
+  // Signed out, every path renders the public landing surface, which carries its own nav,
+  // theme toggle and the sign-in sheet. Unchanged: the auth gate itself and what follows it.
+  if(!auth.user) return <Routes><Route path="*" element={<Landing save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes>;
   return <Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<DashboardPage user={auth.user}/>}/>

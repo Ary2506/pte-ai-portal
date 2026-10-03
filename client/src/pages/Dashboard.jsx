@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Activity, Play, Sparkles, Trophy, AlertCircle, CreditCard, Flame, Check, X, HelpCircle } from "lucide-react";
+import { Activity, Play, Trophy, AlertCircle, CreditCard, Flame, ArrowUpRight, Target, ListChecks } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { api } from "../api.js";
 import { Badge, Empty, Page, SkeletonRows } from "../components/common.jsx";
+import { Trajectory } from "../components/charts.jsx";
 
 function fmtLongDate(d) {
   return d
@@ -70,94 +71,162 @@ function SubscriptionCard({ user }) {
     </div>
   );
 }
+// A headline metric. Every one of these is read straight off the dashboard payload — there is no
+// rank, percentile or month-over-month delta on this product, and inventing one would put a
+// number on screen that nothing could ever reconcile.
+function MetricCard({ icon: Icon, label, value, unit, sub, to }) {
+  return (
+    <div className="metric-card">
+      <div className="metric-card-head">
+        <Icon size={15} />
+        <span>{label}</span>
+        {to && (
+          <NavLink to={to} className="metric-card-link" aria-label={`Open ${label}`}>
+            <ArrowUpRight size={15} />
+          </NavLink>
+        )}
+      </div>
+      <div className="metric-card-value">
+        <strong className="num-mono">{value}</strong>
+        {unit && <span className="metric-card-unit">{unit}</span>}
+      </div>
+      {sub && <p className="metric-card-sub">{sub}</p>}
+    </div>
+  );
+}
+
+// Scores of the most recent attempts, oldest first, so the line reads left to right as time.
+// `recent` arrives newest-first and excludes mock-test answers.
+function ScoreProgress({ recent, target }) {
+  const series = [...(recent || [])]
+    .reverse()
+    .map((s) => (typeof s.maxScore === "number" && s.maxScore > 0 ? Math.round((s.score / s.maxScore) * 100) : s.score))
+    .filter((n) => Number.isFinite(n));
+
+  return (
+    <section className="panel progress-panel">
+      <div className="panel-head">
+        <div>
+          <h3>Score progress</h3>
+          <p className="muted">
+            {series.length > 1
+              ? `Your last ${series.length} practice attempts, oldest first.`
+              : "Your attempts will chart here once you have a few."}
+          </p>
+        </div>
+        <span className="progress-target num-mono">Target {target || 79}</span>
+      </div>
+      {series.length > 1 ? (
+        <div className="progress-chart">
+          <Trajectory points={series} width={560} height={150} />
+        </div>
+      ) : (
+        <Empty text="Complete a few practice questions to see your trend." />
+      )}
+    </section>
+  );
+}
+
+const DAY_INITIALS = ["S", "M", "T", "W", "T", "F", "S"];
+
+// Practice consistency. Deliberately plain: no flame art, no emoji, no red crosses for the days
+// someone did not practise. A missed day is an empty cell, not a failure mark — this is a record
+// of effort, and scolding a student for Tuesday is not what makes them open the app on Wednesday.
 function StreakCard({ streak, weeklyActivity }) {
   if (!streak) return null;
+  const days = weeklyActivity || [];
+  const activeDays = days.filter((d) => d.active).length;
+
   return (
-    <div className="panel streak-hero">
-      <div className="streak-hero-head">
-        <h3>🔥 {streak.currentStreak} Day Streak</h3>
-        <div className="streak-hero-head-actions">
-          <Badge tone={streak.learnedToday ? "good" : "warn"}>
-            {streak.learnedToday ? "Learned today" : "Not yet today"}
-          </Badge>
-          <span
-            className="streak-help"
-            role="img"
-            aria-label="About your streak"
-            title="Complete one practice activity each day to keep your streak going."
-          >
-            <HelpCircle size={16} />
-          </span>
-        </div>
-      </div>
-
-      <div className="streak-pill">
-        <span>Your Streak</span>
-        <strong>{streak.currentStreak}</strong>
-      </div>
-
-      <div className="streak-meta">
+    <section className="panel streak-card">
+      <div className="panel-head">
         <div>
-          <span>Longest streak</span>
-          <b>
-            {streak.longestStreak} day{streak.longestStreak === 1 ? "" : "s"}
-          </b>
+          <h3>Practice streak</h3>
+          <p className="muted">One practice activity a day keeps it running.</p>
         </div>
-        <div>
-          <span>Last activity</span>
-          <b>{streak.lastLearningDate || "—"}</b>
-        </div>
+        <Badge tone={streak.learnedToday ? "good" : "warn"}>
+          {streak.learnedToday ? "Done today" : "Not yet today"}
+        </Badge>
       </div>
 
-      {!!weeklyActivity?.length && (
+      <div className="streak-figure">
+        <strong className="num-mono">{streak.currentStreak}</strong>
+        <span>consecutive {streak.currentStreak === 1 ? "day" : "days"}</span>
+      </div>
+
+      {!!days.length && (
         <div className="streak-week">
-          <span className="streak-week-label">This Week</span>
-          <div className="streak-week-dots">
-            {weeklyActivity.map((d) => (
-              <span
-                key={d.date}
-                className={d.active ? "streak-day-dot active" : "streak-day-dot"}
-                aria-label={d.active ? "Learned" : "No activity"}
-                title={
-                  ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                    new Date(`${d.date}T00:00:00Z`).getUTCDay()
-                  ]
-                }
-              >
-                {d.active ? (
-                  <Check size={14} strokeWidth={3} />
-                ) : (
-                  <X size={14} strokeWidth={3} />
-                )}
-              </span>
-            ))}
+          <div className="streak-week-head">
+            <span className="stat-label">Last 7 days</span>
+            <span className="muted">{activeDays} of {days.length}</span>
           </div>
+          <ol className="streak-week-strip">
+            {days.map((d) => {
+              const weekday = DAY_INITIALS[new Date(`${d.date}T00:00:00Z`).getUTCDay()];
+              return (
+                <li key={d.date} className={d.active ? "streak-day is-active" : "streak-day"}>
+                  <span className="streak-day-mark" aria-hidden="true" />
+                  <span className="streak-day-label" aria-hidden="true">{weekday}</span>
+                  <span className="sr-only">{d.date}: {d.active ? "practised" : "no practice"}</span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       )}
 
-      <p className="streak-foot">
-        {streak.learnedToday
-          ? "Keep learning every day!"
-          : "Complete a practice activity today to keep your streak going."}
-      </p>
+      <dl className="streak-stats">
+        <div>
+          <dt>Longest streak</dt>
+          <dd className="num-mono">{streak.longestStreak} {streak.longestStreak === 1 ? "day" : "days"}</dd>
+        </div>
+        <div>
+          <dt>Last activity</dt>
+          <dd className="num-mono">{streak.lastLearningDate || "—"}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
 
-      <div className="streak-hero-flames" aria-hidden="true">
-        <Flame className="flame flame-1" />
-        <Flame className="flame flame-2" />
-        <Flame className="flame flame-3" />
-      </div>
-    </div>
-  );
-}
-function ScoreCard({ title, value, sub, featured = false }) {
+// Per-section averages against the student's target, which is the question the four numbers are
+// actually there to answer: which skill is furthest from where it needs to be.
+function SectionPerformance({ bySection, target }) {
+  const rows = bySection || [];
+  if (!rows.length) return null;
+  const goal = target || 79;
+
   return (
-    <div className={featured ? "score-card featured" : "score-card"}>
-      <span>{title}</span>
-      <strong>{value}</strong>
-      <small>{sub}</small>
-    </div>
+    <section className="panel section-perf">
+      <div className="panel-head">
+        <div>
+          <h3>Section performance</h3>
+          <p className="muted">Average score per section, against your target of {goal}.</p>
+        </div>
+      </div>
+      <div className="section-perf-rows">
+        {rows.map((row) => {
+          const pct = Math.max(0, Math.min(100, row.score));
+          const gap = goal - row.score;
+          return (
+            <div className="section-perf-row" key={row.section} data-section={row.section}>
+              <span className="section-perf-name">{row.section}</span>
+              <span className="section-perf-track">
+                <span className="section-perf-fill" style={{ width: `${pct}%` }} />
+                <span className="section-perf-goal" style={{ left: `${Math.min(100, goal)}%` }} aria-hidden="true" />
+              </span>
+              <span className="section-perf-score num-mono">{row.score}</span>
+              <span className={gap > 0 ? "section-perf-gap is-behind" : "section-perf-gap"}>
+                {gap > 0 ? `${gap} to target` : "On target"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
+
 export default function Dashboard({ user }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -176,8 +245,13 @@ export default function Dashboard({ user }) {
   const stats = data?.stats;
   return (
     <Page
-      title="Welcome back 👋"
+      title="Welcome back"
       subtitle="Keep practicing to achieve your target PTE score."
+      actions={
+        <NavLink className="primary" to="/speaking">
+          <Play size={16} /> Continue practice
+        </NavLink>
+      }
     >
       {accessDenied && (
         <div className="alert error">
@@ -185,45 +259,22 @@ export default function Dashboard({ user }) {
           {accessDenied}
         </div>
       )}
-      <div className="stats-row">
-        <SubscriptionCard user={user} />
+      <div className="metric-row">
+        <MetricCard icon={Target} label="Overall score" value={stats?.overall ?? 0}
+          sub={`Practice average · target ${stats?.targetScore || 79}`} to="/history" />
+        <MetricCard icon={ListChecks} label="Practice attempts" value={stats?.practiceCount ?? 0}
+          sub="Questions you have answered" to="/history" />
+        <MetricCard icon={Flame} label="Day streak" value={data?.streak?.currentStreak ?? 0} unit="days"
+          sub={data?.streak?.learnedToday ? "Practised today" : "Practise today to keep it"} />
+      </div>
+
+      <div className="dashboard-split">
+        <ScoreProgress recent={data?.recent} target={stats?.targetScore} />
         <StreakCard streak={data?.streak} weeklyActivity={data?.weeklyActivity} />
       </div>
-      <div className="hero-row dashboard-hero">
-        <div>
-          <span className="eyebrow">YOUR TARGET</span>
-          <h1>{stats?.targetScore || 79}</h1>
-          <span className="muted">Overall target score</span>
-        </div>
-        <div className="dashboard-hero-copy">
-          <span className="hero-status">
-            <Sparkles size={14} /> Your next score is built today
-          </span>
-          <p>
-            Choose a focused practice task and turn your progress into a
-            stronger PTE result.
-          </p>
-        </div>
-        <NavLink className="primary" to="/speaking">
-          <Play size={17} /> Continue Practice
-        </NavLink>
-      </div>
-      <div className="score-grid">
-        <ScoreCard
-          title="Overall Score"
-          value={stats?.overall || 0}
-          sub="Practice average"
-          featured
-        />
-        {(data?.bySection || []).map((x) => (
-          <ScoreCard
-            key={x.section}
-            title={x.section}
-            value={x.score}
-            sub="Average score"
-          />
-        ))}
-      </div>
+
+      <SubscriptionCard user={user} />
+      <SectionPerformance bySection={data?.bySection} target={stats?.targetScore} />
       <section className="panel">
         <div className="panel-head">
           <div>

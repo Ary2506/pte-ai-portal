@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { openSignIn } from "./openSignIn.js";
 
 // The sign-in error used to render above the fields, so every failed attempt pushed User ID and
 // Password down and a corrected attempt pulled them back up. These tests pin the fix: the message
@@ -27,8 +28,12 @@ beforeEach(() => {
   sessionStorage.clear();
 });
 
-function renderSignIn() {
-  return render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+// The form lives in a sheet opened from the landing page now. What these tests pin — that the
+// message sits after both fields and that its slot holds height — is unchanged by that.
+async function renderSignIn() {
+  const result = render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+  await openSignIn();
+  return result;
 }
 
 // jsdom reports every element as zero-sized, so pixel positions prove nothing here. What can be
@@ -48,7 +53,7 @@ async function failSignIn() {
 
 describe("sign-in form stays put when an error appears", () => {
   it("renders the error after both fields, so neither can be pushed down", async () => {
-    renderSignIn();
+    await renderSignIn();
     await failSignIn();
 
     const userId = screen.getByPlaceholderText("e.g. pte001");
@@ -60,7 +65,7 @@ describe("sign-in form stays put when an error appears", () => {
   });
 
   it("keeps the message slot in the layout before any error, so showing one adds no new box", async () => {
-    renderSignIn();
+    await renderSignIn();
     const slot = document.querySelector(".auth-message-slot");
     expect(slot).toBeInTheDocument();
     expect(slot.children.length).toBe(0); // present, holding space, empty
@@ -71,7 +76,7 @@ describe("sign-in form stays put when an error appears", () => {
   });
 
   it("clears the message back out of the slot on a successful sign-in", async () => {
-    renderSignIn();
+    await renderSignIn();
     await failSignIn();
     expect(document.querySelector(".auth-message-slot").children.length).toBe(1);
 
@@ -86,7 +91,7 @@ describe("sign-in form stays put when an error appears", () => {
 
 describe("the sign-in policy notice describes what the app actually does", () => {
   it("promises one session at a time, not a permanent device lock", async () => {
-    renderSignIn();
+    await renderSignIn();
     expect(await screen.findByText(/One session at a time/i)).toBeInTheDocument();
     expect(screen.getByText(/only one at a time/i)).toBeInTheDocument();
     // Device binding was removed; claiming it here would be telling students something untrue.

@@ -1,0 +1,572 @@
+/* ==========================================================================
+   PTE CORE AI — Landing / sign-in surface
+   "Your PTE score, engineered."
+
+   Scoped under .ld-page with an `ld-` prefix so none of it reaches the signed-in
+   app. It consumes the product's existing tokens (--blue, --ink, --line, the
+   spacing and radius scales) and adds only what this surface needs on top, so
+   the two cannot drift into different palettes.
+
+   The concept: every visual element is a READOUT, not an illustration. Hairline
+   rules, tick marks, tabular figures and mono labels — the page looks like the
+   product's instrumentation rather than an advert for it. Colour is reserved
+   almost entirely for data; the composition carries the rest.
+   ========================================================================== */
+
+.ld-page{
+  /* Canvas: a warm near-white that is deliberately NOT the app's --bg, so the
+     public surface reads as its own place. */
+  --ld-canvas:#FBFBFD;
+  --ld-canvas-2:#F4F5F9;
+  --ld-ink:#0B0D14;
+  --ld-ink-2:#454B5C;
+  --ld-ink-3:#767D90;
+  --ld-hair:#E6E8EF;          /* hairline rules — the page's primary structure */
+  --ld-hair-strong:#D2D6E0;
+  --ld-surface:#FFFFFF;
+  --ld-accent:#4F46E5;        /* data colour: primary series */
+  --ld-accent-2:#7C3AED;      /* data colour: secondary series */
+  --ld-accent-3:#0891B2;      /* data colour: cyan, used sparingly */
+  --ld-grid:rgba(11,13,20,.045);
+  --ld-glow:rgba(79,70,229,.10);
+
+  --ld-gutter:clamp(20px,5vw,72px);
+  --ld-max:1240px;
+  --ld-ease:cubic-bezier(.22,.61,.36,1);
+
+  background:var(--ld-canvas);
+  color:var(--ld-ink);
+  min-height:100vh;
+  overflow-x:clip;
+}
+
+html[data-theme="dark"] .ld-page{
+  /* Dark mode is the developer/AI reading of the same system: near-black canvas,
+     brighter data colours, hairlines that glow rather than darken. */
+  --ld-canvas:#07080C;
+  --ld-canvas-2:#0C0E15;
+  --ld-ink:#F2F4FA;
+  --ld-ink-2:#A7AEC1;
+  --ld-ink-3:#6D758B;
+  --ld-hair:#1B1F2B;
+  --ld-hair-strong:#2A3040;
+  --ld-surface:#0E1118;
+  --ld-accent:#7C7CFF;
+  --ld-accent-2:#A78BFA;
+  --ld-accent-3:#22D3EE;
+  --ld-grid:rgba(255,255,255,.04);
+  --ld-glow:rgba(124,124,255,.14);
+}
+
+.ld-page *{box-sizing:border-box}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* --- The one labelling system: uppercase mono, used for every annotation ---- */
+.ld-label{
+  font-family:var(--font-mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;line-height:1;
+  color:var(--ld-ink-3);display:inline-flex;align-items:center;gap:7px;
+}
+.ld-label--accent{color:var(--ld-accent)}
+.ld-label--accent::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 0 3px var(--ld-glow);
+}
+.ld-label--quiet{color:var(--ld-ink-3);opacity:.8}
+
+/* --- Type ------------------------------------------------------------------ */
+.ld-display{
+  font-family:var(--font-display);
+  font-size:clamp(44px,7.4vw,92px);
+  font-weight:800;line-height:.95;letter-spacing:-.035em;
+  margin:22px 0 0;color:var(--ld-ink);
+}
+.ld-display em{font-style:normal;color:var(--ld-accent)}
+.ld-display--sm{font-size:clamp(34px,5vw,62px)}
+.ld-h2{
+  font-family:var(--font-display);
+  font-size:clamp(26px,3.2vw,42px);
+  font-weight:800;line-height:1.08;letter-spacing:-.028em;
+  margin:14px 0 0;max-width:19ch;color:var(--ld-ink);
+}
+.ld-lede{
+  margin:24px 0 0;max-width:46ch;
+  font-size:clamp(15px,1.25vw,17.5px);line-height:1.62;color:var(--ld-ink-2);
+}
+
+/* --- Buttons --------------------------------------------------------------- */
+.ld-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:13px 22px;border-radius:10px;border:1px solid transparent;
+  font-size:14.5px;font-weight:600;letter-spacing:-.01em;line-height:1;
+  cursor:pointer;background:none;color:inherit;
+  transition:transform .16s var(--ld-ease),background .16s var(--ld-ease),
+             border-color .16s var(--ld-ease),box-shadow .16s var(--ld-ease);
+}
+.ld-btn--primary{background:var(--ld-ink);color:var(--ld-canvas);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.ld-btn--primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(11,13,20,.20)}
+.ld-btn--primary:active{transform:translateY(0)}
+.ld-btn--ghost{border-color:var(--ld-hair-strong);color:var(--ld-ink)}
+.ld-btn--ghost:hover{border-color:var(--ld-ink);background:var(--ld-canvas-2)}
+.ld-btn--sm{padding:9px 16px;font-size:13.5px;border-radius:8px}
+.ld-btn--lg{padding:16px 30px;font-size:16px}
+.ld-btn svg{flex:none;transition:transform .2s var(--ld-ease)}
+.ld-btn:hover svg{transform:translateX(2px)}
+.ld-iconbtn{
+  width:36px;height:36px;display:grid;place-items:center;border-radius:8px;
+  border:1px solid var(--ld-hair);background:var(--ld-surface);color:var(--ld-ink-2);
+  cursor:pointer;transition:border-color .16s,color .16s;
+}
+.ld-iconbtn:hover{border-color:var(--ld-hair-strong);color:var(--ld-ink)}
+
+/* --- Navigation ------------------------------------------------------------ */
+.ld-nav{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:var(--sp-8);
+  padding:16px var(--ld-gutter);
+  border-bottom:1px solid transparent;
+  transition:background .2s var(--ld-ease),border-color .2s var(--ld-ease),backdrop-filter .2s;
+}
+.ld-nav--scrolled{
+  background:color-mix(in srgb,var(--ld-canvas) 82%,transparent);
+  backdrop-filter:saturate(180%) blur(14px);
+  border-bottom-color:var(--ld-hair);
+}
+.ld-wordmark{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:16px;letter-spacing:-.02em;color:var(--ld-ink)}
+.ld-wordmark__mark{
+  width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+  background:var(--ld-ink);color:var(--ld-canvas);font-size:13px;font-weight:800;
+}
+.ld-wordmark__text em{font-style:normal;color:var(--ld-accent)}
+.ld-wordmark--sm{font-size:15px}
+.ld-nav__links{display:flex;gap:var(--sp-6);margin-left:auto}
+.ld-nav__links a{font-size:14px;color:var(--ld-ink-2);transition:color .15s}
+.ld-nav__links a:hover{color:var(--ld-ink)}
+.ld-nav__actions{display:flex;align-items:center;gap:10px}
+
+/* --- The hairline grid field ----------------------------------------------- */
+.ld-gridfield{position:relative}
+.ld-gridfield__lines{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--ld-grid) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--ld-grid) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 35%,transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 35%,transparent 100%);
+}
+.ld-gridfield__fade{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 50% at 72% 30%,var(--ld-glow),transparent 70%);
+}
+.ld-gridfield>*:not(.ld-gridfield__lines):not(.ld-gridfield__fade){position:relative;z-index:1}
+
+/* --- Hero: asymmetric 12-column, copy 5 / instrument 7 ---------------------- */
+.ld-hero{padding:clamp(48px,7vw,104px) 0 clamp(60px,8vw,120px)}
+.ld-hero__inner{
+  max-width:var(--ld-max);margin:0 auto;padding:0 var(--ld-gutter);
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+  gap:clamp(32px,5vw,72px);align-items:center;
+}
+.ld-hero__cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.ld-hero__note{margin:20px 0 0;font-size:13px;color:var(--ld-ink-3);max-width:40ch}
+
+/* Staggered entrance. Children animate in order; `prefers-reduced-motion` is
+   handled globally in styles.css, which collapses every duration to ~0. */
+.ld-hero__copy>*{animation:ld-rise .72s var(--ld-ease) both}
+.ld-hero__copy>*:nth-child(1){animation-delay:.02s}
+.ld-hero__copy>*:nth-child(2){animation-delay:.08s}
+.ld-hero__copy>*:nth-child(3){animation-delay:.16s}
+.ld-hero__copy>*:nth-child(4){animation-delay:.24s}
+.ld-hero__copy>*:nth-child(5){animation-delay:.32s}
+.ld-hero__visual{animation:ld-rise .9s var(--ld-ease) .2s both}
+@keyframes ld-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* --- The score report instrument -------------------------------------------- */
+.ld-report{
+  margin:0;padding:24px;border-radius:16px;
+  background:var(--ld-surface);border:1px solid var(--ld-hair);
+  box-shadow:0 1px 2px rgba(11,13,20,.04),0 24px 60px -28px rgba(11,13,20,.28);
+  display:grid;gap:22px;
+}
+html[data-theme="dark"] .ld-report{box-shadow:0 1px 0 rgba(255,255,255,.04),0 30px 70px -30px #000}
+.ld-report__head{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--ld-hair)}
+.ld-report__overall{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:end}
+.ld-report__traj{display:grid;gap:8px;justify-items:start;min-width:0}
+.ld-report__trajnums{font-size:11px;color:var(--ld-ink-3);letter-spacing:.02em}
+
+.ld-bigscore{display:flex;align-items:baseline;gap:4px;margin-top:10px}
+.ld-bigscore__value{
+  font-family:var(--font-mono);font-size:clamp(52px,5.6vw,76px);font-weight:700;
+  line-height:.9;letter-spacing:-.045em;color:var(--ld-ink);font-variant-numeric:tabular-nums;
+}
+.ld-bigscore__outof{font-family:var(--font-mono);font-size:17px;color:var(--ld-ink-3);font-weight:500}
+
+.ld-report__meters{display:grid;gap:11px;padding-top:4px}
+.ld-meter{display:grid;grid-template-columns:84px 1fr 32px;align-items:center;gap:12px}
+.ld-meter__name{font-size:13px;color:var(--ld-ink-2);font-weight:500}
+.ld-meter__track{height:5px;border-radius:3px;background:var(--ld-canvas-2);overflow:hidden}
+html[data-theme="dark"] .ld-meter__track{background:#171B25}
+.ld-meter__fill{
+  display:block;height:100%;width:var(--ld-pct,0%);border-radius:3px;
+  background:var(--ld-accent);
+  transition:width 1.1s var(--ld-ease);transition-delay:var(--ld-delay,0ms);
+}
+/* Each section keeps the identity it already has in the app. */
+.ld-meter[data-section="writing"]  .ld-meter__fill{background:var(--ld-accent-2)}
+.ld-meter[data-section="reading"]  .ld-meter__fill{background:var(--ld-accent-3)}
+.ld-meter[data-section="listening"].ld-meter .ld-meter__fill{background:#D97706}
+.ld-meter__value{font-size:13px;color:var(--ld-ink);text-align:right;font-weight:600}
+
+.ld-report__deltas{display:grid;gap:10px;padding-top:18px;border-top:1px solid var(--ld-hair)}
+.ld-report__deltarow{display:flex;flex-wrap:wrap;gap:7px}
+.ld-delta{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:7px;
+  background:var(--ld-canvas-2);font-size:11.5px;
+}
+html[data-theme="dark"] .ld-delta{background:#141821}
+.ld-delta__metric{color:var(--ld-ink-2)}
+.ld-delta__value{font-weight:700;font-size:11px}
+.ld-delta--up .ld-delta__value{color:var(--success)}
+.ld-delta--down .ld-delta__value{color:var(--danger)}
+
+/* --- Trajectory ------------------------------------------------------------- */
+.ld-traj{width:100%;height:72px;overflow:visible}
+.ld-traj__line{stroke:var(--ld-accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.ld-traj__dot{fill:var(--ld-surface);stroke:var(--ld-accent);stroke-width:2;vector-effect:non-scaling-stroke}
+.ld-traj__dot--last{fill:var(--ld-accent)}
+.ld-traj--draw .ld-traj__line{stroke-dasharray:1000;stroke-dashoffset:1000;animation:ld-draw 1.5s var(--ld-ease) .25s forwards}
+.ld-traj--draw .ld-traj__area,.ld-traj--draw .ld-traj__dot{opacity:0;animation:ld-fade .6s ease 1.1s forwards}
+@keyframes ld-draw{to{stroke-dashoffset:0}}
+@keyframes ld-fade{to{opacity:1}}
+
+/* --- Waveform / editor / scan lines / transport ----------------------------- */
+.ld-wave{display:flex;align-items:center;gap:3px;height:44px}
+.ld-wave__bar{
+  flex:1;min-width:2px;border-radius:2px;background:var(--ld-accent);opacity:.55;
+  height:var(--ld-h,40%);
+}
+.ld-wave--live .ld-wave__bar{
+  animation:ld-pulse 1.9s ease-in-out infinite;
+  animation-delay:calc(var(--ld-i) * -70ms);
+}
+@keyframes ld-pulse{0%,100%{transform:scaleY(.55);opacity:.4}50%{transform:scaleY(1);opacity:.85}}
+
+.ld-editor{display:grid;gap:7px;height:44px;align-content:center}
+.ld-editor__line{height:6px;border-radius:3px;background:var(--ld-hair-strong);width:100%}
+.ld-editor__line--short{width:58%}
+.ld-editor__line--flag{
+  width:78%;background:var(--ld-accent-2);opacity:.45;
+  box-shadow:0 2px 0 -1px var(--ld-accent-2);
+}
+.ld-editor__caret{width:2px;height:13px;background:var(--ld-accent);animation:ld-blink 1.1s step-end infinite}
+@keyframes ld-blink{50%{opacity:0}}
+
+.ld-scan{display:grid;gap:7px;height:44px;align-content:center}
+.ld-scan__line{height:5px;border-radius:3px;background:var(--ld-hair-strong);width:var(--ld-w,100%)}
+.ld-scan__line--hit{background:var(--ld-accent-3);opacity:.6}
+
+.ld-transport{display:flex;align-items:center;gap:10px;height:44px}
+.ld-transport__play{
+  width:20px;height:20px;border-radius:50%;flex:none;
+  background:var(--ld-accent);position:relative;
+}
+.ld-transport__play::after{
+  content:"";position:absolute;top:50%;left:54%;transform:translate(-50%,-50%);
+  border-left:6px solid var(--ld-surface);border-top:4px solid transparent;border-bottom:4px solid transparent;
+}
+.ld-transport__track{flex:1;height:4px;border-radius:2px;background:var(--ld-hair-strong);position:relative}
+.ld-transport__head{position:absolute;inset:0 62% 0 0;background:var(--ld-accent);border-radius:2px}
+.ld-transport__time{font-size:11px;color:var(--ld-ink-3)}
+
+/* --- Section rail ----------------------------------------------------------- */
+.ld-rail{max-width:var(--ld-max);margin:0 auto;padding:clamp(48px,7vw,96px) var(--ld-gutter)}
+.ld-rail__head{margin-bottom:clamp(28px,4vw,52px)}
+.ld-rail__grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  border-top:1px solid var(--ld-hair);
+}
+.ld-rail__cell{
+  padding:28px 24px 28px 0;border-right:1px solid var(--ld-hair);
+  opacity:0;transform:translateY(12px);
+}
+.ld-rail__cell:last-child{border-right:0}
+.ld-rail.is-in .ld-rail__cell{
+  animation:ld-rise .6s var(--ld-ease) both;
+  animation-delay:calc(var(--ld-i) * 90ms);
+}
+.ld-rail__cell:not(:first-child){padding-left:24px}
+.ld-rail__visual{margin-bottom:22px}
+.ld-rail__name{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;margin:0 0 7px;color:var(--ld-ink)}
+.ld-rail__name svg{color:var(--ld-accent)}
+.ld-rail__cell[data-section="writing"] .ld-rail__name svg{color:var(--ld-accent-2)}
+.ld-rail__cell[data-section="reading"] .ld-rail__name svg{color:var(--ld-accent-3)}
+.ld-rail__cell[data-section="listening"] .ld-rail__name svg{color:#D97706}
+.ld-rail__note{margin:0;font-size:13.5px;line-height:1.6;color:var(--ld-ink-2)}
+
+/* --- Bento ------------------------------------------------------------------ */
+.ld-caps{max-width:var(--ld-max);margin:0 auto;padding:clamp(40px,6vw,88px) var(--ld-gutter)}
+.ld-caps__head{margin-bottom:clamp(26px,4vw,46px)}
+.ld-bento{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ld-tile{
+  position:relative;padding:26px;border-radius:14px;overflow:hidden;
+  background:var(--ld-surface);border:1px solid var(--ld-hair);
+  display:flex;flex-direction:column;gap:9px;
+  transition:border-color .2s var(--ld-ease),transform .2s var(--ld-ease),box-shadow .2s var(--ld-ease);
+  opacity:0;
+}
+.ld-caps.is-in .ld-tile{animation:ld-rise .6s var(--ld-ease) both;animation-delay:calc(var(--ld-i) * 70ms)}
+.ld-tile:hover{border-color:var(--ld-hair-strong);transform:translateY(-2px);box-shadow:0 16px 40px -24px rgba(11,13,20,.3)}
+.ld-tile h3{font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:-.02em;margin:6px 0 0;color:var(--ld-ink)}
+.ld-tile p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ld-ink-2)}
+.ld-tile--wide{grid-column:span 2}
+.ld-tile--tall{grid-row:span 2;justify-content:flex-start}
+.ld-tile__wave{margin-top:auto;padding-top:22px;height:64px}
+.ld-tile__chart{margin-top:auto;padding-top:24px}
+.ld-tile__chartfoot{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+
+/* --- Trust / voices --------------------------------------------------------- */
+.ld-trust{
+  max-width:var(--ld-max);margin:0 auto;padding:clamp(48px,7vw,96px) var(--ld-gutter);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:clamp(36px,5vw,72px);align-items:center;
+}
+.ld-trust__copy .ld-h2{max-width:16ch}
+
+.ld-points{list-style:none;margin:36px 0 0;padding:0;display:grid;gap:26px}
+.ld-point{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;opacity:0}
+.ld-trust.is-in .ld-point{animation:ld-rise .6s var(--ld-ease) both;animation-delay:calc(var(--ld-i) * 90ms)}
+.ld-point__icon{color:var(--ld-accent);flex:none;margin-top:1px}
+.ld-point h3{font-family:var(--font-display);font-size:16.5px;font-weight:700;letter-spacing:-.02em;margin:0;color:var(--ld-ink)}
+.ld-point p{margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--ld-ink-2);max-width:46ch}
+
+/* The scrolling column. Height is capped and both ends are faded, so cards enter and leave
+   through a soft edge rather than popping at a hard boundary. */
+.ld-marquee{
+  position:relative;height:clamp(380px,46vw,460px);overflow:hidden;
+  mask-image:linear-gradient(180deg,transparent,#000 11%,#000 89%,transparent);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 11%,#000 89%,transparent);
+}
+.ld-marquee__track{
+  display:grid;gap:12px;
+  /* Translating by exactly -50% lands the duplicate set precisely where the first began, which
+     is what makes the loop invisible. The gap is part of that 50%, so both sets must match. */
+  animation:ld-marquee 34s linear infinite;
+  will-change:transform;
+}
+.ld-marquee__set{display:grid;gap:12px}
+.ld-marquee:hover .ld-marquee__track,
+.ld-marquee:focus-within .ld-marquee__track{animation-play-state:paused}
+@keyframes ld-marquee{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+
+/* Reduced motion: no scrolling at all. The list simply sits there and scrolls with the page —
+   an auto-moving column is exactly what this setting is asking us not to do. */
+@media (prefers-reduced-motion: reduce){
+  .ld-marquee{height:auto;mask-image:none;-webkit-mask-image:none;overflow:visible}
+  .ld-marquee__track{animation:none}
+  .ld-marquee__set[aria-hidden="true"]{display:none}
+}
+
+.ld-voice{
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+  padding:18px 20px;border-radius:13px;
+  background:var(--ld-surface);border:1px solid var(--ld-hair);
+}
+.ld-voice__avatar{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;
+  font-size:13px;font-weight:700;letter-spacing:.02em;color:#fff;
+  font-family:var(--font-display);
+}
+.ld-voice__avatar--a{background:#C2410C}
+.ld-voice__avatar--b{background:#7C3AED}
+.ld-voice__avatar--c{background:#0E7490}
+.ld-voice__avatar--d{background:#4F46E5}
+.ld-voice__avatar--e{background:#15803D}
+.ld-voice__avatar--f{background:#BE185D}
+.ld-voice__name{font-size:14.5px;font-weight:700;letter-spacing:-.01em;margin:0;color:var(--ld-ink)}
+.ld-voice__quote{margin:5px 0 0;font-size:13px;line-height:1.55;color:var(--ld-ink-2)}
+
+/* --- Metrics ---------------------------------------------------------------- */
+.ld-metrics{max-width:var(--ld-max);margin:0 auto;padding:clamp(40px,6vw,80px) var(--ld-gutter)}
+.ld-metrics__grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:26px 0 0;
+  border-top:1px solid var(--ld-hair);
+}
+.ld-metrics__item{padding:30px 24px 0 0;border-right:1px solid var(--ld-hair);opacity:0}
+.ld-metrics__item:last-child{border-right:0}
+.ld-metrics__item:not(:first-child){padding-left:24px}
+.ld-metrics.is-in .ld-metrics__item{animation:ld-rise .55s var(--ld-ease) both;animation-delay:calc(var(--ld-i) * 80ms)}
+.ld-metrics__value{
+  font-family:var(--font-mono);font-size:clamp(34px,4.2vw,52px);font-weight:700;
+  letter-spacing:-.04em;line-height:1;color:var(--ld-ink);margin:0;
+}
+.ld-metrics__value span{font-size:.5em;color:var(--ld-ink-3)}
+.ld-metrics__caption{margin:12px 0 0;font-size:13px;color:var(--ld-ink-2)}
+
+/* --- Final CTA + footer ----------------------------------------------------- */
+.ld-final{border-top:1px solid var(--ld-hair);background:var(--ld-canvas-2)}
+.ld-final__inner{
+  max-width:var(--ld-max);margin:0 auto;padding:clamp(56px,8vw,112px) var(--ld-gutter);
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px;
+}
+.ld-final .ld-display{margin:0}
+
+.ld-footer{
+  max-width:var(--ld-max);margin:0 auto;
+  padding:30px var(--ld-gutter);display:flex;flex-wrap:wrap;align-items:center;gap:20px;
+  border-top:1px solid var(--ld-hair);
+}
+.ld-footer__links{display:flex;flex-wrap:wrap;gap:20px;margin-left:auto}
+.ld-footer__links a{font-size:13px;color:var(--ld-ink-2)}
+.ld-footer__links a:hover{color:var(--ld-ink)}
+.ld-footer__legal{display:flex;gap:18px;margin:0;font-size:13px;color:var(--ld-ink-3)}
+
+/* --- Sign-in modal ---------------------------------------------------------- */
+.ld-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px}
+.ld-modal__scrim{
+  position:absolute;inset:0;background:rgba(8,10,16,.58);
+  backdrop-filter:blur(4px);animation:ld-fadein .18s ease both;
+}
+html[data-theme="dark"] .ld-modal__scrim{background:rgba(0,0,0,.72)}
+@keyframes ld-fadein{from{opacity:0}to{opacity:1}}
+
+.ld-modal__card{
+  position:relative;width:min(452px,100%);max-height:calc(100vh - 48px);overflow-y:auto;
+  background:var(--ld-surface);border:1px solid var(--ld-hair);border-radius:16px;
+  padding:34px 36px 28px;
+  box-shadow:0 32px 80px -20px rgba(8,10,16,.45);
+  animation:ld-modalin .24s var(--ld-ease) both;
+  display:block;
+  text-align:left;
+}
+html[data-theme="dark"] .ld-modal__card{box-shadow:0 1px 0 rgba(255,255,255,.05),0 40px 90px -24px #000}
+@keyframes ld-modalin{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+
+.ld-modal__close{
+  position:absolute;top:14px;right:14px;
+  width:30px;height:30px;display:grid;place-items:center;border-radius:8px;
+  border:1px solid transparent;background:none;color:var(--ld-ink-3);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.ld-modal__close:hover{background:var(--ld-canvas-2);border-color:var(--ld-hair);color:var(--ld-ink)}
+
+/* The head is centred — the brand mark anchors the card and the title sits under it, so the
+   dialog has a clear focal point before the eye drops into the fields. */
+.ld-modal__head{text-align:center;margin-bottom:22px}
+.ld-modal__mark{
+  width:40px;height:40px;margin:0 auto 16px;border-radius:11px;display:grid;place-items:center;
+  background:var(--ld-ink);color:var(--ld-canvas);
+  font-family:var(--font-display);font-size:18px;font-weight:800;
+}
+.ld-modal__card h2{
+  font-family:var(--font-display);font-size:23px;font-weight:800;letter-spacing:-.025em;
+  margin:0;color:var(--ld-ink);
+}
+.ld-modal__sub{margin:9px auto 0;max-width:34ch;font-size:13.5px;line-height:1.55;color:var(--ld-ink-2)}
+
+.ld-modal__card label{display:block;font-size:12.5px;font-weight:600;color:var(--ld-ink-2);margin:0 0 13px;letter-spacing:.01em}
+.ld-modal__card input{
+  display:block;width:100%;margin-top:7px;padding:12px 14px;
+  border:1px solid var(--ld-hair-strong);border-radius:9px;outline:0;
+  font-size:14px;background:var(--ld-canvas);color:var(--ld-ink);
+  transition:border-color .14s ease,box-shadow .14s ease;
+}
+html[data-theme="dark"] .ld-modal__card input{background:#11141C}
+.ld-modal__card input::placeholder{color:var(--ld-ink-3)}
+.ld-modal__card input:focus{border-color:var(--ld-accent);box-shadow:0 0 0 3px var(--ld-glow)}
+.ld-modal__card .password-field{position:relative}
+.ld-modal__card .password-toggle{position:absolute;right:6px;top:13px;width:32px;height:32px;color:var(--ld-ink-3);background:none;border:0;border-radius:7px;display:grid;place-items:center}
+.ld-modal__card .password-toggle:hover{color:var(--ld-ink);background:var(--ld-canvas-2)}
+
+/* Tighter than the old full-page form: still a fixed reservation so an error cannot move the
+   fields, but sized to one message rather than to a page-sized gap. */
+.ld-modal__card .auth-message-slot{min-height:42px;justify-content:flex-start}
+.ld-modal__card .auth-message-slot:empty{min-height:42px}
+.ld-modal__card .auth-message-slot .alert{
+  margin:0 0 10px;width:100%;font-size:12.5px;line-height:1.5;
+  border-radius:9px;padding:10px 12px;align-items:flex-start;
+}
+html[data-theme="dark"] .ld-modal__card .auth-message-slot .alert.error{
+  background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#FCA5A5;
+}
+
+.ld-modal__card .primary.full{
+  width:100%;padding:13px;border:1px solid transparent;border-radius:10px;
+  background:var(--ld-ink);color:var(--ld-canvas);
+  font-size:14.5px;font-weight:600;letter-spacing:-.01em;
+  box-shadow:0 1px 2px rgba(0,0,0,.14);
+  transition:transform .16s var(--ld-ease),box-shadow .16s var(--ld-ease),opacity .16s;
+}
+.ld-modal__card .primary.full:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(11,13,20,.2)}
+.ld-modal__card .primary.full:active:not(:disabled){transform:translateY(0)}
+.ld-modal__card .primary.full:disabled{opacity:.5;cursor:not-allowed}
+
+.ld-modal__policy{
+  display:flex;gap:9px;align-items:flex-start;
+  margin:20px 0 0;padding-top:18px;border-top:1px solid var(--ld-hair);
+  font-size:12px;line-height:1.55;color:var(--ld-ink-3);
+}
+.ld-modal__policy svg{flex:none;margin-top:1px;color:var(--ld-ink-3)}
+.ld-modal__policy b{color:var(--ld-ink-2);font-weight:600}
+.ld-modal__foot{margin:14px 0 0;font-size:12px;color:var(--ld-ink-3);text-align:center}
+
+/* ==========================================================================
+   Responsive — the composition is rebuilt at each step, not shrunk.
+   ========================================================================== */
+
+/* Tablet: the hero stacks, the instrument leads, the rails halve. */
+@media (max-width:1040px){
+  .ld-hero__inner{grid-template-columns:1fr;gap:44px}
+  .ld-hero__visual{order:-1}
+  .ld-rail__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ld-rail__cell:nth-child(2n){border-right:0}
+  .ld-rail__cell:nth-child(-n+2){border-bottom:1px solid var(--ld-hair)}
+  .ld-bento{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ld-tile--wide{grid-column:span 2}
+  .ld-tile--tall{grid-row:auto}
+  .ld-trust{grid-template-columns:1fr;gap:42px}
+  .ld-marquee{height:340px}
+}
+
+@media (max-width:760px){
+  .ld-nav__links{display:none}
+  .ld-nav{gap:12px}
+  .ld-nav__actions{margin-left:auto}
+
+  .ld-display{font-size:clamp(40px,11vw,56px)}
+  .ld-hero{padding:28px 0 56px}
+
+  /* The report becomes a vertical readout: the big score on its own line, the
+     trajectory beneath it full width, rather than a squeezed two-column row. */
+  .ld-report{padding:18px;gap:18px}
+  .ld-report__overall{grid-template-columns:1fr;gap:18px;align-items:start}
+  .ld-report__traj{width:100%}
+  .ld-meter{grid-template-columns:72px 1fr 28px;gap:10px}
+
+  .ld-rail__grid{grid-template-columns:1fr}
+  .ld-rail__cell{border-right:0;border-bottom:1px solid var(--ld-hair);padding:24px 0}
+  .ld-rail__cell:not(:first-child){padding-left:0}
+  .ld-rail__cell:last-child{border-bottom:0}
+
+  .ld-bento{grid-template-columns:1fr}
+  .ld-tile--wide{grid-column:auto}
+
+  .ld-points{gap:22px}
+  .ld-marquee{height:300px}
+  .ld-voice{padding:15px 16px;gap:12px}
+  .ld-voice__avatar{width:36px;height:36px;font-size:12px}
+
+  .ld-metrics__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ld-metrics__item{padding:24px 16px 24px 0;border-bottom:1px solid var(--ld-hair)}
+  .ld-metrics__item:nth-child(2n){border-right:0}
+  .ld-metrics__item:nth-child(n+3){border-bottom:0}
+  .ld-metrics__item:not(:first-child){padding-left:0}
+  .ld-metrics__item:nth-child(2n){padding-left:16px}
+
+  .ld-final__inner{flex-direction:column;align-items:flex-start}
+  .ld-footer{flex-direction:column;align-items:flex-start;gap:16px}
+  .ld-footer__links{margin-left:0}
+
+  /* The modal takes the full width it is given, with the scrim's padding as its only margin. */
+  .ld-modal{padding:16px}
+  .ld-modal__card{padding:30px 22px 24px;max-height:calc(100vh - 32px)}
+}

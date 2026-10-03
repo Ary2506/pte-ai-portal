@@ -44,10 +44,12 @@ describe("dashboard — real daily learning streak", () => {
     });
     renderAt("/dashboard", studentUser);
 
-    expect(await screen.findByText("🔥 5 Day Streak")).toBeInTheDocument();
-    expect(screen.getByText("Learned today")).toBeInTheDocument();
+    // The card is plain data now — no flame emoji, no cheerleading line. The facts it has to
+    // carry are unchanged: current streak, longest streak, and whether today is done.
+    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
+    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("5");
+    expect(screen.getByText("Done today")).toBeInTheDocument();
     expect(screen.getByText("12 days")).toBeInTheDocument();
-    expect(screen.getByText("Keep learning every day!")).toBeInTheDocument();
   });
 
   it("shows the not-learned-today prompt when the student hasn't practiced yet today", async () => {
@@ -59,9 +61,9 @@ describe("dashboard — real daily learning streak", () => {
     });
     renderAt("/dashboard", studentUser);
 
-    expect(await screen.findByText("🔥 3 Day Streak")).toBeInTheDocument();
+    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
+    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("3");
     expect(screen.getByText("Not yet today")).toBeInTheDocument();
-    expect(screen.getByText("Complete a practice activity today to keep your streak going.")).toBeInTheDocument();
   });
 
   it("shows a zero-day streak state for a student with no learning activity yet", async () => {
@@ -73,7 +75,8 @@ describe("dashboard — real daily learning streak", () => {
     });
     renderAt("/dashboard", studentUser);
 
-    expect(await screen.findByText("🔥 0 Day Streak")).toBeInTheDocument();
+    expect(await screen.findByText("Practice streak")).toBeInTheDocument();
+    expect(document.querySelector(".streak-figure strong")).toHaveTextContent("0");
   });
 
   it("renders the weekly activity indicator with one entry per returned day", async () => {
@@ -93,9 +96,15 @@ describe("dashboard — real daily learning streak", () => {
     });
     renderAt("/dashboard", studentUser);
 
-    expect(await screen.findByText("This Week")).toBeInTheDocument();
-    // 4 active + 3 inactive days in the fixture above.
-    expect(screen.getAllByLabelText("Learned")).toHaveLength(4);
-    expect(screen.getAllByLabelText("No activity")).toHaveLength(3);
+    expect(await screen.findByText("Last 7 days")).toBeInTheDocument();
+    // 4 active + 3 inactive days in the fixture above. A missed day is an empty cell rather than
+    // a red cross, so the two states are told apart by class, and each day names itself for a
+    // screen reader instead of relying on colour.
+    const days = document.querySelectorAll(".streak-day");
+    expect(days).toHaveLength(7);
+    expect(document.querySelectorAll(".streak-day.is-active")).toHaveLength(4);
+    expect(screen.getByText("4 of 7")).toBeInTheDocument();
+    expect(screen.getByText("2026-08-26: practised")).toBeInTheDocument();
+    expect(screen.getByText("2026-08-25: no practice")).toBeInTheDocument();
   });
 });

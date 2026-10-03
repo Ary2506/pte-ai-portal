@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
+import { openSignIn } from "./openSignIn.js";
 import { api } from "../src/api.js";
 
 vi.mock("../src/api.js", () => ({
@@ -39,16 +40,23 @@ beforeEach(() => {
 describe("Access control — Part 19/27 item 31", () => {
   it("an unauthenticated visitor requesting a protected practice route sees the login page, not the practice UI, and no protected API is ever called", async () => {
     renderAt("/practice", null);
-    expect(await screen.findByText("Welcome back")).toBeInTheDocument();
+    // The signed-out surface is the public landing page; sign-in opens from it on demand.
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(/Your PTE/i);
     expect(screen.queryByText("PTE Practice", { selector: "h1" })).not.toBeInTheDocument();
     expect(api.questions).not.toHaveBeenCalled();
     expect(api.dashboard).not.toHaveBeenCalled();
+
+    await openSignIn();
+    expect(screen.getByText("Welcome back")).toBeInTheDocument();
   });
 
   it("an unauthenticated visitor requesting /speaking directly also lands on the login page", async () => {
     renderAt("/speaking", null);
-    expect(await screen.findByText("Welcome back")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(/Your PTE/i);
     expect(api.questions).not.toHaveBeenCalled();
+
+    await openSignIn();
+    expect(screen.getByText("Welcome back")).toBeInTheDocument();
   });
 });
 

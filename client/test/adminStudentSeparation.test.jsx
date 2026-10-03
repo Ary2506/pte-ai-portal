@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
+import { openSignIn } from "./openSignIn.js";
 import { api } from "../src/api.js";
 
 vi.mock("../src/api.js", () => ({
@@ -48,6 +49,7 @@ describe("Login routing by verified server role (Part 5/10 items 6-7)", () => {
     mockAdminDashboardApis();
     api.auth.signin.mockResolvedValue({ token: "t", user: adminUser() });
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    await openSignIn();
 
     fireEvent.change(screen.getByPlaceholderText("e.g. pte001"), { target: { value: "admin" } });
     fireEvent.change(screen.getByPlaceholderText("Your password"), { target: { value: "pw" } });
@@ -64,6 +66,7 @@ describe("Login routing by verified server role (Part 5/10 items 6-7)", () => {
   it("routes a student straight to /dashboard after login", async () => {
     api.auth.signin.mockResolvedValue({ token: "t", user: studentUser() });
     render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+    await openSignIn();
 
     fireEvent.change(screen.getByPlaceholderText("e.g. pte001"), { target: { value: "pte001" } });
     fireEvent.change(screen.getByPlaceholderText("Your password"), { target: { value: "pw" } });
