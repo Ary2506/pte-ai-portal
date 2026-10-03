@@ -372,5 +372,1309 @@
     "evaluationType": "objective",
     "maxScore": 4,
     "active": true
+  },
+  {
+    "id": "reorder-corep-01",
+    "_order": 17,
+    "title": "Pest Control",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The Rig Veda, which is about 4,000 years old, also mentions the use of poisonous plants for pest management.",
+      "And the ancient Chinese and Egyptians are also known to have used chemical pest control.",
+      "Chemical pest control dates back 4,500 years, when the Sumerians used sulfur compounds as insecticides.",
+      "But it was only with the industrialization and mechanization of agriculture in the 18th and 19th centuries, and the introduction of the insecticides pyrethrum and derris that chemical pest control became the method of choice."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-02",
+    "_order": 18,
+    "title": "School Uniform",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "These first uniforms very closely reflected those of the school uniforms in England.",
+      "The major difference that not a lot of school children in England can relate to is that school kids in Australia would sometimes walk and go to school without shoes.",
+      "In Australia, school uniforms really started to become a thing in the 1920's.",
+      "After the Second World War, however, the style of the Australian school uniforms became more informal."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-03",
+    "_order": 19,
+    "title": "Flexible Working",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Workers often extends their working hours, allowing professional tasks to bleed into what should be dedicated family time.",
+      "The work also creates a constant state of cognitive load; as a result, individuals find themselves constantly worrying about job-related issues.",
+      "Flexible working hours have caused the boundary between family and work life to become increasingly blurred.",
+      "Employees, especially these workers who are affected, tend to work even harder to check if their concepts and projects are properly completed."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-04",
+    "_order": 20,
+    "title": "Candle Flame",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "When that cooler air is heated, it too rises up and is replaced by cooler air at the base of the flame.",
+      "When a candle burns, the flame heats the nearby air and starts to rise.",
+      "This creates a continual cycle of upward moving air around the flame (a convection current), which gives the flame its elongated or droplet shape.",
+      "As this warm air moves upward, cooler air and oxygen rush in at the bottom of the flame to replace it."
+    ],
+    "answer": [
+      1,
+      3,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-05",
+    "_order": 21,
+    "title": "Learning Categories",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Today there are nine intelligences, and the possibility of others may eventually extend the list.",
+      "Many of us are familiar with three broad categories in which people learn: visual learning, auditory learning, and kinesthetic learning.",
+      "Beyond these three categories, many theories of and approaches toward human learning potential have been established.",
+      "Gardner's early work in psychology and later in human cognition and human potential led to his development of the initial six intelligences.",
+      "Among them is the theory of multiple intelligences developed by Howard Gardner, Ph.D., John H. and Elisabeth A. Hobbs Research Professor of Cognition and Education at the Harvard Graduate School of Education at Harvard University."
+    ],
+    "answer": [
+      1,
+      2,
+      4,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-06",
+    "_order": 22,
+    "title": "Fresh Water",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Although a few plants and animals can make do with saltwater, all humans need a constant supply of fresh water if they are to stay fit and healthy.",
+      "Without water, people, animals and plants cannot survive.",
+      "Of the total supply of water on the Earth, only about 3 percent of it is fresh, and most of that is stored as ice and snow at the poles, or is so deep under the surface of the Earth that we cannot get to it.",
+      "Everybody needs fresh water."
+    ],
+    "answer": [
+      3,
+      1,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-07",
+    "_order": 23,
+    "title": "Coral Reefs",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "But as well as being physically and biologically spectacular, coral reefs also sustain the livelihoods of over half a billion people.",
+      "What is more, this number is expected to double in coming decades while the area of high-quality reef is expected to halve.",
+      "Coral reefs support more marine life than any other ocean ecosystem and are, not surprisingly, a favorite pursuit for many divers.",
+      "In combination with the very real threat of climate change, which could lead to increased seawater temperatures and ocean acidification, we start to arrive at some quite alarming scenarios."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-08",
+    "_order": 24,
+    "title": "Palm Oil",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "With the global increase in demand for vegetable oils, other continents like Asia began to cultivate this fruit on a huge scale.",
+      "As a result, the rapid growth in demand for oil fruit has led to the significant loss of native rainforests in Asia.",
+      "The oil is extracted from the fruit of the oil palm tree, which is typically the size of a large golf ball.",
+      "Originally, oil palm trees were native to West Africa, but today approximately 80% of the world’s production is concentrated in Southeast Asia."
+    ],
+    "answer": [
+      3,
+      2,
+      0,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-09",
+    "_order": 25,
+    "title": "Answering Question",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Don't write about something else if you don't know the correct answer — this is just a waste of your valuable time and the examiner's.",
+      "You must take account of how many marks are available for each part when you respond to it.",
+      "And if you can't think of an answer to some part, leave a space and move on to the next part.",
+      "Even if you think you can write more, don't spend 15 minutes answering a part worth only 5 marks. Leave space at the end of your answer and come back to it if you have time to spare later."
+    ],
+    "answer": [
+      1,
+      3,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-10",
+    "_order": 26,
+    "title": "Poincaré",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Rather, the scientist declares the law to be some interpolated curve that is more or less smooth and so will miss some of those points.",
+      "Poincaré had an especially interesting view of scientific induction.",
+      "Thus a scientific theory is not directly falsifiable by the data of experience: instead, the falsification process is more indirect.",
+      "Laws, he said, are not direct generalizations of experience: they aren't mere summaries of the points on the graph."
+    ],
+    "answer": [
+      1,
+      3,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-11",
+    "_order": 27,
+    "title": "English Agricultural Revolution",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "English (and Dutch) farmers were among the most productive farmers of the century and were constantly adopting new methods of farming and experimenting with different types of vegetables and grains.",
+      "In other words, many English farmers were viewing farming as a science, and all this interest ultimately resulted in greater yields.",
+      "Historians now agree that starting in the 17th century and continuing throughout the 18th century, England experienced an agricultural revolution.",
+      "They also learned a lot about manure and other fertilizers."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-12",
+    "_order": 28,
+    "title": "Big Five",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "They support the idea of the “Big Five” personality traits – openness, conscientiousness, extroversion, agreeableness and neuroticism.",
+      "Of these, only one trait is closely associated with the MBTI – extroversion.",
+      "Some psychologists argue that independent, peer-reviewed research in the decades since the MBTI was devised has offered something superior to Myers-Briggs.",
+      "As Adam Grant argues, ‘Going around telling people that they’re neurotic and disagreeable will not make you any friends.’",
+      "Myers-Briggs does not focus on “neuroticism” or, indeed, any similarly negative characteristic, which may point to one of the reasons why the criticisms lobbed at the test by modern science have still not undermined its popularity."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      4,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-13",
+    "_order": 29,
+    "title": "History",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "It is only through a chronological survey that students can start to understand the process of social and cultural change, which is one of the main purposes of history.",
+      "That is not practical when historical events or topics are separated and extracted from the web of historic time to serve some other curricular purpose.",
+      "The people and events of the past can only be understood when viewed within the broader context in which they existed.",
+      "The value of history also relies upon the chronological arrangement of events through time."
+    ],
+    "answer": [
+      2,
+      1,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-14",
+    "_order": 30,
+    "title": "Noise and Study",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "However, one common rule for all students is that the television appears to be more distracting than music or other background noise, so leave the TV off when you are reading or studying. Also, don’t let yourself be distracted by computer games, email, or internet surfing.",
+      "Some students say that they need complete quiet to read and study.",
+      "The key is, you should know the level of noise that is ideal for your own studying.",
+      "Others learn best in busy, noisy rooms because the noise actually helps them concentrate."
+    ],
+    "answer": [
+      1,
+      3,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-15",
+    "_order": 31,
+    "title": "GPS Tracking",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The collars transmitted each animal’s location every four hours, for as long as two years.",
+      "But in 2010 and 2011, Vanessa Hull of Michigan State University and her colleagues received permission to fit GPS tracking collars to five pandas in the Wolong National Nature Reserve in China.",
+      "We know very little about wild pandas because they are so rare and live in nearly impenetrable forest.",
+      "The team found that the home territories of individual pandas overlapped and on several occasions, two animals spent several weeks in close contact."
+    ],
+    "answer": [
+      2,
+      1,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-16",
+    "_order": 32,
+    "title": "Snakes",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "‘We arrived about lunchtime and as soon as I crawled under I could immediately see that there were many more than a few,’ the post said.",
+      "The company eventually removed 45 rattlesnakes from beneath the house.",
+      "Big Country Snake Removal responded to a house in Albany, Texas, after a man who was trying to fix his cable climbed under the house and saw some snakes.",
+      "‘He saw a few snakes and quickly climbed out,’ said a post on Big Country Snake Removal’s Facebook page."
+    ],
+    "answer": [
+      2,
+      3,
+      0,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-17",
+    "_order": 33,
+    "title": "Totalitarian",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Such government takes full power, with no limitations.",
+      "Throughout the 20th century, the expression of totalitarianism was an extreme measure of severe political events.",
+      "As stated by Juan Linz, a totalitarian scholar, the three key factors of a totalitarianism government are “a monistic center of power; an ideology developed, justified and pursued by the leadership; and mass participation in political and social goals encouraged and even demanded by those same leaders.”",
+      "Totalitarianism is a political and social idea that explains a form of government where the state has complete control over the civilians."
+    ],
+    "answer": [
+      3,
+      0,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-18",
+    "_order": 34,
+    "title": "Child Temptation",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The longer a child can withstand the temptation has been linked to greater general competence later in life.",
+      "The child is informed: if you don’t eat this treat for 15 minutes you can have both this one and another one.",
+      "Kids usually wait for five or six minutes before consuming the marshmallow.",
+      "A four-to-six-year-old child sits by himself in a room at a table looking at a marshmallow on a plate."
+    ],
+    "answer": [
+      3,
+      1,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-19",
+    "_order": 35,
+    "title": "Children’s Clothes",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Over the past few years, some of the world’s leading names in high-end fashion have begun to see children’s clothes as a promising side business with which to extract more value from their main business.",
+      "But for France’s Bonpoint, producing kids’ clothing is the primary business.",
+      "For instance, Jean Paul Gaultier, Chloe and John Galliano have all introduced children’s clothing lines.",
+      "Since Bonpoint was established 40 years ago by clothes store owner Marie-France and Bernard Cohen, children and babies have been at the heart of the brand’s development."
+    ],
+    "answer": [
+      0,
+      2,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-20",
+    "_order": 36,
+    "title": "Vaccines",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "They keep children safe from catching and spreading diseases that can make them very sick.",
+      "Because of this, we require children aged 2 months to 18 years old who are entering or attending child care, public school, or private school be vaccinated against certain diseases.",
+      "A healthy school environment gives all students the greatest chance to learn and grow.",
+      "Vaccines are very important to this goal."
+    ],
+    "answer": [
+      2,
+      3,
+      0,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-21",
+    "_order": 37,
+    "title": "Gender Stereotype",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Sometimes, the infant was clothed in blue and was called Adam and sometimes it was dressed in pink and was called Beth.",
+      "There were three toys in the room: a train (boy stereotype), a doll (girl stereotype) and a fish (neutral).",
+      "The study by Will and colleagues dressed 6-month-old babies in various colored outfits that did not necessarily match their gender, so the participants had no way of knowing if the baby was in fact a boy or a girl.",
+      "This research found that babies dressed in blue and thought to be boys were more likely to be given the train.",
+      "Babies in pink or girls' were more likely to be given the doll and more people smiled at Beth' then at 'Adam'."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-22",
+    "_order": 38,
+    "title": "Mink",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The American mink has existed in Iceland since the 1930's and despite intensive hunting since 1939 the species has become well established.",
+      "Iceland is therefore an ideal place to study undisturbed feeding behaviour and ecology of mink.",
+      "The ecosystem in Iceland is simpler than in other areas where mink are found; the only other mammalian predator is the arctic fox.",
+      "Direct competition between these species appears to be minimal although the arctic fox will sometimes chase mink and disturb them while foraging."
+    ],
+    "answer": [
+      0,
+      2,
+      3,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-23",
+    "_order": 39,
+    "title": "Sign Language",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Sign language is not just about the hand, but also the body and the expression.",
+      "With the introduction of AI, all things will change.",
+      "Because of its complexity, few people teach sign language.",
+      "Sign language or the non-speaking teaching method is quite expensive."
+    ],
+    "answer": [
+      3,
+      0,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-24",
+    "_order": 40,
+    "title": "Mars From Earth",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "To overcome the force of gravity and reach another body in space you need to achieve a specific speed.",
+      "This requires huge rockets, tonnes of fuel, and complex orbital maneuvering.",
+      "Due to the moon's weaker gravitational field, the same journey from the lunar surface would 'only' require a speed of 6,500 mph (2.9 km/s).",
+      "This is roughly one third of that necessary to reach the International Space Station from Earth.",
+      "A journey to Mars from Earth's surface requires a minimum total speed of nearly 30,000 mph."
+    ],
+    "answer": [
+      0,
+      4,
+      1,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-25",
+    "_order": 41,
+    "title": "Boring Job",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "However, any employee who wants to acquire more varied and responsible duties will not feel satisfied for long staying with the same and dull job.",
+      "A number of staff who wish to turn up, do a simple job and go home is relatively happy if they believe their work is secure.",
+      "If this opportunity does not exist, they are most likely to become demotivated.",
+      "People want to keep working hard only if there are opportunities for promotion to a more challenging job."
+    ],
+    "answer": [
+      1,
+      0,
+      3,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-26",
+    "_order": 42,
+    "title": "World Feeding",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "If these trends continue, the double whammy of population growth and richer diets will require us to nearly double the amount of crops we grow by 2050.",
+      "We'll likely have two billion more mouths to feed by mid-century - more than nine billion people.",
+      "The spread of prosperity across the world, especially in China and India, is driving a growing demand for meat, eggs, and dairy, boosting pressure to grow more corn and soybeans to feed more cattle, pigs, and chickens.",
+      "But sheer population growth isn't the only reason we'll need more food."
+    ],
+    "answer": [
+      1,
+      3,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-27",
+    "_order": 43,
+    "title": "Coins",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "However, when archaeologists want to know the absolute date of a site, they can often go beyond basic stratigraphy.",
+      "Historical records, coins, and other date-bearing objects can help - if they exist. But even prehistoric sites contain records recorded in nature's hand.",
+      "For example, dendrochronology (literally 'tree time') dates wooden artefacts by matching their ring patterns to known records, which, in some areas of the world, span several thousand years.",
+      "The series of strata in an archaeological dig enables an excavator to date recovered objects relatively, if not absolutely."
+    ],
+    "answer": [
+      3,
+      0,
+      1,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-28",
+    "_order": 44,
+    "title": "Desert Festival",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The 'Festival in The Desert' is a celebration of the musical heritage of the Touareg, a fiercely independent nomadic people.",
+      "Reaching it tests endurance, with miles of impermanent sand tracks to negotiate.",
+      "It is held annually near Essakane, an oasis some 40 miles north-west of Timbuktu, the ancient city on the Niger River.",
+      "The reward of navigating this rugged terrain comes in the form of a three-day feast of music and dance."
+    ],
+    "answer": [
+      0,
+      2,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-29",
+    "_order": 45,
+    "title": "Country's Most Elite",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Such defenses from the country's most elite universities 'do not hold water', Prof Ebdon said, as he urged the institutions to do more to expand their intakes.",
+      "Professor Les Ebdon, director of Fair Access to Higher Education, has said universities can no longer make excuses about the number of poorer students they take on.",
+      "England's most selective universities must do more to attract teenagers from disadvantaged backgrounds if they want to charge higher tuition fees, the country's fair access watchdog has warned.",
+      "In a statement issued yesterday, Prof Ebdon dismissed the argument from the country's most selective universities, which claim that young people from poorer backgrounds generally secure worse grades."
+    ],
+    "answer": [
+      2,
+      1,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-30",
+    "_order": 46,
+    "title": "Financial Stability",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The fear of criticism from colleagues, friends and family is the main reason that obstructs a change in their employment situation.",
+      "However, most of these workers would not consider career alternatives.",
+      "It seems that the lack of psychological reward is the reason for their dissatisfaction.",
+      "Despite the financial stability a high salary brings, research has shown that most top earners are unhappy in their jobs.",
+      "Interestingly, it is not the risk of a decrease in salary which prevents this move."
+    ],
+    "answer": [
+      3,
+      2,
+      1,
+      4,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-31",
+    "_order": 47,
+    "title": "Mechanical Engineering",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Mechanical engineering student Ne Tan is completing the first semester of this year studying at the University of California, Berkeley as part of the Monash Abroad program.",
+      "Now in her third year of study, the Monash Abroad program will see her complete four units of study in the US before returning to Australia in May 2009.",
+      "There she completed a diploma that enabled her to enter Monash University as a second-year student.",
+      "Ne, an international student from Shanghai, China, started her Monash journey at Monash College in October 2006."
+    ],
+    "answer": [
+      0,
+      3,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-32",
+    "_order": 48,
+    "title": "Railway",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "When you look from the east portal, the cutting provides a beautiful V-shape,' communications manager Paul Gentleman told the Guardian.",
+      "The question was this: did the railway's creator, Isambard Kingdom Brunel, really have the tunnel carved in such a way that when the sun rose on his birthday-April 9th-it would be flooded with light?",
+      "While the west side's view wasn't quite so impressive, the engineers generously chalked that up to centuries of dirt and grime.",
+      "This past Sunday, April 9th, the railway's current engineers decided to check the rumor once and for all. They weren't disappointed.",
+      "Ever since the completion of the Great Western Railway, in the 1840s, intrigue has swirled around the Box Tunnel, a long, steep bypass near Bath, England."
+    ],
+    "answer": [
+      4,
+      1,
+      3,
+      0,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-33",
+    "_order": 49,
+    "title": "Motivation",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "In order to do this, the manager should be able to encourage its employees.",
+      "The role of a manager in the workplace is to get things done through the employees.",
+      "However, this is easier said than done.",
+      "Motivation practice and theory are difficult, complex subjects touching on several disciplines."
+    ],
+    "answer": [
+      1,
+      0,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-34",
+    "_order": 50,
+    "title": "Mittal",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "More importantly, the Arcelor Mittal deal shows Europe's deepening integration into the global economy.",
+      "The story tells us two things about European business, both positive.",
+      "Shareholder activism is increasing in a continent where until recently it was depressingly rare.",
+      "It was taken over by Mittal, a Dutch-registered company run from London by its biggest single shareholder, Lakshmi Mittal, an Indian who started his first business in Indonesia.",
+      "The takeover battle raged for six months before Arcelor's bosses eventually listened to shareholders who wanted the board to accept Mittal's third offer."
+    ],
+    "answer": [
+      3,
+      4,
+      1,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-35",
+    "_order": 51,
+    "title": "Mission",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The intention was to record as much music as possible as quickly as possible, before encroaching influences like radio and cinema began transforming the region's distinctive culture.",
+      "Early in 1938, Mario de Andrade, the municipal secretary of culture here, sent a four-member Folklore Research Mission to the northeastern hinterlands of Brazil on a similar mission.",
+      "They recorded whoever and whatever seemed to be interesting: piano carriers, cowboys, beggars, voodoo priests, quarry workers, fishermen, dance troupes and even children at play.",
+      "But the Brazilian mission's collection eventually ended up languishing in vaults here."
+    ],
+    "answer": [
+      1,
+      0,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-36",
+    "_order": 52,
+    "title": "The Mantle",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The mantle makes up 84 percent of Earth's volume, and though it's solid material, over the course of millions of years, it behaves like a liquid.",
+      "This leads the tectonic plates on top to gradually jostle one another.",
+      "The buildup and sudden release of friction from this movement can cause earthquakes.",
+      "The movement also creates gaps in tectonic plates, which reduce the pressure on the mantle beneath it, allowing it to melt and push through."
+    ],
+    "answer": [
+      3,
+      2,
+      1,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-37",
+    "_order": 53,
+    "title": "60,000 Charity",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The BCGI (Botanical Gardens Conservation International), a charity that created the list of trees on the basis of data gathered from its network of 500 member organizations.",
+      "The researchers claim to have collected information over a period of two years from sources including over 500 published contents and 80 experts in the BCGI's network.",
+      "A recent research has revealed that more than 60,000 species of trees are available globally.",
+      "The data will be kept updated with the discovery of new species or the extinction of some, said the researchers.",
+      "All the data required for the world's trees is now accessible in one database, thanks to Global Tree Search."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-corep-38",
+    "_order": 54,
+    "title": "Foreign Aid",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Although the system is far from perfect, it is certainly more transparent than it was when foreign aid regularly helped ruthless dictators stay in power.",
+      "Media scrutiny shamed many developed countries into curbing their poor practices.",
+      "Today, the programs of organizations like the World Bank are carefully inspected by watchdog groups.",
+      "By the early 1990s, foreign aid began to gradually improve."
+    ],
+    "answer": [
+      3,
+      1,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-01",
+    "_order": 55,
+    "title": "Plant and Protein",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Researchers discovered that proteins can regulate plant growth by coordinating various biological responses.",
+      "Understanding this process helps researchers determine that some grains can survive drought conditions that would typically be fatal.",
+      "They discovered that these particular proteins trigger mechanisms that allow plants to conserve water during environmental stress.",
+      "In the future, this can be applied to crops so they can adapt to drought, potentially resolving the global food crisis or issues of human hunger."
+    ],
+    "answer": [
+      0,
+      2,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-02",
+    "_order": 56,
+    "title": "Selective Books",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Choices must similarly be made about which aspects of the past should be formally taught to the next generation in the form of school history lessons.",
+      "They cannot include everything: choices have to be made.",
+      "What history books tell us about the past is not everything that happened, but what historians have chosen.",
+      "History is selective."
+    ],
+    "answer": [
+      3,
+      2,
+      1,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-03",
+    "_order": 57,
+    "title": "Education Services",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Open days are good opportunities for parents to ask what they want to know.",
+      "One of the common methods is open days.",
+      "Schools have different ways to let parents know how they provide education services.",
+      "These are times when parents can learn what their children will be doing at school."
+    ],
+    "answer": [
+      2,
+      1,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-04",
+    "_order": 58,
+    "title": "Sea Turtles",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "In addition, researchers and scuba divers have observed sea turtles respond to the stimulation of being touched on the skin of their head and their flippers.",
+      "The bony shell of a sea turtle can actually detect when something touches it.",
+      "The nerves do not contain pain receptors so scientists do not think sea turtles feel pain when touched on the shell, but these thin nerves could transmit information to other parts of the sea turtle's body.",
+      "A series of thin nerves run along the shell and detect pressure changes associated with contact."
+    ],
+    "answer": [
+      1,
+      3,
+      2,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-05",
+    "_order": 59,
+    "title": "Brain Function",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The brain is our most treasured possession.",
+      "It coordinates our movements, our words, our relationships, and the ability to pass on our genes.",
+      "The barrier serves a vital role, but it also poses a tremendous challenge for scientists developing drugs to treat brain-based disorders.",
+      "Our body therefore protects the organ fiercely. The central nervous system polices particles traveling through the bloodstream and invites only the safest into our cognitive chamber.",
+      "This selective process occurs due to a proactive boundary known as the blood-brain barrier."
+    ],
+    "answer": [
+      0,
+      1,
+      3,
+      4,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-06",
+    "_order": 60,
+    "title": "E-waste",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The current global production of e-waste is estimated to be 20-25 million tonnes per year, with most e-waste being produced in Europe, the United States and Australasia.",
+      "Developing countries are also expected to triple their e-waste production over the next five years.",
+      "In Europe e-waste is increasing at three to five percent a year, almost three times faster than the total waste stream.",
+      "The global market for electrical and electronic equipment continues to expand, while the lifespan of many products becomes shorter."
+    ],
+    "answer": [
+      3,
+      0,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-07",
+    "_order": 61,
+    "title": "Electronic Devices",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Such as washing machines, video game players, etc.",
+      "The amount of e-waste has increased by 3% to 5% every year.",
+      "The invention of electronic devices is a huge step and advancement for humans.",
+      "But how to deal with e-waste has become an issue."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-08",
+    "_order": 62,
+    "title": "Protein",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Fibers suitable for clothing have been produced for the first time from the wheat protein gluten.",
+      "The fibers are as strong and soft as wool and silk.",
+      "Narenda Reddy and Yiqi Yang, who produced the fibers at the University of Nebraska in Lincoln, say that because they are biodegradable they might be used in biomedical applications such as surgical sutures.",
+      "But they are up to 20 times cheaper."
+    ],
+    "answer": [
+      0,
+      1,
+      3,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-09",
+    "_order": 63,
+    "title": "Heart Attack",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Without the normal blood flow, it will cause muscle contraction.",
+      "The clot in blood vessels will obstruct blood flow.",
+      "Heart attack is caused by the sudden blockage of a coronary artery by a blood clot.",
+      "When the clot is formed, it will remain in the blood vessels."
+    ],
+    "answer": [
+      2,
+      3,
+      1,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-10",
+    "_order": 64,
+    "title": "Financial Crisis",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Many people face serious financial crisis when they are only 20-30 years old.",
+      "This is because they do not really pay attention to their daily spending, and have poured their spending on buying.",
+      "Although they can have student loans, people should consider creating a budget to track their expenses, prioritize essential spending, and avoid unnecessary debt.",
+      "This will lead to them paying piling credit card loan and monthly payments.",
+      "Additionally, building an emergency fund and seeking financial advice can help manage and reduce financial crises."
+    ],
+    "answer": [
+      0,
+      1,
+      3,
+      2,
+      4
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-11",
+    "_order": 65,
+    "title": "TV Program",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The challenge didn't deter IU students, who convinced the IT Services department to launch its Electronic Waste Collection Days program.",
+      "On numerous dates throughout the year, students, faculty, and staff can drop off their old equipment to be completely recycled. Nothing ends up in a landfill.",
+      "Collection days collected more than 650,000 pounds of waste in 2010.",
+      "Recycling electronic waste such as old computers, TVs, and monitors is a daunting challenge considering how much technology we all use today."
+    ],
+    "answer": [
+      3,
+      0,
+      1,
+      2
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-12",
+    "_order": 66,
+    "title": "New Ventures",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "For example, one of the companies we work with in China, called Ecostar, refurbishes copy machines from the United States and re-sells or leases them for 20 percent less than a branded photocopier.",
+      "New Ventures is a program that supports entrepreneurs in some of the world’s most dynamic, emerging economies - Brazil, China, Colombia, India, Indonesia and Mexico.",
+      "We have facilitated more than $203 million in investment, and worked with 250 innovative businesses whose goods and services produce clear, measurable environmental benefits, such as clean energy, efficient water use, and sustainable agriculture.",
+      "Often they also address the challenges experienced by the world's poor."
+    ],
+    "answer": [
+      1,
+      2,
+      3,
+      0
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-core13-13",
+    "_order": 67,
+    "title": "Scotland Bank",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "When this bank was founded in 1695, Scots coinage was in short supply and of uncertain value, compared with English, Dutch, Flemish or French coin.",
+      "In most countries it is only the government, through their central banks, who are permitted to issue currency.",
+      "But in Scotland three banks are still allowed to issue banknotes.",
+      "To face growth of trade it was deemed necessary to remedy this lack of an adequate currency.",
+      "The first Scottish bank to do this was the Bank of Scotland."
+    ],
+    "answer": [
+      1,
+      2,
+      4,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-02",
+    "_order": 68,
+    "title": "Greener Technologies",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "The energy sector has a serious skills shortage at all levels, both now and looming over it.",
+      "With the pressures of climate change and the energy gap, in the last few years, funding from the research councils has likely doubled.",
+      "Engineers are much needed to develop greener technologies.",
+      "Not only are there some good career opportunities, but there's a lot of money going into the research side, too."
+    ],
+    "answer": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-03",
+    "_order": 69,
+    "title": "Energy Research",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Many countries are experiencing a shortage of experts in new energy.",
+      "Becoming an engineer not only means more opportunities in their career but will gain more money in their research.",
+      "The money distributed in energy research will double.",
+      "Especially engineers about new energy with the climate change."
+    ],
+    "answer": [
+      0,
+      3,
+      2,
+      1
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-12",
+    "_order": 70,
+    "title": "Bank Account",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Withdrawing money means to take money from a bank account.",
+      "ID is required to open a bank account.",
+      "If you want to withdraw money, you can go to the ATM.",
+      "To face growth of trade it is deemed necessary to remedy this lack of adequate currency.",
+      "You can deposit funds into the new account."
+    ],
+    "answer": [
+      1,
+      4,
+      2,
+      0,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 4,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-13",
+    "_order": 71,
+    "title": "Teaching and Learning",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Traditional concept of teachers is that teaching is a necessary step for learning.",
+      "It is wrongly assumed that teaching is more important than learning.",
+      "However, we believe every ounce of teaching can contribute to learning.",
+      "We know children can learn eating and sleeping without being taught."
+    ],
+    "answer": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-15",
+    "_order": 72,
+    "title": "Bugs (B)",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Alternatively, the tenant may hire a professional exterminator personally.",
+      "Because bed bugs are very difficult to eliminate, the work should be carried out by trained pest control professionals.",
+      "If the landlord refuses to deal with a bed bug infestation, the tenant can seek assistance from the government.",
+      "If the tenant hires an exterminator independently, they should choose a reputable company and make sure the treatment is performed properly."
+    ],
+    "answer": [
+      2,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-19",
+    "_order": 73,
+    "title": "Gender Stereotypes",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "Play with sexualized dolls, such as Fashion Barbies, is even associated with a narrowing of perceived job options in girls.",
+      "In general, highly gender-typed toys are less supportive of the development of children's physical, cognitive, and artistic skills than are gender-neutral or moderately gender-typed toys.",
+      "Gender-typed play leads to the promotion of different skills in boys and girls, with girls practicing communal roles and boys practicing agentic roles.",
+      "Therefore, playing predominantly with same-gender-typed toys limits the development of children's action repertoires in accordance with gender stereotypes and thus contributes to the perpetuation of gender stereotypes.",
+      "This guides children's activities in accordance with gender stereotypes and thus restricts their individual development potential.",
+      "Whereas play with stereotypically masculine toys, such as blocks and toy soldiers, is generally associated with the development of spatial skills and more aggressive behavior, playing with stereotypically feminine toys, such as baby dolls and stuffed animals, is associated with more nurturing behavior."
+    ],
+    "answer": [
+      2,
+      4,
+      5,
+      0,
+      1,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 5,
+    "active": true
+  },
+  {
+    "id": "reorder-rp-23",
+    "_order": 74,
+    "title": "Bugs",
+    "prompt": "Arrange these sentences into the correct logical order.",
+    "options": [
+      "You can report the problem to local government authorities, who can send professionals to handle it.",
+      "If you're dealing with bugs and the landlord isn't addressing the issue, there are steps you can take.",
+      "Alternatively, tenants have the option to tackle the issue themselves with appropriate methods and tools.",
+      "This proactive approach ensures that tenants can maintain a healthy and pest-free living environment."
+    ],
+    "answer": [
+      1,
+      0,
+      2,
+      3
+    ],
+    "difficulty": "medium",
+    "evaluationType": "objective",
+    "maxScore": 3,
+    "active": true
   }
 ]

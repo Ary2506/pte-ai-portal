@@ -185,22 +185,81 @@ export function ObjectiveResult({ result }) {
   </div>;
 }
 
+// Re-order Paragraphs, drag-to-swap (matching the client-supplied reference screenshots).
+//
+// Two things are deliberate here. The number on each paragraph is its ORIGINAL position in the
+// question, not its current one, so a student can see at a glance which paragraph is which while
+// the list moves around them — a running 1..N counter would renumber on every move and tell them
+// nothing. And a drop SWAPS the two paragraphs rather than inserting and shifting the rest, which
+// is what the reference does and what the user asked for: dropping 4 onto 2 exchanges them and
+// leaves every other paragraph where it was.
+//
+// Dragging is not the only way to do it. HTML5 drag-and-drop does not fire on touch screens and
+// is awkward with a keyboard, so the same swap is reachable two other ways: click one paragraph
+// then another to exchange them, or focus one and press the arrow keys to walk it up and down.
 function ReorderList({ options, order, setOrder, disabled }) {
-  function move(pos, dir) {
-    const target = pos + dir;
-    if (target < 0 || target >= order.length) return;
+  const [dragFrom, setDragFrom] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+  // The first half of a click-to-swap pair; also what a focused item acts on with the keyboard.
+  const [picked, setPicked] = useState(null);
+
+  function swap(a, b) {
+    if (a === b || a == null || b == null) return;
     const next = [...order];
-    [next[pos], next[target]] = [next[target], next[pos]];
+    [next[a], next[b]] = [next[b], next[a]];
     setOrder(next);
   }
-  return <ol className="reorder-list">
-    {order.map((optIdx, pos) => <li className="reorder-item" key={optIdx}>
-      <span className="reorder-pos">{pos + 1}</span>
+
+  function endDrag() { setDragFrom(null); setDragOver(null); }
+
+  function onDrop(pos) {
+    // Read from component state rather than dataTransfer: jsdom does not implement dataTransfer,
+    // and nothing here needs to survive a drag between windows.
+    swap(dragFrom, pos);
+    endDrag();
+  }
+
+  // Every entry point checks `disabled` itself. draggable={false} stops the browser starting a
+  // drag from these items once the answer is in, but it does not stop a drop that began somewhere
+  // else from landing here — and a scored answer must not be able to change underneath its score.
+  const guard = (fn) => (...args) => { if (!disabled) fn(...args); };
+
+  function onClick(pos) {
+    if (disabled) return;
+    if (picked == null) { setPicked(pos); return; }
+    if (picked !== pos) swap(picked, pos);
+    setPicked(null);
+  }
+
+  function onKeyDown(e, pos) {
+    if (disabled) return;
+    if (e.key === "ArrowUp" && pos > 0) { e.preventDefault(); swap(pos, pos - 1); }
+    else if (e.key === "ArrowDown" && pos < order.length - 1) { e.preventDefault(); swap(pos, pos + 1); }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(pos); }
+  }
+
+  return <ol className="reorder-list" aria-label="Drag the paragraphs into the correct order">
+    {order.map((optIdx, pos) => <li
+      key={optIdx}
+      className={["reorder-item",
+        dragFrom === pos ? "dragging" : "",
+        dragOver === pos && dragFrom !== pos ? "drop-target" : "",
+        picked === pos ? "picked" : ""].filter(Boolean).join(" ")}
+      draggable={!disabled}
+      tabIndex={disabled ? -1 : 0}
+      role="button"
+      aria-label={`Paragraph ${optIdx + 1}, currently in position ${pos + 1} of ${order.length}`}
+      aria-grabbed={dragFrom === pos || picked === pos ? "true" : "false"}
+      onDragStart={guard(() => setDragFrom(pos))}
+      onDragOver={guard((e) => { e.preventDefault(); setDragOver(pos); })}
+      onDragLeave={guard(() => setDragOver(cur => (cur === pos ? null : cur)))}
+      onDrop={guard((e) => { e.preventDefault(); onDrop(pos); })}
+      onDragEnd={guard(endDrag)}
+      onClick={() => onClick(pos)}
+      onKeyDown={(e) => onKeyDown(e, pos)}
+    >
+      <span className="reorder-pos">{optIdx + 1})</span>
       <span className="reorder-text">{options[optIdx]}</span>
-      <span className="reorder-controls">
-        <button type="button" className="icon-btn" disabled={disabled || pos === 0} onClick={() => move(pos, -1)} aria-label="Move up">↑</button>
-        <button type="button" className="icon-btn" disabled={disabled || pos === order.length - 1} onClick={() => move(pos, 1)} aria-label="Move down">↓</button>
-      </span>
     </li>)}
   </ol>;
 }
@@ -438,7 +497,11 @@ function DragFillBlanks({ passage, options, placement, setPlacement, disabled, c
 export function ReadingTask({ question, testSessionId, onAnswered, existingResult }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
-  const [order, setOrder] = useState(null);
+  // Seeded from the question itself, not null. The effect below re-seeds it on every question
+  // change, but effects run after the first render, and Re-order Paragraphs reads order.map()
+  // during that render — starting at null threw there and took the whole reading task down, so
+  // no re-order question ever rendered. Harmless for the other types, which ignore `order`.
+  const [order, setOrder] = useState(() => (question?.options || []).map((_, i) => i));
   const [dragPlacement, setDragPlacement] = useState(null);
   // One chosen option index per blank, in passage order; null until the student picks.
   const [dropdownValues, setDropdownValues] = useState([]);

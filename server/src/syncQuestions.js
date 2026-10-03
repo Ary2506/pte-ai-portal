@@ -6,7 +6,11 @@ import Question from "./models/Question.js";
 
 // Applies a section's JSON authoring files to the question bank.
 //
-//   node src/syncQuestions.js <section> [--write]
+//   node src/syncQuestions.js <section> [--file <name.json>] [--write]
+//
+// --file narrows the run to one authoring file. Without it every file in the section is applied,
+// which is the right default but means an unrelated file's drift rides along with the change you
+// actually meant to make — so a targeted edit is safer applied targeted.
 //
 // This is the half that makes "author in JSON, serve from MongoDB" real rather than a one-time
 // import. Every entry is matched to its row through `sourceGroup`, so editing a prompt and
@@ -33,10 +37,13 @@ function changedFields(entry, row) {
 }
 
 async function main() {
-  const section = process.argv.slice(2).find(a => !a.startsWith("--"));
+  const positional = process.argv.slice(2).filter(a => !a.startsWith("--"));
   const write = process.argv.includes("--write");
+  const fileFlag = process.argv.indexOf("--file");
+  const onlyFile = fileFlag !== -1 ? process.argv[fileFlag + 1] : null;
+  const section = positional.find(a => a !== onlyFile);
   if (!section) {
-    console.error("Usage: node src/syncQuestions.js <section> [--write]");
+    console.error("Usage: node src/syncQuestions.js <section> [--file <name.json>] [--write]");
     process.exit(1);
   }
 
@@ -45,7 +52,14 @@ async function main() {
     console.error(`No authoring directory at ${dir}. Run exportQuestions.js first.`);
     process.exit(1);
   }
-  const files = fs.readdirSync(dir).filter(f => f.endsWith(".json"));
+  let files = fs.readdirSync(dir).filter(f => f.endsWith(".json"));
+  if (onlyFile) {
+    if (!files.includes(onlyFile)) {
+      console.error(`No ${onlyFile} in ${dir}. Available: ${files.join(", ")}`);
+      process.exit(1);
+    }
+    files = [onlyFile];
+  }
   if (!files.length) {
     console.error(`No .json files in ${dir}.`);
     process.exit(1);
@@ -81,7 +95,10 @@ async function main() {
   }
 
   // A row linked to this section's files but no longer present in them.
-  const orphans = rows.filter(r => r.sourceGroup?.startsWith(`${section}/`) && !seen.has(r.sourceGroup));
+  // Scoped to the files actually read: in a --file run every other file's rows are untouched,
+  // not missing, and reporting them as gone would be a lie about what this run looked at.
+  const orphans = rows.filter(r =>
+    files.some(f => r.sourceGroup?.startsWith(`${section}/${f}#`)) && !seen.has(r.sourceGroup));
 
   if (problems.length) {
     problems.forEach(p => console.error(`  PROBLEM  ${p}`));

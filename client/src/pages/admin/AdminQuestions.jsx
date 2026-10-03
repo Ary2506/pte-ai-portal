@@ -99,8 +99,9 @@ function validateForm(form, meta) {
   return errors;
 }
 
-// A compact up/down re-order control — mirrors the student-facing reorder UI so an admin builds
-// the correct order the same way a student would experience it.
+// A compact up/down re-order control. The student-facing list is drag-to-swap now (ReorderList),
+// which is the wrong tool for authoring — an admin setting an exact answer key wants precise,
+// clickable steps — so this keeps its buttons and opts out of that styling via --picker.
 function OrderPicker({ options, order, setOrder }) {
   function move(pos, dir) {
     const target = pos + dir;
@@ -109,7 +110,7 @@ function OrderPicker({ options, order, setOrder }) {
     [next[pos], next[target]] = [next[target], next[pos]];
     setOrder(next);
   }
-  return <ol className="reorder-list">
+  return <ol className="reorder-list reorder-list--picker">
     {order.map((optIdx, pos) => <li className="reorder-item" key={optIdx}>
       <span className="reorder-pos">{pos + 1}</span>
       <span className="reorder-text">{options[optIdx] || <em className="muted">(empty item)</em>}</span>
