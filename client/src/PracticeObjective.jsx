@@ -388,23 +388,6 @@ function DropdownBlanks({ content, values, setValues, disabled, correctIndexes }
   </p>;
 }
 
-// Fill in the Blanks — inline dropdown (Phase 20, Part 6): question.passage carries the sentence
-// with a single "____" blank; renders it as real prose with a native <select> standing in for the
-// blank, instead of listing the options as a separate generic choice list below the passage.
-// fill-blanks only ever has one blank (a single answer index) — see FillBlanksDragDrop below for
-// the multi-blank drag-and-drop variant.
-function FillBlankInline({ passage, options, value, onChange, disabled }) {
-  const [before, after] = passage.split("____");
-  return <p className="passage fill-blank-inline">
-    {before}
-    <select value={value} onChange={e => onChange(e.target.value === "" ? "" : Number(e.target.value))} disabled={disabled} aria-label="Choose the word that completes the sentence">
-      <option value="">— choose —</option>
-      {(options || []).map((o, i) => <option key={i} value={i}>{o}</option>)}
-    </select>
-    {after}
-  </p>;
-}
-
 // Fill in the Blanks — Drag and Drop (Phase 20, Part 6): question.passage carries the text with
 // N "____" blanks; question.options is the draggable word pool (may include decoy words never
 // used). `placement` is an array of length N — placement[i] is the pool index filling blank i, or
@@ -544,9 +527,6 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   if (!question) return <div className="panel task-main narrow"><Empty text="No reading question is available in the library for this task yet." /></div>;
   const isReorder = question.type === "reorder";
   const isMulti = question.type === "mcq-multiple";
-  // Retired: reading's single-blank fill-blanks became fib-dropdown, which renders every blank
-  // inline with its own options. Kept as a constant so the render branches below stay readable.
-  const isInlineFillBlank = false;
   const isDragFill = question.type === "fill-blanks-dragdrop";
   const isDropdownBlanks = question.type === "fib-dropdown";
   // Only ever populated once `result` exists (i.e. after this question's own submission has been
@@ -602,7 +582,10 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     <div className="task-meta"><span className="chip">Reading</span><span>Timed practice</span></div>
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
-    {question.passage && !isInlineFillBlank && !isDragFill && <div className="passage">{question.passage}</div>}
+    {/* Only for types that do NOT render the passage themselves. Drag & Drop lays the passage out
+        around its drop targets, and fib-dropdown rebuilds it from `content` with the blanks inline
+        — for either, showing question.passage here prints the same sentence a second time. */}
+    {question.passage && !isDragFill && !isDropdownBlanks && <div className="passage">{question.passage}</div>}
     {isDropdownBlanks
       ? <DropdownBlanks content={question.content} values={dropdownValues} setValues={setDropdownValues}
           disabled={!!result} correctIndexes={result?.feedback?.correctIndexes} />
@@ -613,8 +596,6 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       : isDragFill
       ? (dragPlacement && <DragFillBlanks passage={question.passage} options={question.options} placement={dragPlacement} setPlacement={setDragPlacement} disabled={!!result}
           correctWords={dragFillCorrectWords} showAnswer={showAnswer} wrongOnly={wrongOnly} />)
-      : isInlineFillBlank
-      ? <FillBlankInline passage={question.passage} options={question.options} value={choice} onChange={setChoice} disabled={!!result} />
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>}
