@@ -60,7 +60,6 @@ function Mock() {
   const [answered,setAnswered]=useState({});
   const [result,setResult]=useState(null);
   const [resultRows,setResultRows]=useState([]);
-  const [pastSessions,setPastSessions]=useState([]);
   const [starting,setStarting]=useState(false);
   const [finishing,setFinishing]=useState(false);
   const [error,setError]=useState("");
@@ -83,14 +82,6 @@ function Mock() {
       setPoliteAnnouncement(""); setAssertiveAnnouncement("");
     } catch(e){ setError(e.message); } finally { setStarting(false); }
   }
-
-  useEffect(() => {
-    // Context for the start screen only — if it fails the student can still sit a mock.
-    Promise.resolve()
-      .then(() => api.testSessions.list())
-      .then(d => setPastSessions(d?.testSessions || []))
-      .catch(() => {});
-  }, []);
 
   async function finish() {
     setFinishing(true); setError(""); setPoliteAnnouncement("Finishing your test…");
@@ -239,55 +230,19 @@ function Mock() {
   }
 
   if (!session) {
-    // Previous attempts, scored as percentages so attempts of different lengths compare. Every
-    // figure here is counted from completed sessions the server returned — a student who has
-    // never finished a mock sees dashes, not zeros.
-    const done = (pastSessions || []).filter(m => m.totalMaxScore);
-    const percents = done.map(m => Math.round((m.totalScore / m.totalMaxScore) * 100));
-    const best = percents.length ? Math.max(...percents) : null;
-    const latest = percents.length ? percents[0] : null;
-    const average = percents.length
-      ? Math.round(percents.reduce((a, n) => a + n, 0) / percents.length) : null;
-
     return <>{liveRegions}<Page title="Mock Tests" subtitle="Sit a compact, timed test and get a sectioned report.">
-      <section className="exam-center">
-        <div className="mock-card panel">
-          <div className="mock-icon-badge"><Trophy size={30}/></div>
-          <h2>Full PTE Practice Mock</h2>
-          <p>One question per section, scored from your actual answers — not a preset result.</p>
-          <div className="mock-section-chips">
-            {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
-          </div>
-          <p className="muted">20 minutes total for this compact mock.</p>
-          {error && <div className="alert error">{error}</div>}
-          <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
+      <div className="mock-card panel">
+        <div className="mock-icon-badge"><Trophy size={30}/></div>
+        <h2>Full PTE Practice Mock</h2>
+        <p>One question per section, scored from your actual answers — not a preset result.</p>
+        <div className="mock-section-chips">
+          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
         </div>
-
-        <div className="panel">
-          <SectionHeader label="Your mock record" title="Previous attempts"/>
-          <MetricStrip>
-            <Metric label="Completed" value={done.length || null}/>
-            <Metric label="Best" value={best} unit={best === null ? "" : "%"}/>
-            <Metric label="Latest" value={latest} unit={latest === null ? "" : "%"}/>
-            <Metric label="Average" value={average} unit={average === null ? "" : "%"}/>
-          </MetricStrip>
-          {done.length ? (
-            <PerformanceTable
-              columns={[
-                { key: "date", label: "Date", render: m => new Date(m.submittedAt).toLocaleDateString() },
-                { key: "score", label: "Score", align: "right",
-                  render: m => <b className="num-mono">{Math.round((m.totalScore / m.totalMaxScore) * 100)}%</b> },
-                { key: "raw", label: "Raw", align: "right",
-                  render: m => <span className="num-mono muted">{m.totalScore}/{m.totalMaxScore}</span> }
-              ]}
-              rows={done.slice(0, 5).map(m => ({ ...m, id: m._id }))}
-            />
-          ) : (
-            <EmptyState title="No completed mock tests yet"
-              body="Finish a mock and your attempts, best score and average appear here."/>
-          )}
-        </div>
-      </section>
+        <p className="muted">20 minutes total for this compact mock.</p>
+        {error && <div className="alert error">{error}</div>}
+        <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
+        <NavLink className="link mock-card__history" to="/history">See your previous attempts</NavLink>
+      </div>
     </Page></>;
   }
 

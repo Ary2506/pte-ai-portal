@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, Link, NavLink, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
-  Home, LogOut, Menu, Mic, PenLine, Play, Settings, Sparkles, Target,
+  Home, LogOut, Menu, Mic, PenLine, Play, Sparkles, Target,
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
   Eye, EyeOff, Moon, Sun, PanelLeft, Search as SearchIcon
 } from "lucide-react";
@@ -23,11 +23,10 @@ import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
 import Landing from "./landing/Landing.jsx";
-import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, MORE_ITEMS, supportedTasksFor } from "./practiceTaskRegistry.js";
+import { PRACTICE_SECTIONS, SECTION_LABELS, PRACTICE_TASKS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
 const PRACTICE_PATHS = new Set(["/practice", "/speaking", "/writing", "/reading", "/listening"]);
-const MORE_PATHS = new Set(MORE_ITEMS.filter(m => m.to).map(m => m.to));
 
 const SUBSCRIPTION_EXPIRED_MESSAGE = "Your 30-day subscription has expired. Please contact the administrator to renew your access.";
 // setTimeout's delay is coerced to a 32-bit signed int — anything past this fires almost
@@ -156,26 +155,6 @@ function PteMegaMenu({ onNavigate }) {
 // Materials genuinely don't exist yet in this portal and are rendered disabled with a Coming
 // Soon badge rather than a dead link; AI Study Plan/Mock Tests/Practice History reuse their
 // existing routes unchanged.
-function MoreMenu({ onNavigate }) {
-  const { open, setOpen, panelRef, triggerRef } = useDropdown();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const active = MORE_PATHS.has(location.pathname);
-
-  return <div className="mega-menu-wrap">
-    <button ref={triggerRef} className={active ? "nav-item active" : "nav-item"} aria-expanded={open} aria-haspopup="true" aria-controls="more-panel" onClick={() => setOpen(o => !o)}>
-      <Settings size={18} /><span>More</span><ChevronDown size={14} className={open ? "chev open" : "chev"} />
-    </button>
-    {open && <div className="mega-menu-backdrop" aria-hidden="true"/>}
-    {open && <div id="more-panel" ref={panelRef} role="region" aria-label="More menu" className="mega-menu more-menu">
-      {MORE_ITEMS.map(m => m.to
-        ? <button key={m.key} className="mega-menu-link" onClick={() => { setOpen(false); onNavigate?.(); navigate(m.to); }}>{m.label}</button>
-        : <span key={m.key} className="mega-menu-link disabled">{m.label}<Badge tone="neutral">Coming Soon</Badge></span>
-      )}
-    </div>}
-  </div>;
-}
-
 // The two sidebar variants are structurally distinct, not the same nav with a relabeled item:
 // the admin one has no PTE Practice mega-menu / More menu at all (those are student concerns),
 // and the student one's Admin Panel link — only ever shown to an actual admin — is a normal,
@@ -218,7 +197,7 @@ function StudentSidebarNav({ user, onNavigate }) {
     <div className="nav-group-label">Performance</div>
     <NavLink to="/history" className={cls} onClick={onNavigate}><BarChart3 size={18}/><span>My Results</span></NavLink>
     <NavLink to="/progress" className={cls} onClick={onNavigate}><Activity size={18}/><span>Progress</span></NavLink>
-    <MoreMenu onNavigate={onNavigate}/>
+    <NavLink to="/plan" className={cls} onClick={onNavigate}><Brain size={18}/><span>AI Study Plan</span></NavLink>
     {user?.role === "admin" && <div className="nav-group-label">Admin</div>}
     {user?.role === "admin" && <NavLink to="/admin" className="nav-item admin-panel-link" onClick={onNavigate}><Shield size={18}/><span>Admin Panel</span></NavLink>}
   </>;
@@ -332,6 +311,28 @@ function topbarLabel(pathname) {
   return "";
 }
 
+function AppFooter() {
+  const year = new Date().getFullYear();
+  return (
+    <footer className="app-footer">
+      <div className="app-footer__brand">
+        <span className="brand-mark" aria-hidden="true">P</span>
+        <span className="brand-text">PTE CORE <em>AI</em></span>
+      </div>
+      <nav className="app-footer__links" aria-label="Footer">
+        <NavLink to="/practice">Practice</NavLink>
+        <NavLink to="/mock">Mock Tests</NavLink>
+        <NavLink to="/history">My Results</NavLink>
+        <NavLink to="/progress">Progress</NavLink>
+        <NavLink to="/plan">Study Plan</NavLink>
+      </nav>
+      <p className="app-footer__legal">
+        Copyright © {year} PTE CORE AI. All Rights Reserved.
+      </p>
+    </footer>
+  );
+}
+
 function Layout({ user, logout, children, theme, toggleTheme }) {
   const [mobile, setMobile] = useState(false);
   // Remembered per browser: someone who works with the rail collapsed wants it collapsed next
@@ -358,7 +359,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
             heading already owns that exact string; two elements with identical text would make
             every existing screen.findByText("Admin Panel") test (and a real screen reader)
             ambiguous. */}
-        <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span><span>PTE CORE</span> AI</span>{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
+        <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span className="brand-text">PTE CORE <em>AI</em></span>{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
         <button className="icon-btn mobile-close" onClick={closeMobile} aria-label="Close menu"><X size={19}/></button>
       </div>
       <nav>
@@ -386,6 +387,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
         </div>
       </header>
       <div className="content">{children}</div>
+      <AppFooter/>
     </main>
   </div>
 }

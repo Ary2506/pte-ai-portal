@@ -58,6 +58,19 @@ html[data-theme="dark"] .ld-page{
   --ld-glow:rgba(124,124,255,.14);
 }
 
+/* Smooth scrolling for the in-page nav links. Set on :has() of the landing page rather than on
+   html unconditionally, so the signed-in app — where scrolling is driven by navigation, not by
+   anchors — keeps its instant jumps.
+   scroll-padding-top clears the sticky header: without it an anchored section lands underneath
+   the bar and reads as if the link went to the wrong place. */
+html:has(.ld-page){scroll-behavior:smooth;scroll-padding-top:88px}
+/* Every anchor target carries the same offset, which also covers browsers without :has(). */
+.ld-page [id]{scroll-margin-top:88px}
+/* Honour the system setting: an animated scroll is exactly what this asks us not to do. */
+@media (prefers-reduced-motion: reduce){
+  html:has(.ld-page){scroll-behavior:auto}
+}
+
 .ld-page *{box-sizing:border-box}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 

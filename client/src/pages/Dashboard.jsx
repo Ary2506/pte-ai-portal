@@ -291,7 +291,7 @@ export default function Dashboard({ user }) {
         <SectionHeader
           label="Recent performance"
           title="Latest attempts"
-          actions={<NavLink to="/history" className="link">View all</NavLink>}
+          actions={<NavLink to="/history#practice-attempts" className="link">View all</NavLink>}
         />
         <PerformanceTable
           columns={[

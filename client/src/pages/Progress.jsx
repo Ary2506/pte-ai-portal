@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { Page } from "../components/common.jsx";
 import { Trajectory } from "../components/charts.jsx";
@@ -184,7 +184,8 @@ export default function Progress({ user }) {
 
     {/* --- What did I do recently ---------------------------------------------------------- */}
     <section className="panel">
-      <SectionHeader label="Recent performance" title="Latest attempts"/>
+      <SectionHeader label="Recent performance" title="Latest attempts"
+        actions={<NavLink to="/history#practice-attempts" className="link">View all</NavLink>}/>
       <PerformanceTable
         columns={[
           { key: "when", label: "Date", render: r => new Date(r.createdAt).toLocaleDateString() },
@@ -195,7 +196,7 @@ export default function Progress({ user }) {
           { key: "duration", label: "Duration", align: "right", render: r => formatDuration(r.durationSeconds) || <span className="muted">—</span> }
         ]}
         rows={scored(visible).slice(0, 12).map(r => ({ ...r, id: r._id }))}
-        onRowClick={() => navigate("/history")}
+        onRowClick={() => navigate("/history#practice-attempts")}
         empty={<EmptyState title="No attempts in this filter"/>}
       />
     </section>

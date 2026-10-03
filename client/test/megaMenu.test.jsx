@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -111,20 +111,29 @@ describe("PTE Practice mega-menu", () => {
   });
 });
 
-describe("More menu", () => {
-  it("opens and shows both real links and Coming Soon items", async () => {
+// The sidebar's "More" dropdown was replaced by a direct AI Study Plan link. Of the three real
+// destinations it held, Mock Tests and Practice History already had their own sidebar entries,
+// so Study Plan was the only one the sidebar could not otherwise reach. The remaining items were
+// all "Coming Soon" placeholders, which are still listed in the Practice Hub's own More section.
+describe("AI Study Plan replaces the More dropdown", () => {
+  it("is a direct sidebar link, not a menu to open", async () => {
     renderAt("/dashboard", studentAuthUser());
-    fireEvent.click(await screen.findByText("More"));
-    expect(screen.getByText("Mock Tests")).toBeInTheDocument();
-    expect(screen.getByText("AI Study Plan")).toBeInTheDocument();
-    expect(screen.getByText("Practice History")).toBeInTheDocument();
-    expect(screen.getByText("Vocabulary").closest("span")).toHaveClass("disabled");
+    const link = await screen.findByRole("link", { name: "AI Study Plan" });
+    expect(link).toHaveAttribute("href", "/plan");
+    expect(screen.queryByRole("button", { name: /^More/ })).not.toBeInTheDocument();
   });
 
-  it("navigates to the existing Mock Tests page without a page reload", async () => {
+  it("navigates to the study plan without a page reload", async () => {
+    api.history.mockResolvedValue({ submissions: [], total: 0 });
     renderAt("/dashboard", studentAuthUser());
-    fireEvent.click(await screen.findByText("More"));
-    fireEvent.click(screen.getByText("Mock Tests"));
-    await waitFor(() => expect(screen.getByText("Full PTE Practice Mock")).toBeInTheDocument());
+    fireEvent.click(await screen.findByRole("link", { name: "AI Study Plan" }));
+    expect(await screen.findByRole("heading", { name: "Study plan" })).toBeInTheDocument();
+  });
+
+  it("still reaches Mock Tests and My Results from their own sidebar entries", async () => {
+    renderAt("/dashboard", studentAuthUser());
+    const sidebar = document.querySelector(".sidebar");
+    expect(within(sidebar).getByRole("link", { name: "Take Mock Test" })).toHaveAttribute("href", "/mock");
+    expect(within(sidebar).getByRole("link", { name: "My Results" })).toHaveAttribute("href", "/history");
   });
 });

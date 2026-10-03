@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -146,7 +146,9 @@ describe("Practice Hub", () => {
   it("shows a More section with real links and honestly-disabled not-yet-built items", async () => {
     renderAt("/practice", studentAuthUser());
     await screen.findByRole("heading", { name: "PTE Practice" });
-    expect(screen.getByText("Mock Tests").closest("a")).toHaveAttribute("href", "/mock");
+    // Scoped to the hub's own More section: the page footer links to Mock Tests as well.
+    const more = document.querySelector(".practice-more-row");
+    expect(within(more).getByText("Mock Tests").closest("a")).toHaveAttribute("href", "/mock");
     expect(screen.getByText("Vocabulary").closest("span")).toHaveClass("disabled");
   });
 });

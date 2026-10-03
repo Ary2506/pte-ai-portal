@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Badge, Empty, Page } from "../components/common.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
-import { EmptyState, PerformanceTable, Delta, titleCase, taskLabel, formatDuration } from "../components/analytics.jsx";
+import { EmptyState, Metric, MetricStrip, PerformanceTable, Delta, titleCase, taskLabel, formatDuration } from "../components/analytics.jsx";
 import { pct } from "../analytics/derive.js";
 
 function describeAnswer(r) {
@@ -126,6 +127,7 @@ function fmtRelativeDateTime(d) {
 
 const HISTORY_SECTION_FILTERS = ["all", ...PRACTICE_SECTIONS];
 const PRACTICE_PAGE_SIZE = 10;
+const MOCK_PAGE_SIZE = 10;
 
 function historyScoreCell(r) {
   if (r.evaluationStatus === "PENDING" || r.evaluationStatus === "PROCESSING")
@@ -142,6 +144,7 @@ function historyScoreCell(r) {
 export default function History() {
   const [rows, setRows] = useState([]);
   const [mocks, setMocks] = useState([]);
+  const [mockPage, setMockPage] = useState(1);
   const [detailId, setDetailId] = useState(null);
   const [sectionFilter, setSectionFilter] = useState("all");
   // The section filter is applied by the server, not by filtering `rows` in place as it once
@@ -169,6 +172,16 @@ export default function History() {
       .finally(() => setRowsLoading(false));
   }, [page, sectionFilter]);
 
+  const location = useLocation();
+  useEffect(() => {
+    if (location.hash !== "#practice-attempts") return;
+    // After the first paint, so the heading exists to scroll to.
+    const id = requestAnimationFrame(() => {
+      document.getElementById("practice-attempts")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [location.hash]);
+
   useEffect(() => {
     api.testSessions
       .list()
@@ -183,6 +196,23 @@ export default function History() {
     setPage(1);
     setSectionFilter(s);
   }
+  // Mock record. Percentages, so attempts of different lengths compare with one another, and
+  // null rather than 0 wherever there is nothing completed yet to measure.
+  const completedMocks = mocks.filter((m) => m.totalMaxScore);
+  const mockPercents = completedMocks.map((m) => Math.round((m.totalScore / m.totalMaxScore) * 100));
+  const mockBest = mockPercents.length ? Math.max(...mockPercents) : null;
+  // `mocks` arrives newest-first from the server, so the first entry is the latest attempt.
+  const mockLatest = mockPercents.length ? mockPercents[0] : null;
+  const mockAverage = mockPercents.length
+    ? Math.round(mockPercents.reduce((a, n) => a + n, 0) / mockPercents.length)
+    : null;
+
+  // The mock table pages client side: its rows all arrive in one response, so Next is a slice
+  // rather than a fetch. Guarded against landing past the end if the list shrinks.
+  const mockTotalPages = Math.max(1, Math.ceil(mocks.length / MOCK_PAGE_SIZE));
+  const safeMockPage = Math.min(mockPage, mockTotalPages);
+  const visibleMocks = mocks.slice((safeMockPage - 1) * MOCK_PAGE_SIZE, safeMockPage * MOCK_PAGE_SIZE);
+
   // Change against the previous attempt at the SAME task type. The table is paginated server
   // side, so an attempt whose predecessor sits on another page has no comparison available here —
   // that is reported as a dash rather than silently compared against an unrelated task.
@@ -207,6 +237,13 @@ export default function History() {
       <h2 className="section-title" style={{ marginTop: 0 }}>
         Mock test attempts
       </h2>
+      <MetricStrip>
+        <Metric label="Completed" value={completedMocks.length || null} />
+        <Metric label="Best" value={mockBest} unit={mockBest === null ? "" : "%"} />
+        <Metric label="Latest" value={mockLatest} unit={mockLatest === null ? "" : "%"} />
+        <Metric label="Average" value={mockAverage} unit={mockAverage === null ? "" : "%"}
+          hint={mockPercents.length ? `Across ${mockPercents.length} attempts` : "No completed mocks yet"} />
+      </MetricStrip>
       <div className="panel table-wrap">
         <table>
           <thead>
@@ -221,7 +258,7 @@ export default function History() {
             </tr>
           </thead>
           <tbody>
-            {mocks.map((m) => (
+            {visibleMocks.map((m) => (
               <tr key={m._id}>
                 <td>{fmtRelativeDateTime(m.submittedAt)}</td>
                 <td>
@@ -251,8 +288,30 @@ export default function History() {
         </table>
         {!mocks.length && <Empty text="No completed mock tests yet." />}
       </div>
+      {mockTotalPages > 1 && (
+        <div className="pager">
+          <button
+            className="secondary"
+            disabled={safeMockPage <= 1}
+            onClick={() => setMockPage(safeMockPage - 1)}
+          >
+            ‹ Previous
+          </button>
+          <span className="muted">
+            Page {safeMockPage} of {mockTotalPages} · {mocks.length} attempt
+            {mocks.length === 1 ? "" : "s"}
+          </span>
+          <button
+            className="secondary"
+            disabled={safeMockPage >= mockTotalPages}
+            onClick={() => setMockPage(safeMockPage + 1)}
+          >
+            Next ›
+          </button>
+        </div>
+      )}
       <div className="panel-head" style={{ marginTop: 30, marginBottom: 0 }}>
-        <h2 className="section-title" style={{ margin: 0 }}>
+        <h2 className="section-title" id="practice-attempts" style={{ margin: 0 }}>
           Practice attempts
         </h2>
         <div
