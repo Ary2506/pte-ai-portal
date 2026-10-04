@@ -190,7 +190,7 @@ export default function StreakCalendar({ activity }) {
         <div>
           <StatLabel>{range === "month" ? "Last 30 days" : "Since joining"}</StatLabel>
           <p className="streak-calendar__summary">
-            Practised on <b className="num-mono">{activeDays}</b> of{" "}
+            Practiced on <b className="num-mono">{activeDays}</b> of{" "}
             <b className="num-mono">{totalDays}</b> days
             {range === "all" && activity.joinedAt && ` since ${activity.joinedAt}`}
             {range === "all" && activity.truncated && " (showing the most recent 53 weeks)"}

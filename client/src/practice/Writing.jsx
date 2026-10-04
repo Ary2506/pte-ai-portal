@@ -4,7 +4,7 @@ import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { useToast } from "../components/toast.jsx";
 import { Button } from "../components/Button.jsx";
-import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
+import TaskTips, { AI_SCORING_NOTE, useTaskRail } from "./TaskTips.jsx";
 import { ANSWER_MAX_LENGTH, TASK_CHAR_LIMITS, countCharacters, lengthState } from "./answerLimits.js";
 
 const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
@@ -103,6 +103,8 @@ export default function Writing({
       setText(next);
     }
   }
+  const rail = useTaskRail();
+  const showComposePanel = rail?.taskPanels !== false;
   const range = WRITING_WORD_RANGES[question?.type];
   const tone = range ? (wordCount < range[0] ? "low" : wordCount > range[1] ? "high" : "good") : "good";
   // The scale runs a little past the maximum so going over is visible rather than pinned at full.
@@ -133,6 +135,22 @@ export default function Writing({
           maxLength={ANSWER_MAX_LENGTH}
           aria-describedby="writing-length"
         />
+        {!showComposePanel && (
+          <p className="compose-inline" id="writing-length" role="status">
+            <span className="num-mono">{wordCount}</span> words
+            {range && <> · target <span className="num-mono">{range[0]}–{range[1]}</span></>}
+            {" · "}
+            <span className={`num-mono is-${lengthState(charCount, charLimit ?? ANSWER_MAX_LENGTH)}`}>
+              {charCount}
+            </span>
+            /{charLimit ?? ANSWER_MAX_LENGTH} characters
+            {charLimit !== null && charCount >= charLimit && (
+              <span className="compose-inline__limit">
+                {" — "}limit reached. Spaces are not counted.
+              </span>
+            )}
+          </p>
+        )}
         {result && <Result result={result} onRetry={retry} retrying={retrying} />}
         {/* One row, both buttons. Submit used to float right while Re-do sat in a separate block
             below it, so the two landed on different baselines with the float's margin between
@@ -191,7 +209,7 @@ export default function Writing({
       {/* Both panels share the one rail column — .task-layout is a two-column grid, so a third
           child would otherwise drop onto its own row under the editor. */}
       <div className="task-rail">
-      <aside className="panel compose-panel">
+      {showComposePanel && <aside className="panel compose-panel">
         <span className="stat-label">Composition</span>
         <h3>{WRITING_TASK_NAMES[question?.type] || "Your response"}</h3>
 
@@ -239,7 +257,7 @@ export default function Writing({
           </p>
         )}
 
-      </aside>
+      </aside>}
       <TaskTips type={type} section="writing" note={AI_SCORING_NOTE}/>
       </div>
     </div>

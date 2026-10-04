@@ -13,7 +13,12 @@ router.use(requireAuth, requireActiveSubscription);
 
 const MOCK_SECTIONS = ["speaking", "writing", "reading", "listening"];
 const STUDENT_SAFE_FIELDS = "-answer -explanation";
-const MOCK_DURATION_MS = config.mockTestDurationMinutes * 60 * 1000;
+
+/** Total clock for a mock, from the number of questions it actually ended up with. */
+function mockDurationMs(questionCount) {
+  const minutes = config.mockTestDurationMinutes || questionCount * config.mockMinutesPerQuestion;
+  return Math.round(minutes) * 60 * 1000;
+}
 
 // The one place "is this session out of time" is decided — reused by every route below and by
 // submissions.js, so expiry can never be checked two different ways. A legacy session with no
@@ -27,31 +32,73 @@ export async function expireIfNeeded(session) {
   return session;
 }
 
-// One question per section, chosen server-side so the client never sees the full bank (or
-// any answer) before the attempt starts.
+/** Fisher-Yates, in place. Every ordering equally likely, unlike a sort() with a random comparator. */
+function shuffle(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+// Questions are chosen server-side so the client never sees the full bank (or any answer) before
+// the attempt starts. Only _ids are pulled for the candidate pool, which is cheap even for the
+// 344-question reading bank; the full documents are fetched once, for the chosen few.
 //
-// Picks a uniformly random candidate the same way the old shuffle-then-take-first did, but
-// without ever pulling full question documents for the whole pool: first fetch only the
-// matching _ids (cheap), pick one at random, then fetch that single document with the normal
-// student-safe projection. Real Mongoose documents come back either way, so the JSON shape of
-// the response is unchanged.
-async function pickOneQuestion(section) {
+// Selection is TYPE-BALANCED, not a flat random sample. The banks are lopsided — reading is 147
+// fib-dropdown and 104 drag-fill out of 344, writing is 16 essays out of 23 — so drawing twenty
+// at random would hand a student twenty of whatever that section happens to hold most of, and a
+// writing section of fifteen essays. Instead the types are visited round-robin, one random unused
+// question from each per pass, until the section's quota is met. A mock therefore covers as many
+// task types as the bank can offer, and only doubles up once every type has been drawn from.
+async function pickSectionQuestions(section, wanted) {
   // The type allowlist is defense-in-depth: creation-time validation already guarantees every
   // question has a supported type, but this keeps the mock test safe even against legacy data.
-  const candidateIds = await Question.find(
+  const candidates = await Question.find(
     { section, active: true, type: { $in: Object.keys(QUESTION_TYPES) } },
-    "_id"
-  );
-  if (!candidateIds.length) return null;
-  const chosenId = candidateIds[Math.floor(Math.random() * candidateIds.length)]._id;
-  return Question.findById(chosenId).select(STUDENT_SAFE_FIELDS);
+    "_id type"
+  ).lean();
+  if (!candidates.length) return [];
+
+  // One shuffled bucket per type: taking from the front of each is already a random draw.
+  const byType = new Map();
+  for (const candidate of candidates) {
+    if (!byType.has(candidate.type)) byType.set(candidate.type, []);
+    byType.get(candidate.type).push(candidate._id);
+  }
+  for (const bucket of byType.values()) shuffle(bucket);
+
+  // Round-robin over the types, in a random order so the same type does not always open the
+  // section. A type whose bucket runs dry simply stops contributing.
+  const buckets = shuffle([...byType.values()]);
+  const chosenIds = [];
+  while (chosenIds.length < wanted) {
+    const before = chosenIds.length;
+    for (const bucket of buckets) {
+      if (chosenIds.length >= wanted) break;
+      if (bucket.length) chosenIds.push(bucket.pop());
+    }
+    // Every bucket empty — the section's whole bank is smaller than the quota.
+    if (chosenIds.length === before) break;
+  }
+
+  // One query for the documents, then put them back into the chosen (random) order: $in returns
+  // them in whatever order the index yields, which would undo the shuffle.
+  const docs = await Question.find({ _id: { $in: chosenIds } }).select(STUDENT_SAFE_FIELDS);
+  const byId = new Map(docs.map(doc => [String(doc._id), doc]));
+  return chosenIds.map(id => byId.get(String(id))).filter(Boolean);
 }
 
 async function pickMockQuestions() {
   // The 4 sections are independent of each other, so picking them concurrently instead of in a
   // sequential loop cuts the wall-clock DB round-trip time without changing what gets picked.
-  const picks = await Promise.all(MOCK_SECTIONS.map(pickOneQuestion));
-  return picks.filter(Boolean);
+  const perSection = await Promise.all(
+    MOCK_SECTIONS.map(section => pickSectionQuestions(section, config.mockQuestionsPerSection))
+  );
+  // Sections stay in their exam order — a real sitting is Speaking, then Writing, then Reading,
+  // then Listening, and shuffling across that boundary would mean a student switching skill every
+  // question. The randomisation is WITHIN each section: which questions, and in what order.
+  return perSection.flat();
 }
 
 router.post("/", asyncRoute(async (req, res) => {
@@ -73,7 +120,7 @@ router.post("/", asyncRoute(async (req, res) => {
     totalQuestions: questions.length,
     questionIds: questions.map(q => q._id),
     startedAt,
-    expiresAt: new Date(startedAt.getTime() + MOCK_DURATION_MS)
+    expiresAt: new Date(startedAt.getTime() + mockDurationMs(questions.length))
   });
 
   res.status(201).json({ testSession: session, questions });

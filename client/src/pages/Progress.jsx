@@ -9,7 +9,7 @@ import {
   PerformanceTable, ScoreRing, SectionHeader, SkillSpectrum, StatLabel, formatDuration, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import {
-  bySection, byTaskType, changeOverDays, focusAreas, improvement, pct, ptePerformance, scored,
+  bySection, byTaskType, changeOverDays, focusAreas, formatRaw, improvement, pct, ptePerformance, scored,
   skillBalance, summarize, targetGap, trajectory, MIN_FOR_TREND, PTE_MAX_SCORE
 } from "../analytics/derive.js";
 
@@ -76,7 +76,7 @@ export default function Progress({ user }) {
       <EmptyState
         title="No scored attempts yet"
         body="Complete some practice questions and this page fills with your score trajectory, section profile and the task types worth working on."
-        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practising</Button>}
+        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practicing</Button>}
       />
     </Page>;
   }
@@ -164,7 +164,7 @@ export default function Progress({ user }) {
         </section>
 
         <section className="panel">
-          <SectionHeader label="Focus areas" title="What to practise next"
+          <SectionHeader label="Focus areas" title="What to practice next"
             description="Task types scoring below your average, with enough attempts to be meaningful."/>
           <FocusAreas areas={areas} onPractice={(area) => navigate(`/${area.section}`)}/>
         </section>
@@ -203,7 +203,7 @@ export default function Progress({ user }) {
             { key: "section", label: "Section", render: r => titleCase(r.section) },
             { key: "task", label: "Task", render: r => r.question?.title || taskLabel(r.type) },
             { key: "score", label: "Score", align: "right", render: r => <b className="num-mono">{pct(r)}</b> },
-            { key: "raw", label: "Raw", align: "right", render: r => <span className="num-mono muted">{r.score}/{r.maxScore}</span> },
+            { key: "raw", label: "Raw", align: "right", render: r => <span className="num-mono muted">{formatRaw(r.score, r.maxScore)}</span> },
             { key: "duration", label: "Duration", align: "right", render: r => formatDuration(r.durationSeconds) || <span className="muted">—</span> }
           ]}
           rows={scored(visible).slice(0, 12).map(r => ({ ...r, id: r._id }))}

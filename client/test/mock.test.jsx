@@ -157,18 +157,22 @@ describe("Mock test — finish confirmation", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    expect(await screen.findByText("Finish mock test?")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(api.testSessions.complete).not.toHaveBeenCalled();
   });
 
-  it("warns about unanswered questions in the confirmation copy", async () => {
+  it("says how many were attempted, and what leaving the rest behind costs", async () => {
     api.testSessions.start.mockResolvedValue(startedSession());
     renderAt("/mock", studentAuthUser());
     fireEvent.click(await screen.findByText("Start Mock Test"));
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    expect(await screen.findByText(/You still have unanswered questions\./)).toBeInTheDocument();
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Submit with questions unanswered?");
+    expect(dialog).toHaveTextContent("You have attempted 0 of 4 questions");
+    expect(dialog).toHaveTextContent("score nothing");
+    expect(dialog).toHaveTextContent("Are you sure you want to submit?");
   });
 
   it("cancel closes the dialog and never calls complete", async () => {
@@ -178,10 +182,10 @@ describe("Mock test — finish confirmation", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getByText("Cancel"));
 
-    await waitFor(() => expect(screen.queryByText("Finish mock test?")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(api.testSessions.complete).not.toHaveBeenCalled();
   });
 
@@ -193,7 +197,7 @@ describe("Mock test — finish confirmation", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getAllByText("Finish Test")[1]); // the confirm-panel's button, not the trigger
 
     await waitFor(() => expect(api.testSessions.complete).toHaveBeenCalledTimes(1));
@@ -241,7 +245,7 @@ describe("Mock test — duplicate completion", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getAllByText("Finish Test")[1]);
 
     expect(await screen.findByText("This Test Was Already Completed")).toBeInTheDocument();
@@ -271,6 +275,284 @@ describe("Mock test — progress bar", () => {
   });
 });
 
+describe("Mock test — Finish sits with the clock", () => {
+  it("is in the status row beside the timer, and there is only one of it", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    const finishButtons = screen.getAllByRole("button", { name: "Finish Test" });
+    expect(finishButtons).toHaveLength(1);
+    // Beside the clock, not at the foot of the page — at eighty questions the bottom of the page
+    // is a long scroll from wherever the student is reading.
+    expect(finishButtons[0].closest(".mock-progress-bar")).toBeTruthy();
+    expect(finishButtons[0].closest(".mock-progress-bar__end").querySelector(".mock-timer")).toBeTruthy();
+    expect(finishButtons[0].closest(".mock-nav")).toBeNull();
+  });
+
+  it("takes the primary tier on the last question, where finishing is the way forward", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    expect(screen.getByRole("button", { name: "Finish Test" }).className).toContain("btn--tertiary");
+
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await screen.findByText(`Question ${i + 2} of 4`);
+    }
+
+    // Next is gone on the last question; Finish is promoted in its place, still beside the clock.
+    expect(screen.queryByRole("button", { name: "Next" })).not.toBeInTheDocument();
+    const finish = screen.getByRole("button", { name: "Finish Test" });
+    expect(finish.className).toContain("btn--primary");
+    expect(screen.getAllByRole("button", { name: "Finish Test" })).toHaveLength(1);
+  });
+});
+
+describe("Mock test — where the question overview lives", () => {
+  it("sits in the mock's own right-hand column, beside the question rather than above it", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    const overview = document.querySelector(".mock-qnav");
+    expect(overview).toBeTruthy();
+    // A sibling of the task, in the mock's own grid — NOT inside the task subtree, which is
+    // keyed by question id and so is torn down and rebuilt on every Next.
+    expect(overview.closest(".mock-layout")).toBeTruthy();
+    expect(overview.closest(".mock-layout__main")).toBeNull();
+    expect(overview.closest(".task-layout")).toBeNull();
+  });
+
+  it("still numbers every question by its position in the whole test", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    const numbers = [...document.querySelectorAll(".mock-qnav-item")].map(b => b.textContent);
+    expect(numbers).toEqual(["1", "2", "3", "4"]);
+  });
+});
+
+describe("Mock test — the overview survives moving between questions", () => {
+  it("keeps the very same DOM node across Next, so it cannot flicker or jump", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    const before = document.querySelector(".mock-qnav");
+    const firstButton = before.querySelector(".mock-qnav-item");
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByText("Question 2 of 4");
+
+    // Identity, not equality: a remounted panel would be a different element, which is what made
+    // the list rebuild on every question when it lived inside the keyed task subtree.
+    expect(document.querySelector(".mock-qnav")).toBe(before);
+    expect(before.querySelector(".mock-qnav-item")).toBe(firstButton);
+  });
+
+  it("still moves the current-question highlight", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    const items = () => [...document.querySelectorAll(".mock-qnav-item")];
+    expect(items()[0].className).toContain("current");
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByText("Question 2 of 4");
+    expect(items()[0].className).not.toContain("current");
+    expect(items()[1].className).toContain("current");
+  });
+});
+
+describe("Mock test — no coaching during a scored exam", () => {
+  it("hides the tips panel, which ordinary practice shows", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    expect(document.querySelector(".panel.tips")).toBeNull();
+    // The overview is still there, in the mock's own column.
+    expect(document.querySelector(".mock-layout > .mock-qnav")).toBeTruthy();
+  });
+
+  it("hides the writing composition panel too — the rail holds the overview and nothing else", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts2", status: "IN_PROGRESS", totalQuestions: 1, expiresAt: new Date(Date.now() + 9e5).toISOString() },
+      questions: [{ _id: "w1", section: "writing", type: "swt", title: "Summarize Written Text",
+        prompt: "Summarize in one sentence.", passage: "A passage.", evaluationType: "subjective" }]
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByPlaceholderText("Type your answer here...");
+
+    expect(document.querySelector(".compose-panel")).toBeNull();
+    expect(document.querySelector(".panel.tips")).toBeNull();
+    expect(document.querySelector(".mock-layout > .mock-qnav")).toBeTruthy();
+  });
+
+  it("still enforces and reports the character cap with the panel hidden", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts3", status: "IN_PROGRESS", totalQuestions: 1, expiresAt: new Date(Date.now() + 9e5).toISOString() },
+      questions: [{ _id: "w2", section: "writing", type: "swt", title: "Summarize Written Text",
+        prompt: "Summarize in one sentence.", passage: "A passage.", evaluationType: "subjective" }]
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    const textarea = await screen.findByPlaceholderText("Type your answer here...");
+
+    // Hiding the readout must not mean losing the limit. SWT caps at 500 characters, spaces
+    // excluded, and the cap is a hard block: input that would exceed it is refused outright
+    // rather than silently truncated.
+    fireEvent.change(textarea, { target: { value: "a".repeat(500) } });
+    expect(textarea.value.length).toBe(500);
+    fireEvent.change(textarea, { target: { value: "a".repeat(501) } });
+    expect(textarea.value.length).toBe(500); // the 501st character never lands
+
+    // ...and the counter that replaces the panel says so.
+    const counter = document.querySelector(".compose-inline");
+    expect(counter).toBeTruthy();
+    expect(counter.textContent).toContain("500");
+    expect(counter.textContent).toContain("limit reached");
+  });
+
+  it("leaves the tips panel in place for the same task outside a mock", async () => {
+    api.questions.mockResolvedValue({ questions: [{
+      _id: "r1", section: "reading", type: "mcq-single", title: "Reading Q1",
+      prompt: "Choose the best answer.", options: ["A", "B"], evaluationType: "objective"
+    }] });
+    renderAt("/reading?type=mcq-single", studentAuthUser());
+
+    await screen.findByText("Choose the best answer.");
+    expect(document.querySelector(".panel.tips")).toBeTruthy();
+  });
+});
+
+describe("Mock test — confirming a completed test", () => {
+  it("still asks before submitting when every question has been attempted", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    api.submit.mockResolvedValue({ submission: objectiveResult() });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+    await screen.findByText("Question 1 of 4");
+
+    for (let i = 0; i < 4; i++) {
+      await answerCurrentQuestion();
+      if (i < 3) {
+        fireEvent.click(screen.getByRole("button", { name: "Next" }));
+        await screen.findByText(`Question ${i + 2} of 4`);
+      }
+    }
+
+    fireEvent.click(screen.getByText("Finish Test"));
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Submit your test?");
+    expect(dialog).toHaveTextContent("You have attempted all 4 questions");
+    expect(dialog).toHaveTextContent("Are you sure you want to submit?");
+    // Nothing is submitted until the student confirms, finished or not.
+    expect(api.testSessions.complete).not.toHaveBeenCalled();
+  });
+});
+
+// Each task component keeps the student's answer and its result in its own state, so moving to
+// the next question has to give React a reason to build a fresh instance.
+//
+// Writing was the one that leaked: question 25 opened holding question 24's typed answer and its
+// AI evaluation. Reading and Listening happened to survive on a useEffect keyed to question._id
+// that clears their state, and Speaking was already keyed — but all four are covered here,
+// because "it works for a different reason" is not the same as "it is tested".
+describe("Mock test — a question never inherits the previous one's answer", () => {
+  function sessionOf(questions) {
+    return {
+      testSession: { _id: "ts-leak", status: "IN_PROGRESS", totalQuestions: questions.length,
+        expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString() },
+      questions
+    };
+  }
+
+  async function startAt(questions) {
+    api.testSessions.start.mockResolvedValue(sessionOf(questions));
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByRole("button", { name: "Start Mock Test" }));
+  }
+
+  it("writing: the next question opens with an empty editor and no evaluation", async () => {
+    await startAt([0, 1].map(i => ({
+      _id: `w${i}`, section: "writing", type: "swt", title: "Summarize Written Text",
+      prompt: `Summarize passage ${i + 1}.`, passage: `Passage ${i + 1}.`, evaluationType: "subjective"
+    })));
+    api.submit.mockResolvedValue({
+      submission: { _id: "sub-w1", score: 60, maxScore: 90, evaluationType: "subjective",
+        evaluationStatus: "COMPLETED", scoringMethod: "heuristic",
+        feedback: { strengths: [], improvements: [], overall: "Question 1's writing feedback." } }
+    });
+
+    const textarea = await screen.findByPlaceholderText("Type your answer here...");
+    fireEvent.change(textarea, { target: { value: "My summary of the first passage." } });
+    fireEvent.click(screen.getByRole("button", { name: "Submit for AI Feedback" }));
+    expect(await screen.findByText("Question 1's writing feedback.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByText("Summarize passage 2.");
+    expect(screen.getByPlaceholderText("Type your answer here...").value).toBe("");
+    expect(screen.queryByText("Question 1's writing feedback.")).not.toBeInTheDocument();
+    expect(screen.queryByText("My summary of the first passage.")).not.toBeInTheDocument();
+  });
+
+  it("reading: the next question opens with nothing selected and no result", async () => {
+    await startAt([0, 1].map(i => ({
+      _id: `r${i}`, section: "reading", type: "mcq-single", title: `Reading Q${i + 1}`,
+      prompt: `Choose for passage ${i + 1}.`, options: ["A", "B"], evaluationType: "objective"
+    })));
+    api.submit.mockResolvedValue({ submission: objectiveResult() });
+
+    await screen.findByText("Choose for passage 1.");
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Submit Answer" }));
+    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByText("Choose for passage 2.");
+    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    for (const radio of document.querySelectorAll('input[type="radio"]')) {
+      expect(radio.checked).toBe(false);
+    }
+  });
+
+  it("listening: the next question opens with nothing selected and no result", async () => {
+    await startAt([0, 1].map(i => ({
+      _id: `l${i}`, section: "listening", type: "mcq-single", title: `Listening Q${i + 1}`,
+      prompt: `Listen and choose ${i + 1}.`, options: ["A", "B"],
+      audioUrl: `https://example.com/clip-${i + 1}.mp3`, evaluationType: "objective"
+    })));
+    api.submit.mockResolvedValue({ submission: objectiveResult() });
+
+    await screen.findByText("Listen and choose 1.");
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await screen.findByText("Listen and choose 2.");
+    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    for (const radio of document.querySelectorAll('input[type="radio"]')) {
+      expect(radio.checked).toBe(false);
+    }
+    // The new question's own clip, not the previous one's.
+    expect(document.querySelector("audio.audio").getAttribute("src")).toBe("https://example.com/clip-2.mp3");
+  });
+});
+
 describe("Mock test — Finish button loading state", () => {
   it("shows 'Finishing...' while completion is in flight, and prevents a second completion request", async () => {
     let resolveComplete;
@@ -281,7 +563,7 @@ describe("Mock test — Finish button loading state", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getAllByText("Finish Test")[1]);
 
     // Matched by role: the label lives in a <span> inside the button now, so findByText would
@@ -304,7 +586,7 @@ describe("Mock test — Finish button loading state", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getAllByText("Finish Test")[1]);
 
     await waitFor(() => expect(api.testSessions.complete).toHaveBeenCalledTimes(1));
@@ -325,7 +607,7 @@ describe("Mock test — accessible state announcements", () => {
     await screen.findByText("Question 1 of 4");
 
     fireEvent.click(screen.getByText("Finish Test"));
-    await screen.findByText("Finish mock test?");
+    await screen.findByRole("dialog");
     fireEvent.click(screen.getAllByText("Finish Test")[1]);
 
     await screen.findByText("Practice Score");

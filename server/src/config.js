@@ -23,7 +23,14 @@ export const config = {
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   subscriptionDefaultDays: Number(process.env.SUBSCRIPTION_DEFAULT_DAYS || 30),
-  // Single knob for the compact 4-question mock's total duration — bump this (or add real
-  // per-section timing) once the question bank is large enough for a full-length simulation.
-  mockTestDurationMinutes: Number(process.env.MOCK_TEST_DURATION_MINUTES || 20)
+  // How many questions each section contributes to a mock test. 20 x 4 sections = 80, close to a
+  // real PTE Core sitting. Picking is type-balanced, so a section whose bank is dominated by one
+  // task type does not hand out twenty of it — see pickSectionQuestions in routes/testSessions.js.
+  mockQuestionsPerSection: Number(process.env.MOCK_QUESTIONS_PER_SECTION || 20),
+  // The duration is derived from the number of questions actually picked rather than fixed, so a
+  // mock built from a thin bank is not given the same clock as a full one. The old flat 20
+  // minutes was sized for a 4-question mock and would be unusable for 80.
+  mockMinutesPerQuestion: Number(process.env.MOCK_MINUTES_PER_QUESTION || 1.5),
+  // An absolute override. Unset by default — set it to pin the total regardless of question count.
+  mockTestDurationMinutes: Number(process.env.MOCK_TEST_DURATION_MINUTES) || null
 };

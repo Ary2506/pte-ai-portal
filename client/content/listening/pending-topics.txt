@@ -46,12 +46,15 @@ My pick for what to do next: #1 (compression) and the immutable cache headers to
 
 ###############  To-do  #################
 
-11. start recording -> didn't submit and click re-do then discard the recorded audio no need to store anywhere
-1. before migrating to R2 make sure all images and audios are compressed
+1. before migrating to R2 make sure all images and audios are compressed also compressed after submiting recorded audios and then store. end goal is to compressed in all satate so that it should take minimum storage in R2 and while calling from R2 to our website also website should not crash due to heavy audio size. compress in ingress/engress both way 
 2. basic AI security
+3. api rate limiting
 
 
-I'll give you repeat sentence pdf and audio in that pdf you havwe to ignore answer filed in every question and in that pdf question means transcript so append thosnew questions in repeat sentense section using authoring method that we have already followed for every section but main issue is when i conerted text to mp3 and downloaded those audioare suffled so i dont know which audio should come with which question that you have to solve i';ll give you 20 questions now
+tell me we ahve already implemnted this thing ? if no then pls implement
+in recording related questions if start recording -> didn't submit and click re-do then discard the recorded audio no need to store anywhere. 
+and for submited audios first compressed then store
+
 
 
 ###############  Done  ###############

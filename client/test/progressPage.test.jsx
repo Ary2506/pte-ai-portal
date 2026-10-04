@@ -117,7 +117,7 @@ describe("focus areas only recommend what the data supports", () => {
       ], total: 6
     });
     renderProgress();
-    await screen.findByText("What to practise next");
+    await screen.findByText("What to practice next");
     // Scoped to the focus list: the same task type also appears in the task-type table below.
     const focus = document.querySelector(".focus-list");
     expect(focus).toHaveTextContent("Reorder");

@@ -228,7 +228,7 @@ function Capabilities() {
       <article className="ld-tile" style={{ "--ld-i": 2 }}>
         <Label tone="accent">Adaptive practice</Label>
         <h3>Work the weak skill.</h3>
-        <p>Your section scores decide what is worth practising next.</p>
+        <p>Your section scores decide what is worth practicing next.</p>
       </article>
 
       <article className="ld-tile ld-tile--tall" style={{ "--ld-i": 3 }}>

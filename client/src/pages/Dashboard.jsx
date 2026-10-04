@@ -10,7 +10,7 @@ import {
   ScoreRing, SectionHeader, SkillSpectrum, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import {
-  bySection, focusAreas, improvement, pct, ptePerformance, scored, skillBalance, summarize,
+  bySection, focusAreas, formatRaw, improvement, pct, ptePerformance, scored, skillBalance, summarize,
   targetGap, trajectory, PTE_MAX_SCORE
 } from "../analytics/derive.js";
 
@@ -82,7 +82,7 @@ function SubscriptionCard({ user }) {
 }
 
 // Dashboard — the student's command centre. It answers, in order: where am I, how far from
-// target, am I improving, how consistent am I, which skill is weak, what should I practise next,
+// target, am I improving, how consistent am I, which skill is weak, what should I practice next,
 // and what did I just do.
 //
 // Two requests in parallel: /dashboard for the server's own rollup (streak, weekly activity) and
@@ -181,7 +181,7 @@ export default function Dashboard({ user }) {
             <Metric label="Practice attempts" value={derived.attempts || null}
               hint="Mock test answers are counted in My Results" />
             <Metric label="Day streak" value={data?.streak?.currentStreak ?? null} unit="days"
-              hint={data?.streak?.learnedToday ? "Practised today" : "Not yet today"} />
+              hint={data?.streak?.learnedToday ? "Practiced today" : "Not yet today"} />
           </MetricStrip>
         </div>
       </section>
@@ -201,7 +201,7 @@ export default function Dashboard({ user }) {
         ) : (
           <EmptyState
             title="Not enough attempts to chart a trend"
-            body="Keep practising — your trajectory appears once there is enough to show a direction."
+            body="Keep practicing — your trajectory appears once there is enough to show a direction."
           />
         )}
       </section>
@@ -215,7 +215,7 @@ export default function Dashboard({ user }) {
             description={
               balance
                 ? `${titleCase(balance.strongest.section)} leads ${titleCase(balance.weakest.section)} by ${balance.spread} points.`
-                : "Practise in more than one section to compare them."
+                : "Practice in more than one section to compare them."
             }
           />
           <SkillSpectrum sections={sections} target={target} />
@@ -242,7 +242,7 @@ export default function Dashboard({ user }) {
             { key: "section", label: "Section", render: (r) => titleCase(r.section) },
             { key: "task", label: "Task", render: (r) => r.question?.title || taskLabel(r.type) },
             { key: "score", label: "Score", align: "right", render: (r) => <b className="num-mono">{pct(r)}</b> },
-            { key: "raw", label: "Raw", align: "right", render: (r) => <span className="num-mono muted">{r.score}/{r.maxScore}</span> }
+            { key: "raw", label: "Raw", align: "right", render: (r) => <span className="num-mono muted">{formatRaw(r.score, r.maxScore)}</span> }
           ]}
           rows={scored(history).slice(0, 6).map((r) => ({ ...r, id: r._id }))}
           empty={<Empty text="Your practice attempts will appear here." />}

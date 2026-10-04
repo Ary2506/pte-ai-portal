@@ -89,11 +89,14 @@ export function ScoreRing({ value, max = 100, size = 168, label, caption }) {
   const radius = (size - 16) / 2;
   const circumference = 2 * Math.PI * radius;
   const has = value !== null && value !== undefined && Number.isFinite(Number(value));
-  const ratio = has ? Math.max(0, Math.min(1, Number(value) / max)) : 0;
+  // The arc was already clamped; the PRINTED number was not, so a value above its maximum drew a
+  // full ring beside the text "100 / 90". Both now read from the same clamped figure.
+  const shown = has ? Math.max(0, Math.min(Number(max), Number(value))) : null;
+  const ratio = has ? shown / max : 0;
 
   return <figure className="score-ring" style={{ width: size, height: size }}>
     <svg viewBox={`0 0 ${size} ${size}`} role="img"
-      aria-label={has ? `${label || "Score"}: ${value} out of ${max}` : `${label || "Score"}: not enough data yet`}>
+      aria-label={has ? `${label || "Score"}: ${shown} out of ${max}` : `${label || "Score"}: not enough data yet`}>
       <circle className="score-ring__track" cx={size / 2} cy={size / 2} r={radius} fill="none"/>
       {has && <circle className="score-ring__arc" cx={size / 2} cy={size / 2} r={radius} fill="none"
         strokeDasharray={`${circumference * ratio} ${circumference}`}
@@ -101,7 +104,7 @@ export function ScoreRing({ value, max = 100, size = 168, label, caption }) {
     </svg>
     <figcaption className="score-ring__body">
       {has
-        ? <><strong className="num-mono">{Math.round(value)}</strong><span className="score-ring__max num-mono">/{max}</span></>
+        ? <><strong className="num-mono">{Math.round(shown)}</strong><span className="score-ring__max num-mono">/{max}</span></>
         : <span className="score-ring__empty">—</span>}
       {(label || caption) && <span className="score-ring__label">{caption || label}</span>}
     </figcaption>
@@ -134,7 +137,7 @@ export function SkillSpectrum({ sections, target }) {
           {Number.isFinite(Number(target)) &&
             <span className="skill-row__goal" style={{ left: `${Math.min(100, Number(target))}%` }} aria-hidden="true"/>}
         </span>
-        <span className="skill-row__value num-mono">{has ? row.average : "—"}</span>
+        <span className="skill-row__value num-mono">{has ? Math.min(100, Math.max(0, row.average)) : "—"}</span>
         <span className="skill-row__meta">
           {has ? `${row.attempts} attempt${row.attempts === 1 ? "" : "s"}` : "Not started"}
           {flag && <em className={`skill-flag skill-flag--${flag}`}>{flag}</em>}
@@ -166,7 +169,7 @@ export function FocusAreas({ areas, onPractice }) {
         </p>
       </div>
       {onPractice && <Button variant="secondary" size="sm" className="focus-item__cta"
-        icon={<ArrowRight/>} iconPosition="right" onClick={() => onPractice(area)}>Practise</Button>}
+        icon={<ArrowRight/>} iconPosition="right" onClick={() => onPractice(area)}>Practice</Button>}
     </li>)}
   </ol>;
 }

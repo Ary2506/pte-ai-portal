@@ -7,7 +7,7 @@ import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
 import { EmptyState, Metric, MetricStrip, PerformanceTable, Delta, titleCase, taskLabel, formatDuration } from "../components/analytics.jsx";
-import { pct } from "../analytics/derive.js";
+import { formatRaw, pct } from "../analytics/derive.js";
 
 function describeAnswer(r) {
   const opts = r.question?.options;
@@ -84,7 +84,7 @@ function MockAttemptDetail({ id, onClose }) {
           <>
             <div className="mock-detail-summary">
               <span className="score-pill">
-                {s.totalScore}/{s.totalMaxScore}
+                {formatRaw(s.totalScore, s.totalMaxScore)}
               </span>
               <span className="muted">
                 {s.submittedAt
@@ -199,7 +199,10 @@ export default function History() {
   // Mock record. Percentages, so attempts of different lengths compare with one another, and
   // null rather than 0 wherever there is nothing completed yet to measure.
   const completedMocks = mocks.filter((m) => m.totalMaxScore);
-  const mockPercents = completedMocks.map((m) => Math.round((m.totalScore / m.totalMaxScore) * 100));
+  // Clamped like every other percentage in the product — see pct() in analytics/derive.js for
+  // why a stored row can still be above its own maximum.
+  const mockPercents = completedMocks.map((m) =>
+    Math.min(100, Math.max(0, Math.round((m.totalScore / m.totalMaxScore) * 100))));
   const mockBest = mockPercents.length ? Math.max(...mockPercents) : null;
   // `mocks` arrives newest-first from the server, so the first entry is the latest attempt.
   const mockLatest = mockPercents.length ? mockPercents[0] : null;
@@ -263,7 +266,7 @@ export default function History() {
                 <td>{fmtRelativeDateTime(m.submittedAt)}</td>
                 <td>
                   <span className="score-pill">
-                    {m.totalScore}/{m.totalMaxScore}
+                    {formatRaw(m.totalScore, m.totalMaxScore)}
                   </span>
                 </td>
                 {["speaking", "writing", "reading", "listening"].map((sec) => {

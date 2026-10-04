@@ -60,10 +60,10 @@ describe("profile — real daily learning streak", () => {
     const strip = document.querySelector(".streak-panel .metric-strip");
     expect(strip).toHaveTextContent("5");
     expect(strip).toHaveTextContent("12");
-    expect(strip).toHaveTextContent("Practised today");
+    expect(strip).toHaveTextContent("Practiced today");
   });
 
-  it("prompts when the student has not practised yet today", async () => {
+  it("prompts when the student has not practiced yet today", async () => {
     api.activity.mockResolvedValue(activity({
       days: { [daysAgo(1)]: 1 },
       streak: { currentStreak: 3, longestStreak: 3, lastLearningDate: daysAgo(1), learnedToday: false }
@@ -71,7 +71,7 @@ describe("profile — real daily learning streak", () => {
     renderAt("/profile", studentUser);
 
     await screen.findByText("Your practice record");
-    expect(screen.getByText("Practise today to keep it going")).toBeInTheDocument();
+    expect(screen.getByText("Practice today to keep it going")).toBeInTheDocument();
   });
 
   it("shows dashes, not zeros, for a student with no learning activity yet", async () => {
@@ -83,7 +83,7 @@ describe("profile — real daily learning streak", () => {
 
     await screen.findByText("Your practice record");
     const strip = document.querySelector(".streak-panel .metric-strip");
-    // Longest streak, last activity and days practised have nothing to report.
+    // Longest streak, last activity and days practiced have nothing to report.
     expect(strip.querySelectorAll(".metric-empty").length).toBeGreaterThanOrEqual(3);
   });
 
@@ -103,7 +103,7 @@ describe("profile — real daily learning streak", () => {
     expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l1").length).toBe(1);
     expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l2").length).toBe(1);
     expect(document.querySelectorAll(".streak-cal__grid .streak-cal__day.is-l4").length).toBe(1);
-    expect(screen.getByText(/Practised on/)).toHaveTextContent("3");
+    expect(screen.getByText(/Practiced on/)).toHaveTextContent("3");
   });
 
   it("never puts two month labels in neighbouring columns — they used to collide as 'SEPOCT'", async () => {

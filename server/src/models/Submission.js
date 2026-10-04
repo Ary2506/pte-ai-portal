@@ -23,6 +23,21 @@ const submissionSchema = new mongoose.Schema({
   durationSeconds: Number
 }, { timestamps: true });
 
+// A score can never exceed the marks that were available for it, and can never be negative.
+// Enforced here rather than at each call site because there are four ways a score reaches this
+// document — objective marking, the AI evaluator, the heuristic fallback, and the client-supplied
+// `localResult` for bundled practice content that has no Question row — and only some of them
+// clamped. A single bad row does not just render as "100/90": every section total, dashboard
+// average and progress percentage is a sum over these, so one row above its own maximum pushes a
+// whole section past 100%.
+submissionSchema.pre("validate", function clampScore(next) {
+  const max = Number.isFinite(this.maxScore) && this.maxScore > 0 ? this.maxScore : 1;
+  this.maxScore = max;
+  const score = Number.isFinite(this.score) ? this.score : 0;
+  this.score = Math.min(max, Math.max(0, score));
+  next();
+});
+
 submissionSchema.index({ user: 1, createdAt: -1 });
 submissionSchema.index({ testSession: 1 });
 // The actual race-condition protection for mock-test duplicate answers (routes/submissions.js's

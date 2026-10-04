@@ -18,11 +18,11 @@ import { useInView } from "./motion.js";
 export const SAMPLE_FEEDBACK = [
   { name: "Harpreet Kaur",   quote: "The section scores finally told me it was listening holding me back, not speaking." },
   { name: "Daniel Okafor",   quote: "Re-doing the same reorder questions until they clicked is what moved my reading." },
-  { name: "Mei Lin Chong",   quote: "Getting a score the moment I submit meant I actually practised every day." },
+  { name: "Mei Lin Chong",   quote: "Getting a score the moment I submit meant I actually practiced every day." },
   { name: "Arjun Mehta",     quote: "The mock test felt close enough to the real thing that exam day wasn't a shock." },
   { name: "Sofia Almeida",   quote: "Seeing fluency and pronunciation scored separately told me exactly what to drill." },
   { name: "Nguyen Thi Hoa",  quote: "I stopped guessing what to study. The weakest section was just there on screen." },
-  { name: "Omar Haddad",     quote: "Being able to replay my own recording next to the score changed how I practise." },
+  { name: "Omar Haddad",     quote: "Being able to replay my own recording next to the score changed how I practice." },
   { name: "Priya Raghavan",  quote: "Four weeks of short daily sessions did more than my old weekend cramming." }
 ];
 

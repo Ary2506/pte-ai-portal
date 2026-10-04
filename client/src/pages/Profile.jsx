@@ -191,10 +191,10 @@ export default function Profile({ user, onUserChange }) {
             />
             <MetricStrip>
               <Metric label="Current streak" value={activity.streak.currentStreak ?? null} unit="days"
-                hint={activity.streak.learnedToday ? "Practised today" : "Practise today to keep it going"} />
+                hint={activity.streak.learnedToday ? "Practiced today" : "Practice today to keep it going"} />
               <Metric label="Longest streak" value={activity.streak.longestStreak || null} unit="days" />
               <Metric label="Last activity" value={activity.streak.lastLearningDate || null} />
-              <Metric label="Days practised" value={Object.keys(activity.days || {}).length || null}
+              <Metric label="Days practiced" value={Object.keys(activity.days || {}).length || null}
                 hint={activity.joinedAt ? `Since ${activity.joinedAt}` : undefined} />
             </MetricStrip>
             <StreakCalendar activity={activity} />

@@ -22,12 +22,19 @@ export const MIN_FOR_PTE_AVERAGE = 2;
 export const MIN_FOR_TREND = 4;      // a direction needs enough points to not be noise
 export const MIN_FOR_TASK_STAT = 3;  // a per-task-type average below this is one bad day
 
-/** Percentage score for one submission, or null when it carries no usable scale. */
+/**
+ * Percentage score for one submission, or null when it carries no usable scale.
+ *
+ * Clamped to 0-100. Submissions are clamped at the model now, but rows written before that are
+ * still in the database, and this is the single chokepoint every percentage in the product flows
+ * through — section averages, task-type averages, bests, trends, bars and rings all derive from
+ * it. One unclamped row here surfaces as "111%" in half a dozen places at once.
+ */
 export function pct(submission) {
   const max = Number(submission?.maxScore);
   const score = Number(submission?.score);
   if (!Number.isFinite(max) || max <= 0 || !Number.isFinite(score)) return null;
-  return Math.round((score / max) * 100);
+  return Math.min(100, Math.max(0, Math.round((score / max) * 100)));
 }
 
 /** Only attempts that were actually scored. A PENDING or FAILED evaluation has no score to average. */
@@ -144,7 +151,7 @@ export function bySection(submissions) {
 }
 
 /**
- * The weakest task types worth acting on — the basis of "what to practise next".
+ * The weakest task types worth acting on — the basis of "what to practice next".
  *
  * Only types with enough attempts to be meaningful are eligible, and each one is reported with
  * the gap that justifies it, so the UI states a reason drawn from data rather than asserting an
@@ -180,6 +187,25 @@ export function targetGap(average, targetScore) {
   return { target, current: average, gap: average - target, met: average >= target };
 }
 
+/**
+ * A raw "score out of maximum" pair, as text — "15/90".
+ *
+ * One formatter rather than `{score}/{maxScore}` at each of the seven places that print it, so
+ * the ceiling is applied once. Scores are clamped at the model now, but rows and completed test
+ * sessions written before that still exist, and "100/90" is exactly the kind of number that
+ * makes a student doubt everything else on the page.
+ */
+export function formatRaw(score, maxScore) {
+  // null and undefined are checked before Number(), which turns null into a perfectly finite 0
+  // and would print a missing value as "0/0". A maximum of 0 is left alone: it is a real case —
+  // a mock section the student answered nothing in genuinely scored 0 out of 0.
+  if (score === null || score === undefined || maxScore === null || maxScore === undefined) return "—";
+  const max = Number(maxScore);
+  const value = Number(score);
+  if (!Number.isFinite(max) || !Number.isFinite(value)) return "—";
+  return `${Math.min(max, Math.max(0, value))}/${max}`;
+}
+
 export function formatDuration(seconds) {
   if (!Number.isFinite(seconds) || seconds <= 0) return null;
   if (seconds < 60) return `${Math.round(seconds)}s`;
@@ -209,7 +235,10 @@ export function pteScaled(submissions) {
  */
 export function ptePerformance(submissions, { min = MIN_FOR_PTE_AVERAGE } = {}) {
   const rows = pteScaled(submissions);
-  const scores = rows.map(s => Number(s.score)).filter(Number.isFinite);
+  // Clamped to the scale for the same reason pct() is: this average is printed against "/90" and
+  // compared with a target, so a legacy row above 90 would read as a score the exam cannot award.
+  const scores = rows.map(s => Number(s.score)).filter(Number.isFinite)
+    .map(n => Math.min(PTE_MAX_SCORE, Math.max(0, n)));
   if (scores.length < min) {
     return { attempts: rows.length, average: null, best: null, enough: false, needed: min };
   }

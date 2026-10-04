@@ -3,6 +3,7 @@ import request from "supertest";
 import { app } from "../src/app.js";
 import { createUser, createQuestion } from "./helpers.js";
 import TestSession from "../src/models/TestSession.js";
+import { config } from "../src/config.js";
 
 async function login(username, password = "password123") {
   const res = await request(app).post("/api/auth/signin").send({ username, password });
@@ -21,11 +22,17 @@ async function startMock(token) {
   return { sessionId: res.body.testSession._id, questions: res.body.questions, testSession: res.body.testSession };
 }
 
-// The 20-minute deadline is simulated by writing an already-past expiresAt directly to the
-// TestSession document (the same pattern Phase 6 used for subscriptionEndDate) — no real
-// waiting, no fake-timer library needed on the backend since expiry is a plain Date comparison.
+// The deadline is simulated by writing an already-past expiresAt directly to the TestSession
+// document (the same pattern Phase 6 used for subscriptionEndDate) — no real waiting, no
+// fake-timer library needed on the backend since expiry is a plain Date comparison.
+//
+// The total is no longer a flat 20 minutes. It is derived from how many questions the mock
+// actually ended up with (config.mockMinutesPerQuestion), so a full 80-question mock gets a real
+// sitting's clock while a mock built from a thin bank — these tests seed four questions — gets a
+// proportionate one. What this file is really about is that the deadline is computed by the
+// SERVER, from its own clock, and never read from the request.
 describe("mock session server-authoritative timer", () => {
-  it("stamps a new mock session with a server-computed expiresAt around 20 minutes out", async () => {
+  it("stamps a new mock session with a server-computed expiresAt, scaled to the question count", async () => {
     await createUser({ username: "timer1", password: "password123" });
     await seedOnePerSection();
     const token = await login("timer1");
@@ -38,7 +45,9 @@ describe("mock session server-authoritative timer", () => {
     const startedAt = new Date(testSession.startedAt).getTime();
     expect(startedAt).toBeGreaterThanOrEqual(before - 1000);
     expect(startedAt).toBeLessThanOrEqual(after + 1000);
-    expect(expiresAt - startedAt).toBe(20 * 60 * 1000);
+    // Four seeded questions, so four times the per-question budget.
+    const expected = Math.round(4 * config.mockMinutesPerQuestion) * 60 * 1000;
+    expect(expiresAt - startedAt).toBe(expected);
   });
 
   it("ignores a client-supplied expiresAt/startedAt/duration on session creation", async () => {

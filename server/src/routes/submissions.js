@@ -17,6 +17,9 @@ const router = express.Router();
 const uploadDir = path.resolve("uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
 
+// The most any single task is worth: the PTE scale an AI-evaluated task is scored on. No
+// objective task's answer key comes close.
+const MAX_TASK_SCORE = 90;
 const MAX_TEXT_LENGTH = 6000;
 // Per-task caps, counted WITHOUT whitespace — the same rule the editor applies (see
 // client/src/practice/answerLimits.js). The client blocks typing past these; this is what makes
@@ -183,8 +186,15 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
         const candidate = JSON.parse(req.body.localResult);
         if (
           candidate && typeof candidate === "object" &&
-          Number.isFinite(candidate.score) &&
+          Number.isFinite(candidate.score) && candidate.score >= 0 &&
           Number.isFinite(candidate.maxScore) && candidate.maxScore > 0 &&
+          // A score cannot beat its own maximum, and the maximum cannot exceed the highest any
+          // task is worth. Without these two, a crafted localResult stored 100/90 verbatim —
+          // which then reads as 111% everywhere a percentage is derived from it. The model
+          // clamps as a backstop; rejecting here keeps a nonsense payload out of the row
+          // entirely rather than silently rewriting it into something the client never sent.
+          candidate.score <= candidate.maxScore &&
+          candidate.maxScore <= MAX_TASK_SCORE &&
           candidate.feedback && typeof candidate.feedback === "object"
         ) {
           trustedLocalResult = { score: candidate.score, maxScore: candidate.maxScore, feedback: candidate.feedback };

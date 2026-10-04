@@ -129,8 +129,8 @@ export default function StudyPlan({ user }) {
     return <Page title="Study plan" subtitle="Built from your own practice history.">
       <EmptyState
         title="Your plan starts with your first attempt"
-        body="Once you have practised a few questions, this page orders your week around the sections and task types you are weakest in."
-        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practising</Button>}
+        body="Once you have practiced a few questions, this page orders your week around the sections and task types you are weakest in."
+        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practicing</Button>}
       />
     </Page>;
   }
@@ -180,7 +180,7 @@ export default function StudyPlan({ user }) {
               </span>
               {!day.isMockDay && day.status !== "done" && (
                 <Button variant="tertiary" size="sm" className="plan-day__go" onClick={() => navigate(`/${day.section}`)}>
-                  Practise
+                  Practice
                 </Button>
               )}
               {day.isMockDay && day.status !== "done" && (
@@ -198,7 +198,7 @@ export default function StudyPlan({ user }) {
           <SectionHeader label="Where you stand" title="Section profile"
             description={balance
               ? `${titleCase(balance.weakest.section)} is furthest behind, by ${balance.spread} points.`
-              : "Practise more than one section to compare them."}/>
+              : "Practice more than one section to compare them."}/>
           <SkillSpectrum sections={sections} target={user?.targetScore}/>
         </section>
 
