@@ -18,6 +18,14 @@ const uploadDir = path.resolve("uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const MAX_TEXT_LENGTH = 6000;
+// Per-task caps, counted WITHOUT whitespace — the same rule the editor applies (see
+// client/src/practice/answerLimits.js). The client blocks typing past these; this is what makes
+// them real, since a request can be sent without the client.
+const TASK_CHAR_LIMITS = {
+  swt: 500, essay: 1500,
+  "summarize-spoken-text": 400, "write-dictation": 100
+};
+const countCharacters = (text) => String(text || "").replace(/\s/g, "").length;
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 
 // Browser-supplied Content-Type is a first filter only — never trusted alone (see the magic-byte
@@ -241,6 +249,16 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     }
     if (section === "writing" && !responseText.trim()) {
       return res.status(400).json({ message: "Write a response before submitting.", code: "EMPTY_ANSWER" });
+    }
+
+    // The editor blocks typing past these, but a request can be made without the editor.
+    const taskCharLimit = TASK_CHAR_LIMITS[type];
+    if (taskCharLimit && countCharacters(responseText) > taskCharLimit) {
+      if (req.file) fs.unlink(req.file.path, () => {});
+      return res.status(400).json({
+        message: `Response is too long (max ${taskCharLimit} characters, not counting spaces).`,
+        code: "ANSWER_TOO_LONG"
+      });
     }
 
     if (req.file && !hasValidAudioSignature(req.file.path)) {

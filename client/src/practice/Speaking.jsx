@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Clock3, Mic, Sparkles } from "lucide-react";
+import { Clock3, Eye, EyeOff, Mic, Play, RotateCcw, Sparkles, Square } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { RECORDER_OPTIONS } from "./recording.js";
 import { useToast } from "../components/toast.jsx";
+import { Button } from "../components/Button.jsx";
+import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
 
 const SPEAKING_DURATION_LIMITS = {
-  "read-aloud": 60,
-  "repeat-sentence": 15,
+  "read-aloud": 45,
+  "repeat-sentence": 10,
   "describe-image": 60,
   // Listed explicitly rather than left to fall through to DEFAULT_SPEAKING_DURATION_LIMIT: this
   // task's 60s is a deliberate choice, and leaving it implicit would silently change it again the
@@ -50,50 +52,6 @@ const RECORD_STATES = {
 
 // A fixed seed, so the waveform is a stable shape rather than re-randomising on every render.
 const RECORD_WAVE = [26, 48, 70, 38, 88, 56, 94, 44, 66, 82, 34, 72, 50, 90, 40, 62, 78, 30, 58, 86];
-
-// Advice that actually differs by task. A type with no entry falls back to GENERIC_TIPS, so
-// adding a speaking type never leaves an empty panel. Read Aloud's wording is carried over from
-// the dedicated component this one replaced, so its students see the same guidance as before.
-const GENERIC_TIPS = [
-  "Maintain steady fluency.",
-  "Pronounce words clearly.",
-  "Avoid long pauses.",
-  "Focus on the whole prompt.",
-];
-const TASK_TIPS = {
-  "read-aloud": [
-    "Read at a natural, steady pace.",
-    "Pronounce every word clearly.",
-    "Use natural intonation, not a flat monotone.",
-    "Don't rush — fluency matters more than speed.",
-  ],
-  "repeat-sentence": [
-    "Listen to the whole sentence before speaking.",
-    "Match the speaker's rhythm and stress.",
-    "Repeat it in one go, without restarting.",
-  ],
-  "describe-image": [
-    "Open by saying what kind of image it is.",
-    "Give the highest and lowest values, or the main trend.",
-    "Close with one sentence of interpretation.",
-  ],
-  "answer-short-question": [
-    "Answer in one or two words — nothing more is expected.",
-    "Reply as soon as the audio ends.",
-  ],
-  "respond-to-situation": [
-    "Address the person and the situation directly.",
-    "Keep a polite, natural register.",
-    "Cover every part of what you were asked to say.",
-  ],
-};
-const TASK_TIP_HEADINGS = {
-  "read-aloud": "Read Aloud",
-  "repeat-sentence": "Repeat Sentence",
-  "describe-image": "Describe Image",
-  "answer-short-question": "Answer Short Question",
-  "respond-to-situation": "Respond to a Situation",
-};
 
 function formatMMSS(milliseconds) {
   const total = Math.max(0, Math.ceil(milliseconds / 1000));
@@ -398,59 +356,80 @@ export default function Speaking({
         {result ? (
           <Result result={result} onRetry={retry} retrying={retrying} />
         ) : (
-          <div className="task-actions">
-            <button
-              className="secondary"
+          <div className="task-actions btn-bar is-end">
+            {!testSessionId && (
+              <Button
+                variant="tertiary"
+                icon={<RotateCcw/>}
+                onClick={resetQuestion}
+                disabled={busy || retrying}
+              >
+                Re-do
+              </Button>
+            )}
+            {/* The primary tier moves as the task does: recording is the point of the screen
+                until a take exists, after which submitting it is. The two are never primary at
+                the same time, so there is always exactly one obvious next step. */}
+            <Button
+              variant={blob && !recording ? "secondary" : "primary"}
+              className={recording ? "btn--record is-recording" : "btn--record"}
+              icon={recording ? <Square/> : <Mic/>}
               onClick={recording ? stop : start}
               disabled={busy}
             >
               {recording ? "Stop Recording" : "Start Recording"}
-            </button>
+            </Button>
             {replayUrl && (
-              <button
-                type="button"
-                className="secondary"
+              <Button
+                variant="tertiary"
+                icon={<Play/>}
                 onClick={() => replayRef.current?.play()}
                 disabled={recording || busy}
               >
                 Replay Recording
-              </button>
+              </Button>
             )}
-            <button
-              className="primary"
-              disabled={!blob || busy}
+            <Button
+              variant="primary"
+              icon={<Sparkles/>}
+              disabled={!blob}
+              loading={busy}
+              loadingLabel="Evaluating..."
               onClick={submit}
             >
-              {busy ? "Evaluating..." : "Submit for AI Feedback"}
-            </button>
+              Submit for AI Feedback
+            </Button>
           </div>
         )}
         {replayUrl && <audio ref={replayRef} src={replayUrl} style={{ display: "none" }} />}
         {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is
             untouched (gated on testSessionId, exactly as Mock always passes it and standalone
-            practice never does). Always available, including after AI evaluation. */}
-        {!testSessionId && (
+            practice never does). Shown beside the recording controls while they are still on
+            screen, and on its own once a result has replaced them. */}
+        {!testSessionId && result && (
           <div className="task-actions">
-            <button
-              type="button"
-              className="secondary"
+            <Button
+              variant="secondary"
+              icon={<RotateCcw/>}
               onClick={resetQuestion}
               disabled={busy || retrying}
             >
               Re-do
-            </button>
+            </Button>
           </div>
         )}
         {(question?.type === "describe-image" || question?.type === "respond-to-situation" || question?.type === "answer-short-question" || question?.type === "read-aloud") && (
           question?.answer ? (
             <>
-              <button
-                type="button"
-                className="secondary answer-toggle"
+              <Button
+                variant="tertiary"
+                size="sm"
+                className="answer-toggle"
+                icon={showAnswer ? <EyeOff/> : <Eye/>}
                 onClick={() => setShowAnswer((value) => !value)}
               >
                 {showAnswer ? "Hide Answer" : "Show Answer"}
-              </button>
+              </Button>
               {showAnswer && (
                 <div className="answer-reveal">
                   {question?.type === "answer-short-question" ? (
@@ -477,21 +456,7 @@ export default function Speaking({
           )
         )}
       </section>
-      <aside className="panel tips">
-        <h3>{TASK_TIP_HEADINGS[question?.type] || "Speaking"} tips</h3>
-        <ul>
-          {(TASK_TIPS[question?.type] || GENERIC_TIPS).map((tip) => (
-            <li key={tip}>{tip}</li>
-          ))}
-        </ul>
-        <div className="tip-box">
-          <Sparkles size={18} />
-          <b>AI analysis</b>
-          <p>
-            We evaluate your submitted response and return a practice score.
-          </p>
-        </div>
-      </aside>
+      <TaskTips type={question?.type} section="speaking" note={AI_SCORING_NOTE}/>
     </div>
   );
 }

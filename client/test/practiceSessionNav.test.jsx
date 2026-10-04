@@ -37,6 +37,15 @@ beforeEach(() => {
 
 afterEach(() => { vi.useRealTimers(); });
 
+
+// "Question 1 / 2" is split across elements so the current number can be set in mono as a
+// readout rather than as part of a sentence. Matching on the container keeps these assertions
+// about what is displayed, not about how it is marked up.
+const positionText = () => document.querySelector(".btn-bar__position")?.textContent.replace(/\s+/g, " ").trim();
+async function findPosition(expected) {
+  await waitFor(() => expect(positionText()).toBe(expected));
+}
+
 describe("Practice session — multi-question navigation (Part 6/11/12)", () => {
   const TWO_MCQ = [
     { _id: "q1", section: "reading", type: "mcq-single", title: "Question One", prompt: "Pick one.", options: ["A", "B"] },
@@ -52,13 +61,13 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     await screen.findByText("Done 0, Found 2 questions");
     fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
 
-    await screen.findByText("Question 1 / 2");
-    expect(screen.getByText("Question 1 / 2")).toBeInTheDocument();
+    await findPosition("Question 1 / 2");
+    expect(positionText()).toBe("Question 1 / 2");
     expect(screen.getByText("Previous").closest("button")).toBeDisabled();
 
     fireEvent.click(screen.getByText("Next"));
     await screen.findByText("Question Two");
-    expect(screen.getByText("Question 2 / 2")).toBeInTheDocument();
+    expect(positionText()).toBe("Question 2 / 2");
     expect(screen.getByText("Next").closest("button")).toBeDisabled();
   });
 
@@ -70,11 +79,11 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     await screen.findByText("Done 0, Found 2 questions");
     fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
 
-    await screen.findByText("Question 1 / 2");
+    await findPosition("Question 1 / 2");
     fireEvent.click(screen.getByText("Next"));
     await screen.findByText("Question Two");
     fireEvent.click(screen.getByText("Previous"));
-    await screen.findByText("Question 1 / 2");
+    await findPosition("Question 1 / 2");
     expect(api.submit).not.toHaveBeenCalled();
   });
 
@@ -97,7 +106,7 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
 
     await screen.findByText("Done 0, Found 2 questions");
     fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
-    await screen.findByText("Question 1 / 2");
+    await findPosition("Question 1 / 2");
 
     fireEvent.click(screen.getByText("Back to list"));
     await screen.findByText("Done 0, Found 2 questions");
@@ -191,9 +200,9 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
     api.questions.mockResolvedValue({ questions: [MCQ_MULTI] });
     renderAt("/reading?type=mcq-multiple", studentAuthUser());
     await screen.findByText("Pick two");
-    expect(screen.getByText("Submit Answer")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
     fireEvent.click(screen.getByText("Apple"));
-    expect(screen.getByText("Submit Answer")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Answer" })).not.toBeDisabled();
   });
 
   it("deep-links from the URL's ?type= param directly to mcq-multiple, not the section's default tab", async () => {

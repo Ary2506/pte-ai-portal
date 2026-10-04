@@ -4,7 +4,13 @@ import { render, screen, fireEvent, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { fmtDate } from "../src/pages/admin/adminFormat.js";
 
+// Dates are asserted through fmtDate rather than as literal "9/30/2026" strings: the panel
+// formats with toLocaleDateString(), so a baked US-style literal failed on any machine whose
+// locale is not en-US (en-IN renders the same instant as "30/9/2026"). What these tests are
+// about is WHICH date is shown — the stored expiry, and that expiry plus seven days.
+//
 // Temporary/emergency admin feature — see the removal note at the top of
 // client/src/pages/admin/AdminSubscriptionExtension.jsx. This whole test file is deleted as part
 // of removing that feature; nothing here is shared with any other test.
@@ -113,7 +119,7 @@ describe("individual Extend Subscription", () => {
     fireEvent.click(screen.getByText("Extend Subscription"));
     const dialog = await screen.findByRole("dialog", { name: "Extend Subscription" });
     expect(within(dialog).getByText("Current Expiry")).toBeInTheDocument();
-    expect(within(dialog).getByText("9/30/2026")).toBeInTheDocument();
+    expect(within(dialog).getByText(fmtDate("2026-09-30T00:00:00.000Z"))).toBeInTheDocument();
   });
 
   it("disables the confirm button until both days and reason are valid", async () => {
@@ -147,7 +153,7 @@ describe("individual Extend Subscription", () => {
     const dialog = await screen.findByRole("dialog", { name: "Extend Subscription" });
     fireEvent.change(within(dialog).getByLabelText("Extra days"), { target: { value: "7" } });
     fireEvent.change(within(dialog).getByLabelText("Reason"), { target: { value: "Portal technical issue" } });
-    expect(await within(dialog).findByText("10/7/2026")).toBeInTheDocument(); // 9/30 + 7 days
+    expect(await within(dialog).findByText(fmtDate("2026-10-07T00:00:00.000Z"))).toBeInTheDocument(); // 9/30 + 7 days
   });
 
   it("requires confirmation before applying the extension, then applies it", async () => {

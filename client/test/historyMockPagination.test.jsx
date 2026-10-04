@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { findPagerText, pagers } from "./pagerHelpers.js";
 
 // Two things here: the mock-attempts table pages (it previously rendered every completed session
 // in one list), and "View all" from Progress and the Dashboard lands on the practice-attempts
@@ -51,20 +52,19 @@ describe("mock attempts pagination", () => {
 
     await screen.findByText("Mock test attempts");
     await waitFor(() => expect(document.querySelectorAll(".table-wrap tbody tr").length).toBe(10));
-    // Scoped to the pager: the mock record's average hint also mentions the attempt count.
-    const pager = screen.getByText(/Page 1 of 3/);
-    expect(pager).toHaveTextContent("23 attempts");
+    // Read off the pager: the mock record's average hint also mentions the attempt count.
+    await findPagerText(/Page 1 of 3 · 23 attempts/);
 
     const callsBefore = api.testSessions.list.mock.calls.length;
-    fireEvent.click(screen.getAllByText("Next ›")[0]);
-    await screen.findByText(/Page 2 of 3/);
+    fireEvent.click(screen.getAllByRole("button", { name: "Next" })[0]);
+    await findPagerText(/Page 2 of 3/);
     // The rows were already loaded; paging is a slice, not a request.
     expect(api.testSessions.list.mock.calls.length).toBe(callsBefore);
 
-    fireEvent.click(screen.getAllByText("Next ›")[0]);
-    await screen.findByText(/Page 3 of 3/);
+    fireEvent.click(screen.getAllByRole("button", { name: "Next" })[0]);
+    await findPagerText(/Page 3 of 3/);
     expect(document.querySelectorAll(".table-wrap tbody tr").length).toBe(3);
-    expect(screen.getAllByText("Next ›")[0]).toBeDisabled();
+    expect(screen.getAllByRole("button", { name: "Next" })[0]).toBeDisabled();
   });
 
   it("shows no pager at all when everything fits on one page", async () => {
@@ -72,7 +72,7 @@ describe("mock attempts pagination", () => {
     renderAt("/history");
     await screen.findByText("Mock test attempts");
     await waitFor(() => expect(document.querySelectorAll(".table-wrap tbody tr").length).toBe(2));
-    expect(screen.queryByText(/Page 1 of/)).not.toBeInTheDocument();
+    expect(pagers()).toHaveLength(0);
   });
 });
 

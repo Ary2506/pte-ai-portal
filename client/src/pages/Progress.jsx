@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { Page } from "../components/common.jsx";
+import { Button } from "../components/Button.jsx";
 import { Trajectory } from "../components/charts.jsx";
 import {
   AnalyticsSkeleton, Delta, EmptyState, ErrorState, FocusAreas, Metric, MetricStrip,
@@ -75,7 +76,7 @@ export default function Progress({ user }) {
       <EmptyState
         title="No scored attempts yet"
         body="Complete some practice questions and this page fills with your score trajectory, section profile and the task types worth working on."
-        action={<button type="button" className="primary" onClick={() => navigate("/practice")}>Start practising</button>}
+        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practising</Button>}
       />
     </Page>;
   }

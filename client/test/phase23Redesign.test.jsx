@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { pagerText } from "./pagerHelpers.js";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -135,7 +136,7 @@ describe("Phase 23 — Practice History section filter", () => {
 
     expect(await screen.findByText("Multiple Choice Single")).toBeInTheDocument();
     expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
-    expect(screen.getByText(/Page 2 of 2/)).toBeInTheDocument();
+    expect(pagerText()).toMatch(/Page 2 of 2/);
 
     // Switching section while on page 2 must not leave the student stranded on a page that
     // section may not have.

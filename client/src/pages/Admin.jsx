@@ -6,6 +6,7 @@ import { AdminDashboard } from "./admin/AdminDashboard.jsx";
 import { AdminUsers } from "./admin/AdminUsers.jsx";
 import { AdminTestSessions } from "./admin/AdminTestSessions.jsx";
 import { useToast } from "../components/toast.jsx";
+import ScrollTabs from "../components/ScrollTabs.jsx";
 
 export default function Admin() {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -28,12 +29,12 @@ export default function Admin() {
 	function goToUsers(filters) { setUsersFilter(filters); setTab("users"); }
 
 	return <Page title="Admin Panel" subtitle="Manage users and the practice content library.">
-		<div className="practice-tabs">
+		<ScrollTabs className="practice-tabs" role="tablist" aria-label="Admin sections">
 			<button className={tab==="dashboard"?"tab active":"tab"} onClick={()=>setTab("dashboard")}>Dashboard</button>
 			<button className={tab==="users"?"tab active":"tab"} onClick={()=>setTab("users")}>Users</button>
 			<button className={tab==="questions"?"tab active":"tab"} onClick={()=>setTab("questions")}>Questions</button>
 			<button className={tab==="testSessions"?"tab active":"tab"} onClick={()=>setTab("testSessions")}>Test Sessions</button>
-		</div>
+		</ScrollTabs>
 		{tab==="dashboard" && <AdminDashboard notify={notify} goToUsers={goToUsers} goToQuestions={()=>setTab("questions")}/>} 
 		{tab==="users" && <div className="panel"><AdminUsers notify={notify} initialFilters={usersFilter} onFiltersApplied={()=>setUsersFilter(null)}/></div>}
 		{tab==="questions" && <div className="panel"><AdminQuestionsPanel notify={notify}/></div>}

@@ -40,7 +40,7 @@ describe("one hover colour for every row in the product", () => {
     for (const selector of [
       ".nav-item:hover", ".recent:hover", ".focus-item:hover", ".skill-row:hover",
       ".section-perf-row:hover", ".plan-day:hover", ".question-list-row:hover",
-      "button.practice-row:hover", ".perf-table tbody tr:hover", "tbody tr:hover"
+      ".perf-table tbody tr:hover", "tbody tr:hover"
     ]) {
       const at = css.indexOf(selector);
       expect(at, selector + " has no rule at all").toBeGreaterThan(-1);
@@ -171,6 +171,58 @@ describe("side-by-side panels share a height", () => {
   it("keeps one shared gap between and within those rows", () => {
     for (const selector of [".dashboard-split", ".intel-split", ".page-stack"]) {
       expect(body(selector), selector).toMatch(/gap:\s*18px/);
+    }
+  });
+});
+
+// The practice hub inverts the usual pairing: its section boxes take the header tone, so a row
+// inside one must lift to the panel surface rather than sink to the same colour as its container.
+describe("the practice hub inverts the row pairing", () => {
+  const body = (selector) => {
+    const at = css.indexOf(selector + "{");
+    if (at === -1) return "";
+    return css.slice(css.indexOf("{", at) + 1, css.indexOf("}", at));
+  };
+
+  it("puts the section box on the header tone", () => {
+    expect(body(".practice-column")).toMatch(/background:\s*var\(--row-hover\)/);
+  });
+
+  it("lifts a hovered task row to the panel surface instead", () => {
+    expect(body("button.practice-row:hover")).toMatch(/background:\s*var\(--surface\)/);
+  });
+
+  it("keeps the two different, so the hover is visible at all", () => {
+    expect(body(".practice-column")).not.toMatch(/background:\s*var\(--surface\)/);
+  });
+});
+
+// A response like "aaaa…" has no break opportunity, so without an explicit rule it runs past its
+// container and scrolls the whole page sideways — which is what the evaluation panel did.
+describe("long unbroken answers stay inside their panel", () => {
+  it("never breaks the section labels, which are short and must stay whole", () => {
+    // An earlier version applied the break rule to .feedback-group b as well, so "CONTENT"
+    // rendered as "CO" / "NT" down the side of the panel.
+    const at = css.indexOf(".feedback-group b{");
+    expect(at, "label rule is missing").toBeGreaterThan(-1);
+    const block = css.slice(at, css.indexOf("}", at));
+    expect(block).toMatch(/word-break:\s*keep-all/);
+
+    const wrapAt = css.indexOf(".feedback-group p,");
+    const wrapBlock = css.slice(wrapAt, css.indexOf("{", wrapAt));
+    expect(wrapBlock).not.toContain(".feedback-group b");
+  });
+
+
+  it("lets every surface that renders student or evaluator text break mid-word", () => {
+    const at = css.indexOf(".feedback-group p,");
+    expect(at, "wrapping block is missing entirely").toBeGreaterThan(-1);
+    const block = css.slice(at, css.indexOf("}", at));
+    expect(block).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(block).toMatch(/word-break:\s*break-word/);
+    // The surfaces it has to cover.
+    for (const selector of [".feedback-group p", ".feedback-overall", ".answer-reveal p", ".perf-table td"]) {
+      expect(block, selector).toContain(selector);
     }
   });
 });

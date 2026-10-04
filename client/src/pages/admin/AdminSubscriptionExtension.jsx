@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { CalendarPlus, CalendarX2 } from "lucide-react";
 import { api } from "../../api.js";
 import { Modal, ConfirmDialog } from "../../components/common.jsx";
+import { Button } from "../../components/Button.jsx";
 import { fmtDate } from "./adminFormat.js";
 
 // Temporary/emergency Admin Subscription Extension feature (extend/revoke/cancel a user's
@@ -30,7 +32,7 @@ export function ExtendSubscriptionButton({ user, onExtended }) {
   const [open, setOpen] = useState(false);
   if (user.subscriptionStatus !== "ACTIVE") return null;
   return <>
-    <button className="secondary" onClick={() => setOpen(true)}>Extend Subscription</button>
+    <Button variant="secondary" size="sm" icon={<CalendarPlus/>} onClick={() => setOpen(true)}>Extend Subscription</Button>
     {open && <ExtendSubscriptionModal user={user} onClose={() => setOpen(false)} onExtended={onExtended} />}
   </>;
 }
@@ -65,10 +67,10 @@ function ExtendSubscriptionModal({ user, onClose, onExtended }) {
   return <>
     <Modal onClose={onClose} title="Extend Subscription" ariaLabel="Extend Subscription"
       footer={<>
-        <button className="secondary" onClick={onClose} disabled={busy}>Cancel</button>
-        <button className="primary" onClick={() => setShowConfirm(true)} disabled={busy || !daysValid || !reasonValid}>
+        <Button variant="tertiary" onClick={onClose} disabled={busy}>Cancel</Button>
+        <Button variant="primary" onClick={() => setShowConfirm(true)} disabled={busy || !daysValid || !reasonValid}>
           Extend Subscription
-        </button>
+        </Button>
       </>}>
       {error && <div className="alert error">{error}</div>}
       <dl>
@@ -132,12 +134,12 @@ export function RevokeSubscriptionButton({ user, onRevoked }) {
   }
 
   return <>
-    <button className="secondary" onClick={open}>Revoke Subscription</button>
+    <Button variant="danger" size="sm" icon={<CalendarX2/>} onClick={open}>Revoke Subscription</Button>
     {step === "input" && (
       <Modal onClose={() => setStep(null)} title="Revoke Subscription" ariaLabel="Revoke Subscription"
         footer={<>
-          <button className="secondary" onClick={() => setStep(null)}>Cancel</button>
-          <button className="primary" onClick={() => setStep("confirm")} disabled={!daysValid}>OK</button>
+          <Button variant="tertiary" onClick={() => setStep(null)}>Cancel</Button>
+          <Button variant="primary" onClick={() => setStep("confirm")} disabled={!daysValid}>OK</Button>
         </>}>
         {error && <div className="alert error">{error}</div>}
         <dl>
@@ -174,7 +176,7 @@ export function RevokeSubscriptionButton({ user, onRevoked }) {
 export function ExtendAllActiveButton({ onExtended }) {
   const [open, setOpen] = useState(false);
   return <>
-    <button className="secondary" onClick={() => setOpen(true)}>Extend All Active Subscriptions</button>
+    <Button variant="secondary" icon={<CalendarPlus/>} onClick={() => setOpen(true)}>Extend All Active Subscriptions</Button>
     {open && <ExtendAllActiveModal onClose={() => setOpen(false)} onExtended={onExtended} />}
   </>;
 }
@@ -218,7 +220,7 @@ function ExtendAllActiveModal({ onClose, onExtended }) {
 
   if (result) {
     return <Modal onClose={onClose} title="Extend All Active Subscriptions" ariaLabel="Extend All Active Subscriptions"
-      footer={<button className="primary" onClick={onClose}>Close</button>}>
+      footer={<Button variant="primary" onClick={onClose}>Close</Button>}>
       <div className="alert notice">
         Extended {result.affectedUsers} active subscription{result.affectedUsers === 1 ? "" : "s"} by {result.daysAdded} day{result.daysAdded === 1 ? "" : "s"}.
         <br />Extension event: <b>{result.extensionId}</b>
@@ -229,13 +231,12 @@ function ExtendAllActiveModal({ onClose, onExtended }) {
   return <>
     <Modal onClose={onClose} title="Extend All Active Subscriptions" ariaLabel="Extend All Active Subscriptions"
       footer={<>
-        <button className="secondary" onClick={onClose} disabled={previewing || confirming}>Cancel</button>
-        <button className="secondary" onClick={runPreview} disabled={previewing || confirming || !daysValid}>
-          {previewing ? "Loading..." : "Preview"}
-        </button>
-        <button className="primary" onClick={() => setShowConfirm(true)} disabled={!preview || !reasonValid || confirming}>
+        <Button variant="tertiary" onClick={onClose} disabled={previewing || confirming}>Cancel</Button>
+        <Button variant="secondary" onClick={runPreview} loading={previewing} loadingLabel="Loading..."
+          disabled={confirming || !daysValid}>Preview</Button>
+        <Button variant="primary" onClick={() => setShowConfirm(true)} disabled={!preview || !reasonValid || confirming}>
           Extend All Active Subscriptions
-        </button>
+        </Button>
       </>}>
       {error && <div className="alert error">{error}</div>}
       <label>Extra Days
@@ -263,8 +264,8 @@ function ExtendAllActiveModal({ onClose, onExtended }) {
     </Modal>
     {showConfirm && preview && <Modal onClose={() => setShowConfirm(false)} title="Confirm bulk extension" ariaLabel="Confirm bulk extension"
       footer={<>
-        <button className="secondary" onClick={() => setShowConfirm(false)} disabled={confirming}>Cancel</button>
-        <button className="primary" onClick={confirmExtend} disabled={confirming}>{confirming ? "Extending..." : "Confirm Extension"}</button>
+        <Button variant="tertiary" onClick={() => setShowConfirm(false)} disabled={confirming}>Cancel</Button>
+        <Button variant="primary" onClick={confirmExtend} loading={confirming} loadingLabel="Extending...">Confirm Extension</Button>
       </>}>
       <p>Are you sure you want to extend {preview.affectedUsers} active subscription{preview.affectedUsers === 1 ? "" : "s"} by {daysNum} day{daysNum === 1 ? "" : "s"}?</p>
     </Modal>}

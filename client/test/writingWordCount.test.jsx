@@ -32,9 +32,12 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+// Single-letter words on purpose. These tests are about the WORD count, and the editor now
+// blocks typing past a per-task character cap (1500 for an essay) — `word0 word1 ...` for 350
+// words is over 2000 characters, so the input would be refused and nothing would be typed at all.
 function typeWords(n) {
   const textarea = screen.getByPlaceholderText("Type your answer here...");
-  const words = Array.from({ length: n }, (_, i) => `word${i}`).join(" ");
+  const words = Array.from({ length: n }, () => "a").join(" ");
   fireEvent.change(textarea, { target: { value: words } });
 }
 
@@ -92,7 +95,7 @@ describe("Writing word-count guidance", () => {
     await screen.findByPlaceholderText("Type your answer here...");
     typeWords(5); // well under the 40-word minimum
 
-    expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     expect(await screen.findByText("Heuristic Practice Evaluation")).toBeInTheDocument();
   });

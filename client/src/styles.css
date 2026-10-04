@@ -60,6 +60,8 @@
   --warning:#B45309;      --warning-bg:#FFF7E6;
   --danger:#B42318;       --danger-bg:#FEF0EF;
   --info:#4F46E5;         --info-bg:#EEF2FF;
+  --record:#4F46E5;       --record-bg:#EEF2FF;   /* live microphone — see .record-box */
+  --blank-h:30px;         /* every in-passage blank, typed or dropdown */
 
   /* --- Type scale --- */
   --text-xs:11px;   --text-sm:12.5px; --text-base:14px; --text-md:15px;
@@ -80,6 +82,7 @@
   --shadow-lg:0 22px 48px rgba(16,24,40,.16);
   --shadow:var(--shadow-md); /* alias kept for existing rules written before shadow-md existed */
   --focus-ring:0 0 0 3px var(--blue-soft);
+  --focus-ring-quiet:0 0 0 3px color-mix(in srgb,var(--muted) 20%,transparent);  /* focus without recolouring a border */
 
   --sidebar-w:264px;
   --topbar-h:70px;
@@ -108,6 +111,7 @@ html[data-theme="dark"]{
   --violet:#A78BFA;        --violet-soft:#1A1730;
   --success:#34D399;       --danger:#F87171;      --warning:#FBBF24;   --info:#7C7CFF;
   --success-bg:#0D2A22;    --warning-bg:#2C2310;  --danger-bg:#2C1618; --info-bg:#15172B;
+  --record:#8C8CFF;        --record-bg:#191C33;
 
   /* Section identities, restated for a near-black ground — the light-mode values
      are too dark to read against it. */
@@ -315,25 +319,12 @@ html[data-theme="dark"] .admin-panel-link:hover{background:#4c3323}
    Buttons — consistent height/padding/radius across every variant, with
    hover/active/disabled/focus all defined once.
    ========================================================================== */
-.primary,.secondary{
-  border:0;min-height:42px;border-radius:var(--radius-sm);padding:10px 18px;display:inline-flex;align-items:center;
-  justify-content:center;gap:8px;font-weight:650;font-size:var(--text-base);
-}
-.primary{background:var(--blue);color:#fff;box-shadow:var(--shadow-xs)}
-.primary:hover{background:var(--blue2);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
-.primary:active{transform:translateY(0)}
-.primary:disabled,.secondary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
-.secondary{background:var(--blue-soft);color:var(--blue2)}
-.secondary:hover{background:var(--blue-softer);transform:translateY(-1px)}
-.secondary:active{transform:translateY(0)}
-.primary.danger{background:var(--danger)}
-.primary.danger:hover{background:#8f1c11}
+/* The old button classes — .primary, .secondary, .text-button, .icon-btn, .full — are gone.
+   Every tier, size and state now lives in the ".btn" block near the end of this file, which is
+   the only place a button's look is decided. .secondary in particular was blue-tinted here and
+   re-tinted again under html[data-theme="dark"], which is how it came to read as a second primary
+   and left the real primary with nothing to stand against. */
 .right{float:right}
-.full{width:100%;margin-top:8px}
-.text-button{border:0;background:none;color:var(--blue);font-weight:600;margin-top:18px;font-size:var(--text-base);border-radius:var(--radius-sm);padding:2px 4px}
-.text-button:hover{text-decoration:underline}
-.icon-btn{border:0;background:none;color:var(--muted);border-radius:var(--radius-sm);display:grid;place-items:center;padding:7px;transition:background .14s ease,color .14s ease}
-.icon-btn:hover{background:var(--bg-soft);color:var(--blue)}
 
 /* ==========================================================================
    Cards / panels — one clean surface language reused everywhere; elevation
@@ -348,8 +339,7 @@ html[data-theme="dark"] .admin-panel-link:hover{background:#4c3323}
 
 .pdf-viewer-frame{width:100%;height:75vh;min-height:480px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--bg-soft);margin:16px 0}
 .pdf-resource-actions{display:flex;flex-wrap:wrap;gap:10px}
-.pdf-resource-actions .primary,.pdf-resource-actions .secondary{display:inline-flex;align-items:center;gap:8px}
-@media(max-width:600px){.pdf-viewer-frame{height:60vh}.pdf-resource-actions{flex-direction:column}.pdf-resource-actions .primary,.pdf-resource-actions .secondary{width:100%;justify-content:center}}
+@media(max-width:600px){.pdf-viewer-frame{height:60vh}.pdf-resource-actions{flex-direction:column}.pdf-resource-actions .btn{width:100%}}
 
 /* ==========================================================================
    Dashboard hero — the "Ready to improve your PTE score?" panel. A
@@ -371,8 +361,6 @@ html[data-theme="dark"] .admin-panel-link:hover{background:#4c3323}
 .dash-hero-text h2{font-size:var(--text-3xl);margin:8px 0 8px;color:#fff}
 .dash-hero-text p{margin:0;color:#E4E7FC;font-size:var(--text-base);line-height:var(--leading-normal)}
 .dash-hero-actions{display:flex;gap:12px;margin-top:22px}
-.dash-hero-actions .secondary{background:rgba(255,255,255,.16);color:#fff}
-.dash-hero-actions .secondary:hover{background:rgba(255,255,255,.26)}
 
 .dashboard-hero{display:grid;grid-template-columns:minmax(130px,.65fr) minmax(220px,1.45fr) auto;gap:28px;align-items:center;margin-bottom:22px}
 .dashboard-hero-copy{align-self:center;max-width:390px}
@@ -418,7 +406,7 @@ html[data-theme="dark"] .admin-panel-link:hover{background:#4c3323}
 .mock-cta-banner-text{flex:1}
 .mock-cta-banner-text h3{color:var(--ink);margin-bottom:2px}
 .mock-cta-banner-text p{color:#B7BDCC}
-.mock-cta-banner .primary{flex:none}
+.mock-cta-banner .btn{flex:none}
 
 .score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
 .score-grid.mini{grid-template-columns:repeat(2,1fr);margin-top:15px}
@@ -502,7 +490,7 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 /* ==========================================================================
    Tabs
    ========================================================================== */
-.practice-tabs{display:flex;gap:8px;overflow:auto;margin-bottom:20px;padding-bottom:2px}
+
 .tab{white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);padding:9px 15px;border-radius:var(--radius-sm);font-size:var(--text-sm);font-weight:600;transition:border-color .14s ease,color .14s ease,background .14s ease}
 .tab.active{color:var(--blue2);border-color:var(--blue-softer);background:var(--blue-soft);font-weight:700}
 .tab:hover:not(.active){border-color:var(--blue-softer)}
@@ -512,8 +500,10 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
    Listening. The question content is the visual focus; the tips sidebar
    stays quiet.
    ========================================================================== */
-.task-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}
+.task-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start}
 .task-main{min-height:540px}
+/* The sidebar column, for a workspace that puts more than one panel in it. */
+.task-rail{display:grid;gap:20px;align-content:start}
 .task-main.narrow{max-width:900px}
 .task-meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:var(--text-sm);margin-bottom:22px}
 .task-meta>span:last-child{display:flex;gap:5px;align-items:center}
@@ -524,15 +514,20 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 .describe-image-photo{display:block;width:100%;max-width:640px;max-height:420px;object-fit:contain;border-radius:var(--radius-md)}
 @media(max-width:600px){.describe-image-frame{padding:10px}.describe-image-photo{max-height:300px}}
 .answer-area{width:100%;height:250px;resize:vertical;border:1px solid var(--line);border-radius:var(--radius-md);padding:16px;outline:0;line-height:var(--leading-normal);font-size:var(--text-base);background:var(--surface);color:var(--ink);transition:border-color .14s ease,box-shadow .14s ease}
-.answer-area:focus{border-color:var(--blue);box-shadow:var(--focus-ring)}
+.answer-area:focus{outline:0;border-color:var(--line);box-shadow:var(--focus-ring-quiet)}
 .answer-area.compact{height:160px;margin-top:20px}
 .answer-toggle{margin-top:12px}
 .answer-reveal{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--bg-soft)}
 .answer-reveal p{margin:6px 0 0;color:var(--ink-soft)}
 .answer-reveal p + b{display:block;margin-top:14px}
 .listening-fill-passage{font-size:var(--text-lg);line-height:2.1;color:var(--ink);margin:20px 0}
-.listening-fill-input{min-width:120px;max-width:180px;margin:0 6px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);font:inherit;line-height:1.2}
-.listening-fill-input:focus{outline:0;border-color:var(--blue);box-shadow:var(--focus-ring)}
+.listening-fill-input{
+  box-sizing:border-box;height:var(--blank-h);min-width:120px;max-width:180px;margin:0 6px;
+  padding:0 10px;border:2px solid var(--blue-softer);border-radius:var(--radius-sm);
+  background:var(--blue-soft);color:var(--ink);font:inherit;font-size:var(--text-md);font-weight:600;
+  transition:border-color .15s ease;
+}
+.listening-fill-input:focus{outline:0;border-color:var(--blue-softer);box-shadow:var(--focus-ring-quiet)}
 .tips ul{padding-left:20px;color:var(--ink-soft);font-size:var(--text-sm);line-height:2}
 .tip-box{margin-top:25px;padding:14px;background:var(--blue-soft);border-radius:var(--radius-md);color:var(--ink-soft)}
 .tip-box p{font-size:var(--text-xs);line-height:var(--leading-normal)}
@@ -577,7 +572,9 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 .audio{width:100%;margin:18px 0;border-radius:var(--radius-full)}
 
 .feedback-group{margin-top:18px}
-.feedback-group b{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;font-weight:800}
+/* word-break:keep-all so a label never splits — "CONTENT" was rendering as "CO" / "NT"
+   when the wrapping rule for long answers was applied to it as well. */
+.feedback-group b{display:block;font-size:var(--text-xs);text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;font-weight:800;word-break:keep-all;overflow-wrap:normal}
 .feedback-group p{display:flex;align-items:flex-start;gap:8px;font-size:var(--text-sm);color:var(--ink-soft);margin:0 0 6px;line-height:var(--leading-normal)}
 .feedback-overall{margin-top:16px;padding:12px;background:var(--bg-soft);border-radius:var(--radius-md);font-size:var(--text-base);color:var(--ink);font-weight:500;border-left:4px solid var(--blue)}
 .feedback-note{margin-top:10px;font-size:var(--text-xs);color:var(--muted);font-style:italic}
@@ -598,7 +595,6 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 .mock-result{text-align:center}
 .mock-progress-bar{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--line);font-size:var(--text-base);color:var(--ink-soft);gap:14px}
 .mock-nav{display:flex;justify-content:space-between;gap:12px;margin-top:18px}
-.mock-nav .secondary:last-child{margin-left:auto}
 .mock-timer{display:flex;align-items:center;gap:8px;background:var(--blue-soft);color:var(--blue2);border-radius:var(--radius-sm);padding:7px 13px}
 .mock-timer-label{display:block;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;opacity:.75}
 .mock-timer strong{display:block;font-size:var(--text-md);font-variant-numeric:tabular-nums;letter-spacing:.3px;font-family:var(--font-mono)}
@@ -726,7 +722,6 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .admin-create-form button{grid-column:1/-1;justify-self:start}
 .admin-search{margin:6px 0 16px}
 .admin-actions{display:flex;gap:12px;flex-wrap:wrap}
-.admin-actions .text-button{margin-top:0}
 @media(max-width:700px){.admin-create-form{grid-template-columns:1fr}}
 
 /* ==========================================================================
@@ -862,9 +857,6 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .reorder-list--picker .reorder-item:hover{border-color:var(--line)}
 .reorder-list--picker .reorder-pos{width:24px;height:24px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-size:var(--text-xs);font-weight:800;display:grid;place-items:center;font-family:var(--font-mono)}
 .reorder-controls{display:flex;gap:4px}
-.reorder-controls .icon-btn{width:28px;height:28px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);display:grid;place-items:center;font-size:var(--text-sm);color:var(--ink-soft)}
-.reorder-controls .icon-btn:disabled{opacity:.35;cursor:not-allowed}
-.reorder-controls .icon-btn:not(:disabled):hover{background:var(--bg-soft);color:var(--blue)}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
@@ -957,7 +949,7 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .password-field input{padding-right:42px!important}
 .password-toggle{position:absolute;right:4px;top:11px;width:32px;height:32px;border:0;background:none;color:var(--muted-soft);border-radius:var(--radius-sm);display:grid;place-items:center}
 .password-toggle:hover{color:var(--blue);background:var(--bg-soft)}
-.mobile-menu,.mobile-close{display:none}
+.btn.mobile-menu,.btn.mobile-close{display:none}
 
 /* ==========================================================================
    Theme toggle
@@ -1029,7 +1021,7 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
   --accent:var(--blue);--accent-soft:var(--blue-soft);
   display:grid;grid-template-columns:280px 1fr;gap:28px;
   border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:var(--radius-lg);
-  padding:24px 26px;background:var(--surface);
+  padding:24px 26px;background:var(--row-hover);
 }
 .practice-column.practice-writing{--accent:var(--sec-writing);--accent-soft:var(--sec-writing-soft)}
 .practice-column.practice-reading{--accent:var(--sec-reading);--accent-soft:var(--sec-reading-soft)}
@@ -1041,7 +1033,7 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .practice-column-count{align-self:flex-start;font-size:var(--text-xs);font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:var(--radius-full);padding:4px 11px;font-family:var(--font-mono)}
 .practice-column-list{display:flex;flex-direction:column;gap:1px;border-left:1px solid var(--line);padding-left:26px}
 .practice-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:0;background:none;padding:10px 8px;border-radius:var(--radius-sm);font-size:var(--text-md);color:var(--ink-soft);transition:background .12s ease}
-button.practice-row:hover{background:var(--row-hover);color:var(--blue)}
+button.practice-row:hover{background:var(--surface);color:var(--blue)}
 span.practice-row.disabled{color:var(--muted-soft);cursor:default}
 .practice-row-badge{font-size:var(--text-xs);font-weight:800;padding:2px 8px;border-radius:var(--radius-full);white-space:nowrap;flex:none;letter-spacing:.2px}
 .practice-row-badge.ai{background:var(--blue-soft);color:var(--blue)}
@@ -1074,7 +1066,7 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
   .sidebar{transform:translateX(-100%);transition:transform .2s ease}
   .sidebar.mobile-open{transform:translateX(0);box-shadow:20px 0 45px rgba(16,24,42,.2)}
   .main{margin-left:0;width:100%}
-  .mobile-menu,.mobile-close{display:grid}
+  .btn.mobile-menu,.btn.mobile-close{display:inline-flex}
   .topbar{padding:0 18px}
   .topbar-breadcrumb{display:none}
   .search{width:100%;max-width:220px}
@@ -1139,13 +1131,10 @@ html[data-theme="dark"] .panel,html[data-theme="dark"] .score-card,html[data-the
 html[data-theme="dark"] .feature-card:hover,html[data-theme="dark"] .stat-tile.clickable:hover{border-color:#615bb3;box-shadow:0 17px 32px rgba(0,0,0,.28)}
 html[data-theme="dark"] .recent-icon,html[data-theme="dark"] .plan-icon,html[data-theme="dark"] .skill-card-icon,html[data-theme="dark"] .kpi-icon,html[data-theme="dark"] .practice-column-icon{background:#302d5d;color:#c9c6ff}
 html[data-theme="dark"] .chip{background:#302d5d;color:#cbc8ff}
-html[data-theme="dark"] .secondary{background:var(--blue-soft);color:#d0cdff}
-html[data-theme="dark"] .secondary:hover{background:#393568}
-html[data-theme="dark"] .text-button,html[data-theme="dark"] .link{color:#bdb9ff}
+html[data-theme="dark"] .link{color:#bdb9ff}
 html[data-theme="dark"] .tab{background:#1d263a;border-color:#303a52;color:#b3bdcf}
 html[data-theme="dark"] .tab.active{background:#302d5d;border-color:#615bb3;color:#d1ceff}
 html[data-theme="dark"] .passage,html[data-theme="dark"] .transcript,html[data-theme="dark"] .highlight-words{color:#dce3f1}
-html[data-theme="dark"] .answer-area:focus{box-shadow:0 0 0 4px rgba(129,121,255,.16)}
 html[data-theme="dark"] .option{background:#1d263a;color:#e5eaf5}
 html[data-theme="dark"] .option:hover{background:#252b4b;border-color:#625bbb}
 html[data-theme="dark"] .option.selected{background:#302d5c;border-color:#7770df}
@@ -1173,7 +1162,7 @@ html[data-theme="dark"] .exam-variant-tab.active{background:#302d5d;color:#d1cef
 html[data-theme="dark"] .practice-row{color:#cbd4e4}
 html[data-theme="dark"] button.practice-row:hover,
 html[data-theme="dark"] button.practice-row:focus,
-html[data-theme="dark"] button.practice-row:active{background:var(--row-hover);color:#bdb9ff}
+html[data-theme="dark"] button.practice-row:active{background:var(--surface);color:#bdb9ff}
 html[data-theme="dark"] .practice-row-badge{background:#30394f;color:#b9c2d3}
 
 /* Question list — one dark-mode pass (was previously declared twice). */
@@ -1197,28 +1186,72 @@ html[data-theme="dark"] .question-list-search input::placeholder{color:#78849a}
 
 html[data-theme="dark"] .hero-status{background:rgba(42,40,91,.75);border-color:#605ab3;color:#d1ceff}
 
-/* Prevent the browser's default flash-white on :active in dark mode */
-html[data-theme="dark"] button:active{color:inherit}
+/* Prevent the browser's default flash-white on :active in dark mode. Design-system buttons are
+   excluded: `html[data-theme="dark"] button:active` outranks .btn--primary, so a pressed primary
+   button in dark mode was taking its parent's text colour instead of white. */
+html[data-theme="dark"] button:not(.btn):active{color:inherit}
 
 /* Reading & Writing: Fill in the Blanks — a dropdown per blank, inline in the prose. The passage
    keeps normal line-height so the selects sit in the text rather than forcing the lines apart. */
 .dropdown-blanks{line-height:2.4}
-.dropdown-blank{display:inline-flex;align-items:center;gap:4px;margin:0 3px;padding:2px 6px;border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);vertical-align:middle}
-.dropdown-blank select{min-width:92px;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;padding:3px 2px}
-/* The open list is drawn by the browser, which takes its background from the select's own. A
-   transparent select leaves that undefined, so Chrome falls back to white canvas and the options
-   stay light even in dark mode — these two rules give the popup real colours to use. The select
-   itself stays transparent so it blends into the blank's border, including when that border turns
-   red or green after scoring. */
-.dropdown-blank option{background:var(--surface);color:var(--ink);font-weight:600}
-.dropdown-blank option:checked{background:var(--blue-soft);color:var(--ink)}
-.dropdown-blank select:focus{outline:2px solid var(--blue);outline-offset:2px;border-radius:3px}
-.dropdown-blank select:disabled{color:inherit;opacity:1}
+.dropdown-blank{
+  box-sizing:border-box;height:var(--blank-h);
+  display:inline-flex;align-items:center;gap:4px;margin:0 4px;padding:0 4px 0 8px;
+  border:2px solid var(--blue-softer);border-radius:var(--radius-sm);background:var(--blue-soft);
+  vertical-align:middle;line-height:1.5;transition:border-color .15s ease,background .15s ease;
+}
+/* The word picker. A custom listbox (practice/BlankSelect.jsx), not a <select> — an <option>
+   ignores almost everything CSS asks of it and the open list is drawn by the operating system,
+   so neither the list nor the native focus border could ever be made to match the product. */
+.blank-select{position:relative;display:inline-flex;flex:1;min-width:0}
+.blank-select__trigger{
+  /* space-between is what puts the caret on the blank's right edge rather than tucked against
+     the word. The trigger spans the blank's full inner width so there is an edge to sit on. */
+  display:inline-flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;min-width:104px;
+  border:0;background:transparent;color:var(--blue2);font:inherit;font-weight:700;
+  padding:0 2px;line-height:1.5;cursor:pointer;
+}
+.blank-select__trigger:disabled{cursor:default;color:inherit}
+/* Focus is carried by the blank around it, so the trigger adds nothing of its own — this is what
+   keeps a focused blank looking exactly like an unfocused one. */
+.blank-select__trigger:focus,.blank-select__trigger:focus-visible{outline:0}
+.blank-select__value{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blank-select__caret{flex:none;opacity:.8;transition:transform var(--btn-speed,160ms) ease}
+.blank-select__trigger[aria-expanded="true"] .blank-select__caret{transform:rotate(180deg)}
+
+/* The list, designed rather than inherited: a raised panel on the product's own surface, with
+   room to read, a highlighted keyboard position and a marked current choice. */
+.blank-select__list{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:20;margin:0;padding:5px;
+  list-style:none;min-width:max(100%,150px);max-height:238px;overflow-y:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-md);outline:0;
+}
+.blank-select__option{
+  padding:8px 11px;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:var(--text-base);font-weight:600;line-height:1.35;color:var(--ink);
+  white-space:nowrap;
+}
+/* One highlight, driven by the keyboard and by the pointer alike, so arrowing and hovering never
+   light up two different rows at once. */
+.blank-select__option.is-active{background:var(--row-hover)}
+.blank-select__option.is-chosen{color:var(--blue2)}
+.blank-select__option.is-chosen::after{content:"✓";float:right;margin-left:14px;font-weight:700}
+.blank-select__option.is-chosen.is-active{background:var(--blue-soft)}
+@media(prefers-reduced-motion:reduce){.blank-select__caret{transition:none}}
+/* Focus changes nothing about the blank itself: same border, no ring. The open listbox below it
+   is what says "you are here", and the product-wide blue :focus-visible outline is cancelled for
+   all three practice inputs so none of them can pick it up. */
+.dropdown-blank:focus-within{border-color:var(--blue-softer);box-shadow:none}
+.answer-area:focus-visible,.listening-fill-input:focus-visible,.dropdown-blank:focus-visible{outline:0}
+
 /* Marked in place once scored, so a student reads the correction in the sentence it belongs to
    rather than matching numbers against a list below the passage. */
 .dropdown-blank.is-right{border-color:var(--success);background:var(--success-bg);color:var(--success)}
-.dropdown-blank.is-wrong{border-color:#f3c9c9;background:var(--danger-bg);color:var(--danger)}
-.dropdown-blank.is-right select,.dropdown-blank.is-wrong select{color:inherit}
+.dropdown-blank.is-right .blank-select__trigger,.dropdown-blank.is-wrong .blank-select__trigger{cursor:default}
+.dropdown-blank.is-wrong{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.dropdown-blank.is-right .blank-select__trigger,.dropdown-blank.is-wrong .blank-select__trigger{color:inherit}
 .dropdown-blank-mark{font-weight:700;font-size:.9em}
 .dropdown-blank-answer{color:var(--success);font-weight:700;white-space:nowrap}
 
@@ -1338,7 +1371,7 @@ html[data-theme="dark"] button:active{color:inherit}
 .empty-state{padding:34px 24px;text-align:center;border:1px dashed var(--line);border-radius:var(--radius-lg);background:var(--bg-soft)}
 .empty-state h4{margin:0;font-family:var(--font-display);font-size:var(--text-md);font-weight:700;color:var(--ink)}
 .empty-state p{margin:8px auto 0;max-width:46ch;font-size:var(--text-sm);line-height:1.6;color:var(--muted)}
-.empty-state .primary,.empty-state .secondary{margin-top:16px}
+.empty-state .btn{margin-top:16px}
 
 .analytics-skeleton{display:grid;gap:10px;padding:8px 0}
 .analytics-skeleton__row{height:38px;border-radius:var(--radius-sm);background:linear-gradient(90deg,var(--bg-soft) 25%,var(--surface-soft) 50%,var(--bg-soft) 75%);background-size:200% 100%;animation:analytics-shimmer 1.4s ease-in-out infinite}
@@ -1457,17 +1490,17 @@ html[data-theme="dark"] button:active{color:inherit}
 .record-box h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;letter-spacing:-.02em;margin:0}
 .record-box p{margin:0;max-width:52ch;font-size:var(--text-sm);line-height:1.6}
 
-.record-box.is-recording{border-color:var(--danger);background:var(--danger-bg)}
-.record-box.is-recording .record-box__status .stat-label{color:var(--danger)}
-.record-box.is-recording .record-box__timer{color:var(--danger);font-weight:700}
-.record-box.is-evaluating{border-color:var(--blue);background:var(--info-bg)}
+.record-box.is-recording{border-color:var(--record);background:var(--record-bg)}
+.record-box.is-recording .record-box__status .stat-label{color:var(--record)}
+.record-box.is-recording .record-box__timer{color:var(--record);font-weight:700}
+.record-box.is-evaluating{border-color:var(--violet);background:var(--violet-soft)}
 .record-box.is-recorded{border-color:var(--success)}
 .record-box.is-result{border-color:var(--line);opacity:.85}
 
 /* Live waveform — motion is the signal that the mic is actually open. */
 .record-wave{display:flex;align-items:center;justify-content:center;gap:4px;height:62px;width:min(280px,80%)}
 .record-wave__bar{
-  flex:1;min-width:3px;border-radius:2px;background:var(--danger);height:var(--h,50%);
+  flex:1;min-width:3px;border-radius:2px;background:var(--record);height:var(--h,50%);
   animation:record-pulse 1.1s ease-in-out infinite;animation-delay:calc(var(--i) * -55ms);
 }
 @keyframes record-pulse{0%,100%{transform:scaleY(.35);opacity:.5}50%{transform:scaleY(1);opacity:1}}
@@ -1532,8 +1565,9 @@ html[data-theme="dark"] button:active{color:inherit}
 .plan-day.is-today{box-shadow:0 0 0 2px var(--blue-soft)}
 .plan-day.is-today .plan-day__status{color:var(--blue);font-weight:600}
 .plan-day.is-missed{opacity:.62}
-.plan-day__go{border:1px solid var(--line);background:none;border-radius:var(--radius-sm);padding:5px 9px;font-size:var(--text-xs);color:var(--ink-soft)}
-.plan-day__go:hover{border-color:var(--blue);color:var(--blue)}
+/* Layout only — the look comes from .btn--tertiary.btn--sm, so this class cannot drift away
+   from every other quiet button in the product. */
+.plan-day__go{flex:none;justify-self:end}
 .plan-day:hover{background:var(--row-hover)}
 
 @media(max-width:860px){
@@ -1544,7 +1578,7 @@ html[data-theme="dark"] button:active{color:inherit}
 .section-title + .metric-strip{margin:14px 0 16px}
 /* The start button is the point of this screen, so it is centred on its own line with the
    secondary link directly beneath it rather than sitting beside it. */
-.mock-card .primary{display:block;margin:4px auto 0;min-width:220px}
+.mock-card .btn{display:flex;margin:4px auto 0;min-width:220px}
 .mock-card__history{display:block;margin-top:14px;font-size:var(--text-sm);text-align:center;color:var(--muted)}
 .mock-card__history:hover{color:var(--blue)}
 
@@ -1578,24 +1612,38 @@ html[data-theme="dark"] button:active{color:inherit}
 .streak-calendar__summary{margin:9px 0 0;font-size:var(--text-sm);color:var(--muted)}
 .streak-calendar__summary b{color:var(--ink)}
 
-.streak-cal{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start}
-.streak-cal__weekdays{display:grid;grid-template-rows:repeat(7,13px);gap:3px;padding-top:18px;font-family:var(--font-mono);font-size:9px;color:var(--muted-soft);line-height:13px}
+/* One cell and one gap, named once — the month row, the weekday column and the grid all have to
+   agree on them or the labels stop lining up with the weeks they describe. */
+.streak-cal{--cell:11px;--cell-gap:3px;position:relative}
+.streak-cal__frame{border:1px solid var(--line);border-radius:var(--radius-md);padding:16px}
 /* Scrolls horizontally rather than shrinking the cells: a 53-week calendar squeezed into a
    phone width would be unreadable, and unreadable is worse than scrollable. */
 .streak-cal__scroll{overflow-x:auto;padding-bottom:4px}
-.streak-cal__months{display:flex;gap:3px;height:14px;font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-soft)}
-.streak-cal__months>span{width:13px;flex:none;white-space:nowrap}
-.streak-cal__grid{display:flex;gap:3px}
-.streak-cal__week{display:grid;grid-template-rows:repeat(7,13px);gap:3px}
-.streak-cal__day{width:13px;height:13px;border-radius:3px;background:var(--bg-soft);border:1px solid var(--line)}
+/* Two rows, two columns: an empty corner and the month row on top, the weekday labels and the
+   grid below. The month row shares the grid's column track, so a label sits over its own week. */
+.streak-cal__canvas{display:grid;grid-template-columns:auto auto;gap:6px 10px;justify-content:start}
+.streak-cal__weekdays{
+  display:grid;grid-template-rows:repeat(7,var(--cell));gap:var(--cell-gap);
+  font-size:11px;color:var(--muted);line-height:var(--cell);text-align:right;
+}
+.streak-cal__months{display:flex;gap:var(--cell-gap);height:13px;font-size:11px;color:var(--muted);line-height:13px}
+.streak-cal__months>span{width:var(--cell);flex:none;white-space:nowrap;position:relative;overflow:visible}
+.streak-cal__grid{display:flex;gap:var(--cell-gap)}
+.streak-cal__week{display:grid;grid-template-rows:repeat(7,var(--cell));gap:var(--cell-gap)}
+.streak-cal__day{
+  width:var(--cell);height:var(--cell);border-radius:2px;
+  background:var(--bg-soft);border:1px solid var(--line);
+}
 .streak-cal__day.is-empty{background:none;border-color:transparent}
 .streak-cal__day.is-l0{background:var(--bg-soft)}
 .streak-cal__day.is-l1{background:color-mix(in srgb,var(--success) 32%,var(--bg-soft));border-color:transparent}
 .streak-cal__day.is-l2{background:color-mix(in srgb,var(--success) 55%,var(--bg-soft));border-color:transparent}
 .streak-cal__day.is-l3{background:color-mix(in srgb,var(--success) 78%,var(--bg-soft));border-color:transparent}
 .streak-cal__day.is-l4{background:var(--success);border-color:transparent}
-.streak-cal__legend{display:flex;align-items:center;gap:4px;font-size:var(--text-xs)}
-.streak-cal__legend .muted{margin:0 4px}
+/* Bottom-right of the frame, reading "Less □□□□□ More" — it annotates the graph, so it belongs
+   inside the box with it rather than floating underneath. */
+.streak-cal__legend{display:flex;align-items:center;justify-content:flex-end;gap:3px;margin-top:10px;font-size:var(--text-xs)}
+.streak-cal__legend .muted{margin:0 5px}
 
 @media(max-width:620px){
   .streak-calendar__head{flex-direction:column;align-items:stretch}
@@ -1607,14 +1655,12 @@ html[data-theme="dark"] button:active{color:inherit}
 .target-editor__value span{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--ink)}
 .target-editor__value small{font-size:var(--text-xs);color:var(--muted-soft)}
 .target-editor__actions{display:flex;align-items:center;gap:10px}
-.target-editor__actions .secondary{padding:6px 12px;font-size:var(--text-sm)}
 .target-editor__field input{
   width:92px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);
   background:var(--bg-soft);color:var(--ink);font-family:var(--font-mono);font-size:var(--text-md);
 }
 .target-editor__field input:focus{border-color:var(--blue);box-shadow:var(--focus-ring);outline:0}
 .target-editor__hint{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--muted-soft)}
-.target-editor.is-editing .primary,.target-editor.is-editing .secondary{padding:8px 14px;font-size:var(--text-sm)}
 .target-editor__error{flex-basis:100%;margin:0;font-size:var(--text-xs);color:var(--danger)}
 
 /* Day tooltip — "8 activities on October 3rd". One element positioned over the calendar rather
@@ -1641,3 +1687,198 @@ html[data-theme="dark"] button:active{color:inherit}
    content sits at the top rather than being centred in whatever height they inherited. */
 .dashboard-split>.panel,.intel-split>.panel,.exam-center>.panel{display:flex;flex-direction:column;align-content:start}
 .plan-day[data-section="review"]{border-top-color:var(--muted-soft)}
+.compose-stats__limit{font-size:.6em;color:var(--muted-soft);margin-left:2px}
+.compose-stats dd.is-near{color:var(--warning)}
+.compose-stats dd.is-full{color:var(--danger)}
+.compose-limit{margin:12px 0 0;font-size:var(--text-xs);color:var(--danger)}
+.compose-stats dd.is-over{color:var(--danger)}
+.compose-limit.is-reached{color:var(--warning)}
+
+/* --- Long, unbroken answers must not escape their panel ---------------------
+   A response like "aaaa…" with no spaces has no break opportunity, so the
+   browser lets it run past the container and across the page. These are the
+   surfaces that render whatever a student typed (or whatever the evaluator
+   quoted back), so they all have to be able to break mid-word. */
+.feedback-group p,
+.feedback-overall,
+.answer-reveal p,
+.transcript p,
+.transcript-panel-content,
+.result-answer,
+.perf-table td{
+  overflow-wrap:anywhere;word-break:break-word;
+}
+/* The evaluation panel itself, so nothing inside it can widen the layout. */
+.result-panel,.result,.feedback-group,.answer-reveal,.transcript-panel-content{min-width:0;max-width:100%}
+.typed-answer{display:grid;gap:8px}
+.typed-answer__count{margin:0;font-size:var(--text-xs);color:var(--muted-soft);text-align:right}
+.typed-answer__count.is-full{color:var(--warning)}
+
+/* --- Scrolling tab strip (components/ScrollTabs.jsx) ------------------------
+   Edge arrows instead of a scrollbar. The strip is still a real scroll
+   container — trackpad, swipe, shift+wheel and keyboard all work — the arrows
+   are an addition for pointer users, shown only on the side that has more. */
+.scroll-tabs{position:relative;margin-bottom:20px}
+.scroll-tabs__track{
+  display:flex;gap:8px;overflow-x:auto;scroll-behavior:smooth;
+  /* The scrollbar is what we are replacing, so it is hidden in every engine. */
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.scroll-tabs__track::-webkit-scrollbar{display:none}
+/* A little room at each end so a tab never sits flush under an arrow. */
+.scroll-tabs__track{padding:2px 2px 4px}
+
+.scroll-tabs__arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  width:32px;height:32px;display:grid;place-items:center;
+  border:1px solid var(--line);border-radius:var(--radius-full);
+  background:var(--surface);color:var(--ink-soft);
+  box-shadow:var(--shadow-md);transition:color .14s ease,border-color .14s ease,transform .14s ease;
+}
+.scroll-tabs__arrow:hover{color:var(--ink);border-color:var(--blue);transform:translateY(-50%) scale(1.06)}
+.scroll-tabs__arrow[hidden]{display:none}
+.scroll-tabs__arrow.is-left{left:-6px}
+.scroll-tabs__arrow.is-right{right:-6px}
+
+/* Fade the content under each arrow so tabs slide out of view rather than being cut off. */
+.scroll-tabs::before,.scroll-tabs::after{
+  content:"";position:absolute;top:0;bottom:0;width:48px;pointer-events:none;z-index:1;opacity:0;
+  transition:opacity .16s ease;
+}
+.scroll-tabs::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.scroll-tabs::after{right:0;background:linear-gradient(270deg,var(--bg),transparent)}
+.scroll-tabs:has(.scroll-tabs__arrow.is-left:not([hidden]))::before{opacity:1}
+.scroll-tabs:has(.scroll-tabs__arrow.is-right:not([hidden]))::after{opacity:1}
+
+@media(max-width:620px){
+  .scroll-tabs__arrow{display:none}   /* touch devices swipe; an arrow would only cover a tab */
+  .scroll-tabs::before,.scroll-tabs::after{width:24px}
+}
+
+/* ==========================================================================
+   Button system (components/Button.jsx)
+
+   One button language. Tiers differ by how much attention they are allowed to
+   claim, never by being differently-shaped objects: same radius, same type,
+   same motion, same focus ring throughout.
+
+   Red appears in exactly one tier. Re-do, Reset, Previous and Cancel are not
+   destructive and never wear it.
+   ========================================================================== */
+:root{
+  --btn-radius:8px;          /* precise, not a pill — pills are for badges and filters */
+  --btn-h-sm:32px; --btn-h-md:40px; --btn-h-lg:46px;
+  --btn-pad-sm:0 12px; --btn-pad-md:0 16px; --btn-pad-lg:0 22px;
+  --btn-gap:8px;
+  --btn-ease:cubic-bezier(.22,.61,.36,1);
+  --btn-speed:160ms;         /* fast enough to feel instant, slow enough to read */
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--btn-gap);
+  border:1px solid transparent;border-radius:var(--btn-radius);
+  font-family:inherit;font-weight:600;letter-spacing:-.01em;line-height:1;
+  white-space:nowrap;cursor:pointer;
+  transition:background var(--btn-speed) var(--btn-ease),
+             border-color var(--btn-speed) var(--btn-ease),
+             color var(--btn-speed) var(--btn-ease),
+             box-shadow var(--btn-speed) var(--btn-ease),
+             transform 100ms var(--btn-ease);
+}
+.btn svg{flex:none}
+.btn__label{display:inline-block}
+.btn--full{width:100%}
+
+/* --- Sizes. Most of the product should use md. ----------------------------- */
+.btn--sm{height:var(--btn-h-sm);padding:var(--btn-pad-sm);font-size:12.5px;gap:6px}
+.btn--md{height:var(--btn-h-md);padding:var(--btn-pad-md);font-size:14px}
+.btn--lg{height:var(--btn-h-lg);padding:var(--btn-pad-lg);font-size:15px}
+
+/* --- Tiers ----------------------------------------------------------------- */
+.btn--primary{background:var(--blue);color:#fff;box-shadow:var(--shadow-xs)}
+.btn--primary:hover:not(:disabled){background:var(--blue2);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+
+/* Secondary is a NEUTRAL surface, not a tinted one. It used to be blue-tinted, which made it
+   read as a second primary and left the real primary with nothing to stand against. */
+.btn--secondary{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn--secondary:hover:not(:disabled){border-color:var(--blue);color:var(--blue);transform:translateY(-1px)}
+
+.btn--tertiary{background:transparent;color:var(--ink-soft);border-color:var(--line)}
+.btn--tertiary:hover:not(:disabled){background:var(--bg-soft);color:var(--ink)}
+
+/* Ghost carries no weight at rest and reveals itself only under the pointer. */
+.btn--ghost{background:transparent;color:var(--muted)}
+.btn--ghost:hover:not(:disabled){background:var(--bg-soft);color:var(--ink)}
+
+.btn--success{background:var(--success);color:#fff}
+.btn--success:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-1px)}
+
+.btn--danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.btn--danger:hover:not(:disabled){background:var(--danger);color:#fff}
+
+.btn--link{background:none;border:0;color:var(--blue);height:auto;padding:2px 4px;font-size:inherit}
+.btn--link:hover:not(:disabled){text-decoration:underline}
+
+.btn:active:not(:disabled){transform:translateY(0) scale(.985)}
+
+/* --- States ---------------------------------------------------------------- */
+/* Readable when unavailable, not faded to the point of illegibility — a disabled Previous on
+   question 1 must still be findable, so the control does not move between questions. */
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.is-loading{cursor:progress}
+.btn__spinner{animation:btn-spin .7s linear infinite}
+@keyframes btn-spin{to{transform:rotate(360deg)}}
+
+/* A brief affirmative state after something saved. Subtle, and never the resting look. */
+.btn.is-success{background:var(--success-bg);color:var(--success);border-color:var(--success)}
+
+.btn:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px}
+
+/* --- Icon-only ------------------------------------------------------------- */
+.btn--icon-only{padding:0;aspect-ratio:1}
+.btn--icon-only.btn--sm{width:var(--btn-h-sm)}
+.btn--icon-only.btn--md{width:var(--btn-h-md)}
+.btn--icon-only.btn--lg{width:var(--btn-h-lg)}
+
+/* --- Navigation ------------------------------------------------------------ */
+.btn--nav .btn__label{font-weight:600}
+.btn--nav.is-next:hover:not(:disabled) svg{transform:translateX(2px)}
+.btn--nav.is-previous:hover:not(:disabled) svg{transform:translateX(-2px)}
+.btn--nav svg{transition:transform var(--btn-speed) var(--btn-ease)}
+
+/* --- Action bars ----------------------------------------------------------- */
+/* Previous | position | Next, with the position reading as data rather than as a label. */
+.btn-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn-bar__position{
+  font-family:var(--font-mono);font-size:var(--text-sm);color:var(--muted);
+  display:inline-flex;align-items:baseline;gap:4px;
+}
+.btn-bar__position b{color:var(--ink);font-weight:700;font-size:var(--text-md)}
+.btn-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* A bar with nothing to put in the middle: the actions sit together at one end. */
+.btn-bar.is-end{justify-content:flex-end}
+.btn-bar.is-start{justify-content:flex-start}
+/* Buttons that sit in flowing content rather than in an action row, replacing the inline
+   margin-top each of them used to carry. */
+.result__retry,.task-inline-action{margin-top:12px}
+
+/* --- Recording ------------------------------------------------------------- */
+/* One mark, not two. While recording, the button showed an outlined square AND a pulsing dot,
+   which read as a stray artefact rather than as a state. The dot is gone and the square is
+   filled — the universal stop symbol, and the only glyph on the button. The box beside it is
+   already saying RECORDING, drawing a live waveform and counting the seconds.
+   Not the danger tier — stopping a recording destroys nothing. */
+.btn--record{min-width:168px}
+.btn--record.is-recording svg{fill:currentColor}
+
+@media(max-width:620px){
+  /* Touch targets stay at least 44px, and the primary action gets the full width rather than
+     being squeezed beside something less important. */
+  .btn--sm{height:38px}
+  .btn--md,.btn--lg{height:46px}
+  .btn-bar{gap:10px}
+  .btn-bar .btn--nav{flex:1}
+}
+.ld-modal__submit{margin-top:8px}
+.pager__position{display:inline-flex;align-items:baseline;gap:4px;font-size:var(--text-sm);color:var(--muted)}
+.pager__position b{color:var(--ink);font-weight:700}

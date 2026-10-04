@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -64,11 +64,37 @@ async function open() {
 // is overwritten by it — so a lone fireEvent.change can silently do nothing. A real user cannot
 // click faster than that first effect, so retrying reproduces their experience rather than
 // masking a defect they could actually hit.
+// The blank is a listbox, not a <select> — an <option> cannot be styled to match the product and
+// the native control drew its own focus border. Choosing is therefore open-then-click, which is
+// also what a student actually does.
+function blankTrigger(label) {
+  return screen.getByRole("combobox", { name: label });
+}
+
+function openBlank(label) {
+  const trigger = blankTrigger(label);
+  if (trigger.getAttribute("aria-expanded") !== "true") fireEvent.click(trigger);
+  return within(screen.getByRole("listbox", { name: label })).getAllByRole("option");
+}
+
+/** The words a blank offers, with the list left closed afterwards. */
+function blankOptions(label) {
+  const words = openBlank(label).map(option => option.textContent);
+  fireEvent.click(blankTrigger(label));
+  return words;
+}
+
+/** What a blank currently reads as — "" before anything has been chosen. */
+function blankValue(label) {
+  return blankTrigger(label).textContent.trim();
+}
+
 async function chooseBlank(label, optionIndex) {
-  const select = screen.getByLabelText(label);
   await waitFor(() => {
-    fireEvent.change(select, { target: { value: String(optionIndex) } });
-    expect(select.value).toBe(String(optionIndex));
+    const options = openBlank(label);
+    const word = options[optionIndex].textContent;
+    fireEvent.click(options[optionIndex]);
+    expect(blankValue(label)).toBe(word);
   });
 }
 
@@ -81,15 +107,15 @@ async function submitAnswer() {
 describe("Fill in the Blanks (Dropdown) — answering", () => {
   it("renders one dropdown per blank, inline in the passage", async () => {
     await open();
-    expect(screen.getByLabelText("Blank 1")).toBeInTheDocument();
-    expect(screen.getByLabelText("Blank 2")).toBeInTheDocument();
-    expect(document.querySelectorAll(".dropdown-blank select").length).toBe(2);
+    expect(blankTrigger("Blank 1")).toBeInTheDocument();
+    expect(blankTrigger("Blank 2")).toBeInTheDocument();
+    expect(document.querySelectorAll(".dropdown-blank .blank-select").length).toBe(2);
   });
 
   it("gives each blank its own options rather than one shared pool", async () => {
     await open();
-    const first = [...screen.getByLabelText("Blank 1").options].map(o => o.textContent);
-    const second = [...screen.getByLabelText("Blank 2").options].map(o => o.textContent);
+    const first = blankOptions("Blank 1");
+    const second = blankOptions("Blank 2");
     expect(first).toEqual(expect.arrayContaining(["any", "less", "some", "more"]));
     expect(first).not.toEqual(expect.arrayContaining(["unequal"]));
     expect(second).toEqual(expect.arrayContaining(["equal", "unequal", "opposite", "parallel"]));
@@ -157,23 +183,25 @@ describe("Fill in the Blanks (Dropdown) — after scoring", () => {
     await chooseBlank("Blank 2", 0);
     await submitAnswer();
 
-    await waitFor(() => expect(screen.getByLabelText("Blank 1")).toBeDisabled());
-    expect(screen.getByLabelText("Blank 2")).toBeDisabled();
+    await waitFor(() => expect(blankTrigger("Blank 1")).toBeDisabled());
+    expect(blankTrigger("Blank 2")).toBeDisabled();
   });
 });
 
 describe("Fill in the Blanks (Dropdown) — the unchosen state", () => {
   it("offers only the real words in the list, with no blank row to pick", async () => {
     await open();
-    const visible = [...screen.getByLabelText("Blank 1").options].filter(o => !o.hidden);
-    expect(visible.map(o => o.textContent)).toEqual(["any", "less", "some", "more"]);
+    // Every row in the list is a real word. The old <select> needed a hidden empty <option> to
+    // hold the unchosen state; a null value does that now, so there is no placeholder row to
+    // keep out of the list.
+    expect(blankOptions("Blank 1")).toEqual(["any", "less", "some", "more"]);
   });
 
   it("starts empty rather than preselecting the first word", async () => {
     await open();
     // A preselected option would both look answered and let Submit enable on a choice the
     // student never made.
-    expect(screen.getByLabelText("Blank 1").value).toBe("");
+    expect(blankValue("Blank 1")).toBe("");
     expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
   });
 });
@@ -187,8 +215,8 @@ describe("Fill in the Blanks (Dropdown) — Re-do", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Re-do" }));
 
-    await waitFor(() => expect(screen.getByLabelText("Blank 1").value).toBe(""));
-    expect(screen.getByLabelText("Blank 2").value).toBe("");
+    await waitFor(() => expect(blankValue("Blank 1")).toBe(""));
+    expect(blankValue("Blank 2")).toBe("");
     // Nothing chosen means nothing to submit.
     expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
   });
@@ -209,9 +237,9 @@ describe("Fill in the Blanks (Dropdown) — Re-do", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Re-do" }));
 
-    await waitFor(() => expect(screen.getByLabelText("Blank 1").value).toBe(""));
+    await waitFor(() => expect(blankValue("Blank 1")).toBe(""));
     expect(document.querySelectorAll(".dropdown-blank.is-right, .dropdown-blank.is-wrong").length).toBe(0);
     expect(screen.queryByText(/\(Answer:/)).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Blank 1")).not.toBeDisabled();
+    expect(blankTrigger("Blank 1")).not.toBeDisabled();
   });
 });

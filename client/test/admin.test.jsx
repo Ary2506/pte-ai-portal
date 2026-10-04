@@ -106,7 +106,7 @@ describe("user creation", () => {
   it("submits the create-user form and shows the temporary password once", async () => {
     renderAt("/admin", adminAuthUser());
     fireEvent.click(await screen.findByText("Users"));
-    fireEvent.click(await screen.findByText("+ Create user"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte099" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "New Student" } });
     fireEvent.click(screen.getByText("Create user"));
@@ -157,7 +157,7 @@ describe("pagination", () => {
     api.admin.listUsers.mockResolvedValueOnce(usersPage([sampleUser()], { totalPages: 2, page: 1 }));
     renderAt("/admin", adminAuthUser());
     fireEvent.click(await screen.findByText("Users"));
-    fireEvent.click(await screen.findByText("Next ›"));
+    fireEvent.click(await screen.findByRole("button", { name: "Next" }));
     await waitFor(() => expect(api.admin.listUsers).toHaveBeenCalledWith(expect.objectContaining({ page: 2 })));
   });
 });

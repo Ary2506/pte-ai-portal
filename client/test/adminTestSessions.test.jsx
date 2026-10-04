@@ -71,7 +71,7 @@ describe("Admin — mock test session visibility (list)", () => {
       testSessions: [sessionRow({ _id: "ts2", user: { username: "pte003" } })],
       total: 25, page: 2, limit: 20, totalPages: 2
     });
-    fireEvent.click(screen.getByText("Next ›"));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await waitFor(() => expect(api.admin.testSessions.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })));
     expect(await screen.findByText("pte003")).toBeInTheDocument();

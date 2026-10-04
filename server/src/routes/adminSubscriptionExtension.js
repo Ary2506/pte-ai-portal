@@ -14,6 +14,11 @@ import { asyncRoute } from "../utils/asyncRoute.js";
 // it only ever writes `subscriptionEndDate` on an already-active subscription, via the same
 // addDays arithmetic routes/admin.js already uses for /renew.
 
+// Ten years. Past about 100,000,000 days a Date overflows and becomes Invalid, which would be
+// written to the subscription and leave the account in a state no expiry check can reason about.
+// No legitimate extension comes close to this.
+const MAX_EXTENSION_DAYS = 3650;
+
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
 
@@ -32,6 +37,9 @@ function validateDaysAndReason(body) {
   const days = Number(body.days);
   if (!Number.isInteger(days) || days <= 0) {
     return { error: "Extra days must be a positive whole number." };
+  }
+  if (days > MAX_EXTENSION_DAYS) {
+    return { error: `Extra days cannot exceed ${MAX_EXTENSION_DAYS}.` };
   }
   const reason = (body.reason || "").trim();
   if (!reason) {
@@ -81,7 +89,7 @@ router.post("/users/:id", asyncRoute(async (req, res) => {
 // ---------------------------------------------------------------------------
 router.post("/users/:id/revoke", asyncRoute(async (req, res) => {
   const days = Number(req.body.days);
-  if (!Number.isInteger(days) || days <= 0) {
+  if (!Number.isInteger(days) || days <= 0 || days > MAX_EXTENSION_DAYS) {
     return res.status(400).json({ message: "Days to revoke must be a positive whole number.", code: "VALIDATION_ERROR" });
   }
 
@@ -157,7 +165,7 @@ router.post("/users/:id/cancel", asyncRoute(async (req, res) => {
 // ---------------------------------------------------------------------------
 router.post("/bulk/preview", asyncRoute(async (req, res) => {
   const days = Number(req.body.days);
-  if (!Number.isInteger(days) || days <= 0) {
+  if (!Number.isInteger(days) || days <= 0 || days > MAX_EXTENSION_DAYS) {
     return res.status(400).json({ message: "Extra days must be a positive whole number.", code: "VALIDATION_ERROR" });
   }
 

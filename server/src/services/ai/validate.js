@@ -40,8 +40,14 @@ export function validateAiResult(raw, maxScore = 90, criteriaKeys = []) {
   }
 
   const score = Math.max(0, Math.min(maxScore, Math.round(raw.score)));
-  const strengths = Array.isArray(raw.strengths) ? raw.strengths.filter(s => typeof s === "string" && s.trim()).slice(0, 5) : [];
-  const improvements = Array.isArray(raw.improvements) ? raw.improvements.filter(s => typeof s === "string" && s.trim()).slice(0, 5) : [];
+  // Capped per item as well as per list. The list caps were already here; without a length cap on
+  // each string a single runaway bullet could still carry an unbounded amount of text into the
+  // database and onto the results page, where it would have nothing to wrap inside.
+  const bullets = (value) => (Array.isArray(value)
+    ? value.filter(s => typeof s === "string" && s.trim()).slice(0, 5).map(s => s.trim().slice(0, 300))
+    : []);
+  const strengths = bullets(raw.strengths);
+  const improvements = bullets(raw.improvements);
   const overall = typeof raw.overall === "string" ? raw.overall.trim().slice(0, 600) : "";
 
   if (!strengths.length && !improvements.length && !overall) {

@@ -1,8 +1,13 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { CheckCircle2, FileText } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, FileText, RefreshCw, RotateCcw, X } from "lucide-react";
 import { api } from "./api.js";
 import { useToast } from "./components/toast.jsx";
+import { Button, IconButton } from "./components/Button.jsx";
+import TaskTips, { AI_SCORING_NOTE, OBJECTIVE_SCORING_NOTE } from "./practice/TaskTips.jsx";
+import { ANSWER_MAX_LENGTH, BLANK_MAX_LENGTH, BLANK_CHAR_LIMITS, TASK_CHAR_LIMITS, countCharacters } from "./practice/answerLimits.js";
 import { audioUrl } from "./practice/listeningData/shared.js";
+import { localTranscriptFor } from "./practice/listeningData/localTranscripts.js";
+import BlankSelect from "./practice/BlankSelect.jsx";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
 const LOCAL_SUMMARIZE_SPOKEN_TEXT = Array.isArray(summarizeSpokenTextContent) ? summarizeSpokenTextContent : [];
@@ -85,12 +90,9 @@ function scoreLocalListeningQuestion(question, { choice, multi, text }) {
   return null;
 }
 
-function getLocalTranscript(question) {
-  if (!question) return "";
-  if (question.transcript) return question.transcript;
-  const titleMatch = LOCAL_SUMMARIZE_SPOKEN_TEXT.find(item => item.title === question.title || String(item.id) === String(question._id));
-  return titleMatch?.transcript || "";
-}
+// Covers every listening type with authored local content, keyed by sourceGroup first — see
+// listeningData/localTranscripts.js for why the stored question often has no transcript of its own.
+const getLocalTranscript = localTranscriptFor;
 
 function getLocalAudioUrl(question) {
   if (question?.audioUrl) return question.audioUrl;
@@ -112,13 +114,13 @@ function TranscriptModal({ title, text, onClose }) {
     <div className="modal-panel detail-panel" role="dialog" aria-modal="true" aria-label="Question transcript" onClick={e => e.stopPropagation()}>
       <div className="modal-head">
         <h3>{title}</h3>
-        <button className="icon-btn" onClick={onClose} aria-label="Close"><span aria-hidden="true">×</span></button>
+        <IconButton label="Close" icon={<X/>} onClick={onClose}/>
       </div>
       <div className="transcript-panel-content">
         <p>{text}</p>
       </div>
-      <div className="modal-actions" style={{ justifyContent: "flex-end" }}>
-        <button className="primary" onClick={onClose}>Close</button>
+      <div className="modal-actions btn-bar is-end">
+        <Button variant="primary" onClick={onClose}>Close</Button>
       </div>
     </div>
   </div>;
@@ -129,7 +131,8 @@ export function Result({ result, onRetry, retrying }) {
     return <div className="result bad">
       <b>Evaluation failed.</b>
       <p>{result.feedback?.overall || "AI evaluation is temporarily unavailable. Please try again."}</p>
-      {onRetry && <button className="secondary" style={{marginTop:10}} onClick={onRetry} disabled={retrying}>{retrying ? "Retrying..." : "Retry Evaluation"}</button>}
+      {onRetry && <Button variant="secondary" className="result__retry" icon={<RefreshCw/>}
+        loading={retrying} loadingLabel="Retrying..." onClick={onRetry}>Retry Evaluation</Button>}
     </div>;
   }
 
@@ -368,20 +371,19 @@ function DropdownBlanks({ content, values, setValues, disabled, correctIndexes }
       return <Fragment key={i}>
         <span className={className}>
           {graded && <span className="dropdown-blank-mark">{isRight ? "✓" : "✕"}</span>}
-          <select
-            value={picked ?? ""}
-            onChange={event => setValues(current => current.map((value, index) =>
-              index === position ? (event.target.value === "" ? null : Number(event.target.value)) : value))}
+          {/* A custom listbox rather than a <select>: an <option> cannot be styled to match the
+              product, and the native control drew its own focus border in the system accent
+              colour. The not-yet-chosen state is simply a null value — the blank reads empty
+              until the student picks, so Submit cannot enable on an answer nobody chose, and no
+              placeholder row has to be hidden from the list to achieve it. */}
+          <BlankSelect
+            options={part.options || []}
+            value={picked ?? null}
+            onChange={next => setValues(current => current.map((value, index) =>
+              index === position ? next : value))}
             disabled={disabled}
-            aria-label={`Blank ${position + 1}`}
-          >
-            {/* The not-yet-chosen state. `hidden` keeps it out of the open list — an unlabelled
-                blank row there reads as a broken option — while it stays the select's initial
-                value, so a blank shows empty until the student picks and Submit cannot enable on
-                an answer nobody chose. Dropping it entirely would preselect the first word. */}
-            <option value="" hidden></option>
-            {(part.options || []).map((option, index) => <option key={index} value={index}>{option}</option>)}
-          </select>
+            label={`Blank ${position + 1}`}
+          />
         </span>
         {graded && <span className="dropdown-blank-answer"> (Answer: {part.options?.[expected]})</span>}
       </Fragment>;
@@ -577,7 +579,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     : isDragFill ? !!dragPlacement && dragPlacement.every(v => v !== null && v !== undefined)
     : choice !== "";
 
-  return <div className="panel task-main narrow">
+  return <div className="task-layout">
+    <section className="panel task-main">
     <div className="task-meta"><span className="chip">Reading</span><span>Timed practice</span></div>
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
@@ -598,15 +601,15 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>}
-    {result
-      ? <ObjectiveResult result={result} />
-      : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Submitting..." : "Submit Answer"}</button>}
-    {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is untouched
-        (gated on testSessionId, exactly as Mock always passes it and standalone practice never
-        does). Always available, including after submission. */}
-    {!testSessionId && <div className="task-actions">
-      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy}>Re-do</button>
-    </div>}
+    {result && <ObjectiveResult result={result} />}
+    {/* One row, both buttons — Submit used to float right while Re-do sat in its own block below,
+        which is what put the two on different baselines. Re-do is standalone-practice only (Mock
+        Test's timed, one-attempt-per-question flow is gated on testSessionId). */}
+    <div className="task-actions">
+      {!testSessionId && <Button variant="secondary" icon={<RotateCcw/>} onClick={resetQuestion} disabled={busy}>Re-do</Button>}
+      {!result && <Button variant="primary" onClick={submit}
+        loading={busy} loadingLabel="Submitting..." disabled={!canSubmit}>Submit Answer</Button>}
+    </div>
     {/* Drag & Drop only, and only once this question has actually been scored (dragFillCorrectWords
         is null pre-submission — see the comment on it above). Matches the reference screenshot's
         "Answer" / "Wrong blanks only" toggles: the first reveals each blank's correct word inline
@@ -614,9 +617,10 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
         correctly so only the ones worth reviewing stay visible. */}
     {isDragFill && dragFillCorrectWords && <>
       <div className="drag-fill-toggles">
-        <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(v => !v)}>
+        <Button variant="tertiary" size="sm" className="answer-toggle"
+          icon={showAnswer ? <EyeOff/> : <Eye/>} onClick={() => setShowAnswer(v => !v)}>
           {showAnswer ? "Hide Answer" : "Answer"}
-        </button>
+        </Button>
         <label className="drag-fill-wrong-only">
           <input type="checkbox" checked={wrongOnly} onChange={e => setWrongOnly(e.target.checked)} /> Wrong blanks only
         </label>
@@ -626,6 +630,8 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
         <p>{dragFillCorrectWords.map((w, i) => `${i + 1}.${w}`).join(", ")}</p>
       </div>}
     </>}
+    </section>
+    <TaskTips type={question.type} section="reading" note={OBJECTIVE_SCORING_NOTE}/>
   </div>;
 }
 
@@ -779,23 +785,34 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
 
   // The length check matters: `[].every(...)` is true, so an empty array would read as "every
   // blank is filled" and enable Submit on a question with nothing typed in it.
+  // Per-task character cap, counted without whitespace — see practice/answerLimits.js. Enforced
+  // on the way in because maxLength counts every character, including the spaces this does not.
+  const charLimit = TASK_CHAR_LIMITS[question?.type] ?? null;
+  const charCount = countCharacters(text);
+  function changeText(next) {
+    if (charLimit === null || countCharacters(next) <= charLimit || next.length < text.length) {
+      setText(next);
+    }
+  }
+
   const canSubmit = isTypedBlanks ? blankValues.length > 0 && blankValues.every(value => value.trim())
     : isChoice ? choice !== "" : isMulti ? multi.length > 0 : !!text.trim();
 
-  return <div className="panel task-main narrow">
+  return <div className="task-layout">
+    <section className="panel task-main">
     <div className="task-meta"><span className="chip">Listening</span><span>Audio practice</span></div>
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
     {audioUrl && <audio className="audio" controls src={audioUrl} />}
-    {transcriptText && <button type="button" className="secondary" onClick={() => setShowTranscript(true)} style={{ marginTop: 12 }}>
-      <FileText size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />
-      Transcript
-    </button>}
+    {transcriptText
+      ? <Button variant="secondary" className="task-inline-action" icon={<FileText/>}
+          onClick={() => setShowTranscript(true)}>Transcript</Button>
+      : <p className="muted task-inline-action">No transcript has been added for this question yet.</p>}
     {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
         the audio — ReadingTask has always shown its passage; this was the one place Listening
         never did. Harmless no-op for every other listening type, which never sets a passage. */}
     {isTypedBlanks
-      ? <ListeningFillBlanks passage={question.passage} values={blankValues} setValues={setBlankValues} disabled={!!result} />
+      ? <ListeningFillBlanks passage={question.passage} values={blankValues} setValues={setBlankValues} disabled={!!result} maxLength={BLANK_CHAR_LIMITS[question.type] ?? BLANK_MAX_LENGTH} />
       : question.passage && <div className="passage">{question.passage}</div>}
     {isTypedBlanks ? null : isChoice
       ? <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
@@ -807,29 +824,41 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
           : <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />)
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
-      : <textarea className="answer-area compact" value={text} onChange={e => setText(e.target.value)} placeholder="Type your response..." disabled={!!result} />}
-    {result
-      ? (question.evaluationType === "objective" ? <ObjectiveResult result={result} /> : <Result result={result} onRetry={retry} retrying={retrying} />)
-      : <button className="primary right" onClick={submit} disabled={busy || !canSubmit}>{busy ? "Evaluating..." : "Submit"}</button>}
-    {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is untouched
-        (gated on testSessionId, exactly as Mock always passes it and standalone practice never
-        does). Always available, including after AI evaluation. */}
-    {!testSessionId && <div className="task-actions">
-      <button type="button" className="secondary" onClick={resetQuestion} disabled={busy || retrying}>Re-do</button>
-    </div>}
+      : <div className="typed-answer">
+          <textarea className="answer-area compact" value={text} onChange={e => changeText(e.target.value)}
+            placeholder="Type your response..." disabled={!!result} maxLength={ANSWER_MAX_LENGTH}/>
+          {charLimit !== null && !result && (
+            <p className={charCount >= charLimit ? "typed-answer__count is-full" : "typed-answer__count"}>
+              <span className="num-mono">{charCount}</span>/{charLimit} characters
+              {charCount >= charLimit && " — limit reached. Spaces are not counted."}
+            </p>
+          )}
+        </div>}
+    {result && (question.evaluationType === "objective"
+      ? <ObjectiveResult result={result} />
+      : <Result result={result} onRetry={retry} retrying={retrying} />)}
+    <div className="task-actions">
+      {!testSessionId && <Button variant="secondary" icon={<RotateCcw/>} onClick={resetQuestion} disabled={busy || retrying}>Re-do</Button>}
+      {!result && <Button variant="primary" onClick={submit}
+        loading={busy} loadingLabel="Evaluating..." disabled={!canSubmit}>Submit</Button>}
+    </div>
     {answerText && <>
-      <button type="button" className="secondary answer-toggle" onClick={() => setShowAnswer(value => !value)}>
+      <Button variant="tertiary" size="sm" className="answer-toggle"
+        icon={showAnswer ? <EyeOff/> : <Eye/>} onClick={() => setShowAnswer(value => !value)}>
         {showAnswer ? "Hide Answer" : "Answer"}
-      </button>
+      </Button>
       {showAnswer && <div className="answer-reveal"><b>Answer</b><p>{answerText}</p></div>}
     </>}
     {showTranscript && transcriptText && <TranscriptModal title={question.title} text={transcriptText} onClose={() => setShowTranscript(false)} />}
+    </section>
+    <TaskTips type={question.type} section="listening"
+      note={question.evaluationType === "objective" ? OBJECTIVE_SCORING_NOTE : AI_SCORING_NOTE}/>
   </div>;
 }
 
 function Empty({ text }) { return <div className="empty">{text}</div>; }
 
-function ListeningFillBlanks({ passage, values, setValues, disabled }) {
+function ListeningFillBlanks({ passage, values, setValues, disabled, maxLength = BLANK_MAX_LENGTH }) {
   const parts = passage.split("____");
   return <p className="listening-fill-passage">
     {parts.map((part, index) => <Fragment key={index}>
@@ -839,6 +868,7 @@ function ListeningFillBlanks({ passage, values, setValues, disabled }) {
         value={values[index] || ""}
         onChange={event => setValues(current => current.map((value, position) => position === index ? event.target.value : value))}
         disabled={disabled}
+        maxLength={maxLength}
         aria-label={`Blank ${index + 1}`}
       />}
     </Fragment>)}

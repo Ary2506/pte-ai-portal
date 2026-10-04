@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { api } from "../../api.js";
-import { Badge, Empty, SkeletonCards, SkeletonRows } from "../../components/common.jsx";
+import { Badge, Empty, Pager, SkeletonCards, SkeletonRows } from "../../components/common.jsx";
+import { Button } from "../../components/Button.jsx";
 import { fmtDateTime } from "./adminFormat.js";
 
 function StatTile({label,value,tone,onClick}) {
@@ -72,7 +73,7 @@ export function AdminDashboard({notify, goToUsers, goToQuestions}) {
     <SkeletonCards count={8} gridClass="stat-grid"/>
     <SkeletonRows count={4}/>
   </div>;
-  if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><button className="secondary" onClick={load}>Retry</button></div>;
+  if (error) return <div className="panel error-state"><AlertCircle size={30}/><h4>Unable to load the dashboard</h4><p>Please check your connection and try again.</p><Button variant="secondary" icon={<RefreshCw/>} onClick={load}>Retry</Button></div>;
 
   return <div className="admin-dashboard">
     <section className="admin-hero">
@@ -113,11 +114,9 @@ export function AdminDashboard({notify, goToUsers, goToQuestions}) {
           <span className="activity-dot"/>
           <div><p><b>{a.admin?.username||"admin"}</b> {ACTIVITY_LABELS[a.action]||a.action.toLowerCase()} {a.target ? <b>{a.target.username}</b> : QUESTION_ACTIVITY_ACTIONS.has(a.action) && a.metadata?.title ? <b>"{a.metadata.title}"</b> : ""}</p><small className="muted">{fmtDateTime(a.createdAt)}</small></div>
         </div>)}</div> : <Empty text="No admin activity yet."/>}
-      {activityTotalPages > 1 && <div className="pager">
-        <button className="secondary" disabled={activityPage <= 1 || activityLoading} onClick={()=>goToActivityPage(activityPage - 1)}>‹ Previous</button>
-        <span className="muted">Page {activityPage} of {activityTotalPages} · {activityTotal} action{activityTotal===1?"":"s"}</span>
-        <button className="secondary" disabled={activityPage >= activityTotalPages || activityLoading} onClick={()=>goToActivityPage(activityPage + 1)}>Next ›</button>
-      </div>}
+      <Pager page={activityPage} totalPages={activityTotalPages} total={activityTotal} itemLabel="actions"
+        busy={activityLoading}
+        onPrevious={()=>goToActivityPage(activityPage - 1)} onNext={()=>goToActivityPage(activityPage + 1)}/>
     </section>
   </div>
 }

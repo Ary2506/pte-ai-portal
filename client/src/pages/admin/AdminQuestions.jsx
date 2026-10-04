@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { ArrowDown, ArrowUp, Eye, Pencil, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import { api } from "../../api.js";
 import { Badge, ConfirmDialog, DataTable, Modal } from "../../components/common.jsx";
+import { Button, IconButton } from "../../components/Button.jsx";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 const SECTIONS = ["speaking", "writing", "reading", "listening"];
@@ -115,8 +117,8 @@ function OrderPicker({ options, order, setOrder }) {
       <span className="reorder-pos">{pos + 1}</span>
       <span className="reorder-text">{options[optIdx] || <em className="muted">(empty item)</em>}</span>
       <span className="reorder-controls">
-        <button type="button" className="icon-btn" disabled={pos === 0} onClick={() => move(pos, -1)} aria-label="Move up">↑</button>
-        <button type="button" className="icon-btn" disabled={pos === order.length - 1} onClick={() => move(pos, 1)} aria-label="Move down">↓</button>
+        <IconButton label="Move up" size="sm" icon={<ArrowUp/>} disabled={pos === 0} onClick={() => move(pos, -1)}/>
+        <IconButton label="Move down" size="sm" icon={<ArrowDown/>} disabled={pos === order.length - 1} onClick={() => move(pos, 1)}/>
       </span>
     </li>)}
   </ol>;
@@ -349,11 +351,13 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
             {shape === "choice-single" && <input type="radio" checked={form.answer !== "" && Number(form.answer) === i} onChange={() => update({ answer: i })} aria-label={`Mark option ${i + 1} correct`}/>}
             {shape === "choice-multiple" && <input type="checkbox" checked={form.multiAnswer.includes(i)} onChange={() => toggleMulti(i)} aria-label={`Mark option ${i + 1} correct`}/>}
             <input value={opt} onChange={e => updateOption(i, e.target.value)} placeholder={`Item ${i + 1}`} aria-label={`Option ${i + 1} text`}/>
-            <button type="button" className="text-button" onClick={() => removeOption(i)} disabled={form.options.length <= 2}>Remove</button>
+            <IconButton label={`Remove option ${i + 1}`} size="sm" variant="danger" icon={<X/>}
+              onClick={() => removeOption(i)} disabled={form.options.length <= 2}/>
           </div>)}
         </div>
         {fieldErrors.options && <p className="field-error">{fieldErrors.options}</p>}
-        <button type="button" className="secondary" onClick={addOption} style={{marginTop:8}}>+ Add {shape === "reorder" ? "item" : "option"}</button>
+        <Button variant="secondary" size="sm" className="option-editor__add" icon={<Plus/>}
+          onClick={addOption}>Add {shape === "reorder" ? "item" : "option"}</Button>
         {(shape === "choice-single" || shape === "choice-multiple") && <>
           <p className="muted" style={{fontSize:12,marginTop:6}}>Select the correct option(s) — this is the objectively-graded answer key — using the {shape === "choice-single" ? "radio buttons" : "checkboxes"} to the left.</p>
           {fieldErrors.answer && <p className="field-error">{fieldErrors.answer}</p>}
@@ -405,15 +409,15 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
       <p className="form-section-title">Publishing</p>
       {!isEditing && <p className="muted" style={{fontSize:12,marginBottom:10}}>Save as Draft keeps this question hidden from students. Publish makes it available immediately.</p>}
       {isEditing && <p className="muted" style={{fontSize:12,marginBottom:10}}>{form.active ? "This question is published and visible to students." : "This question is a draft and is not visible to students."}</p>}
-      <div className="modal-actions">
-        <button type="button" className="secondary" onClick={onCancel} disabled={busy}>Cancel</button>
+      <div className="modal-actions btn-bar is-end">
+        <Button variant="tertiary" onClick={onCancel} disabled={busy}>Cancel</Button>
         {!isEditing && <>
-          <button type="button" className="secondary" onClick={() => attemptSave(false)} disabled={busy}>{saving ? "Saving..." : "Save as Draft"}</button>
-          <button type="button" className="primary" onClick={() => attemptSave(true)} disabled={busy}>{saving ? "Saving..." : "Publish"}</button>
+          <Button variant="secondary" onClick={() => attemptSave(false)} loading={saving} loadingLabel="Saving..." disabled={busy}>Save as Draft</Button>
+          <Button variant="primary" onClick={() => attemptSave(true)} loading={saving} loadingLabel="Saving..." disabled={busy}>Publish</Button>
         </>}
         {isEditing && <>
-          <button type="button" className="secondary" onClick={() => attemptSave(!form.active)} disabled={busy}>{saving ? "Working..." : (form.active ? "Unpublish" : "Publish")}</button>
-          <button type="button" className="primary" onClick={() => attemptSave(form.active)} disabled={busy}>{saving ? "Saving..." : "Update"}</button>
+          <Button variant="secondary" onClick={() => attemptSave(!form.active)} loading={saving} loadingLabel="Working..." disabled={busy}>{form.active ? "Unpublish" : "Publish"}</Button>
+          <Button variant="primary" onClick={() => attemptSave(form.active)} loading={saving} loadingLabel="Saving..." disabled={busy}>Update</Button>
         </>}
       </div>
     </div>
@@ -506,9 +510,10 @@ export function AdminQuestionsPanel({ notify }) {
   return <div>
     <div className="panel-head">
       <div><span className="eyebrow">Content management</span><h3>Question Library</h3><p className="muted">{total} total</p></div>
-      <button className="primary" onClick={() => setShowCreate(s => !s)}>{showCreate ? "Cancel" : "+ Create question"}</button>
+      <Button variant={showCreate ? "tertiary" : "primary"} icon={showCreate ? <X/> : <Plus/>}
+        onClick={() => setShowCreate(s => !s)}>{showCreate ? "Cancel" : "Create question"}</Button>
     </div>
-    {error && <div className="alert error">{error}<button type="button" className="text-button" style={{marginTop:0,marginLeft:"auto"}} onClick={() => load()}>Retry</button></div>}
+    {error && <div className="alert error">{error}<Button variant="link" size="sm" className="alert__action" icon={<RefreshCw/>} onClick={() => load()}>Retry</Button></div>}
     {showCreate && types.length > 0 && <QuestionForm types={types} onCancel={() => setShowCreate(false)} onSave={createQuestion} saving={saving} error={formError}/>}
 
     <div className="filter-bar">
@@ -545,12 +550,12 @@ export function AdminQuestionsPanel({ notify }) {
         { key: "status", header: "Status", render: q => <Badge tone={q.active ? "good" : "warn"}>{q.active ? "Published" : "Draft"}</Badge> },
         { key: "created", header: "Created", render: q => new Date(q.createdAt).toLocaleDateString() },
         { key: "actions", header: "Actions", cellClassName: "admin-actions", render: q => <>
-          <button className="text-button" onClick={() => preview(q._id)}>View</button>
-          <button className="text-button" onClick={() => setEditId(q._id)}>Edit</button>
+          <Button variant="ghost" size="sm" icon={<Eye/>} onClick={() => preview(q._id)}>View</Button>
+          <Button variant="ghost" size="sm" icon={<Pencil/>} onClick={() => setEditId(q._id)}>Edit</Button>
           {q.active
-            ? <button className="text-button" onClick={() => setConfirmAction({ title: "Unpublish this question?", message: `"${q.title}" will no longer be given to students. Existing submissions are unaffected.`, label: "Unpublish now", danger: true, successMsg: "Question moved to draft", run: () => api.admin.questions.setStatus(q._id, false) })}>Unpublish</button>
-            : <button className="text-button" onClick={() => setConfirmAction({ title: "Publish this question?", message: `"${q.title}" will become available to students immediately.`, label: "Publish now", danger: false, successMsg: "Question published", run: () => api.admin.questions.setStatus(q._id, true) })}>Publish</button>}
-          <button className="text-button" onClick={() => setConfirmAction({ title: "Delete this question?", message: `"${q.title}" will be permanently removed. This is only possible if no student has submitted an answer to it — otherwise unpublish it instead.`, label: "Delete permanently", danger: true, successMsg: "Question deleted", run: () => api.admin.questions.remove(q._id) })}>Delete</button>
+            ? <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ title: "Unpublish this question?", message: `"${q.title}" will no longer be given to students. Existing submissions are unaffected.`, label: "Unpublish now", danger: true, successMsg: "Question moved to draft", run: () => api.admin.questions.setStatus(q._id, false) })}>Unpublish</Button>
+            : <Button variant="ghost" size="sm" onClick={() => setConfirmAction({ title: "Publish this question?", message: `"${q.title}" will become available to students immediately.`, label: "Publish now", danger: false, successMsg: "Question published", run: () => api.admin.questions.setStatus(q._id, true) })}>Publish</Button>}
+          <Button variant="danger" size="sm" icon={<Trash2/>} onClick={() => setConfirmAction({ title: "Delete this question?", message: `"${q.title}" will be permanently removed. This is only possible if no student has submitted an answer to it — otherwise unpublish it instead.`, label: "Delete permanently", danger: true, successMsg: "Question deleted", run: () => api.admin.questions.remove(q._id) })}>Delete</Button>
         </> }
       ]}
     />

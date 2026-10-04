@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { Ban, Check, ClipboardCopy, KeyRound, LogOut, PauseCircle, Plus, Settings2, UserCheck, X } from "lucide-react";
 import { api } from "../../api.js";
 import { Badge, ConfirmDialog, DataTable, Empty, Modal } from "../../components/common.jsx";
+import { Button } from "../../components/Button.jsx";
 import { fmtDate, fmtDateTime } from "./adminFormat.js";
 // Temporary/emergency admin feature — see the removal note at the top of
 // AdminSubscriptionExtension.jsx for exactly what to delete, including these two lines and their
@@ -100,8 +102,9 @@ function CredentialMessageModal({ title, description, message, onClose }) {
   }
   return <Modal onClose={onClose} title={title} ariaLabel={title}
     footer={<>
-      <button className="secondary" onClick={onClose}>Close</button>
-      <button className="primary" onClick={copy}>{copied ? "Copied!" : "Copy message"}</button>
+      <Button variant="tertiary" onClick={onClose}>Close</Button>
+      <Button variant="primary" icon={copied ? <Check/> : <ClipboardCopy/>} success={copied}
+        successLabel="Copied!" onClick={copy}>Copy message</Button>
     </>}>
     <p className="muted" style={{marginTop:-6}}>{description}</p>
     <textarea readOnly className="answer-area" style={{height:360,fontFamily:"monospace",fontSize:12}} value={message} onClick={e => e.target.select()}/>
@@ -175,10 +178,11 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   return <div>
     <div className="panel-head">
       <div><h3>User accounts</h3><p className="muted">{total} total · registration is admin-only</p></div>
-      <div style={{display:"flex",gap:10}}>
+      <div className="btn-group">
         {/* Temporary/emergency admin feature — see AdminSubscriptionExtension.jsx's removal note */}
         <ExtendAllActiveButton onExtended={()=>load()}/>
-        <button className="primary" onClick={()=>setShowCreate(s=>!s)}>{showCreate ? "Cancel" : "+ Create user"}</button>
+        <Button variant={showCreate ? "tertiary" : "primary"} icon={showCreate ? <X/> : <Plus/>}
+          onClick={()=>setShowCreate(s=>!s)}>{showCreate ? "Cancel" : "Create user"}</Button>
       </div>
     </div>
     {error && <div className="alert error">{error}</div>}
@@ -198,7 +202,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
           <option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option>
         </select>
       </label>
-      <button className="primary" disabled={creating}>{creating ? "Creating..." : "Create user"}</button>
+      <Button type="submit" variant="primary" loading={creating} loadingLabel="Creating...">Create user</Button>
     </form>}
     <div className="filter-bar">
       <div className="search admin-search"><span aria-hidden="true">⌕</span><input placeholder="Search by User ID, name or email..." aria-label="Search users" value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
@@ -229,7 +233,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
         { key: "lastLogin", header: "Last login", render: u => fmtDateTime(u.lastLoginAt) },
         { key: "session", header: "Session", render: u => <Badge tone={u.sessionStatus==="ACTIVE"?"info":"neutral"}>{u.sessionStatus}</Badge> },
         { key: "created", header: "Created", render: u => fmtDate(u.createdAt) },
-        { key: "actions", header: "Actions", render: u => u.role!=="admin" && <button className="text-button" onClick={()=>setDetailId(u.id)}>Manage</button> }
+        { key: "actions", header: "Actions", render: u => u.role!=="admin" && <Button variant="ghost" size="sm" icon={<Settings2/>} onClick={()=>setDetailId(u.id)}>Manage</Button> }
       ]}
     />
     {detailId && <AdminUserDetail id={detailId} notify={notify} onClose={()=>{setDetailId(null); load();}}/>}
@@ -306,7 +310,7 @@ function AdminUserDetail({id, notify, onClose}) {
             <div className="detail-actions">
               <ExtendSubscriptionButton user={u} onExtended={load}/>
               <RevokeSubscriptionButton user={u} onRevoked={load}/>
-              {u.subscriptionStatus==="ACTIVE" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Cancel subscription?",message:`Confirm you want to cancel the subscription for ${u.username}?`,label:"Cancel subscription",danger:true,successMsg:"Subscription cancelled",run:()=>api.admin.subscriptionExtension.cancelUser(u.id)})}>Cancel Subscription</button>}
+              {u.subscriptionStatus==="ACTIVE" && <Button variant="danger" size="sm" disabled={busy} onClick={()=>setConfirmAction({title:"Cancel subscription?",message:`Confirm you want to cancel the subscription for ${u.username}?`,label:"Cancel subscription",danger:true,successMsg:"Subscription cancelled",run:()=>api.admin.subscriptionExtension.cancelUser(u.id)})}>Cancel Subscription</Button>}
             </div>
           </section>
           <section>
@@ -337,16 +341,16 @@ function AdminUserDetail({id, notify, onClose}) {
 
         <h4>Actions</h4>
         <div className="detail-actions">
-          {u.accountStatus!=="ACTIVE" && <button className="secondary" disabled={busy} onClick={()=>act(()=>api.admin.setStatus(u.id,"ACTIVE"),"Account activated")}>Activate</button>}
-          {u.accountStatus!=="BLOCKED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Block this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Block user",danger:true,successMsg:"User blocked",run:()=>api.admin.setStatus(u.id,"BLOCKED")})}>Block</button>}
-          {u.accountStatus!=="SUSPENDED" && <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Suspend this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Suspend user",danger:true,successMsg:"User suspended",run:()=>api.admin.setStatus(u.id,"SUSPENDED")})}>Suspend</button>}
-          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Force logout?",message:`Any active session for ${u.username} will be revoked immediately.`,label:"Force logout now",danger:true,successMsg:"Sessions revoked",run:()=>api.admin.revokeSessions(u.id)})}>Force logout</button>
-          <button className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");setResetAccount({username:u.username,password:d.temporaryPassword})}})}>Reset password</button>
+          {u.accountStatus!=="ACTIVE" && <Button variant="secondary" size="sm" icon={<UserCheck/>} disabled={busy} onClick={()=>act(()=>api.admin.setStatus(u.id,"ACTIVE"),"Account activated")}>Activate</Button>}
+          {u.accountStatus!=="BLOCKED" && <Button variant="danger" size="sm" icon={<Ban/>} disabled={busy} onClick={()=>setConfirmAction({title:"Block this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Block user",danger:true,successMsg:"User blocked",run:()=>api.admin.setStatus(u.id,"BLOCKED")})}>Block</Button>}
+          {u.accountStatus!=="SUSPENDED" && <Button variant="danger" size="sm" icon={<PauseCircle/>} disabled={busy} onClick={()=>setConfirmAction({title:"Suspend this user?",message:`${u.username} will immediately lose access and be signed out of any active session.`,label:"Suspend user",danger:true,successMsg:"User suspended",run:()=>api.admin.setStatus(u.id,"SUSPENDED")})}>Suspend</Button>}
+          <Button variant="danger" size="sm" icon={<LogOut/>} disabled={busy} onClick={()=>setConfirmAction({title:"Force logout?",message:`Any active session for ${u.username} will be revoked immediately.`,label:"Force logout now",danger:true,successMsg:"Sessions revoked",run:()=>api.admin.revokeSessions(u.id)})}>Force logout</Button>
+          <Button variant="secondary" size="sm" icon={<KeyRound/>} disabled={busy} onClick={()=>setConfirmAction({title:"Reset password?",message:`A new temporary password will be generated for ${u.username} and all their sessions will be signed out.`,label:"Reset password now",danger:false,successMsg:"Password reset",run:async()=>{const d=await api.admin.resetPassword(u.id,"");setResetAccount({username:u.username,password:d.temporaryPassword})}})}>Reset password</Button>
         </div>
 
         <h4>Renew subscription</h4>
         <div className="renew-row">
-          {[30,60,90].map(d=><button key={d} className="secondary" disabled={busy} onClick={()=>setConfirmAction({title:"Renew subscription?",message:`Confirm renew subscription for ${u.username} by ${d} days?`,label:"Confirm renewal",danger:false,successMsg:`Renewed for ${d} days`,run:()=>api.admin.renew(u.id,d)})}>+{d} days</button>)}
+          {[30,60,90].map(d=><Button key={d} variant="secondary" size="sm" disabled={busy} onClick={()=>setConfirmAction({title:"Renew subscription?",message:`Confirm renew subscription for ${u.username} by ${d} days?`,label:"Confirm renewal",danger:false,successMsg:`Renewed for ${d} days`,run:()=>api.admin.renew(u.id,d)})}>+{d} days</Button>)}
         </div>
 
         <h4>Change subscription</h4>
@@ -356,7 +360,7 @@ function AdminUserDetail({id, notify, onClose}) {
           </select></label>
           <label>Start date<input type="date" value={subForm.subscriptionStartDate} onChange={e=>setSubForm({...subForm,subscriptionStartDate:e.target.value})}/></label>
           <label>Expiry date<input type="date" value={subForm.subscriptionEndDate} onChange={e=>setSubForm({...subForm,subscriptionEndDate:e.target.value})}/></label>
-          <button className="primary" disabled={busy}>Save subscription</button>
+          <Button type="submit" variant="primary" disabled={busy}>Save subscription</Button>
         </form>
       </>}
     </Modal>

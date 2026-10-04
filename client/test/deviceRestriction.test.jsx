@@ -66,7 +66,7 @@ describe("Admin — account-created message", () => {
     api.admin.createUser.mockResolvedValue({ user: { username: "pte099" }, temporaryPassword: "Tmp12345" });
     renderAt("/admin", adminAuthUser());
     fireEvent.click(await screen.findByText("Users"));
-    fireEvent.click(await screen.findByText("+ Create user"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte099" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "New Student" } });
     fireEvent.click(screen.getByText("Create user"));
@@ -87,7 +87,7 @@ describe("Admin — account-created message", () => {
     api.admin.createUser.mockResolvedValue({ user: { username: "pte098" }, temporaryPassword: "Tmp99999" });
     renderAt("/admin", adminAuthUser());
     fireEvent.click(await screen.findByText("Users"));
-    fireEvent.click(await screen.findByText("+ Create user"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte098" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "Another Student" } });
     fireEvent.click(screen.getByText("Create user"));

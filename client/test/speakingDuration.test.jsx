@@ -74,11 +74,18 @@ describe("Speaking duration cap — per-type limits", () => {
     expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 01:00");
   });
 
-  it("shows the 15s limit for Repeat Sentence", async () => {
+  it("shows the 45s limit for Read Aloud", async () => {
+    api.questions.mockResolvedValue({ questions: [speakingQuestion("read-aloud", "Read Aloud")] });
+    renderAt("/speaking?type=read-aloud", studentAuthUser());
+    await screen.findByText("Record your answer");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:45");
+  });
+
+  it("shows the 10s limit for Repeat Sentence", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("repeat-sentence", "Repeat Sentence")] });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:15");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:10");
   });
 
   it("shows the 60s limit for Describe Image", async () => {
@@ -106,7 +113,7 @@ describe("Speaking duration cap — auto-stop behavior", () => {
 
     await waitFor(() => expect(screen.getByText("Start Recording")).toBeInTheDocument());
     expect(stopSpy).toHaveBeenCalledTimes(1); // MediaRecorder.stop() called exactly once
-    expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled(); // a real blob was produced
+    expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled(); // a real blob was produced
   });
 
   it("does not call stop() a second time from a stale interval tick after auto-stop already fired", async () => {

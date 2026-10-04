@@ -55,7 +55,7 @@ describe("Phase 20 — Fill in the Blanks, inline dropdown (reading)", () => {
     });
     renderAt("/reading?type=fib-dropdown", studentAuthUser());
     await screen.findByText("FIB");
-    expect(document.querySelector(".dropdown-blank select")).toBeInTheDocument();
+    expect(document.querySelector(".dropdown-blank .blank-select")).toBeInTheDocument();
     expect(screen.getByText(/The committee will/)).toBeInTheDocument();
     expect(document.querySelector(".options")).not.toBeInTheDocument();
   });
@@ -118,15 +118,15 @@ describe("Phase 20 — Fill in the Blanks, Drag and Drop (reading)", () => {
     api.questions.mockResolvedValue({ questions: [DRAG_Q] });
     renderAt("/reading?type=fill-blanks-dragdrop", studentAuthUser());
     await screen.findByText("Drag Fill");
-    expect(screen.getByText("Submit Answer")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
 
     fireEvent.click(await screen.findByText("cat"));
     fireEvent.click(document.querySelectorAll(".drag-fill-blank")[0]);
-    expect(screen.getByText("Submit Answer")).toBeDisabled(); // second blank still empty
+    expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled(); // second blank still empty
 
     fireEvent.click(screen.getByText("mat"));
     fireEvent.click(document.querySelectorAll(".drag-fill-blank")[1]);
-    expect(screen.getByText("Submit Answer")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Answer" })).not.toBeDisabled();
   });
 });
 
@@ -178,7 +178,7 @@ describe("Phase 22 — Listening Fill in the Blanks shows the blanked passage al
     expect(document.querySelector('audio[src="https://example.com/lib.mp3"]')).toBeInTheDocument();
     // One input per blank in the passage, rather than a single free-text box.
     expect(document.querySelectorAll(".listening-fill-input").length).toBe(2);
-    expect(screen.getByLabelText("Blank 1")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Blank 1" })).toBeInTheDocument();
   });
 });
 

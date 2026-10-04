@@ -42,7 +42,8 @@ describe("a converted fib-dropdown question renders its sentence once", () => {
     const { container } = render(<ReadingTask question={converted} />);
     const hits = container.textContent.split("her savings account").length - 1;
     expect(hits).toBe(1);
-    expect(container.querySelectorAll("select")).toHaveLength(1);
+    // The blank is a custom listbox now, not a <select> — see practice/BlankSelect.jsx.
+    expect(container.querySelectorAll(".blank-select")).toHaveLength(1);
   });
 });
 

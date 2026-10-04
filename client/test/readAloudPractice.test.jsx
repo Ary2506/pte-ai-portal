@@ -95,7 +95,10 @@ describe("Read Aloud through the shared Speaking task", () => {
     api.questions.mockResolvedValue({ questions });
     renderAt("/speaking?type=read-aloud", studentAuthUser());
     fireEvent.click(await screen.findByText(questions[0].title));
-    return screen.findByText(/Question 1 \//);
+    // The question position is a readout split across elements ("Question <b>1</b> / 2"), so it
+    // is matched on its container rather than as one text node.
+    return waitFor(() =>
+      expect(document.querySelector(".btn-bar__position")?.textContent).toMatch(/Question\s*1\s*\//));
   }
 
   it("fetches from the question bank — no bundled content path any more", async () => {
@@ -141,8 +144,9 @@ describe("Read Aloud through the shared Speaking task", () => {
 
   it("ends on a completion summary rather than a dead-ended Next button", async () => {
     await openFirstQuestion([dbReadAloud(1), dbReadAloud(2)]);
-    fireEvent.click(screen.getByText(/Next/));
-    await screen.findByText(/Question 2 \//);
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(document.querySelector(".btn-bar__position")?.textContent).toMatch(/Question\s*2\s*\//));
 
     // Last question: Next has become Finish.
     fireEvent.click(screen.getByText("Finish"));

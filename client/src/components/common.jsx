@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
+import { Button, IconButton, NavButton } from "./Button.jsx";
 
 export function Page({ title, subtitle, children, actions }) {
   return <>
@@ -54,7 +55,7 @@ export function Modal({ onClose, title, ariaLabel, footer, children, panelClassN
     <div className={panelClassName ? `modal-panel ${panelClassName}` : "modal-panel"} role="dialog" aria-modal="true" aria-label={ariaLabel || title} onClick={e => e.stopPropagation()}>
       <div className="modal-head">
         <h3>{title}</h3>
-        {onClose && <button className="icon-btn" onClick={onClose} aria-label="Close"><X size={18}/></button>}
+        {onClose && <IconButton label="Close" icon={<X/>} onClick={onClose}/>}
       </div>
       {children}
       {footer && <div className="modal-actions">{footer}</div>}
@@ -77,9 +78,12 @@ export function ConfirmDialog({ open, title, message, confirmLabel, danger, busy
     <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
       <h3>{title}</h3>
       <p className="muted">{message}</p>
-      <div className="modal-actions">
-        <button className="secondary" onClick={onCancel} disabled={busy}>Cancel</button>
-        <button className={danger ? "primary danger" : "primary"} onClick={onConfirm} disabled={busy}>{busy ? "Working..." : confirmLabel}</button>
+      <div className="modal-actions btn-bar is-end">
+        <Button variant="tertiary" onClick={onCancel} disabled={busy}>Cancel</Button>
+        {/* The destructive tier is decided by the caller, not guessed from the label: "Block
+            user" and "Reset password" read alike but only one of them takes something away. */}
+        <Button variant={danger ? "danger" : "primary"} onClick={onConfirm}
+          loading={busy} loadingLabel="Working...">{confirmLabel}</Button>
       </div>
     </div>
   </div>;
@@ -108,10 +112,27 @@ export function DataTable({ columns, rows, rowKey, loading, loadingRows = 6, emp
         </tbody>
       </table>
     </div>
-    {pagination && <div className="pager">
-      <button className="secondary" disabled={pagination.page <= 1} onClick={pagination.onPrevious}>‹ Previous</button>
-      <span className="muted">Page {pagination.page} of {pagination.totalPages} · {pagination.total} {pagination.itemLabel}</span>
-      <button className="secondary" disabled={pagination.page >= pagination.totalPages} onClick={pagination.onNext}>Next ›</button>
-    </div>}
+    {pagination && <Pager {...pagination}/>}
   </>;
+}
+
+/**
+ * The product's pagination control. Previous and Next stay VISIBLE when unavailable rather than
+ * disappearing, so the controls never shift position as you page — and the count between them is
+ * set in mono, because it is a readout rather than a label.
+ */
+export function Pager({ page, totalPages, total, itemLabel = "items", onPrevious, onNext, busy = false }) {
+  if (!totalPages || totalPages <= 1) return null;
+  return <div className="pager">
+    <NavButton direction="previous" size="sm" disabled={page <= 1 || busy} onClick={onPrevious}>
+      Previous
+    </NavButton>
+    <span className="pager__position">
+      Page <b className="num-mono">{page}</b> of <b className="num-mono">{totalPages}</b>
+      {typeof total === "number" && <> · <span className="num-mono">{total}</span> {itemLabel}</>}
+    </span>
+    <NavButton direction="next" size="sm" disabled={page >= totalPages || busy} onClick={onNext}>
+      Next
+    </NavButton>
+  </div>;
 }

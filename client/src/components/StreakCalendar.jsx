@@ -92,42 +92,65 @@ function Grid({ fromKey, toKey: toDate, days }) {
 
   if (!weeks.length) return null;
 
-  // A month label above the first week that contains that month's first days.
+  // A month label above the first week that contains that month's first days — but never closer
+  // than MIN_LABEL_GAP columns to the previous one. A column is 13px and a label is about 20px,
+  // so two labels in adjacent columns ran into each other and read as "SEPOCT". When a change
+  // falls too close, the label is held back rather than dropped, and appears at the first column
+  // with room — so the month is still named, just a little to the right of where it begins.
+  const MIN_LABEL_GAP = 3;
+  let lastLabelAt = -MIN_LABEL_GAP;
+  let labelledMonth = null;
   const monthMarks = weeks.map((week, i) => {
     const firstReal = week.find(Boolean);
     if (!firstReal) return null;
-    const date = new Date(`${firstReal.date}T00:00:00Z`);
-    const previous = weeks[i - 1]?.find(Boolean);
-    const previousMonth = previous ? new Date(`${previous.date}T00:00:00Z`).getUTCMonth() : null;
-    return date.getUTCMonth() !== previousMonth ? MONTH_LABELS[date.getUTCMonth()] : null;
+    const month = new Date(`${firstReal.date}T00:00:00Z`).getUTCMonth();
+    if (month === labelledMonth) return null;
+    if (i - lastLabelAt < MIN_LABEL_GAP) return null;
+    lastLabelAt = i;
+    labelledMonth = month;
+    return MONTH_LABELS[month];
   });
 
   return (
     <div className="streak-cal" ref={wrapRef} onMouseLeave={hide}>
-      <div className="streak-cal__weekdays" aria-hidden="true">
-        {WEEKDAY_LABELS.map((label, i) => <span key={i}>{label}</span>)}
-      </div>
-      <div className="streak-cal__scroll">
-        <div className="streak-cal__months" aria-hidden="true">
-          {monthMarks.map((label, i) => <span key={i}>{label}</span>)}
-        </div>
-        <div className="streak-cal__grid" role="img"
-          aria-label={`Practice calendar from ${fromKey} to ${toDate}`}>
-          {weeks.map((week, wi) => (
-            <div className="streak-cal__week" key={wi}>
-              {week.map((day, di) => day === null
-                ? <span className="streak-cal__day is-empty" key={di} aria-hidden="true"/>
-                : <span
-                    key={di}
-                    className={`streak-cal__day is-l${level(day.count)}`}
-                    aria-label={describeDay(day.date, day.count)}
-                    onMouseEnter={(e) => show(e, describeDay(day.date, day.count))}
-                    onFocus={(e) => show(e, describeDay(day.date, day.count))}
-                    onBlur={hide}
-                  />
-              )}
+      {/* The graph sits in its own framed box with the legend tucked into its bottom-right
+          corner, the way a contribution calendar is normally drawn. The month row and the grid
+          are two rows of ONE grid, sharing a column track, so a month label lines up with the
+          week it belongs to instead of being positioned by hand. */}
+      <div className="streak-cal__frame">
+        <div className="streak-cal__scroll">
+          <div className="streak-cal__canvas">
+            <span aria-hidden="true"/>
+            <div className="streak-cal__months" aria-hidden="true">
+              {monthMarks.map((label, i) => <span key={i}>{label}</span>)}
             </div>
-          ))}
+            <div className="streak-cal__weekdays" aria-hidden="true">
+              {WEEKDAY_LABELS.map((label, i) => <span key={i}>{label}</span>)}
+            </div>
+            <div className="streak-cal__grid" role="img"
+              aria-label={`Practice calendar from ${fromKey} to ${toDate}`}>
+              {weeks.map((week, wi) => (
+                <div className="streak-cal__week" key={wi}>
+                  {week.map((day, di) => day === null
+                    ? <span className="streak-cal__day is-empty" key={di} aria-hidden="true"/>
+                    : <span
+                        key={di}
+                        className={`streak-cal__day is-l${level(day.count)}`}
+                        aria-label={describeDay(day.date, day.count)}
+                        onMouseEnter={(e) => show(e, describeDay(day.date, day.count))}
+                        onFocus={(e) => show(e, describeDay(day.date, day.count))}
+                        onBlur={hide}
+                      />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="streak-cal__legend">
+          <span className="muted">Less</span>
+          {[0, 1, 2, 3, 4].map(l => <span key={l} className={`streak-cal__day is-l${l}`} aria-hidden="true"/>)}
+          <span className="muted">More</span>
         </div>
       </div>
       {tip && (
@@ -136,11 +159,6 @@ function Grid({ fromKey, toKey: toDate, days }) {
           {tip.text}
         </span>
       )}
-      <div className="streak-cal__legend">
-        <span className="muted">Less</span>
-        {[0, 1, 2, 3, 4].map(l => <span key={l} className={`streak-cal__day is-l${l}`} aria-hidden="true"/>)}
-        <span className="muted">More</span>
-      </div>
     </div>
   );
 }

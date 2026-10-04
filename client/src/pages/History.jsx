@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Badge, Empty, Page } from "../components/common.jsx";
+import { Eye, X } from "lucide-react";
+import { Badge, Empty, Page, Pager } from "../components/common.jsx";
+import { Button, IconButton } from "../components/Button.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
@@ -72,9 +74,7 @@ function MockAttemptDetail({ id, onClose }) {
       >
         <div className="modal-head">
           <h3>Mock Test Details</h3>
-          <button className="icon-btn" onClick={onClose} aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
+          <IconButton label="Close" icon={<X/>} onClick={onClose}/>
         </div>
         {loading ? (
           <Empty text="Loading attempt..." />
@@ -275,12 +275,9 @@ export default function History() {
                   );
                 })}
                 <td>
-                  <button
-                    className="text-button"
-                    onClick={() => setDetailId(m._id)}
-                  >
+                  <Button variant="ghost" size="sm" icon={<Eye/>} onClick={() => setDetailId(m._id)}>
                     View Details
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -288,28 +285,14 @@ export default function History() {
         </table>
         {!mocks.length && <Empty text="No completed mock tests yet." />}
       </div>
-      {mockTotalPages > 1 && (
-        <div className="pager">
-          <button
-            className="secondary"
-            disabled={safeMockPage <= 1}
-            onClick={() => setMockPage(safeMockPage - 1)}
-          >
-            ‹ Previous
-          </button>
-          <span className="muted">
-            Page {safeMockPage} of {mockTotalPages} · {mocks.length} attempt
-            {mocks.length === 1 ? "" : "s"}
-          </span>
-          <button
-            className="secondary"
-            disabled={safeMockPage >= mockTotalPages}
-            onClick={() => setMockPage(safeMockPage + 1)}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
+      <Pager
+        page={safeMockPage}
+        totalPages={mockTotalPages}
+        total={mocks.length}
+        itemLabel={mocks.length === 1 ? "attempt" : "attempts"}
+        onPrevious={() => setMockPage(safeMockPage - 1)}
+        onNext={() => setMockPage(safeMockPage + 1)}
+      />
       <div className="panel-head" style={{ marginTop: 30, marginBottom: 0 }}>
         <h2 className="section-title" id="practice-attempts" style={{ margin: 0 }}>
           Practice attempts
@@ -375,27 +358,15 @@ export default function History() {
           }
         />
       </div>
-      {totalPages > 1 && (
-        <div className="pager">
-          <button
-            className="secondary"
-            disabled={page <= 1 || rowsLoading}
-            onClick={() => setPage(page - 1)}
-          >
-            ‹ Previous
-          </button>
-          <span className="muted">
-            Page {page} of {totalPages} · {total} attempt{total === 1 ? "" : "s"}
-          </span>
-          <button
-            className="secondary"
-            disabled={page >= totalPages || rowsLoading}
-            onClick={() => setPage(page + 1)}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
+      <Pager
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        itemLabel={total === 1 ? "attempt" : "attempts"}
+        busy={rowsLoading}
+        onPrevious={() => setPage(page - 1)}
+        onNext={() => setPage(page + 1)}
+      />
       {detailId && (
         <MockAttemptDetail id={detailId} onClose={() => setDetailId(null)} />
       )}

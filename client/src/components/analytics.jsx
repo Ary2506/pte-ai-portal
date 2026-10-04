@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, RefreshCw } from "lucide-react";
+import { Button } from "./Button.jsx";
 import { formatDuration, titleCase } from "../analytics/derive.js";
 import { PRACTICE_SECTIONS, PRACTICE_TASKS } from "../practiceTaskRegistry.js";
 
@@ -164,9 +165,8 @@ export function FocusAreas({ areas, onPractice }) {
           of <b className="num-mono">{Math.round(area.comparedWith)}</b>.
         </p>
       </div>
-      {onPractice && <button type="button" className="secondary focus-item__cta" onClick={() => onPractice(area)}>
-        Practise <ArrowRight size={15}/>
-      </button>}
+      {onPractice && <Button variant="secondary" size="sm" className="focus-item__cta"
+        icon={<ArrowRight/>} iconPosition="right" onClick={() => onPractice(area)}>Practise</Button>}
     </li>)}
   </ol>;
 }
@@ -216,7 +216,7 @@ export function ErrorState({ title = "Something went wrong", body, onRetry, retr
   return <div className="error-state" role="alert">
     <h4>{title}</h4>
     {body && <p>{body}</p>}
-    {onRetry && <button type="button" className="secondary" onClick={onRetry}>{retryLabel}</button>}
+    {onRetry && <Button variant="secondary" icon={<RefreshCw/>} onClick={onRetry}>{retryLabel}</Button>}
   </div>;
 }
 

@@ -4,6 +4,33 @@ import { QUESTION_TYPES } from "../questionTypes.js";
 // derives the fields that must never come from the client: evaluationType and maxScore.
 // Returns { errors: string[], normalized: {...} }. If errors is non-empty, the caller must
 // reject the request — never save a partially-invalid question.
+// Stored-text bounds. Generous enough for the longest real PTE passage, bounded enough that no
+// single question can bloat the payload every student downloads for that task.
+const FIELD_MAX_LENGTHS = {
+  title: 200,
+  prompt: 2000,
+  passage: 12000,
+  transcript: 12000,
+  explanation: 2000,
+  imageUrl: 2000,
+  audioUrl: 2000
+};
+const FIELD_LABELS = {
+  title: "Question title", prompt: "Prompt", passage: "Passage", transcript: "Transcript",
+  explanation: "Explanation", imageUrl: "Image URL", audioUrl: "Audio URL"
+};
+// `options` does not mean the same thing for every type, so one cap cannot serve them all.
+// Highlight Incorrect Words stores EVERY word of the passage as an option — real questions here
+// hold 78-205 of them — and a flat limit of 20 deactivated seven working questions. Drag-fill
+// stores a word pool, and reorder stores paragraphs.
+const DEFAULT_MAX_OPTIONS = 20;
+const MAX_OPTIONS_BY_TYPE = {
+  "highlight-incorrect-words": 500,
+  "fill-blanks-dragdrop": 60,
+  reorder: 12
+};
+const MAX_OPTION_LENGTH = 1000;
+
 export function validateAndNormalizeQuestion(input) {
   const errors = [];
   const type = input.type;
@@ -20,6 +47,25 @@ export function validateAndNormalizeQuestion(input) {
 
   if (!input.title?.trim()) errors.push("Question title is required.");
   if (!input.prompt?.trim()) errors.push("Question prompt is required.");
+
+  // Length bounds on every stored text field. Without these a single question could hold
+  // megabytes, and GET /questions returns EVERY question for a section in one response — so one
+  // oversized passage would be shipped to every student who opens that task, not just stored.
+  for (const [field, max] of Object.entries(FIELD_MAX_LENGTHS)) {
+    const value = input[field];
+    if (typeof value === "string" && value.length > max) {
+      errors.push(`${FIELD_LABELS[field]} is too long (max ${max} characters).`);
+    }
+  }
+  if (Array.isArray(input.options)) {
+    const maxOptions = MAX_OPTIONS_BY_TYPE[type] ?? DEFAULT_MAX_OPTIONS;
+    if (input.options.length > maxOptions) {
+      errors.push(`A ${type} question cannot have more than ${maxOptions} options.`);
+    }
+    if (input.options.some(o => typeof o === "string" && o.length > MAX_OPTION_LENGTH)) {
+      errors.push(`Each option must be ${MAX_OPTION_LENGTH} characters or fewer.`);
+    }
+  }
 
   const normalized = {};
   if (!meta) return { errors, normalized };

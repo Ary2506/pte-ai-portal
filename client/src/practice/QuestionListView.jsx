@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BookOpen, CheckCircle2, ChevronRight, Headphones, Mic, PenLine } from "lucide-react";
-import { Badge } from "../components/common.jsx";
+import { Badge, Pager } from "../components/common.jsx";
 
 // Its own module rather than living in Practice.jsx, its main consumer: ReadAloudPractice shows
 // this same list, and Practice.jsx imports ReadAloudPractice — so keeping it there made the two
@@ -180,30 +180,14 @@ export function QuestionListView({ questions, progress, onSelect, section, label
           </p>
         )}
       </div>
-      {totalPages > 1 && (
-        <div className="pager">
-          <button
-            type="button"
-            className="secondary"
-            disabled={safePage <= 1}
-            onClick={() => setPage(safePage - 1)}
-          >
-            ‹ Previous
-          </button>
-          <span className="muted">
-            Page {safePage} of {totalPages} · {rows.length} question
-            {rows.length === 1 ? "" : "s"}
-          </span>
-          <button
-            type="button"
-            className="secondary"
-            disabled={safePage >= totalPages}
-            onClick={() => setPage(safePage + 1)}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
+      <Pager
+        page={safePage}
+        totalPages={totalPages}
+        total={rows.length}
+        itemLabel="questions"
+        onPrevious={() => setPage(safePage - 1)}
+        onNext={() => setPage(safePage + 1)}
+      />
     </div>
   );
 }

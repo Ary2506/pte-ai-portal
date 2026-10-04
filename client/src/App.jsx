@@ -22,8 +22,10 @@ import { ListeningTask } from "./practice/Listening.jsx";
 import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
+import { IconButton } from "./components/Button.jsx";
 import Landing from "./landing/Landing.jsx";
 import { ToastProvider } from "./components/toast.jsx";
+import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
@@ -228,6 +230,7 @@ function HeaderSearch({ user }) {
     <input
       ref={inputRef}
       placeholder="Search anything..."
+      maxLength={SEARCH_MAX_LENGTH}
       value={term}
       onChange={e => { setTerm(e.target.value); setOpen(true); setHighlight(0); }}
       onFocus={() => setOpen(true)}
@@ -317,7 +320,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
             every existing screen.findByText("Admin Panel") test (and a real screen reader)
             ambiguous. */}
         <div className="brand"><span className="brand-mark" aria-hidden="true">P</span><span className="brand-text">PTE CORE <em>AI</em></span>{inAdminSection && <Badge tone="info">Admin Mode</Badge>}</div>
-        <button className="icon-btn mobile-close" onClick={closeMobile} aria-label="Close menu"><X size={19}/></button>
+        <IconButton label="Close menu" className="mobile-close" icon={<X/>} onClick={closeMobile}/>
       </div>
       <nav>
         {inAdminSection ? <AdminSidebarNav onNavigate={closeMobile}/> : <StudentSidebarNav user={user} onNavigate={closeMobile}/>}
@@ -330,11 +333,9 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
     <main className="main">
       <header className="topbar">
         <div className="topbar-left">
-          <button className="icon-btn mobile-menu" onClick={()=>setMobile(true)} aria-label="Open menu"><Menu size={21}/></button>
-          <button type="button" className="icon-btn panel-toggle" onClick={toggleCollapsed}
-            aria-pressed={collapsed} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
-            <PanelLeft size={18}/>
-          </button>
+          <IconButton label="Open menu" className="mobile-menu" icon={<Menu/>} onClick={()=>setMobile(true)}/>
+          <IconButton label={collapsed ? "Expand sidebar" : "Collapse sidebar"} className="panel-toggle"
+            icon={<PanelLeft/>} aria-pressed={collapsed} onClick={toggleCollapsed}/>
           <span className="topbar-breadcrumb"><b>{topbarLabel(location.pathname)}</b></span>
         </div>
         <HeaderSearch user={user}/>

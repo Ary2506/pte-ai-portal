@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { pagerText } from "./pagerHelpers.js";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -95,7 +96,7 @@ describe("admin dashboard — activity pagination", () => {
     expect(await screen.findByText("pte002")).toBeInTheDocument();
     expect(api.admin.getAuditLog).toHaveBeenCalledTimes(2);
     expect(api.admin.getAuditLog).toHaveBeenLastCalledWith(8, 2);
-    expect(screen.getByText(/Page 2 of 3/)).toBeInTheDocument();
+    expect(pagerText()).toMatch(/Page 2 of 3/);
   });
 
   it("disables Previous on the first page and Next on the last", async () => {

@@ -1,7 +1,11 @@
 import React, { useState } from "react";
+import { Eye, EyeOff, RotateCcw, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { useToast } from "../components/toast.jsx";
+import { Button } from "../components/Button.jsx";
+import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
+import { ANSWER_MAX_LENGTH, TASK_CHAR_LIMITS, countCharacters, lengthState } from "./answerLimits.js";
 
 const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
 const WRITING_TASK_NAMES = { swt: "Summarize Written Text", essay: "Write Essay", email: "Write Email" };
@@ -39,6 +43,10 @@ export default function Writing({
   async function submit() {
     if (!text.trim()) {
       toast.error("Write a response before submitting.");
+      return;
+    }
+    if (overLimit) {
+      toast.error(`Your response is ${charCount - charLimit} character${charCount - charLimit === 1 ? "" : "s"} over the ${charLimit}-character limit.`);
       return;
     }
     setBusy(true);
@@ -81,6 +89,20 @@ export default function Writing({
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   // Counted the same way the badge is, so the panel and the badge can never disagree.
   const sentenceCount = text.trim() ? text.trim().split(/[.!?]+(?:\s|$)/).filter(Boolean).length : 0;
+  // Characters excluding whitespace, against this task's own cap.
+  const charCount = countCharacters(text);
+  const charLimit = TASK_CHAR_LIMITS[question?.type] ?? null;
+  const overLimit = charLimit !== null && charCount > charLimit;
+
+  // maxLength cannot express this: it counts every character, and the limit here ignores
+  // whitespace. So the cap is enforced on the way in — typing or pasting past it is refused,
+  // while anything that SHORTENS the text is always allowed, otherwise a response restored over
+  // the limit could never be edited back down.
+  function changeText(next) {
+    if (charLimit === null || countCharacters(next) <= charLimit || next.length < text.length) {
+      setText(next);
+    }
+  }
   const range = WRITING_WORD_RANGES[question?.type];
   const tone = range ? (wordCount < range[0] ? "low" : wordCount > range[1] ? "high" : "good") : "good";
   // The scale runs a little past the maximum so going over is visible rather than pinned at full.
@@ -105,36 +127,42 @@ export default function Writing({
         <textarea
           className="answer-area"
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => changeText(event.target.value)}
           placeholder="Type your answer here..."
           disabled={!!result}
+          maxLength={ANSWER_MAX_LENGTH}
+          aria-describedby="writing-length"
         />
-        {result ? (
-          <Result result={result} onRetry={retry} retrying={retrying} />
-        ) : (
-          <button
-            className="primary right"
-            disabled={!text.trim() || busy}
-            onClick={submit}
-          >
-            {busy ? "Evaluating..." : "Submit for AI Feedback"}
-          </button>
-        )}
-        {/* Standalone practice only — Mock Test's timed, one-attempt-per-question flow is
-            untouched (gated on testSessionId, exactly as Mock always passes it and standalone
-            practice never does). Always available, including after AI evaluation. */}
-        {!testSessionId && (
-          <div className="task-actions">
-            <button
-              type="button"
-              className="secondary"
+        {result && <Result result={result} onRetry={retry} retrying={retrying} />}
+        {/* One row, both buttons. Submit used to float right while Re-do sat in a separate block
+            below it, so the two landed on different baselines with the float's margin between
+            them. Re-do is standalone-practice only — Mock Test's timed, one-attempt-per-question
+            flow is untouched (gated on testSessionId, exactly as Mock always passes it and
+            standalone practice never does). */}
+        <div className="task-actions">
+          {!testSessionId && (
+            <Button
+              variant="secondary"
+              icon={<RotateCcw/>}
               onClick={resetQuestion}
               disabled={busy || retrying}
             >
               Re-do
-            </button>
-          </div>
-        )}
+            </Button>
+          )}
+          {!result && (
+            <Button
+              variant="primary"
+              icon={<Sparkles/>}
+              disabled={!text.trim() || overLimit}
+              loading={busy}
+              loadingLabel="Evaluating..."
+              onClick={submit}
+            >
+              Submit for AI Feedback
+            </Button>
+          )}
+        </div>
         {/* Gated on a reference answer actually existing, not on the task type: Summarize Written
             Text has one for some questions and Essay has none at all, so keying this on type
             would either hide a real model answer or offer a button that reveals nothing.
@@ -142,13 +170,15 @@ export default function Writing({
             student is marked on, which is why it can be shown before submitting. */}
         {typeof question?.answer === "string" && question.answer.trim() && (
           <>
-            <button
-              type="button"
-              className="secondary answer-toggle"
+            <Button
+              variant="tertiary"
+              size="sm"
+              className="answer-toggle"
+              icon={showAnswer ? <EyeOff/> : <Eye/>}
               onClick={() => setShowAnswer((value) => !value)}
             >
               {showAnswer ? "Hide Answer" : "Show Answer"}
-            </button>
+            </Button>
             {showAnswer && (
               <div className="answer-reveal">
                 <b>Sample answer</b>
@@ -158,6 +188,9 @@ export default function Writing({
           </>
         )}
       </section>
+      {/* Both panels share the one rail column — .task-layout is a two-column grid, so a third
+          child would otherwise drop onto its own row under the editor. */}
+      <div className="task-rail">
       <aside className="panel compose-panel">
         <span className="stat-label">Composition</span>
         <h3>{WRITING_TASK_NAMES[question?.type] || "Your response"}</h3>
@@ -189,17 +222,26 @@ export default function Writing({
 
         <dl className="compose-stats">
           <div><dt>Words</dt><dd className="num-mono">{wordCount}</dd></div>
-          <div><dt>Characters</dt><dd className="num-mono">{text.length}</dd></div>
+          <div>
+            <dt>Characters</dt>
+            <dd className={`num-mono is-${lengthState(charCount, charLimit ?? ANSWER_MAX_LENGTH)}`} id="writing-length">
+              {charCount}
+              <span className="compose-stats__limit">/{charLimit ?? ANSWER_MAX_LENGTH}</span>
+            </dd>
+          </div>
           <div><dt>Sentences</dt><dd className="num-mono">{sentenceCount}</dd></div>
         </dl>
+        {charLimit !== null && charCount >= charLimit && (
+          <p className={overLimit ? "compose-limit" : "compose-limit is-reached"} role="status">
+            {overLimit
+              ? `${charCount - charLimit} over the ${charLimit}-character limit — shorten your response to submit.`
+              : `You have reached the ${charLimit}-character limit. Spaces are not counted.`}
+          </p>
+        )}
 
-        <ul className="compose-tips">
-          <li>Answer the exact task.</li>
-          <li>Use clear sentence structure.</li>
-          <li>Check grammar and spelling.</li>
-          <li>Keep your ideas relevant.</li>
-        </ul>
       </aside>
+      <TaskTips type={type} section="writing" note={AI_SCORING_NOTE}/>
+      </div>
     </div>
   );
 }

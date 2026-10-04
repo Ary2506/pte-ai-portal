@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { Eye } from "lucide-react";
 import { api } from "../../api.js";
 import { Badge, DataTable, Empty, Modal } from "../../components/common.jsx";
+import { Button } from "../../components/Button.jsx";
 import { fmtDateTime } from "./adminFormat.js";
 import { MockResultRow } from "../History.jsx";
 
@@ -53,7 +55,7 @@ export function AdminTestSessions() {
         { key: "started", header: "Started", render: s => fmtDateTime(s.startedAt) },
         { key: "submitted", header: "Submitted", render: s => fmtDateTime(s.submittedAt) },
         { key: "expires", header: "Expires", render: s => fmtDateTime(s.expiresAt) },
-        { key: "actions", header: "Actions", render: s => <button className="text-button" onClick={()=>setDetailId(s._id)}>View</button> }
+        { key: "actions", header: "Actions", render: s => <Button variant="ghost" size="sm" icon={<Eye/>} onClick={()=>setDetailId(s._id)}>View</Button> }
       ]}
     />
     {detailId && <AdminTestSessionDetail id={detailId} onClose={()=>setDetailId(null)}/>}

@@ -48,7 +48,7 @@ async function recordAndStop() {
   fireEvent.click(await screen.findByText("Start Recording"));
   await screen.findByText("Stop Recording");
   fireEvent.click(screen.getByText("Stop Recording"));
-  await waitFor(() => expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled());
+  await waitFor(() => expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled());
 }
 
 beforeEach(() => {
@@ -75,7 +75,7 @@ describe("Speaking practice", () => {
   it("stops recording and enables submission", async () => {
     renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
-    expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled();
   });
 
   it("sends the recorded audio to the backend", async () => {

@@ -96,7 +96,7 @@ describe("admin question table", () => {
 
   it("Phase 4: the create form's live preview carries the responsive layout class for the desktop two-column CSS", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     const preview = await screen.findByTestId("live-preview");
     expect(preview).toHaveClass("form-section", "form-section-preview");
   });
@@ -132,7 +132,7 @@ describe("search, filters, and pagination", () => {
   it("requests the next page", async () => {
     api.admin.questions.list.mockResolvedValueOnce({ data: [questionRow()], page: 1, limit: 20, total: 40, totalPages: 2 });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("Next ›"));
+    fireEvent.click(await screen.findByRole("button", { name: "Next" }));
     await waitFor(() => expect(api.admin.questions.list).toHaveBeenCalledWith(expect.objectContaining({ page: 2 })));
   });
 });
@@ -140,13 +140,13 @@ describe("search, filters, and pagination", () => {
 describe("create form — dynamic fields", () => {
   it("renders the create form with dynamic fields for the selected type", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     expect(await screen.findByText("Options")).toBeInTheDocument(); // mcq-single is the default reading type
   });
 
   it("changes the visible fields when the question type changes to essay", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "writing" } });
     await waitFor(() => expect(screen.queryByText("Options")).not.toBeInTheDocument());
   });
@@ -156,7 +156,7 @@ describe("create form — draft/publish", () => {
   it("Save as Draft sends active: false", async () => {
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "New MCQ", active: false }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fillBasicMcq();
     fireEvent.click(screen.getByText("Save as Draft"));
     await waitFor(() => expect(api.admin.questions.create).toHaveBeenCalledWith(expect.objectContaining({ active: false })));
@@ -165,7 +165,7 @@ describe("create form — draft/publish", () => {
   it("Publish sends active: true", async () => {
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "New MCQ" }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fillBasicMcq();
     fireEvent.click(screen.getByText("Publish"));
     await waitFor(() => expect(api.admin.questions.create).toHaveBeenCalledWith(expect.objectContaining({ active: true })));
@@ -177,7 +177,7 @@ describe("create form — draft/publish", () => {
     });
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "Drag Fill Q", type: "fill-blanks-dragdrop" }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "fill-blanks-dragdrop" } });
 
     const passageField = await screen.findByPlaceholderText("The ____ sat on the ____.");
@@ -200,7 +200,7 @@ describe("create form — draft/publish", () => {
   it("lets an admin set a model answer for a subjective, media-based type (Describe Image)", async () => {
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "Chart Q", type: "describe-image" }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
 
@@ -219,7 +219,7 @@ describe("create form — draft/publish", () => {
 describe("create form — client-side validation", () => {
   it("blocks submission and shows an inline error when required content is missing", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     // Title/prompt left blank, options left blank — mcq-single is the default type.
     fireEvent.click(screen.getByText("Publish"));
     expect(await screen.findByText("A question title is required.")).toBeInTheDocument();
@@ -229,7 +229,7 @@ describe("create form — client-side validation", () => {
 
   it("blocks an MCQ with fewer than 2 filled options and no selected answer", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(screen.getByPlaceholderText("Short internal name for this question"), { target: { value: "Bad Q" } });
     fireEvent.change(screen.getByPlaceholderText("What the student is asked to do"), { target: { value: "Pick one" } });
     fireEvent.click(screen.getByText("Publish"));
@@ -240,7 +240,7 @@ describe("create form — client-side validation", () => {
 
   it("requires an image URL for an image-based question type before it can be saved", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
     fireEvent.change(screen.getByPlaceholderText("Short internal name for this question"), { target: { value: "Chart Q" } });
@@ -254,7 +254,7 @@ describe("create form — client-side validation", () => {
   it("does not incorrectly require options/answer for a subjective, non-media type (essay)", async () => {
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "My Essay", type: "essay", section: "writing" }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "writing" } });
     fireEvent.change(screen.getByPlaceholderText("Short internal name for this question"), { target: { value: "My Essay" } });
     fireEvent.change(screen.getByPlaceholderText("What the student is asked to do"), { target: { value: "Write about your hometown." } });
@@ -266,7 +266,7 @@ describe("create form — client-side validation", () => {
 
   it("clears a field's error once it is fixed, without needing another save attempt", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.click(screen.getByText("Publish"));
     expect(await screen.findByText("A question title is required.")).toBeInTheDocument();
 
@@ -279,7 +279,7 @@ describe("create form — media upload", () => {
   it("uploads an image through the Phase 2 endpoint with the correct multipart field, and uses the returned URL", async () => {
     api.admin.media.upload.mockResolvedValue({ url: "http://localhost:5000/media/questions/images/abc.jpg", kind: "image", filename: "abc.jpg", mimetype: "image/jpeg", size: 1234 });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
 
@@ -298,7 +298,7 @@ describe("create form — media upload", () => {
       types: [...TYPES, { type: "respond-to-situation", label: "Respond to a Situation", evaluationType: "subjective", shape: "prompt-audio", sections: ["speaking"] }]
     });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "respond-to-situation" } });
 
@@ -313,7 +313,7 @@ describe("create form — media upload", () => {
   it("shows an error and does not crash the form when the upload fails", async () => {
     api.admin.media.upload.mockRejectedValue(new Error("Unsupported file type."));
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
 
@@ -329,7 +329,7 @@ describe("create form — media upload", () => {
   it("the manual URL input still works with no upload at all (fallback path)", async () => {
     api.admin.questions.create.mockResolvedValue({ question: fullQuestion({ title: "Chart Q", type: "describe-image" }) });
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
     fireEvent.change(screen.getByPlaceholderText("Short internal name for this question"), { target: { value: "Chart Q" } });
@@ -345,7 +345,7 @@ describe("create form — media upload", () => {
 describe("live in-form preview", () => {
   it("updates as the admin edits the title and prompt", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
 
     fireEvent.change(screen.getByPlaceholderText("Short internal name for this question"), { target: { value: "Live Preview Title" } });
     fireEvent.change(screen.getByPlaceholderText("What the student is asked to do"), { target: { value: "Live preview prompt text" } });
@@ -357,7 +357,7 @@ describe("live in-form preview", () => {
 
   it("reflects the selected shape — e.g. shows an image once the URL is set for an image type", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
     fireEvent.change(screen.getByPlaceholderText("https://..."), { target: { value: "https://example.com/preview.png" } });
@@ -369,7 +369,7 @@ describe("live in-form preview", () => {
 
   it("never shows the model answer or explanation in the live preview", async () => {
     await openQuestionsTab();
-    fireEvent.click(await screen.findByText("+ Create question"));
+    fireEvent.click(await screen.findByRole("button", { name: "Create question" }));
     fireEvent.change(await screen.findByLabelText("Section"), { target: { value: "speaking" } });
     fireEvent.change(await screen.findByLabelText("Question type"), { target: { value: "describe-image" } });
     fireEvent.change(screen.getByPlaceholderText("A model answer for this question"), { target: { value: "Secret model answer text" } });

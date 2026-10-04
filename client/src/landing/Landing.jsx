@@ -35,9 +35,9 @@ const SAMPLE = {
 };
 
 const NAV = [
-  { label: "Practice", href: "#capabilities" },
-  { label: "Mock Tests", href: "#capabilities" },
-  { label: "AI Evaluation", href: "#evaluation" },
+  { label: "Practice", href: "#evaluation" },      // the four-section rail
+  { label: "AI Evaluation", href: "#capabilities" }, // the Speaking/Writing AI tiles
+  { label: "Mock Tests", href: "#mock-tests" },    // that tile specifically
   { label: "Progress", href: "#metrics" }
 ];
 
@@ -120,7 +120,7 @@ function Hero({ onSignIn }) {
         <div className="ld-hero__copy">
           <Label tone="accent">PTE Core · AI evaluation</Label>
           <h1 className="ld-display">
-            Your PTE<br/>score,<br/><em>engineered.</em>
+            Your PTE<br/>score,<br/><em>engineered</em>
           </h1>
           <p className="ld-lede">
             Practice smarter with AI-powered evaluation across Speaking, Writing,
@@ -258,6 +258,66 @@ function Capabilities() {
   </section>;
 }
 
+/* ---------------------------------------------------------------- mock tests */
+
+// What a mock actually is in this product, stated accurately: one question per section, twenty
+// minutes, scored from the student's own answers. The report figures below are illustrative and
+// say so, exactly like the hero's.
+const MOCK_REPORT = {
+  overall: 87,
+  sections: [
+    { name: "Speaking",  value: 85, section: "speaking" },
+    { name: "Writing",   value: 89, section: "writing" },
+    { name: "Reading",   value: 81, section: "reading" },
+    { name: "Listening", value: 92, section: "listening" }
+  ]
+};
+
+const MOCK_FACTS = [
+  { value: "4", caption: "Sections in one sitting" },
+  { value: "20", unit: "min", caption: "Timed, auto-submitted" },
+  { value: "0", unit: "preset", caption: "Scored from your answers" }
+];
+
+function MockTests() {
+  const [ref, inView] = useInView({ threshold: 0.2 });
+
+  return <section className={inView ? "ld-mock is-in" : "ld-mock"} id="mock-tests" ref={ref}>
+    <div className="ld-mock__copy">
+      <Label tone="accent">Mock tests</Label>
+      <h2 className="ld-h2">Experience the real exam before test day.</h2>
+      <p className="ld-lede">
+        One question from every section, under a twenty-minute clock that submits for you when
+        time runs out. Nothing is preset — the report comes from the answers you gave.
+      </p>
+      <dl className="ld-mock__facts">
+        {MOCK_FACTS.map(fact => <div key={fact.caption}>
+          <dt className="num-mono">{fact.value}{fact.unit && <span>{fact.unit}</span>}</dt>
+          <dd>{fact.caption}</dd>
+        </div>)}
+      </dl>
+    </div>
+
+    <figure className="ld-report ld-mock__report">
+      <figcaption className="ld-report__head">
+        <Label tone="accent">Exam report</Label>
+        <Label tone="quiet">Sample report</Label>
+      </figcaption>
+      <div className="ld-report__overall">
+        <div>
+          <Label>Overall</Label>
+          <BigScore value={MOCK_REPORT.overall} outOf={100} animate={inView}/>
+        </div>
+      </div>
+      <div className="ld-report__meters">
+        {MOCK_REPORT.sections.map((row, i) => (
+          <SectionMeter key={row.section} {...row} outOf={100} delay={i * 90} animate={inView}/>
+        ))}
+      </div>
+    </figure>
+  </section>;
+}
+
 /* ---------------------------------------------------------------- metrics */
 
 const METRICS = [
@@ -330,6 +390,7 @@ export default function Landing({ save, theme, toggleTheme }) {
       <Hero onSignIn={openSignIn}/>
       <SectionRail/>
       <Capabilities/>
+      <MockTests/>
       <Voices/>
       <Metrics/>
       <FinalCta onSignIn={openSignIn}/>

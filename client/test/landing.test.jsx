@@ -107,9 +107,13 @@ describe("authentication behaviour is carried over unchanged", () => {
 });
 
 describe("the page states only things that are true", () => {
-  it("labels the hero score report as sample data rather than a real result", () => {
+  it("labels every illustrative report as sample data, not as a real result", () => {
     renderLanding();
-    expect(screen.getByText(/Sample report/i)).toBeInTheDocument();
+    // Both the hero and the mock-tests section show invented figures, so both must say so.
+    const labelled = screen.getAllByText(/Sample report/i);
+    expect(labelled.length).toBeGreaterThanOrEqual(2);
+    expect(document.querySelector(".ld-hero")).toHaveTextContent(/Sample report/i);
+    expect(document.getElementById("mock-tests")).toHaveTextContent(/Sample report/i);
   });
 
   it("counts practice task types from the registry instead of asserting a number", () => {
@@ -127,6 +131,70 @@ describe("the page states only things that are true", () => {
     expect(container.textContent).not.toMatch(/\d[\d,.]*\s*(k|m)?\+?\s*(students|learners|users|reviews|ratings)/i);
     expect(container.textContent).not.toMatch(/rated\s|out of 5|★|⭐/i);
     expect(container.textContent).not.toMatch(/thousands (have|of)/i);
+  });
+});
+
+// Two nav links pointed at the same anchor, so "Practice" and "Mock Tests" scrolled to the same
+// block. Every item must reach a target that exists and that nothing else claims.
+describe("page navigation", () => {
+  it("gives every nav link its own destination", async () => {
+    renderLanding();
+    const nav = document.querySelector(".ld-nav__links");
+    const targets = [...nav.querySelectorAll("a")].map(a => a.getAttribute("href"));
+    expect(targets.length).toBeGreaterThan(1);
+    expect(new Set(targets).size).toBe(targets.length);
+  });
+
+  it("points every nav link at an element that actually exists", async () => {
+    renderLanding();
+    const nav = document.querySelector(".ld-nav__links");
+    for (const link of nav.querySelectorAll("a")) {
+      const id = link.getAttribute("href").slice(1);
+      expect(document.getElementById(id), `${link.textContent} -> #${id}`).not.toBeNull();
+    }
+  });
+
+  it("sends Practice and Mock Tests to different places", async () => {
+    renderLanding();
+    const nav = document.querySelector(".ld-nav__links");
+    const href = (name) => [...nav.querySelectorAll("a")].find(a => a.textContent === name)?.getAttribute("href");
+    expect(href("Practice")).not.toBe(href("Mock Tests"));
+    expect(href("Mock Tests")).toBe("#mock-tests");
+  });
+
+  it("lands on a full section rather than a single card in a grid", async () => {
+    renderLanding();
+    const target = document.getElementById("mock-tests");
+    expect(target.tagName).toBe("SECTION");
+    expect(target).toHaveClass("ld-mock");
+    // Not the bento tile it used to point at.
+    expect(target).not.toHaveClass("ld-tile");
+  });
+});
+
+describe("the mock tests section describes the real thing", () => {
+  it("states what a mock actually is in this product", async () => {
+    renderLanding();
+    const section = document.getElementById("mock-tests");
+    expect(section).toHaveTextContent(/One question from every section/i);
+    expect(section).toHaveTextContent(/twenty-minute clock/i);
+    // The server really does auto-submit on expiry, and really does score from the answers given.
+    expect(section).toHaveTextContent(/submits for you when time runs out/i);
+    expect(section).toHaveTextContent(/Nothing is preset/i);
+  });
+
+  it("labels its report figures as a sample, like the hero does", async () => {
+    renderLanding();
+    const section = document.getElementById("mock-tests");
+    expect(section).toHaveTextContent(/Sample report/i);
+  });
+
+  it("shows all four sections in the report preview", async () => {
+    renderLanding();
+    const section = document.getElementById("mock-tests");
+    for (const name of ["Speaking", "Writing", "Reading", "Listening"]) {
+      expect(section).toHaveTextContent(name);
+    }
   });
 });
 

@@ -11,6 +11,9 @@ import { Empty } from "../components/common.jsx";
 import { AnalyticsSkeleton, EmptyState, ErrorState, Metric, MetricStrip } from "../components/analytics.jsx";
 import { pct } from "../analytics/derive.js";
 import { QuestionListView } from "./QuestionListView.jsx";
+import ScrollTabs from "../components/ScrollTabs.jsx";
+import { Button, NavButton } from "../components/Button.jsx";
+import { List, RotateCcw } from "lucide-react";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { applyStructuredContent } from "./listeningData/shared.js";
 
@@ -188,12 +191,13 @@ function PracticeTask({ section, label, slug, taskComponents }) {
           {average !== null && ` · average score ${average}%`}
         </p>
         <div className="task-actions">
-          <button className="secondary" onClick={() => { setFinished(false); setIdx(null); }}>
+          <Button variant="tertiary" icon={<List/>} onClick={() => { setFinished(false); setIdx(null); }}>
             Back to list
-          </button>
-          <button className="primary" onClick={() => { setFinished(false); setIdx(0); }}>
+          </Button>
+          {/* Start again repeats the task — a refresh icon, never a destructive treatment. */}
+          <Button variant="primary" icon={<RotateCcw/>} onClick={() => { setFinished(false); setIdx(0); }}>
             Start again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -203,46 +207,38 @@ function PracticeTask({ section, label, slug, taskComponents }) {
     <div>
       {questions.length > 1 && (
         <>
-          <div
-            className="mock-progress-bar"
-            role="group"
-            aria-label="Question navigation"
-          >
-            <button
-              className="text-button"
-              style={{ marginTop: 0 }}
-              onClick={() => setIdx(null)}
-            >
-              <ChevronLeft size={15} /> Back to list
-            </button>
-            <span>
-              Question {idx + 1} / {questions.length}
+          {/* Previous | position | Next. The position is a readout, set in mono, not a label —
+              and Previous stays visible when unavailable so the bar never shifts as you move. */}
+          <div className="mock-progress-bar btn-bar" role="group" aria-label="Question navigation">
+            <Button variant="ghost" size="sm" icon={<List/>} onClick={() => setIdx(null)}>
+              Back to list
+            </Button>
+
+            <span className="btn-bar__position">
+              Question <b>{idx + 1}</b> / {questions.length}
             </span>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                className="secondary"
+
+            <div className="btn-group">
+              <NavButton
+                direction="previous"
                 onClick={() => setIdx((i) => Math.max(0, i - 1))}
                 disabled={idx === 0}
               >
-                <ChevronLeft size={15} /> Previous
-              </button>
+                Previous
+              </NavButton>
               {/* On the last question Next becomes Finish, which shows the summary below
                   instead of dead-ending on a disabled button. Speaking only, where a student
                   works through a task end to end; the other sections' Next simply disables. */}
               {section === "speaking" && idx === questions.length - 1 ? (
-                <button className="primary" onClick={() => setFinished(true)}>
-                  Finish
-                </button>
+                <Button variant="primary" onClick={() => setFinished(true)}>Finish</Button>
               ) : (
-                <button
-                  className="secondary"
-                  onClick={() =>
-                    setIdx((i) => Math.min(questions.length - 1, i + 1))
-                  }
+                <NavButton
+                  direction="next"
+                  onClick={() => setIdx((i) => Math.min(questions.length - 1, i + 1))}
                   disabled={idx === questions.length - 1}
                 >
-                  Next <ChevronRight size={15} />
-                </button>
+                  Next
+                </NavButton>
               )}
             </div>
           </div>
@@ -300,17 +296,19 @@ export default function Practice({ section, taskComponents }) {
         PTE Practice &gt; {SECTION_LABELS[section]}
         {type ? ` > ${type.label}` : ""}
       </p>
-      <div className="practice-tabs">
+      <ScrollTabs className="practice-tabs" role="tablist" aria-label={`${SECTION_LABELS[section]} task types`}>
         {tasks.map((task) => (
           <button
             key={task.slug}
+            role="tab"
+            aria-selected={type?.slug === task.slug}
             className={type?.slug === task.slug ? "tab active" : "tab"}
             onClick={() => selectType(task)}
           >
             {task.label}
           </button>
         ))}
-      </div>
+      </ScrollTabs>
       {type ? (
         section === "writing" && type.slug === "write-email" ? (
           // Write Email's content is the client's own PDF of 12 sample emails, shown and

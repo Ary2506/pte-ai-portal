@@ -58,7 +58,7 @@ describe("the recorder announces which state it is in", () => {
     await record();
     await waitFor(() => expect(state()).toBe("recorded"));
     expect(screen.getByText("Ready to submit")).toBeInTheDocument();
-    expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled();
   });
 
   it("shows an evaluating state while the attempt is being scored, not the ready state", async () => {

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Target } from "lucide-react";
 import { Badge, Page } from "../components/common.jsx";
+import { Button } from "../components/Button.jsx";
 import { api } from "../api.js";
 import { Metric, MetricStrip, SectionHeader } from "../components/analytics.jsx";
 import StreakCalendar from "../components/StreakCalendar.jsx";
@@ -66,9 +68,9 @@ function TargetScoreEditor({ user, onUserChange }) {
           {current !== null && <small>of {TARGET_MAX}</small>}
         </div>
         <div className="target-editor__actions">
-          <button type="button" className="secondary" onClick={() => { setValue(current ?? TARGET_MAX); setEditing(true); }}>
+          <Button variant="secondary" size="sm" icon={<Target/>} onClick={() => { setValue(current ?? TARGET_MAX); setEditing(true); }}>
             {current === null ? "Set target" : "Change target"}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -94,10 +96,10 @@ function TargetScoreEditor({ user, onUserChange }) {
         />
       </label>
       <span className="target-editor__hint">{TARGET_MIN}–{TARGET_MAX}</span>
-      <button type="submit" className="primary" disabled={busy}>{busy ? "Saving..." : "Save"}</button>
-      <button type="button" className="secondary" disabled={busy} onClick={() => setEditing(false)}>
+      <Button type="submit" variant="primary" size="sm" loading={busy} loadingLabel="Saving...">Save</Button>
+      <Button variant="tertiary" size="sm" disabled={busy} onClick={() => setEditing(false)}>
         Cancel
-      </button>
+      </Button>
     </form>
   );
 }

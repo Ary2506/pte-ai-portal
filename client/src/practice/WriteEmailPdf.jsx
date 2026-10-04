@@ -1,5 +1,6 @@
 import React from "react";
 import { Download, FileText } from "lucide-react";
+import { ButtonLink } from "../components/Button.jsx";
 
 // Write Email's content is the client's own PDF of 12 sample emails, used exactly as supplied —
 // not re-typed into individual question records. This bypasses the generic DB-backed
@@ -27,12 +28,12 @@ export default function WriteEmailPdf() {
         title="Write Email sample answers PDF"
       />
       <div className="pdf-resource-actions">
-        <a className="primary" href={PDF_URL} download="write-email-samples.pdf">
-          <Download size={16} /> Download PDF
-        </a>
-        <a className="secondary" href={PDF_URL} target="_blank" rel="noreferrer">
-          <FileText size={16} /> Open in new tab
-        </a>
+        <ButtonLink variant="primary" href={PDF_URL} download="write-email-samples.pdf" icon={<Download/>}>
+          Download PDF
+        </ButtonLink>
+        <ButtonLink variant="secondary" href={PDF_URL} target="_blank" rel="noreferrer" icon={<FileText/>}>
+          Open in new tab
+        </ButtonLink>
       </div>
     </section>
   );

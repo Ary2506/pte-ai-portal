@@ -142,8 +142,8 @@ describe("Mock test — question overview and navigation", () => {
     await screen.findByText("Question 1 of 4");
 
     // Question 1 is never answered here — Next must still be enabled and work.
-    expect(screen.getByText("Next ›")).not.toBeDisabled();
-    fireEvent.click(screen.getByText("Next ›"));
+    expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await screen.findByText("Question 2 of 4");
     expect(screen.getByRole("button", { name: "1" }).className).toContain("unanswered");
   });
@@ -261,7 +261,7 @@ describe("Mock test — progress bar", () => {
     expect(bar).toHaveAttribute("aria-valuemax", "4");
     expect(bar).toHaveAttribute("aria-valuetext", "Question 1 of 4"); // never relies on color alone
 
-    fireEvent.click(screen.getByText("Next ›"));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await screen.findByText("Question 2 of 4");
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "2");
 
@@ -284,8 +284,11 @@ describe("Mock test — Finish button loading state", () => {
     await screen.findByText("Finish mock test?");
     fireEvent.click(screen.getAllByText("Finish Test")[1]);
 
-    const finishingButton = await screen.findByText("Finishing...");
+    // Matched by role: the label lives in a <span> inside the button now, so findByText would
+    // hand back the span rather than the control whose disabled state this asserts.
+    const finishingButton = await screen.findByRole("button", { name: "Finishing..." });
     expect(finishingButton).toBeDisabled();
+    expect(finishingButton).toHaveAttribute("aria-busy", "true");
     fireEvent.click(finishingButton); // clicking a disabled button fires nothing
     expect(api.testSessions.complete).toHaveBeenCalledTimes(1);
 
@@ -432,12 +435,12 @@ describe("Mock test — speaking question identity (result must not leak between
     fireEvent.click(await screen.findByText("Start Recording"));
     await screen.findByText("Stop Recording");
     fireEvent.click(screen.getByText("Stop Recording"));
-    await waitFor(() => expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled());
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
     expect(await screen.findByText("Question 1's feedback.")).toBeInTheDocument();
 
     // Move to question 2 — its own prompt/audio must show, and question 1's result must be gone.
-    fireEvent.click(screen.getByText("Next ›"));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Situation two: you feel too ill for dinner plans.")).toBeInTheDocument();
     expect(screen.queryByText("Question 1's feedback.")).not.toBeInTheDocument();
     expect(screen.getByText("Record your answer")).toBeInTheDocument();

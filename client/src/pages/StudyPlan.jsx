@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { Page } from "../components/common.jsx";
+import { Button, ButtonLink } from "../components/Button.jsx";
 import {
   AnalyticsSkeleton, EmptyState, FocusAreas, Metric, MetricStrip,
   ScoreRing, SectionHeader, SkillSpectrum, titleCase
@@ -129,7 +130,7 @@ export default function StudyPlan({ user }) {
       <EmptyState
         title="Your plan starts with your first attempt"
         body="Once you have practised a few questions, this page orders your week around the sections and task types you are weakest in."
-        action={<button type="button" className="primary" onClick={() => navigate("/practice")}>Start practising</button>}
+        action={<Button variant="primary" onClick={() => navigate("/practice")}>Start practising</Button>}
       />
     </Page>;
   }
@@ -143,7 +144,7 @@ export default function StudyPlan({ user }) {
           : `${Math.abs(gap.gap)} point${Math.abs(gap.gap) === 1 ? "" : "s"} from your target of ${gap.target}, on AI-scored tasks.`
         : `Complete ${pte.needed} AI-scored speaking or writing tasks to track progress against your target.`
     }
-    actions={<NavLink className="primary" to="/practice">Open practice library</NavLink>}
+    actions={<ButtonLink variant="primary" to="/practice">Open practice library</ButtonLink>}
   >
     <div className="page-stack">
       <section className="command-hero">
@@ -178,14 +179,14 @@ export default function StudyPlan({ user }) {
                   : "Upcoming"}
               </span>
               {!day.isMockDay && day.status !== "done" && (
-                <button type="button" className="plan-day__go" onClick={() => navigate(`/${day.section}`)}>
+                <Button variant="tertiary" size="sm" className="plan-day__go" onClick={() => navigate(`/${day.section}`)}>
                   Practise
-                </button>
+                </Button>
               )}
               {day.isMockDay && day.status !== "done" && (
-                <button type="button" className="plan-day__go" onClick={() => navigate("/mock")}>
+                <Button variant="tertiary" size="sm" className="plan-day__go" onClick={() => navigate("/mock")}>
                   Start
-                </button>
+                </Button>
               )}
             </li>
           ))}

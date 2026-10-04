@@ -583,3 +583,25 @@ html[data-theme="dark"] .ld-modal__card .auth-message-slot .alert.error{
   .ld-modal{padding:16px}
   .ld-modal__card{padding:30px 22px 24px;max-height:calc(100vh - 32px)}
 }
+
+/* A tile reached directly from the nav gets a brief highlight, so landing on it is obvious when
+   it sits in the middle of a grid rather than at the top of a section. */
+.ld-tile:target{border-color:var(--ld-accent);box-shadow:0 0 0 3px var(--ld-glow)}
+
+/* --- Mock tests ------------------------------------------------------------- */
+.ld-mock{
+  max-width:var(--ld-max);margin:0 auto;padding:clamp(40px,6vw,88px) var(--ld-gutter);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:clamp(32px,5vw,64px);align-items:center;
+}
+.ld-mock__copy .ld-lede{margin-top:20px}
+.ld-mock__facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:32px 0 0;padding-top:24px;border-top:1px solid var(--ld-hair)}
+.ld-mock__facts dt{font-family:var(--font-mono);font-size:clamp(24px,3vw,32px);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--ld-ink)}
+.ld-mock__facts dt span{font-size:.45em;margin-left:3px;color:var(--ld-ink-3)}
+.ld-mock__facts dd{margin:9px 0 0;font-size:12.5px;line-height:1.45;color:var(--ld-ink-2)}
+.ld-mock.is-in .ld-mock__copy>*,.ld-mock.is-in .ld-mock__report{animation:ld-rise .6s var(--ld-ease) both}
+.ld-mock.is-in .ld-mock__report{animation-delay:.12s}
+
+@media(max-width:1040px){
+  .ld-mock{grid-template-columns:1fr;gap:36px}
+}

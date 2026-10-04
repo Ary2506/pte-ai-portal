@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { BookOpen, CheckCircle2, Clock3, Headphones, Mic, PenLine, Trophy } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock3, Flag, Headphones, Mic, PenLine, Play, Trophy } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { Page } from "../components/common.jsx";
+import { Button, ButtonLink, NavButton } from "../components/Button.jsx";
 import { useToast } from "../components/toast.jsx";
 import {
   EmptyState, Metric, MetricStrip, PerformanceTable, ScoreRing, SectionHeader, taskLabel, titleCase
@@ -50,7 +51,10 @@ function ConfirmDialog({ open, title, message, confirmLabel, busy, onConfirm, on
   return <div className="modal-overlay confirm-overlay" onClick={e => { e.stopPropagation(); onCancel(); }}>
     <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
       <h3>{title}</h3><p className="muted">{message}</p>
-      <div className="modal-actions"><button className="secondary" onClick={onCancel} disabled={busy}>Cancel</button><button className="primary" onClick={onConfirm} disabled={busy}>{busy ? "Working..." : confirmLabel}</button></div>
+      <div className="modal-actions btn-bar">
+        <Button variant="tertiary" onClick={onCancel} disabled={busy}>Cancel</Button>
+        <Button variant="primary" onClick={onConfirm} loading={busy} loadingLabel="Working...">{confirmLabel}</Button>
+      </div>
     </div>
   </div>;
 }
@@ -202,8 +206,8 @@ function Mock() {
       </section>
 
       <div className="task-actions">
-        <NavLink className="secondary" to="/history">View all attempts</NavLink>
-        <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
+        <ButtonLink variant="secondary" to="/history">View all attempts</ButtonLink>
+        <ButtonLink variant="primary" to="/dashboard">Back to Dashboard</ButtonLink>
       </div>
     </Page></>;
   }
@@ -214,7 +218,7 @@ function Mock() {
         <div className="mock-icon-badge tone-danger"><Clock3 size={30}/></div>
         <h2>Mock Test Expired</h2>
         <p>Your allotted test time has ended. Your test can no longer accept answers.</p>
-        <NavLink className="primary" to="/dashboard">Back to Dashboard</NavLink>
+        <ButtonLink variant="primary" to="/dashboard">Back to Dashboard</ButtonLink>
       </div>
     </Page></>;
   }
@@ -225,7 +229,7 @@ function Mock() {
         <div className="mock-icon-badge tone-success"><CheckCircle2 size={30}/></div>
         <h2>This Test Was Already Completed</h2>
         <p>This mock attempt has already been submitted and scored.</p>
-        <NavLink className="primary" to="/history">View History</NavLink>
+        <ButtonLink variant="primary" to="/history">View History</ButtonLink>
       </div>
     </Page></>;
   }
@@ -240,7 +244,7 @@ function Mock() {
           {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
         </div>
         <p className="muted">20 minutes total for this compact mock.</p>
-        <button className="primary" disabled={starting} onClick={start}>{starting?"Preparing...":"Start Mock Test"}</button>
+        <Button variant="primary" size="lg" icon={<Play/>} loading={starting} loadingLabel="Preparing..." onClick={start}>Start Mock Test</Button>
         <NavLink className="link mock-card__history" to="/history">See your previous attempts</NavLink>
       </div>
     </Page></>;
@@ -278,10 +282,15 @@ function Mock() {
     {q.section==="writing" && <WritingTaskModule type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="reading" && <ReadingTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
     {q.section==="listening" && <ListeningTask question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-    <div className="mock-nav">
-      <button className="secondary" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>‹ Previous</button>
-      {!isLast && <button className="primary" onClick={()=>setIdx(i=>i+1)}>Next ›</button>}
-      <button className="secondary" disabled={finishing} onClick={()=>setShowConfirm(true)}>{finishing?"Finishing...":"Finish Test"}</button>
+    <div className="mock-nav btn-bar" role="group" aria-label="Test navigation">
+      <div className="btn-group">
+        <NavButton direction="previous" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>Previous</NavButton>
+        {!isLast && <NavButton direction="next" onClick={()=>setIdx(i=>i+1)}>Next</NavButton>}
+      </div>
+      {/* Finish only claims the primary tier on the last question. Everywhere else it is the
+          quiet escape hatch, so it cannot be mistaken for the way forward. */}
+      <Button variant={isLast ? "primary" : "tertiary"} icon={<Flag/>}
+        loading={finishing} loadingLabel="Finishing..." onClick={()=>setShowConfirm(true)}>Finish Test</Button>
     </div>
     <ConfirmDialog open={showConfirm} title="Finish mock test?" message={confirmMessage} confirmLabel="Finish Test" busy={finishing} onConfirm={()=>{ setShowConfirm(false); finish(); }} onCancel={()=>setShowConfirm(false)}/>
   </Page></>;

@@ -55,7 +55,7 @@ describe("Writing practice", () => {
 
   it("disables submit for an empty answer", async () => {
     renderAt("/writing", studentAuthUser());
-    const button = await screen.findByText("Submit for AI Feedback");
+    const button = await screen.findByRole("button", { name: "Submit for AI Feedback" });
     expect(button).toBeDisabled();
   });
 

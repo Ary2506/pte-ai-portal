@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Eye, EyeOff, X } from "lucide-react";
 import { api } from "../api.js";
+import { Button } from "../components/Button.jsx";
 
 // The sign-in modal. The authentication behaviour here is carried over from the original Auth
 // screen unchanged — same api.auth.signin call, same save(), same post-login redirect by role,
@@ -110,7 +111,8 @@ export default function SignInPanel({ open, onClose, save, notice }) {
           {error && <div className="alert error"><AlertCircle size={17}/>{error}</div>}
         </div>
 
-        <button className="primary full" disabled={busy}>{busy ? "Signing in..." : "Sign In"}</button>
+        <Button type="submit" variant="primary" size="lg" fullWidth className="ld-modal__submit"
+          loading={busy} loadingLabel="Signing in...">Sign In</Button>
       </form>
 
       {/* Quiet, below the action — it is policy to be aware of, not a warning to clear. */}

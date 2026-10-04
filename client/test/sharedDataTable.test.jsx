@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { DataTable } from "../src/components/common.jsx";
+import { pagerText } from "./pagerHelpers.js";
 
 const COLUMNS = [
   { key: "name", header: "Name", render: r => r.name },
@@ -46,9 +47,9 @@ describe("shared DataTable component", () => {
     const onNext = vi.fn();
     render(<DataTable columns={COLUMNS} rows={ROWS} rowKey={r => r.id} loading={false}
       pagination={{ page: 2, totalPages: 3, total: 25, itemLabel: "items", onPrevious, onNext }}/>);
-    expect(screen.getByText("Page 2 of 3 · 25 items")).toBeInTheDocument();
-    const previous = screen.getByText("‹ Previous");
-    const next = screen.getByText("Next ›");
+    expect(pagerText()).toBe("Page 2 of 3 · 25 items");
+    const previous = screen.getByRole("button", { name: "Previous" });
+    const next = screen.getByRole("button", { name: "Next" });
     expect(previous).not.toBeDisabled();
     expect(next).not.toBeDisabled();
     previous.click();
@@ -60,17 +61,17 @@ describe("shared DataTable component", () => {
   it("disables Previous on the first page and Next on the last page", () => {
     const { rerender } = render(<DataTable columns={COLUMNS} rows={ROWS} rowKey={r => r.id} loading={false}
       pagination={{ page: 1, totalPages: 3, total: 25, itemLabel: "items", onPrevious: () => {}, onNext: () => {} }}/>);
-    expect(screen.getByText("‹ Previous")).toBeDisabled();
-    expect(screen.getByText("Next ›")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
 
     rerender(<DataTable columns={COLUMNS} rows={ROWS} rowKey={r => r.id} loading={false}
       pagination={{ page: 3, totalPages: 3, total: 25, itemLabel: "items", onPrevious: () => {}, onNext: () => {} }}/>);
-    expect(screen.getByText("‹ Previous")).not.toBeDisabled();
-    expect(screen.getByText("Next ›")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
   });
 
   it("renders no pagination controls when none are given", () => {
     render(<DataTable columns={COLUMNS} rows={ROWS} rowKey={r => r.id} loading={false}/>);
-    expect(screen.queryByText("‹ Previous")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Previous" })).not.toBeInTheDocument();
   });
 });

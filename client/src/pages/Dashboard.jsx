@@ -3,6 +3,7 @@ import { Play, Trophy, AlertCircle, CreditCard } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { Badge, Empty, Page } from "../components/common.jsx";
+import { Button, ButtonLink } from "../components/Button.jsx";
 import { Trajectory } from "../components/charts.jsx";
 import {
   AnalyticsSkeleton, EmptyState, FocusAreas, Metric, MetricStrip, PerformanceTable,
@@ -153,9 +154,7 @@ export default function Dashboard({ user }) {
       title="Welcome back"
       subtitle={subtitle}
       actions={
-        <NavLink className="primary" to="/speaking">
-          <Play size={16} /> Continue practice
-        </NavLink>
+        <ButtonLink variant="primary" to="/speaking" icon={<Play/>}>Continue practice</ButtonLink>
       }
     >
       {accessDenied && (
@@ -258,9 +257,7 @@ export default function Dashboard({ user }) {
           <h3>Ready for the real thing?</h3>
           <p className="muted">Take a full mock test and get a section-by-section practice report.</p>
         </div>
-        <NavLink className="primary" to="/mock">
-          Start Mock Test
-        </NavLink>
+        <ButtonLink variant="primary" size="lg" to="/mock">Start Mock Test</ButtonLink>
         </div>
       </div>
     </Page>

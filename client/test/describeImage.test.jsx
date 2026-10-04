@@ -143,7 +143,7 @@ async function recordAndStop() {
   fireEvent.click(await screen.findByText("Start Recording"));
   await screen.findByText("Stop Recording");
   fireEvent.click(screen.getByText("Stop Recording"));
-  await waitFor(() => expect(screen.getByText("Submit for AI Feedback")).not.toBeDisabled());
+  await waitFor(() => expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled());
 }
 
 describe("AI Answer Result — expected-answer comparison fields, shown only when the server sends them", () => {

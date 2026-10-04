@@ -106,6 +106,26 @@ describe("profile — real daily learning streak", () => {
     expect(screen.getByText(/Practised on/)).toHaveTextContent("3");
   });
 
+  it("never puts two month labels in neighbouring columns — they used to collide as 'SEPOCT'", async () => {
+    // A short range crossing a month boundary is the case that broke: a label is ~20px wide in a
+    // 13px column, so two of them side by side overlapped into one unreadable word.
+    api.activity.mockResolvedValue(activity({
+      from: daysAgo(12), joinedAt: daysAgo(12),
+      days: { [today]: 2 },
+      streak: { currentStreak: 1, longestStreak: 1, lastLearningDate: today, learnedToday: true }
+    }));
+    renderAt("/profile", studentUser);
+
+    await screen.findByText("Your practice record");
+    const marks = [...document.querySelectorAll(".streak-cal__months > span")]
+      .map((span) => span.textContent.trim());
+    // At least one month is still named — suppressing a crowded label must not silence them all.
+    expect(marks.some(Boolean)).toBe(true);
+    for (let i = 1; i < marks.length; i += 1) {
+      expect(Boolean(marks[i] && marks[i - 1])).toBe(false);
+    }
+  });
+
   it("labels each day the way a person reads a date, for the hover tooltip", async () => {
     api.activity.mockResolvedValue(activity({
       from: "2026-10-01", joinedAt: "2026-10-01",
