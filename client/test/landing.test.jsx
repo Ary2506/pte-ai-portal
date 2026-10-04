@@ -136,6 +136,34 @@ describe("the page states only things that are true", () => {
 
 // Two nav links pointed at the same anchor, so "Practice" and "Mock Tests" scrolled to the same
 // block. Every item must reach a target that exists and that nothing else claims.
+describe("the landing footer", () => {
+  it("carries the copyright notice, worded the same as the signed-in footer", () => {
+    renderLanding();
+    const year = new Date().getFullYear();
+    expect(screen.getByText(`Copyright © ${year} PTE CORE AI. All Rights Reserved.`)).toBeInTheDocument();
+  });
+
+  it("is the same footer the signed-in app renders, not a second implementation", () => {
+    renderLanding();
+    // .app-footer, from components/Footer.jsx — the landing page's own ld-footer is gone.
+    expect(document.querySelectorAll(".app-footer").length).toBe(1);
+    expect(document.querySelector(".ld-footer")).toBeNull();
+  });
+
+  it("derives the year rather than shipping a written-in one that goes stale", () => {
+    renderLanding();
+    const legal = document.querySelector(".app-footer__legal");
+    expect(legal.textContent).toContain(String(new Date().getFullYear()));
+  });
+
+  it("points its links at the page's own sections, not at routes that bounce to sign-in", () => {
+    renderLanding();
+    const links = [...document.querySelectorAll(".app-footer__links a")];
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) expect(link.getAttribute("href")).toMatch(/^#/);
+  });
+});
+
 describe("page navigation", () => {
   it("gives every nav link its own destination", async () => {
     renderLanding();

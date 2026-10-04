@@ -23,6 +23,7 @@ import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
 import { IconButton } from "./components/Button.jsx";
+import Footer from "./components/Footer.jsx";
 import Landing from "./landing/Landing.jsx";
 import { ToastProvider } from "./components/toast.jsx";
 import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
@@ -271,28 +272,6 @@ function topbarLabel(pathname) {
   return "";
 }
 
-function AppFooter() {
-  const year = new Date().getFullYear();
-  return (
-    <footer className="app-footer">
-      <div className="app-footer__brand">
-        <span className="brand-mark" aria-hidden="true">P</span>
-        <span className="brand-text">PTE CORE <em>AI</em></span>
-      </div>
-      <nav className="app-footer__links" aria-label="Footer">
-        <NavLink to="/practice">Practice</NavLink>
-        <NavLink to="/mock">Mock Tests</NavLink>
-        <NavLink to="/history">My Results</NavLink>
-        <NavLink to="/progress">Progress</NavLink>
-        <NavLink to="/plan">Study Plan</NavLink>
-      </nav>
-      <p className="app-footer__legal">
-        Copyright © {year} PTE CORE AI. All Rights Reserved.
-      </p>
-    </footer>
-  );
-}
-
 function Layout({ user, logout, children, theme, toggleTheme }) {
   const [mobile, setMobile] = useState(false);
   // Remembered per browser: someone who works with the rail collapsed wants it collapsed next
@@ -345,7 +324,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
         </div>
       </header>
       <div className="content">{children}</div>
-      <AppFooter/>
+      <Footer/>
     </main>
   </div>
 }

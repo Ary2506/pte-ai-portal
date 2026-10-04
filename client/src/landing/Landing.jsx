@@ -6,6 +6,7 @@ import { useInView } from "./motion.js";
 import SignInPanel from "./SignInPanel.jsx";
 import Voices from "./Voices.jsx";
 import "./landing.css";
+import SiteFooter from "../components/Footer.jsx";
 
 // The signed-out surface. App renders this for every path while there is no user, which is why it
 // carries its own navigation and its own theme toggle rather than relying on the app shell.
@@ -355,21 +356,6 @@ function FinalCta({ onSignIn }) {
   </section>;
 }
 
-function Footer() {
-  return <footer className="ld-footer">
-    <a className="ld-wordmark ld-wordmark--sm" href="#top">
-      <span className="ld-wordmark__mark" aria-hidden="true">P</span>
-      <span className="ld-wordmark__text">PTE CORE <em>AI</em></span>
-    </a>
-    <nav className="ld-footer__links" aria-label="Footer">
-      {NAV.map(item => <a key={item.label} href={item.href}>{item.label}</a>)}
-    </nav>
-    <p className="ld-footer__legal">
-      <span>Privacy</span><span>Terms</span>
-    </p>
-  </footer>;
-}
-
 /* ---------------------------------------------------------------- page */
 
 export default function Landing({ save, theme, toggleTheme }) {
@@ -395,7 +381,7 @@ export default function Landing({ save, theme, toggleTheme }) {
       <Metrics/>
       <FinalCta onSignIn={openSignIn}/>
     </main>
-    <Footer/>
+    <SiteFooter links={NAV} brandHref="#top"/>
     <SignInPanel open={signInOpen} onClose={() => setSignInOpen(false)} save={save} notice={notice}/>
   </div>;
 }

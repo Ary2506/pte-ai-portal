@@ -423,15 +423,10 @@ html[data-theme="dark"] .ld-delta{background:#141821}
 }
 .ld-final .ld-display{margin:0}
 
-.ld-footer{
-  max-width:var(--ld-max);margin:0 auto;
-  padding:30px var(--ld-gutter);display:flex;flex-wrap:wrap;align-items:center;gap:20px;
-  border-top:1px solid var(--ld-hair);
-}
-.ld-footer__links{display:flex;flex-wrap:wrap;gap:20px;margin-left:auto}
-.ld-footer__links a{font-size:13px;color:var(--ld-ink-2)}
-.ld-footer__links a:hover{color:var(--ld-ink)}
-.ld-footer__legal{display:flex;gap:18px;margin:0;font-size:13px;color:var(--ld-ink-3)}
+/* The landing page's own footer is gone — both surfaces now render components/Footer.jsx, so the
+   footer is styled once, as .app-footer in styles.css. Only its width is a landing concern: the
+   rest of this page is held to --ld-max, and the footer has to line up with it. */
+.ld-page .app-footer{max-width:var(--ld-max);margin:0 auto;padding:30px var(--ld-gutter)}
 
 /* --- Sign-in modal ---------------------------------------------------------- */
 .ld-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px}
@@ -576,8 +571,6 @@ html[data-theme="dark"] .ld-modal__card .auth-message-slot .alert.error{
   .ld-metrics__item:nth-child(2n){padding-left:16px}
 
   .ld-final__inner{flex-direction:column;align-items:flex-start}
-  .ld-footer{flex-direction:column;align-items:flex-start;gap:16px}
-  .ld-footer__links{margin-left:0}
 
   /* The modal takes the full width it is given, with the scrim's padding as its only margin. */
   .ld-modal{padding:16px}
