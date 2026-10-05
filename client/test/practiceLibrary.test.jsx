@@ -13,7 +13,7 @@ vi.mock("../src/api.js", () => ({
   api: {
     auth: { signin: vi.fn(), me: vi.fn(), logout: vi.fn(() => Promise.resolve()) },
     admin: { getStats: vi.fn(), getAuditLog: vi.fn(), listUsers: vi.fn() },
-    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), history: vi.fn(), submit: vi.fn(),
+    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), history: vi.fn(), submit: vi.fn(),
     testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
   },
   forceLogout: vi.fn()
@@ -29,7 +29,7 @@ const QUESTIONS = {
 // The hub paints once before the question bank resolves, so a progress assertion has to wait for
 // that load — otherwise it reads the row's pre-load "No content yet" state.
 async function readAloudRow() {
-  await waitFor(() => expect(api.questions).toHaveBeenCalledTimes(4));
+  await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
   let row;
   await waitFor(() => {
     row = screen.getByText("Read Aloud").closest(".practice-row");
@@ -47,6 +47,7 @@ function renderHub() {
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  api.questionIndex.mockImplementation((section) => Promise.resolve({ questions: QUESTIONS[section] || [] }));
   api.questions.mockImplementation((section) => Promise.resolve({ questions: QUESTIONS[section] || [] }));
   api.history.mockResolvedValue({ submissions: [], total: 0 });
 });
@@ -58,6 +59,49 @@ describe("library totals are counted, not asserted", () => {
     const strip = document.querySelector(".library-summary");
     // 2 speaking + 1 writing + 1 reading + 1 listening.
     expect(strip).toHaveTextContent("5");
+  });
+
+  it("counts a section larger than the per-request document cap", async () => {
+    // The hub used to count by fetching every question of a section in FULL, which is capped at
+    // 200 documents. Speaking had 365 active and Reading 344, so the library reported 560 of the
+    // 869 questions that existed, and the ones past the cap were invisible to it. The count must
+    // equal what the database holds — not a cap, and not a number written into the page.
+    const many = (section, type, n) =>
+      Array.from({ length: n }, (_, i) => ({ _id: `${section}-${i}`, type, title: `${section} ${i}` }));
+    const BIG = {
+      speaking: many("speaking", "read-aloud", 365),
+      reading: many("reading", "mcq-single", 344),
+      listening: many("listening", "write-dictation", 137),
+      writing: many("writing", "essay", 23)
+    };
+    api.questionIndex.mockImplementation((section) => Promise.resolve({ questions: BIG[section] || [] }));
+
+    renderHub();
+    await screen.findByText("Questions available");
+    await waitFor(() => {
+      const metric = screen.getByText("Questions available").closest(".metric");
+      expect(metric).toHaveTextContent("869");
+    });
+    // The figure a capped fetch would have produced must not appear.
+    expect(screen.getByText("Questions available").closest(".metric")).not.toHaveTextContent("560");
+  });
+
+  it("counts every question once, even when a section mixes task types", async () => {
+    api.questionIndex.mockImplementation((section) => Promise.resolve({
+      questions: section === "speaking"
+        ? [
+            ...Array.from({ length: 183 }, (_, i) => ({ _id: `rs${i}`, type: "repeat-sentence", title: `RS ${i}` })),
+            ...Array.from({ length: 132 }, (_, i) => ({ _id: `ra${i}`, type: "read-aloud", title: `RA ${i}` }))
+          ]
+        : []
+    }));
+
+    renderHub();
+    await screen.findByText("Questions available");
+    await waitFor(() => {
+      const metric = screen.getByText("Questions available").closest(".metric");
+      expect(metric).toHaveTextContent("315"); // 183 + 132, summed across types
+    });
   });
 
   it("shows a dash rather than 0% average before anything is scored", async () => {

@@ -12,7 +12,7 @@ import { api } from "../src/api.js";
 vi.mock("../src/api.js", () => ({
   api: {
     auth: { signin: vi.fn(), me: vi.fn(), logout: vi.fn(() => Promise.resolve()) },
-    dashboard: vi.fn(), history: vi.fn(), questions: vi.fn(), plan: vi.fn(), submit: vi.fn(),
+    dashboard: vi.fn(), history: vi.fn(), questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), plan: vi.fn(), submit: vi.fn(),
     admin: { getStats: vi.fn(), getAuditLog: vi.fn(), listUsers: vi.fn() },
     testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
   },

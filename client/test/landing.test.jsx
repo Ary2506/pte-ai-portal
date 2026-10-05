@@ -11,7 +11,7 @@ import { SAMPLE_FEEDBACK } from "../src/landing/Voices.jsx";
 vi.mock("../src/api.js", () => ({
   api: {
     auth: { signin: vi.fn(), me: vi.fn(), logout: vi.fn(() => Promise.resolve()) },
-    dashboard: vi.fn(), questions: vi.fn(), history: vi.fn(), submit: vi.fn(),
+    dashboard: vi.fn(), questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), history: vi.fn(), submit: vi.fn(),
     admin: { getStats: vi.fn(), getAuditLog: vi.fn(), listUsers: vi.fn() },
     testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
   },

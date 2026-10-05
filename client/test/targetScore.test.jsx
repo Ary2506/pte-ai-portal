@@ -15,7 +15,7 @@ vi.mock("../src/api.js", () => ({
     dashboard: vi.fn(() => Promise.resolve({ stats: {}, bySection: [], recent: [], streak: {}, weeklyActivity: [] })),
     history: vi.fn(() => Promise.resolve({ submissions: [], total: 0 })),
     activity: vi.fn(() => Promise.resolve(null)),
-    questions: vi.fn(), plan: vi.fn(), submit: vi.fn(),
+    questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), plan: vi.fn(), submit: vi.fn(),
     admin: { getStats: vi.fn(), getAuditLog: vi.fn(), listUsers: vi.fn() },
     testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
   },

@@ -126,12 +126,17 @@ export default function PracticeHub() {
   useEffect(() => {
     // Still exactly one request per section — the question bank is what decides availability.
     // History is fetched alongside it and only adds progress; if it fails, the hub still works.
+    //
+    // The index endpoint (ids and types, no passages) rather than full documents: this page only
+    // ever counts them. Fetching them in full meant downloading the entire library on every
+    // visit AND hitting the 200-per-section cap, so Speaking (365) and Reading (344) reported
+    // 200 each and the questions past that point were invisible here.
     const safely = (run) => Promise.resolve().then(run).catch(() => null);
     Promise.all([
       Promise.all(
         PRACTICE_SECTIONS.map((section) =>
           api
-            .questions(section)
+            .questionIndex(section)
             .then((data) => ({ section, questions: data.questions }))
             .catch(() => ({ section, questions: [] })),
         ),

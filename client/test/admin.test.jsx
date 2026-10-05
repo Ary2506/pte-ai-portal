@@ -26,7 +26,7 @@ vi.mock("../src/api.js", () => ({
     },
     dashboard: vi.fn(),
     plan: vi.fn(),
-    questions: vi.fn(),
+    questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })),
     history: vi.fn(),
     submit: vi.fn(),
     retryEvaluation: vi.fn(),
