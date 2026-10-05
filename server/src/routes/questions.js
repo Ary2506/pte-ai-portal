@@ -28,6 +28,10 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
   // get a mutable copy it could delete `answer` off).
   const questions = await Question.find(filter).select(STUDENT_SAFE_FIELDS).sort({ createdAt: 1 }).limit(200).lean();
   for (const question of questions) {
+    // Repeat Sentence's `transcript` is the sentence the student is about to repeat. Sent up
+    // front it would turn a listening task into reading aloud and let anyone read the answer out
+    // of the network tab. It is compared against server-side only, and revealed in the result.
+    if (question.type === "repeat-sentence") { delete question.transcript; delete question.answer; }
     if (question.evaluationType !== "objective") continue;
     delete question.answer;
     // `content` carries the answer key too, inline: a Fill in the Blanks part is

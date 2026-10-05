@@ -85,6 +85,9 @@ async function pickSectionQuestions(section, wanted) {
   // One query for the documents, then put them back into the chosen (random) order: $in returns
   // them in whatever order the index yields, which would undo the shuffle.
   const docs = await Question.find({ _id: { $in: chosenIds } }).select(STUDENT_SAFE_FIELDS);
+  // Same rule as GET /questions: a Repeat Sentence transcript is the answer, so it never goes out
+  // with the question.
+  for (const doc of docs) if (doc.type === "repeat-sentence") doc.set("transcript", undefined);
   const byId = new Map(docs.map(doc => [String(doc._id), doc]));
   return chosenIds.map(id => byId.get(String(id))).filter(Boolean);
 }

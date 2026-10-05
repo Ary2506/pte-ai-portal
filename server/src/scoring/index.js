@@ -1,5 +1,9 @@
 import { scoreSingleChoice, scoreMultipleChoice, scoreReorder, scoreDictation, scoreFillDrag, scoreTypedBlanks, scoreHighlightIncorrectWords, scoreDropdownBlanks } from "./objective.js";
 import { evaluateSubjective } from "../services/ai/index.js";
+import { scoreRepeatSentence } from "./repeatSentence.js";
+
+const MAX_REPEAT_SENTENCE_SCORE = 90;
+const REPEAT_SENTENCE_NOTE = "Scored by comparing the words of your transcript with the recording, in order. Pronunciation and fluency are not analyzed, since only text is available.";
 
 const OBJECTIVE_SCORERS = {
   "mcq-single": scoreSingleChoice,
@@ -79,6 +83,43 @@ export async function evaluateAnswer(question, { answer, text, durationSeconds }
         corrections: result.corrections ?? null
       }
     };
+  }
+
+  // Repeat Sentence is graded against the verified transcript of its own audio (`transcript`),
+  // by exact word alignment rather than by AI — see scoring/repeatSentence.js. Questions without
+  // one (the five legacy clips) keep going through the AI path below, unchanged.
+  if (question.type === "repeat-sentence") {
+    const reference = typeof question.transcript === "string" ? question.transcript.trim() : "";
+    if (reference) {
+      const r = scoreRepeatSentence(reference, text);
+      return {
+        score: r.score,
+        maxScore: r.maxScore,
+        evaluationType: "subjective",
+        evaluationStatus: "COMPLETED",
+        scoringMethod: "word-alignment",
+        feedback: subjectiveFeedback(
+          { ...r, scoringMethod: "word-alignment", note: REPEAT_SENTENCE_NOTE },
+          { expectedAnswerText: reference, studentAnswerText: text?.trim() || null }
+        )
+      };
+    }
+    // An imported clip whose transcript is still awaiting human verification has nothing to be
+    // graded against. Scoring it by AI with no reference would produce a confident, meaningless
+    // number, so it is refused instead.
+    if (String(question.sourceGroup || "").startsWith("repeat-sentence/")) {
+      return {
+        score: 0,
+        maxScore: MAX_REPEAT_SENTENCE_SCORE,
+        evaluationType: "subjective",
+        evaluationStatus: "FAILED",
+        scoringMethod: null,
+        feedback: subjectiveFeedback({
+          strengths: [], improvements: [], scoringMethod: null,
+          overall: "This question's reference transcript is still awaiting verification, so it cannot be scored yet.", note: null
+        })
+      };
+    }
   }
 
   // The question's own stored answer (when it has one — currently only Describe Image, section 9
