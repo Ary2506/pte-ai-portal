@@ -33,6 +33,11 @@ export async function createQuestion(overrides = {}) {
     passage: overrides.passage,
     imageUrl: overrides.imageUrl,
     audioUrl: overrides.audioUrl,
+    // Pass-throughs a test must be able to set: `transcript` is the answer key for most audio
+    // tasks, so a test asserting it is stripped needs it stored in the first place.
+    transcript: overrides.transcript,
+    content: overrides.content,
+    sourceGroup: overrides.sourceGroup,
     options: overrides.options,
     answer: overrides.answer,
     explanation: overrides.explanation || "Because the passage says so.",

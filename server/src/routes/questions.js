@@ -2,6 +2,7 @@ import express from "express";
 import Question from "../models/Question.js";
 import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
+import { TRANSCRIPT_IS_ANSWER } from "../transcriptPolicy.js";
 
 const router = express.Router();
 
@@ -54,10 +55,17 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
     return res.json({ questions, total: questions.length, truncated: questions.length >= INDEX_LIMIT });
   }
   for (const question of questions) {
-    // Repeat Sentence's `transcript` is the sentence the student is about to repeat. Sent up
-    // front it would turn a listening task into reading aloud and let anyone read the answer out
-    // of the network tab. It is compared against server-side only, and revealed in the result.
-    if (question.type === "repeat-sentence") { delete question.transcript; delete question.answer; }
+    // For most audio tasks the transcript IS the answer key, so it never goes out with the
+    // question. Repeat Sentence is the sentence to say back; Write From Dictation is the sentence
+    // to type; Fill in the Blanks contains every blanked word; Highlight Incorrect Words shows
+    // exactly which words differ; Select Missing Word ends on the missing word; and a listening
+    // multiple-choice transcript simply answers the question. Each is compared server-side and
+    // revealed in the result.
+    //
+    // Summarize Spoken Text is deliberately NOT in this set: you summarise that audio rather than
+    // transcribe it, so the transcript is a study aid and not a key.
+    if (TRANSCRIPT_IS_ANSWER.has(question.type)) { delete question.transcript; }
+    if (question.type === "repeat-sentence") { delete question.answer; }
     if (question.evaluationType !== "objective") continue;
     delete question.answer;
     // `content` carries the answer key too, inline: a Fill in the Blanks part is

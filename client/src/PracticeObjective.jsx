@@ -6,7 +6,7 @@ import { Button, IconButton } from "./components/Button.jsx";
 import TaskTips, { AI_SCORING_NOTE, OBJECTIVE_SCORING_NOTE } from "./practice/TaskTips.jsx";
 import { ANSWER_MAX_LENGTH, BLANK_MAX_LENGTH, BLANK_CHAR_LIMITS, TASK_CHAR_LIMITS, countCharacters } from "./practice/answerLimits.js";
 import { audioUrl } from "./practice/listeningData/shared.js";
-import { localTranscriptFor } from "./practice/listeningData/localTranscripts.js";
+import { localTranscriptFor, TRANSCRIPT_IS_ANSWER } from "./practice/listeningData/localTranscripts.js";
 import BlankSelect from "./practice/BlankSelect.jsx";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
 
@@ -804,10 +804,16 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     <h2>{question.title}</h2>
     <p className="instruction">{question.prompt}</p>
     {audioUrl && <audio className="audio" controls src={audioUrl} />}
+    {/* Three different situations, and saying the wrong one is worse than saying nothing.
+        For a task whose transcript IS the answer, it is withheld on purpose and saying "none has
+        been added" would tell the student the question is broken. The other two cases are a
+        transcript that exists and one that genuinely does not. */}
     {transcriptText
       ? <Button variant="secondary" className="task-inline-action" icon={<FileText/>}
           onClick={() => setShowTranscript(true)}>Transcript</Button>
-      : <p className="muted task-inline-action">No transcript has been added for this question yet.</p>}
+      : TRANSCRIPT_IS_ANSWER.has(question.type)
+        ? <p className="muted task-inline-action">The transcript is the answer here, so it is shown with your result.</p>
+        : <p className="muted task-inline-action">No transcript has been added for this question yet.</p>}
     {/* Listening Fill in the Blanks needs the blanked sentence itself visible to read along with
         the audio — ReadingTask has always shown its passage; this was the one place Listening
         never did. Harmless no-op for every other listening type, which never sets a passage. */}

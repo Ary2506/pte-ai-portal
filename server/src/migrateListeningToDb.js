@@ -41,7 +41,12 @@ const SOURCES = [
     file: "write-from-dictation/write_from_dictation.json",
     evaluationType: "objective",
     prompt: "Listen to the recording and write the sentence you hear.",
-    answer: item => item.answer,
+    // The answer is the transcript OF THE AUDIO, never the `answer` field beside it. Those two
+    // drifted apart on all 45 items: the clips were generated from paraphrased sentences
+    // ("vernacular" -> "traditional", "ten" -> "fifteen") while `answer` kept the original
+    // question-bank wording, so every student was marked against a sentence the clip never says.
+    // Deriving it from one field is what stops them diverging again.
+    answer: item => (item.audio?.transcript || item.answer || "").trim(),
   },
   {
     type: "mcq-single",

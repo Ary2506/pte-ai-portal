@@ -1,542 +1,542 @@
 [
-    {
-        "id": "3942",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "3942.mp3",
-            "transcript": "Her design includes the best aspects of traditional architecture."
-        },
-        "answer": "Her design incorporates the best aspects of vernacular architecture.",
-        "userAnswer": ""
+  {
+    "id": "3942",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "3942.mp3",
+      "transcript": "Her design includes the best aspects of traditional architecture."
     },
-    {
-        "id": "3305",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "3305.mp3",
-            "transcript": "Your boss wants you to complete this report by Monday."
-        },
-        "answer": "Your boss wants you to finish this report by Monday.",
-        "userAnswer": ""
+    "answer": "Her design includes the best aspects of traditional architecture.",
+    "userAnswer": ""
+  },
+  {
+    "id": "3305",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "3305.mp3",
+      "transcript": "Your boss wants you to complete this report by Monday."
     },
-    {
-        "id": "429",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "429.mp3",
-            "transcript": "All students are permitted to take the notes from the library."
-        },
-        "answer": "All students are allowed to take the notes from the library.",
-        "userAnswer": ""
+    "answer": "Your boss wants you to complete this report by Monday.",
+    "userAnswer": ""
+  },
+  {
+    "id": "429",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "429.mp3",
+      "transcript": "All students are permitted to take the notes from the library."
     },
-    {
-        "id": "1386",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1386.mp3",
-            "transcript": "At this point experts are unable to analyze the effects of the new policy."
-        },
-        "answer": "At this time experts are not able to analyze the effects of the new policy.",
-        "userAnswer": ""
+    "answer": "All students are permitted to take the notes from the library.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1386",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1386.mp3",
+      "transcript": "At this point experts are unable to analyze the effects of the new policy."
     },
-    {
-        "id": "3299",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "3299.mp3",
-            "transcript": "The lecture will discuss the influence of technology on music."
-        },
-        "answer": "The lecture will deal with the influence of technology on music.",
-        "userAnswer": ""
+    "answer": "At this point experts are unable to analyze the effects of the new policy.",
+    "userAnswer": ""
+  },
+  {
+    "id": "3299",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "3299.mp3",
+      "transcript": "The lecture will discuss the influence of technology on music."
     },
-    {
-        "id": "1127",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1127.mp3",
-            "transcript": "A university degree is necessary to enter many professions."
-        },
-        "answer": "A university degree is a requirement to enter many professions.",
-        "userAnswer": ""
+    "answer": "The lecture will discuss the influence of technology on music.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1127",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1127.mp3",
+      "transcript": "A university degree is necessary to enter many professions."
     },
-    {
-        "id": "1184",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1184.mp3",
-            "transcript": "You should complete the job application form in order to get selected for the manager's position."
-        },
-        "answer": "You should complete the job application form in order to get called for the manager's position.",
-        "userAnswer": ""
+    "answer": "A university degree is necessary to enter many professions.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1184",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1184.mp3",
+      "transcript": "You should complete the job application form in order to get selected for the manager's position."
     },
-    {
-        "id": "1455",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1455.mp3",
-            "transcript": "You must wear a safety hat on the construction site."
-        },
-        "answer": "You must wear a hard hat on the construction site.",
-        "userAnswer": ""
+    "answer": "You should complete the job application form in order to get selected for the manager's position.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1455",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1455.mp3",
+      "transcript": "You must wear a safety hat on the construction site."
     },
-    {
-        "id": "1429",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1429.mp3",
-            "transcript": "When you attend a job interview, punctuality is very important."
-        },
-        "answer": "When you attend a job interview, punctuality is the key.",
-        "userAnswer": ""
+    "answer": "You must wear a safety hat on the construction site.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1429",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1429.mp3",
+      "transcript": "When you attend a job interview, punctuality is very important."
     },
-    {
-        "id": "448",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "448.mp3",
-            "transcript": "You are trained to become a specialized journalist."
-        },
-        "answer": "You are trained to be a specialized journalist.",
-        "userAnswer": ""
+    "answer": "When you attend a job interview, punctuality is very important.",
+    "userAnswer": ""
+  },
+  {
+    "id": "448",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "448.mp3",
+      "transcript": "You are trained to become a specialized journalist."
     },
-    {
-        "id": "1418",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1418.mp3",
-            "transcript": "Stock predictions can be quite capricious even for professionals."
-        },
-        "answer": "Stock predictions can be very capricious even for professionals.",
-        "userAnswer": ""
+    "answer": "You are trained to become a specialized journalist.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1418",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1418.mp3",
+      "transcript": "Stock predictions can be quite capricious even for professionals."
     },
-    {
-        "id": "1225",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1225.mp3",
-            "transcript": "There was a lot of traffic this afternoon."
-        },
-        "answer": "There was a lot of traffic this morning.",
-        "userAnswer": ""
+    "answer": "Stock predictions can be quite capricious even for professionals.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1225",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1225.mp3",
+      "transcript": "There was a lot of traffic this afternoon."
     },
-    {
-        "id": "1208",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1208.mp3",
-            "transcript": "The new classrooms will be put into operation next month."
-        },
-        "answer": "The new classrooms will be put into use next month.",
-        "userAnswer": ""
+    "answer": "There was a lot of traffic this afternoon.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1208",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1208.mp3",
+      "transcript": "The new classrooms will be put into operation next month."
     },
-    {
-        "id": "1182",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1182.mp3",
-            "transcript": "You need to pass the written test for the driver's license."
-        },
-        "answer": "You need to pass the written exam for the driver's license.",
-        "userAnswer": ""
+    "answer": "The new classrooms will be put into operation next month.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1182",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1182.mp3",
+      "transcript": "You need to pass the written test for the driver's license."
     },
-    {
-        "id": "1026",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "core",
-        "audio": {
-            "src": "1026.mp3",
-            "transcript": "Football is played throughout the year at the university."
-        },
-        "answer": "Football is played all year at the university.",
-        "userAnswer": ""
+    "answer": "You need to pass the written test for the driver's license.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1026",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "core",
+    "audio": {
+      "src": "1026.mp3",
+      "transcript": "Football is played throughout the year at the university."
     },
-    {
-        "id": "427",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "427.mp3",
-            "transcript": "The nation gained prosperity by opening its ports for commerce."
-        },
-        "answer": "The nation achieved prosperity by opening its ports for trade.",
-        "userAnswer": ""
+    "answer": "Football is played throughout the year at the university.",
+    "userAnswer": ""
+  },
+  {
+    "id": "427",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "427.mp3",
+      "transcript": "The nation gained prosperity by opening its ports for commerce."
     },
-    {
-        "id": "539",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "539.mp3",
-            "transcript": "Traffic is the primary cause of air pollution in many cities."
-        },
-        "answer": "Traffic is the main cause of air pollution in many cities.",
-        "userAnswer": ""
+    "answer": "The nation gained prosperity by opening its ports for commerce.",
+    "userAnswer": ""
+  },
+  {
+    "id": "539",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "539.mp3",
+      "transcript": "Traffic is the primary cause of air pollution in many cities."
     },
-    {
-        "id": "1426",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1426.mp3",
-            "transcript": "The restaurants are down the corridor and to the right."
-        },
-        "answer": "The restaurants are down the hall and to the right.",
-        "userAnswer": ""
+    "answer": "Traffic is the primary cause of air pollution in many cities.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1426",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1426.mp3",
+      "transcript": "The restaurants are down the corridor and to the right."
     },
-    {
-        "id": "1431",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1431.mp3",
-            "transcript": "You can get your coffee and tea in the cafeteria."
-        },
-        "answer": "You can get your coffee and tea in the lounge.",
-        "userAnswer": ""
+    "answer": "The restaurants are down the corridor and to the right.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1431",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1431.mp3",
+      "transcript": "You can get your coffee and tea in the cafeteria."
     },
-    {
-        "id": "1469",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1469.mp3",
-            "transcript": "In my view, this car should be repaired soon."
-        },
-        "answer": "In my opinion, this car should be repaired soon.",
-        "userAnswer": ""
+    "answer": "You can get your coffee and tea in the cafeteria.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1469",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1469.mp3",
+      "transcript": "In my view, this car should be repaired soon."
     },
-    {
-        "id": "43",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "43.mp3",
-            "transcript": "All of the assignments must be submitted personally to the faculty office."
-        },
-        "answer": "All of the assignments must be submitted in person to the faculty office.",
-        "userAnswer": ""
+    "answer": "In my view, this car should be repaired soon.",
+    "userAnswer": ""
+  },
+  {
+    "id": "43",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "43.mp3",
+      "transcript": "All of the assignments must be submitted personally to the faculty office."
     },
-    {
-        "id": "274",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "274.mp3",
-            "transcript": "Sales figures for last year were higher than expected."
-        },
-        "answer": "Sales figures for last year were better than expected.",
-        "userAnswer": ""
+    "answer": "All of the assignments must be submitted personally to the faculty office.",
+    "userAnswer": ""
+  },
+  {
+    "id": "274",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "274.mp3",
+      "transcript": "Sales figures for last year were higher than expected."
     },
-    {
-        "id": "835",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "835.mp3",
-            "transcript": "We can't consider an increase in our costs at this stage."
-        },
-        "answer": "We can't consider an increase in our price at this stage.",
-        "userAnswer": ""
+    "answer": "Sales figures for last year were higher than expected.",
+    "userAnswer": ""
+  },
+  {
+    "id": "835",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "835.mp3",
+      "transcript": "We can't consider an increase in our costs at this stage."
     },
-    {
-        "id": "978",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "978.mp3",
-            "transcript": "The bus to London will leave fifteen minutes later than planned."
-        },
-        "answer": "The bus to London will leave ten minutes later than planned.",
-        "userAnswer": ""
+    "answer": "We can't consider an increase in our costs at this stage.",
+    "userAnswer": ""
+  },
+  {
+    "id": "978",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "978.mp3",
+      "transcript": "The bus to London will leave fifteen minutes later than planned."
     },
-    {
-        "id": "1148",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1148.mp3",
-            "transcript": "Understanding visual media has never been more difficult."
-        },
-        "answer": "Understanding visual media has never been more challenging.",
-        "userAnswer": ""
+    "answer": "The bus to London will leave fifteen minutes later than planned.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1148",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1148.mp3",
+      "transcript": "Understanding visual media has never been more difficult."
     },
-    {
-        "id": "1210",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1210.mp3",
-            "transcript": "Online classes allow students to work at their own pace."
-        },
-        "answer": "Online courses allow students to work at their own pace.",
-        "userAnswer": ""
+    "answer": "Understanding visual media has never been more difficult.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1210",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1210.mp3",
+      "transcript": "Online classes allow students to work at their own pace."
     },
-    {
-        "id": "1244",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1244.mp3",
-            "transcript": "Mechanical engineering first became important during the Industrial Revolution."
-        },
-        "answer": "Mechanical engineering first became prominent during the Industrial Revolution.",
-        "userAnswer": ""
+    "answer": "Online classes allow students to work at their own pace.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1244",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1244.mp3",
+      "transcript": "Mechanical engineering first became important during the Industrial Revolution."
     },
-    {
-        "id": "1249",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1249.mp3",
-            "transcript": "At that time, few people traveled from the town to the village."
-        },
-        "answer": "At that time, few people moved from the town to the village.",
-        "userAnswer": ""
+    "answer": "Mechanical engineering first became important during the Industrial Revolution.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1249",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1249.mp3",
+      "transcript": "At that time, few people traveled from the town to the village."
     },
-    {
-        "id": "1271",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1271.mp3",
-            "transcript": "Rail transport is becoming increasingly popular."
-        },
-        "answer": "Rail transport is becoming more and more popular.",
-        "userAnswer": ""
+    "answer": "At that time, few people traveled from the town to the village.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1271",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1271.mp3",
+      "transcript": "Rail transport is becoming increasingly popular."
     },
-    {
-        "id": "1277",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1277.mp3",
-            "transcript": "Before architecture was created, humans lived in underground houses."
-        },
-        "answer": "Before architecture was invented, humans lived in underground houses.",
-        "userAnswer": ""
+    "answer": "Rail transport is becoming increasingly popular.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1277",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1277.mp3",
+      "transcript": "Before architecture was created, humans lived in underground houses."
     },
-    {
-        "id": "1407",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1407.mp3",
-            "transcript": "Please move us to the meeting room for the next hour."
-        },
-        "answer": "Please move us to the conference room for the next hour.",
-        "userAnswer": ""
+    "answer": "Before architecture was created, humans lived in underground houses.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1407",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1407.mp3",
+      "transcript": "Please move us to the meeting room for the next hour."
     },
-    {
-        "id": "1408",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1408.mp3",
-            "transcript": "The students will meet their new teachers after the summer vacation."
-        },
-        "answer": "The students will meet their new instructors after the summer vacation.",
-        "userAnswer": ""
+    "answer": "Please move us to the meeting room for the next hour.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1408",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1408.mp3",
+      "transcript": "The students will meet their new teachers after the summer vacation."
     },
-    {
-        "id": "1413",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1413.mp3",
-            "transcript": "Please close the door behind you when you leave the room."
-        },
-        "answer": "Please shut the door behind you when you leave the room.",
-        "userAnswer": ""
+    "answer": "The students will meet their new teachers after the summer vacation.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1413",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1413.mp3",
+      "transcript": "Please close the door behind you when you leave the room."
     },
-    {
-        "id": "1439",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1439.mp3",
-            "transcript": "The fiction books are just past the counter."
-        },
-        "answer": "The fiction books are just beyond the counter.",
-        "userAnswer": ""
+    "answer": "Please close the door behind you when you leave the room.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1439",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1439.mp3",
+      "transcript": "The fiction books are just past the counter."
     },
-    {
-        "id": "1245",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1245.mp3",
-            "transcript": "The digital revolution has changed the way we read."
-        },
-        "answer": "The digital revolution has transformed the way we read.",
-        "userAnswer": ""
+    "answer": "The fiction books are just past the counter.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1245",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1245.mp3",
+      "transcript": "The digital revolution has changed the way we read."
     },
-    {
-        "id": "1286",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1286.mp3",
-            "transcript": "The falling birth rate means the number of students drops."
-        },
-        "answer": "The declining birth rate means the number of students drops.",
-        "userAnswer": ""
+    "answer": "The digital revolution has changed the way we read.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1286",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1286.mp3",
+      "transcript": "The falling birth rate means the number of students drops."
     },
-    {
-        "id": "1338",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1338.mp3",
-            "transcript": "The employment opportunities available in engineering are increasing rapidly."
-        },
-        "answer": "The employment opportunities available in engineering are growing rapidly.",
-        "userAnswer": ""
+    "answer": "The falling birth rate means the number of students drops.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1338",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1338.mp3",
+      "transcript": "The employment opportunities available in engineering are increasing rapidly."
     },
-    {
-        "id": "1356",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1356.mp3",
-            "transcript": "The university canteen now offers many healthy meal options."
-        },
-        "answer": "The university cafeteria now offers many healthy meal options.",
-        "userAnswer": ""
+    "answer": "The employment opportunities available in engineering are increasing rapidly.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1356",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1356.mp3",
+      "transcript": "The university canteen now offers many healthy meal options."
     },
-    {
-        "id": "1358",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1358.mp3",
-            "transcript": "Communication skills have become more important in recent years."
-        },
-        "answer": "Communication skills have become increasingly important in recent years.",
-        "userAnswer": ""
+    "answer": "The university canteen now offers many healthy meal options.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1358",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1358.mp3",
+      "transcript": "Communication skills have become more important in recent years."
     },
-    {
-        "id": "1372",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1372.mp3",
-            "transcript": "Before the invention of the refrigerator, people stored food in underground ice houses."
-        },
-        "answer": "Before the invention of the refrigerator, people kept food in underground ice houses.",
-        "userAnswer": ""
+    "answer": "Communication skills have become more important in recent years.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1372",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1372.mp3",
+      "transcript": "Before the invention of the refrigerator, people stored food in underground ice houses."
     },
-    {
-        "id": "1401",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1401.mp3",
-            "transcript": "You can keep your bags in the back room."
-        },
-        "answer": "You can leave your bags in the back room.",
-        "userAnswer": ""
+    "answer": "Before the invention of the refrigerator, people stored food in underground ice houses.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1401",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1401.mp3",
+      "transcript": "You can keep your bags in the back room."
     },
-    {
-        "id": "1402",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1402.mp3",
-            "transcript": "Please turn off the light to save energy."
-        },
-        "answer": "Please switch off the light to save energy.",
-        "userAnswer": ""
+    "answer": "You can keep your bags in the back room.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1402",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1402.mp3",
+      "transcript": "Please turn off the light to save energy."
     },
-    {
-        "id": "1403",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1403.mp3",
-            "transcript": "Before preparing food, be sure to wash your hands well."
-        },
-        "answer": "Before preparing food, be sure to wash your hands thoroughly.",
-        "userAnswer": ""
+    "answer": "Please turn off the light to save energy.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1403",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1403.mp3",
+      "transcript": "Before preparing food, be sure to wash your hands well."
     },
-    {
-        "id": "1415",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1415.mp3",
-            "transcript": "You must call your doctor to make an appointment."
-        },
-        "answer": "You should call your doctor to make an appointment.",
-        "userAnswer": ""
+    "answer": "Before preparing food, be sure to wash your hands well.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1415",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1415.mp3",
+      "transcript": "You must call your doctor to make an appointment."
     },
-    {
-        "id": "1427",
-        "title": "WFD",
-        "type": "write_from_dictation",
-        "subtype": "corep",
-        "audio": {
-            "src": "1427.mp3",
-            "transcript": "I want to make an appointment with the manager."
-        },
-        "answer": "I would like to make an appointment with the manager.",
-        "userAnswer": ""
-    }
+    "answer": "You must call your doctor to make an appointment.",
+    "userAnswer": ""
+  },
+  {
+    "id": "1427",
+    "title": "WFD",
+    "type": "write_from_dictation",
+    "subtype": "corep",
+    "audio": {
+      "src": "1427.mp3",
+      "transcript": "I want to make an appointment with the manager."
+    },
+    "answer": "I want to make an appointment with the manager.",
+    "userAnswer": ""
+  }
 ]
