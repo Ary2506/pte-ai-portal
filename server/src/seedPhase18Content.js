@@ -461,6 +461,15 @@ const clientDescribeImage = [
   section: "speaking", type: "describe-image", title, prompt: describeImagePrompt2, imageUrl, answer, difficulty: "medium"
 }));
 
+// SUPERSEDED BY THE AUTHORING FILE. Every Describe Image question now lives in
+// client/content/speaking/describe-image/describe_image.json and is loaded by
+// src/importDescribeImage.js, the same author-in-a-file pattern the listening, reading, writing
+// and Repeat Sentence banks already use.
+//
+// These two arrays are kept only because the exports below are imported elsewhere; they are no
+// longer a source of content. Do not add a question here -- add it to the JSON file and re-run
+// the importer, or the two will drift the way `answer` and `transcript` did for Write From
+// Dictation.
 const CLIENT_DESCRIBE_IMAGE_CANDIDATES = [...clientDescribeImage];
 
 // ---------------------------------------------------------------------------

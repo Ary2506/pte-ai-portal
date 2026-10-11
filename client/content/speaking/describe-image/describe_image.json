@@ -1,0 +1,541 @@
+[
+  {
+    "id": "bar_01",
+    "title": "International Students in Canada",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "bar_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart compares the number of international students in Canada by country of region over two periods, 1992 to 2000 and 1992 to 2008. China sends by far the most students, rising from about 175,000 in the earlier period to roughly 315,000 in the later one. India follows, growing from around 115,000 to 245,000, and South Korea from about 80,000 to 145,000. Most remaining countries, such as Iceland, Italy and Ireland, contribute fewer than 25,000 students. Overall, the chart shows growth across almost every country, with the increase concentrated in the top three Asian nations."
+  },
+  {
+    "id": "bar_02",
+    "title": "Types of Clubs in New Zealand",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "bar_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The horizontal bar chart shows the types of clubs people in New Zealand belonged to in the year ended March 2015. Sport clubs are the most common at 28 percent, followed by religious clubs at 21 percent and hobby clubs at 15 percent. Professional and volunteer clubs are equal at 11 percent each, while neighbourhood clubs account for 6 percent and political clubs just 2 percent. Other types make up the remaining 5 percent. Overall, sport and religion together account for almost half of all club membership."
+  },
+  {
+    "id": "bar_03",
+    "title": "Australia's Population by Country of Birth",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "bar_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows Australia's population by country of birth in 2013, 2018 and 2023. India shows the largest growth, rising from roughly 600,000 in 2013 to about 780,000 in 2023, overtaking China, which grew from around 450,000 to 560,000. Nepal and the Philippines also increased steadily, while Brazil and Colombia remain the smallest groups at well under 100,000. Overall, every country of birth shown increased across the decade, with India recording the steepest rise."
+  },
+  {
+    "id": "bar_04",
+    "title": "Weekly Household Spending 2015-16",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "bar_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The chart shows average weekly household spending on goods and services in 2015 to 2016, in Australian dollars. Current housing costs are the highest at about 270 dollars, followed by food and non-alcoholic beverages at 240 dollars and transport at 200 dollars. Spending then falls sharply: alcoholic beverages account for 40 dollars, personal care for 20 dollars and tobacco products for only 10 dollars. Overall, housing, food and transport together take up the great majority of weekly household spending."
+  },
+  {
+    "id": "bar_05",
+    "title": "Tourists Visiting Canada",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "bar_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows the number of tourists visiting Canada each year from 2017 to 2023, in millions. Numbers were steady at around 21 million between 2017 and 2019, peaking at 22.1 million in 2019. They then collapsed to 3.0 million in 2020 and 3.1 million in 2021. Recovery began in 2022 at 12.8 million and continued to 18.3 million in 2023. Overall, the chart shows a dramatic fall in 2020 and 2021 followed by a strong but still incomplete recovery."
+  },
+  {
+    "id": "line_01",
+    "title": "Volunteer Rate by Age and Gender",
+    "type": "Describe Image",
+    "category": "Line",
+    "image": {
+      "src": "line_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The line graph compares volunteer rates for males and females across age groups. Female volunteering peaks sharply at 46 percent in the 35 to 44 age group, well above the male rate of about 29 percent at the same age. Female rates then decline steadily with age, falling to just 6 percent among those 85 and over. Male rates are flatter, staying between 21 and 29 percent for most of the range and ending at about 20 percent. Overall, women volunteer more than men until around age 75, after which the pattern reverses."
+  },
+  {
+    "id": "line_02",
+    "title": "Newspaper Circulation in the USA",
+    "type": "Describe Image",
+    "category": "Line",
+    "image": {
+      "src": "line_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The line graph shows newspaper circulation in the United States as a percentage of households from 1960 to 2017. Weekday circulation began highest at about 108 percent in 1960 and fell steadily throughout the period to roughly 23 percent by 2017. Sunday circulation started lower at about 90 percent and declined more gradually, ending at around 28 percent. The two lines crossed at about 2008, after which Sunday circulation exceeded weekday circulation. Overall, both measures show a long and continuous decline over nearly six decades."
+  },
+  {
+    "id": "line_03",
+    "title": "Weekly Income by Gender and Job Type",
+    "type": "Describe Image",
+    "category": "Line",
+    "image": {
+      "src": "line_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The line graph compares weekly income in US dollars for males and females across three job types. Female income is flat at about 1,200 dollars for both casual and part-time work, while male income is lower, at roughly 800 dollars for casual and 400 dollars for part-time. The pattern reverses completely for full-time work, where male income rises sharply to about 1,600 dollars while female income falls to 400 dollars. Overall, women earn more in casual and part-time roles, but men earn four times as much in full-time work."
+  },
+  {
+    "id": "line_04",
+    "title": "The Rise of the Smartphone",
+    "type": "Describe Image",
+    "category": "Line",
+    "image": {
+      "src": "line_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The line graph shows the percentage of United States adults owning a cellphone and a smartphone from 2005 to 2023. Any-cellphone ownership was already high at about 60 percent in 2005 and rose steadily to roughly 97 percent by 2023. Smartphone ownership started much lower at about 32 percent, stayed flat until 2010, then climbed steeply through the 2010s to around 86 percent by 2023. Overall, the gap between the two measures narrowed considerably, with smartphone ownership showing by far the faster growth."
+  },
+  {
+    "id": "line_05",
+    "title": "Average Tax Rates for Top Earners",
+    "type": "Describe Image",
+    "category": "Line",
+    "image": {
+      "src": "line_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The line graph shows average tax rates for the highest-income taxpayers in the United States between 1945 and 2009. The top 0.01 percent began at about 60 percent in 1945 and the top 0.1 percent at roughly 45 percent. Both declined unevenly, with the sharpest fall between 1980 and 1985, when rates dropped to under 20 percent. Rates recovered slightly around 1990 before falling again to their lowest point near 2000. Overall, both groups saw their average tax rates fall by roughly two thirds across the period."
+  },
+  {
+    "id": "pie_01",
+    "title": "Reasons for Studying Foreign Languages",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "pie_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows the reasons people give for studying foreign languages. Personal interest and enjoyment is by far the most common reason at 43 percent, followed by degree requirement at 24 percent and use in a future career at 13 percent. Future travel or study abroad accounts for 9 percent and family background for 6 percent. The smallest categories are application for an advanced degree at 3 percent, and societal responsibility and other at 1 percent each. Overall, personal and academic motivations together account for roughly two thirds of all responses."
+  },
+  {
+    "id": "pie_02",
+    "title": "Favourite Type of Movies",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "pie_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows people's favourite types of movies. Romance is the most popular at 30 percent, followed by action at 25 percent. Comedy and science fiction are equal at 20 percent each, while drama is the least popular at just 5 percent. Overall, romance and action together account for more than half of all preferences, and drama attracts six times fewer viewers than romance."
+  },
+  {
+    "id": "pie_03",
+    "title": "Households Owning Pets in Millions",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "pie_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows the number of households in millions that own various pets. Dogs are the most common, owned by 69 million households or 45 percent of the total, followed by cats at 45.3 million or 29 percent. Freshwater fish account for 11.8 million households, or 8 percent. The remaining categories are much smaller: birds at 9.9 million, small animals and reptiles at around 6 million each, horses at 3.5 million and saltwater fish at 2.9 million. Overall, dogs and cats together make up almost three quarters of all pet-owning households."
+  },
+  {
+    "id": "pie_04",
+    "title": "US Pet Ownership by Percentage",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "pie_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows the estimated percentage of United States households owning each type of pet. Dogs lead at 44.6 percent, followed by cats at 31.9 percent. Freshwater fish account for 7.6 percent, while small animals and reptiles are 4.6 and 4.1 percent respectively. Birds make up 4.2 percent, and horses and saltwater fish are the smallest at 1.5 percent each. Overall, dogs and cats together account for more than three quarters of pet ownership."
+  },
+  {
+    "id": "pie_05",
+    "title": "Travel Time to Work in Ontario",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "pie_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows travel time to work in Ontario in 2016. The largest group travels for 15 to 29 minutes at 32.2 percent, followed by less than 15 minutes at 24.0 percent and 30 to 44 minutes at 21.3 percent. More than one hour accounts for 12.4 percent and 45 to 59 minutes for 10.1 percent. Overall, more than half of commuters reach work in under 30 minutes, while only about one in eight travels for over an hour."
+  },
+  {
+    "id": "map_01",
+    "title": "Distribution of the Harlequin Ladybird",
+    "type": "Describe Image",
+    "category": "Map",
+    "image": {
+      "src": "map_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The map shows the distribution of the harlequin ladybird across England in 2004 and 2005, with red dots marking 2004 sightings and black dots 2005. In 2004 the species was concentrated in the south east, particularly around London and the Thames estuary. By 2005 the black dots had spread considerably further north and west, reaching the Midlands and northern England. Overall, the map shows the ladybird expanding rapidly from a south-eastern foothold across much of the country within a single year."
+  },
+  {
+    "id": "map_02",
+    "title": "Map of European Countries",
+    "type": "Describe Image",
+    "category": "Map",
+    "image": {
+      "src": "map_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The map shows the countries of Europe, each shaded in a different colour and labelled by name. Western Europe includes Ireland, the United Kingdom, France, Spain and Germany, while the Nordic countries of Norway, Sweden and Finland occupy the north. Central and eastern Europe include Poland, Romania, Ukraine and Turkey, with Russia occupying the far east of the map. A north arrow is shown in the upper left. Overall, the map provides a political overview of the continent and the relative positions of its countries."
+  },
+  {
+    "id": "map_03",
+    "title": "Main Hall Floor Plan",
+    "type": "Describe Image",
+    "category": "Map",
+    "image": {
+      "src": "map_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows the floor plan of a building centred on a main hall. The main hall occupies the full width of the upper section. Below it on the left is an office, with a kitchen, shaded pink, extending from the lower left corner. The right-hand side is divided into three stacked rooms marked with symbols for male toilets, female toilets and an accessible toilet. Overall, the plan separates the large public hall from the service and sanitary rooms along one side."
+  },
+  {
+    "id": "map_04",
+    "title": "Graduate Laboratory Floor Plan",
+    "type": "Describe Image",
+    "category": "Map",
+    "image": {
+      "src": "map_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows the floor plan of a graduate laboratory. Three offices run along the top centre, with storage and a cultures room to their left and a toilet between them. A computer station occupies the upper right, with workbenches shown as circles around the room and a central bench in the middle of the right-hand section. The lower left contains rooms for animal science and plant science. A north arrow points upward. Overall, the layout groups offices and storage on one side and laboratory workspace on the other."
+  },
+  {
+    "id": "map_05",
+    "title": "Studio Apartment Plan",
+    "type": "Describe Image",
+    "category": "Map",
+    "image": {
+      "src": "map_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows the floor plan of a small studio apartment measuring 3.8 metres wide by 6.2 metres deep. The upper section, 3.1 metres deep, contains a bed against the left wall, a table near the window and a kitchen counter with a hob along the right wall. The lower section, 2.0 metres deep, contains a bathroom on the left with a toilet, basin and shower, and a 1.4 metre wide entrance area beside a 2.3 metre wide section on the right. Overall, the plan shows a compact one-room living space with the sleeping, cooking and washing areas clearly separated."
+  },
+  {
+    "id": "flow_01",
+    "title": "Four Steps of Safe Food Preparation",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "flow_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows four steps for preparing food safely. Step one is to clean, showing hands washing vegetables under a running tap. Step two is to separate, with raw meat and vegetables kept on different boards. Step three is to cook, showing poultry roasting in an oven. Step four is to chill, showing prepared food stored in sealed containers in a refrigerator. Overall, the diagram presents a simple four-stage process intended to prevent food contamination."
+  },
+  {
+    "id": "flow_02",
+    "title": "Restaurant Dinner Order System",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "flow_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows how a dinner order moves through a restaurant system. Orders from table one and table two are taken on a smartphone, which sends them to a central computer. The computer then routes each item to the appropriate station: food orders such as rice are printed in the kitchen, while drink orders such as wine are printed at the bar. Overall, the diagram shows a single digital entry point splitting automatically into two preparation areas."
+  },
+  {
+    "id": "flow_03",
+    "title": "The Water Cycle",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "flow_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram illustrates the water cycle. Heat from the sun causes evaporation, drawing water vapour upward from the sea, shown by arrows rising from the water surface. The vapour then undergoes condensation, forming clouds. These clouds move inland over the mountains and release precipitation as rain and snow. The water then returns to the sea as run-off through rivers and streams. Overall, the diagram shows a continuous natural cycle driven by solar energy."
+  },
+  {
+    "id": "flow_04",
+    "title": "Making Instant Coffee",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "flow_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows six steps for making a cup of instant coffee. First, hot water is poured from a kettle into a cup. Second, a sachet of instant coffee is added, and third, creamer is added from another sachet. Fourth, sugar is added and the mixture is stirred. Fifth, it is stirred well until everything dissolves. Finally, the coffee is ready to drink. Overall, the diagram presents a straightforward six-stage preparation process."
+  },
+  {
+    "id": "flow_05",
+    "title": "Input and Output Processes",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "flow_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram compares two input and output processes side by side. In the first, raw materials enter a factory and emerge as a finished product, illustrated by a bicycle. In the second, data is fed into a computer and emerges as information, illustrated by printed documents. Overall, the diagram draws a parallel between physical manufacturing and data processing, showing that both transform an input into a more useful output."
+  },
+  {
+    "id": "pic_01",
+    "title": "Students in a Cafeteria",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "pic_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The photograph shows four young people sitting together at a table in a busy cafeteria. They appear to be students, smiling and talking to one another. On the table are a bottle of water, a glass of orange juice and a plate of food. In the background other diners are seated and a serving counter with menu boards is visible. Overall, the picture conveys a relaxed and sociable atmosphere during a break between classes."
+  },
+  {
+    "id": "pic_02",
+    "title": "A Busy Classroom",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "pic_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The photograph shows the inside of a brightly lit classroom with several students working. One student sits in the foreground writing in a notebook, while others work at desks further back, two of them using laptops. The room is full of materials: books, folders, stacked papers and notices pinned to the walls, with a whiteboard at the back. Overall, the picture shows an active, somewhat cluttered learning environment with students working independently."
+  },
+  {
+    "id": "pic_03",
+    "title": "Working in an Indoor Garden",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "pic_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The photograph shows a group of people working in a large indoor plant nursery. In the foreground two people are potting succulents at a wooden bench, while on the left others carry a large potted tree. On the right a man on a stepladder tends to plants on high shelves. The walls are lined with wooden shelving full of potted plants, and more plants hang from the ceiling. Overall, the picture shows a busy, collaborative working environment surrounded by greenery."
+  },
+  {
+    "id": "pic_04",
+    "title": "A Chemistry Experiment",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "pic_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The photograph shows two people conducting a chemical experiment in a laboratory. An older man in a white coat, wearing glasses and a tie, watches closely as a younger man in a blue coat and safety goggles pours a red liquid from one beaker into another. Empty conical flasks stand on the bench in front of them. Overall, the picture suggests a teaching or supervision situation, with an experienced scientist observing a student carrying out a procedure."
+  },
+  {
+    "id": "pic_05",
+    "title": "Supermarket Fresh Produce",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "pic_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The photograph shows the fresh produce section of a supermarket. Large display tables hold apples, oranges, plums, grapes and other fruit, arranged in rows and clearly priced at 3.99 and 5.99. Signs overhead read Fresh Produce and Fresh Seafood, with an organic section visible on the left. A few shoppers can be seen in the background. Overall, the picture shows an abundantly stocked and well-organised retail display."
+  },
+  {
+    "id": "describe_image_01",
+    "title": "Average Rainfall in Four US Cities",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "describe_image_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows average rainfall in inches for four United States cities. New York receives the most at 47.25 inches, followed by Dallas at 33.70 inches. Honolulu receives 22.02 inches, while Phoenix is by far the driest at only 7.66 inches. Overall, New York receives more than six times as much rainfall as Phoenix, and the figures vary widely across the four cities."
+  },
+  {
+    "id": "describe_image_02",
+    "title": "Preparing Instant Coffee, Six Steps",
+    "type": "Describe Image",
+    "category": "Flow",
+    "image": {
+      "src": "describe_image_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The diagram shows six hand-drawn steps for preparing instant coffee. First, hot water is poured from a kettle into a cup. Second, a sachet of instant coffee is opened, and third, its contents are tipped into the cup. Fourth, sugar and creamer are added with a spoon. Fifth, the mixture is stirred, shown by circular arrows above the cup. Finally, a man is shown drinking the finished coffee. Overall, the diagram presents a simple six-stage preparation process."
+  },
+  {
+    "id": "describe_image_03",
+    "title": "Buying a School Bag",
+    "type": "Describe Image",
+    "category": "Picture",
+    "image": {
+      "src": "describe_image_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The two photographs show a mother and her young daughter shopping for school equipment. In the left photograph the mother, wearing a bright pink top, holds a pink checked backpack while the girl looks up at her and smiles. Shelves of other bags and stationery fill the background. In the right photograph the girl is wearing the backpack and holding a handful of coloured pencils, smiling at the camera. Overall, the pictures capture a child being fitted out for school."
+  },
+  {
+    "id": "describe_image_04",
+    "title": "US Households Keeping Pets",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "describe_image_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The horizontal bar chart shows the number of United States households keeping pets, in millions. The total is 84.9 million. Dogs are the most common at 63.4 million, followed by cats at 42.7 million. Freshwater fish account for 11.5 million and birds for 5.7 million. The remaining categories are much smaller: other at 5.4 million, reptiles at 4.5 million, and horses and saltwater fish at 1.6 million each. Overall, dogs and cats together account for the large majority of pet-owning households."
+  },
+  {
+    "id": "describe_image_05",
+    "title": "Countries with the Most Cat Owners",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "describe_image_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows the share of people who own a cat in selected countries in 2017, based on a sample of about 43,000 people. Russia leads by a clear margin at 59 percent, followed by the United States at 43 percent and Argentina at 41 percent. Italy, France and Vietnam cluster around 39 to 40 percent, while Brazil, Thailand and the United Kingdom fall between 32 and 36 percent. The lowest rates are in China and Japan at 16 percent and South Korea at just 9 percent. Overall, cat ownership varies more than sixfold across the countries shown."
+  },
+  {
+    "id": "describe_image_06",
+    "title": "Travel Time to Work in Ontario, 2016",
+    "type": "Describe Image",
+    "category": "Pie",
+    "image": {
+      "src": "describe_image_06.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows travel time to work in Ontario in 2016. The largest group travels for 15 to 29 minutes at 32.2 percent, followed by less than 15 minutes at 24.0 percent and 30 to 44 minutes at 21.3 percent. More than one hour accounts for 12.4 percent, and 45 to 59 minutes is the smallest group at 10.1 percent. Overall, more than half of commuters reach work within 30 minutes, while roughly one in eight travels for over an hour."
+  },
+  {
+    "id": "describe_image_07",
+    "title": "Annual Tourists Visiting Canada",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "describe_image_07.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows how many tourists visited Canada each year from 2017 to 2023, in millions. Figures were stable at around 21 million from 2017 to 2019, peaking at 22.1 million in 2019. They then fell dramatically to 3.0 million in 2020 and 3.1 million in 2021. Recovery followed, reaching 12.8 million in 2022 and 18.3 million in 2023. Overall, the chart shows a steep collapse in 2020 and 2021 and a strong recovery that had not yet returned to pre-2020 levels."
+  },
+  {
+    "id": "describe_image_08",
+    "title": "Weekly Household Spending by Category",
+    "type": "Describe Image",
+    "category": "Bar",
+    "image": {
+      "src": "describe_image_08.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The dot plot shows average weekly household spending on goods and services in 2015 to 2016, in dollars. Current housing costs are the highest at about 270 dollars, followed by food and non-alcoholic beverages at roughly 237 dollars and transport at about 205 dollars. Spending then drops sharply: alcoholic beverages account for around 35 dollars, personal care for about 23 dollars, and tobacco products for only 14 dollars. Overall, the top three categories account for the overwhelming majority of weekly spending."
+  },
+  {
+    "id": "table_01",
+    "title": "Students Migrating to the UK",
+    "type": "Describe Image",
+    "category": "Table",
+    "image": {
+      "src": "table_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The table ranks the top ten regions by number of students migrating to the United Kingdom in 2023. China Mainland ranks first with over 150,000 students, followed by India with more than 125,000 and Nigeria with over 50,000. The United States ranks fourth with more than 25,000, while Pakistan, Bangladesh, Hong Kong and Malaysia each send between 15,000 and 20,000. Saudi Arabia and Singapore complete the list with over 12,000 and 10,000 respectively. Overall, China and India together account for far more students than the remaining eight regions combined."
+  },
+  {
+    "id": "table_02",
+    "title": "Share of Food and Tobacco in Spending",
+    "type": "Describe Image",
+    "category": "Table",
+    "image": {
+      "src": "table_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The table shows the share of food, beverages and tobacco in consumer spending as a percentage from 2009 to 2012. Food and non-alcoholic beverages account for the largest share, moving between 24.2 and 24.8 percent across the four years. Alcoholic beverages and tobacco are much smaller, ranging from 3.0 to 3.4 percent. The combined total varies between 27.2 and 28.2 percent. Overall, the figures remained remarkably stable across the period, with the highest combined share recorded in 2010."
+  },
+  {
+    "id": "table_03",
+    "title": "Inbound Visitors to Australia",
+    "type": "Describe Image",
+    "category": "Table",
+    "image": {
+      "src": "table_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The table compares inbound visitors to Australia in 2005 and 2006 from four countries. New Zealand sent the most visitors in both years, though numbers fell slightly from 1,099 to 1,073. The United States was second and the only country to increase, rising from 700 to 729. Japan fell from 629 to 584 and Germany from 430 to 419. Figures for short-time stays were not recorded. Overall, three of the four countries sent fewer visitors in 2006, with only the United States showing growth."
+  },
+  {
+    "id": "coreq8_01",
+    "title": "Average Rainfall",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_01.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows the average rainfall in inches in New York, Dallas, Phoenix, and Honolulu. New York has the highest amount, 47.25 inches, followed by Dallas at 33.70. Phoenix has the lowest, 7.66 inches, while Honolulu receives 22.02 inches. Overall, the chart shows that average rainfall varies significantly across these cities."
+  },
+  {
+    "id": "coreq8_02",
+    "title": "Instant Coffee",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_02.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The picture shows the steps for making a cup of instant coffee. First, hot water is poured into a cup. Next, a sachet of instant coffee is added, followed by creamer from a sachet. Then, sugar is added and the mixture is stirred well until it dissolves. Finally, the coffee is ready to drink and can be enjoyed."
+  },
+  {
+    "id": "coreq8_03",
+    "title": "Stationery Shopping",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_03.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pictures show a mother and her daughter shopping in a stationery store. In the left image, the mother looks at her daughter with a smile while the daughter holds a new bag. In the right image, the daughter carries the bag on her back and holds six colorful pencils in her hands. Overall, the pictures show the two happily shopping for stationery items."
+  },
+  {
+    "id": "coreq8_04",
+    "title": "Pet Ownership",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_04.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows the number of U.S. households keeping pets. In total, 84.9 million households have pets. Dogs are the most common at 63.4 million, followed by cats at 42.7 million. Freshwater fish and birds are much lower at 11.5 million and 5.7 million. Horses and saltwater fish are the least common at 1.6 million each. Overall, dogs and cats are far more popular than the other types of pets."
+  },
+  {
+    "id": "coreq8_05",
+    "title": "Cat Owners",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_05.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows the percentage of people who own a cat in different countries. Russia has the highest percentage at 59%, followed by the United States at 43% and Argentina at 41%. The lowest percentage is in South Korea at 9%. Other countries, such as Italy, France, Vietnam and Brazil, have moderate percentages. Overall, the chart shows that cat ownership varies widely across countries."
+  },
+  {
+    "id": "coreq8_06",
+    "title": "Commuting Time",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_06.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The pie chart shows the travel time to work in Ontario in 2016. The largest proportion is 15–29 minutes at 32.2%, followed by less than 15 minutes at 24.0% and 30–44 minutes at 21.3%. About 10.1% of people travel for 45–59 minutes, while 12.4% take more than 1 hour. Overall, most people spend less than 30 minutes commuting."
+  },
+  {
+    "id": "coreq8_07",
+    "title": "Canada Visitors",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_07.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The bar chart shows how many tourists visit Canada each year. The highest number is in 2019 at 22.1 million, followed by 2018 and 2017. The lowest number is in 2020 at only 3.0 million, with 2021 slightly higher at 3.1 million. The number then increased to 12.8 million in 2022 and 18.3 million in 2023. Overall, the chart shows a sharp drop in 2020 and 2021, followed by a recovery in 2022 and 2023."
+  },
+  {
+    "id": "coreq8_08",
+    "title": "Weekly Spending",
+    "type": "Describe Image",
+    "category": null,
+    "image": {
+      "src": "coreq8_08.jpg"
+    },
+    "question": "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing. You will have 40 seconds to give your response.",
+    "answer": "The chart shows average weekly household spending on goods and services. Current housing costs are the highest at about $270, followed by food and non-alcoholic beverages at $240 and transport at $200. The lowest spending is on tobacco products at $10, with personal care at $20 and alcoholic beverages at $40. Overall, households spend the most on housing and the least on tobacco products."
+  }
+]
