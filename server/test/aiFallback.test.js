@@ -7,7 +7,7 @@ vi.mock("../src/config.js", () => ({
     jwtSecret: "test-only-secret-at-least-32-characters-long",
     clientUrl: "",
     openaiKey: "", // deliberately unset
-    openaiModel: "gpt-4.1-mini",
+    openaiModels: ["gpt-4.1-mini"],
     razorpayKeyId: "",
     razorpayKeySecret: "",
     subscriptionDefaultDays: 30

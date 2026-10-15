@@ -1,10 +1,11 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import { API_URL as API } from "./apiBase.js";
+import { safeLocal, safeSession } from "./safeStorage.js";
 
 function getDeviceId() {
-  let id = localStorage.getItem("pte_device_id");
+  let id = safeLocal.getItem("pte_device_id");
   if (!id) {
     id = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    localStorage.setItem("pte_device_id", id);
+    safeLocal.setItem("pte_device_id", id);
   }
   return id;
 }
@@ -25,14 +26,14 @@ const FORCE_LOGOUT_CODES = new Set([
 // useAuth in App.jsx) can trigger the exact same clear-and-redirect flow as a rejected
 // API response, instead of a second logout mechanism.
 export function forceLogout(message) {
-  localStorage.removeItem("pte_token");
-  localStorage.removeItem("pte_user");
-  sessionStorage.setItem("pte_login_notice", message || "You have been signed out.");
+  safeLocal.removeItem("pte_token");
+  safeLocal.removeItem("pte_user");
+  safeSession.setItem("pte_login_notice", message || "You have been signed out.");
   window.location.href = "/";
 }
 
 async function request(path, options = {}) {
-  const token = localStorage.getItem("pte_token");
+  const token = safeLocal.getItem("pte_token");
   const headers = { ...(options.headers || {}) };
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;

@@ -1,9 +1,17 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
-import fs from "fs";
-import path from "path";
 import { app } from "../src/app.js";
 import { createAdmin, createUser } from "./helpers.js";
+import { objectExists } from "../src/storage.js";
+
+// The upload used to return an absolute URL built from req.get("host") and write the file to the
+// API server's own disk. Both were wrong: the hostname ended up baked into question rows, and the
+// disk does not survive a deploy. Uploads now go to object storage and the response carries a
+// root-relative path the client resolves against its API origin.
+//
+// storage.js is deliberately not mocked, as in recordingStorage.test.js — the assertions below
+// hold whichever driver is configured.
+const ADMIN_MEDIA_PATH = /^\/media\/questions\/(images|audio)\/[a-f0-9-]+\.(jpg|webm)$/;
 
 async function login(username, password = "password123") {
   const res = await request(app).post("/api/auth/signin").send({ username, password });
@@ -31,7 +39,7 @@ describe("admin media upload", () => {
     expect(res.status).toBe(403);
   });
 
-  it("accepts a valid image upload and returns a usable, absolute URL", async () => {
+  it("accepts a valid image upload and returns a host-free path", async () => {
     await createAdmin({ username: "mediaadmin1", password: "password123" });
     const token = await login("mediaadmin1");
 
@@ -40,10 +48,13 @@ describe("admin media upload", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.kind).toBe("image");
-    expect(res.body.url).toMatch(/^http:\/\/.+\/media\/questions\/images\/[a-f0-9-]+\.jpg$/);
+    expect(res.body.url).toMatch(ADMIN_MEDIA_PATH);
+    // No scheme and no host: a value safe to store and resolve per deployment.
+    expect(res.body.url).not.toMatch(/^https?:/);
+    expect(res.body.url).not.toContain("localhost");
   });
 
-  it("accepts a valid audio upload and returns a usable, absolute URL", async () => {
+  it("accepts a valid audio upload and returns a host-free path", async () => {
     await createAdmin({ username: "mediaadmin2", password: "password123" });
     const token = await login("mediaadmin2");
 
@@ -52,7 +63,8 @@ describe("admin media upload", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.kind).toBe("audio");
-    expect(res.body.url).toMatch(/^http:\/\/.+\/media\/questions\/audio\/[a-f0-9-]+\.webm$/);
+    expect(res.body.url).toMatch(ADMIN_MEDIA_PATH);
+    expect(res.body.url).not.toMatch(/^https?:/);
   });
 
   it("rejects an unsupported MIME type", async () => {
@@ -120,10 +132,17 @@ describe("admin media upload", () => {
       .attach("file", VALID_JPEG, { filename: "chart.jpg", contentType: "image/jpeg" });
     expect(upload.status).toBe(201);
 
-    const relativePath = new URL(upload.body.url).pathname;
-    const fetched = await request(app).get(relativePath);
-    expect(fetched.status).toBe(200);
-    expect(Buffer.compare(fetched.body.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]))).toBe(0);
+    // The returned path is already relative, so it can be requested as-is.
+    const fetched = await request(app).get(upload.body.url).redirects(0);
+
+    // 200 with the bytes when served from the local fallback; 302 to a signed URL on R2. Either
+    // way the path the admin UI stores is one the server resolves.
+    expect([200, 302]).toContain(fetched.status);
+    if (fetched.status === 200) {
+      expect(Buffer.compare(fetched.body.subarray(0, 3), Buffer.from([0xff, 0xd8, 0xff]))).toBe(0);
+    } else {
+      expect(fetched.headers.location).toContain("X-Amz-Signature");
+    }
   });
 
   it("ignores a malicious original filename entirely — the stored file always lives under the intended media directory with a server-generated name", async () => {
@@ -138,12 +157,11 @@ describe("admin media upload", () => {
     expect(res.body.filename).not.toContain("..");
     expect(res.body.filename).not.toContain("/");
     expect(res.body.filename).not.toContain("etc");
-    expect(res.body.url).toMatch(/^http:\/\/.+\/media\/questions\/images\/[a-f0-9-]+\.jpg$/);
+    expect(res.body.url).toMatch(ADMIN_MEDIA_PATH);
 
-    // And the file was genuinely written inside the intended directory, not escaped from it.
-    const mediaRoot = path.resolve("public/question-media/images");
-    const onDisk = fs.readdirSync(mediaRoot);
-    expect(onDisk).toContain(res.body.filename);
+    // And it really was stored under the intended prefix, not escaped from it. Asked of the
+    // storage layer rather than the filesystem, so this holds on R2 as well as on local disk.
+    expect(await objectExists(`question-media/images/${res.body.filename}`)).toBe(true);
   });
 
   it("a path-traversal attempt on the static-serve route itself cannot escape the media directory", async () => {

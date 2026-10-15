@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("../src/config.js", () => ({
   config: {
     port: 5000, mongoUri: "", jwtSecret: "test-only-secret-at-least-32-characters-long", clientUrl: "",
-    openaiKey: "test-key", openaiModel: "gpt-4.1-mini", razorpayKeyId: "", razorpayKeySecret: "", subscriptionDefaultDays: 30
+    openaiKey: "test-key", openaiModels: ["gpt-4.1-mini"], razorpayKeyId: "", razorpayKeySecret: "", subscriptionDefaultDays: 30
   }
 }));
 

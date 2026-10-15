@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import crypto from "crypto";
 import path from "path";
 import fs from "fs";
 import rateLimit from "express-rate-limit";
@@ -12,10 +13,10 @@ import { evaluateAnswer } from "../scoring/index.js";
 import { evaluateSubjective } from "../services/ai/index.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { recordLearningActivity } from "../utils/streak.js";
+import { putRecording, signedRecordingUrl, isRemoteStorage, localRecordingPath } from "../storage.js";
 
 const router = express.Router();
-const uploadDir = path.resolve("uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
+// Recordings go to object storage (see ../storage.js), not to this process's filesystem.
 
 // The most any single task is worth: the PTE scale an AI-evaluated task is scored on. No
 // objective task's answer key comes close.
@@ -40,15 +41,33 @@ export const ALLOWED_AUDIO_MIME = new Set([
   "audio/mpeg", "audio/mp4", "audio/x-m4a", "audio/aac"
 ]);
 
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/[^a-z0-9._-]/gi, "_")}`)
-});
+// The stored object keeps a real extension so it is recognisable in the bucket and downloads
+// with a sensible filename. Derived from the verified mimetype, never from the client's filename.
+const AUDIO_EXTENSIONS = {
+  "audio/webm": ".webm", "audio/ogg": ".ogg",
+  "audio/wav": ".wav", "audio/x-wav": ".wav", "audio/wave": ".wav",
+  "audio/mpeg": ".mp3", "audio/mp4": ".m4a", "audio/x-m4a": ".m4a", "audio/aac": ".aac"
+};
+/**
+ * The media type without its parameters, lowercased.
+ *
+ * A Content-Type legitimately carries parameters, and browsers do send them: MediaRecorder reports
+ * "audio/webm;codecs=opus" in Chrome and "audio/mp4;codecs=..." in Safari. Matching the raw string
+ * against the allow-list rejects both, so anything comparing a media type has to compare the base.
+ */
+export const baseMime = value => String(value || "").split(";")[0].trim().toLowerCase();
+
+export const isAllowedAudioMime = value => ALLOWED_AUDIO_MIME.has(baseMime(value));
+
+const extensionFor = mimetype => AUDIO_EXTENSIONS[baseMime(mimetype)] || ".webm";
+
+// The file is held in memory and forwarded to object storage, so nothing is ever written to the
+// local filesystem. The 15 MB cap below is what keeps that safe.
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_AUDIO_BYTES },
   fileFilter: (req, file, cb) => {
-    if (!ALLOWED_AUDIO_MIME.has(file.mimetype)) return cb(new Error("UNSUPPORTED_AUDIO_TYPE"));
+    if (!isAllowedAudioMime(file.mimetype)) return cb(new Error("UNSUPPORTED_AUDIO_TYPE"));
     cb(null, true);
   }
 });
@@ -78,17 +97,24 @@ const AUDIO_SIGNATURES = [
   { offset: 4, bytes: [0x66, 0x74, 0x79, 0x70] } // "ftyp" (mp4/m4a)
 ];
 
-// Exported for reuse by adminMedia.js — same binary-signature check, one implementation.
-export function hasValidAudioSignature(filePath) {
+// Works on the leading bytes, wherever they came from. Student recordings arrive as a buffer in
+// memory now; admin-authored media is still written to disk first and uses the wrapper below.
+export function hasValidAudioSignature(head) {
+  if (!head || head.length < 4) return false;
+  return AUDIO_SIGNATURES.some(sig => {
+    const offset = sig.offset || 0;
+    return sig.bytes.every((b, i) => head[offset + i] === b);
+  });
+}
+
+// Path variant for adminMedia.js, which writes to disk first. Reads twelve bytes rather than
+// pulling a 15 MB file into memory to inspect its header.
+export function fileHasValidAudioSignature(filePath) {
   const buf = Buffer.alloc(12);
   const fd = fs.openSync(filePath, "r");
   const bytesRead = fs.readSync(fd, buf, 0, 12, 0);
   fs.closeSync(fd);
-  if (bytesRead < 4) return false;
-  return AUDIO_SIGNATURES.some(sig => {
-    const offset = sig.offset || 0;
-    return sig.bytes.every((b, i) => buf[offset + i] === b);
-  });
+  return hasValidAudioSignature(buf.subarray(0, bytesRead));
 }
 
 // Rejects submissions that would spend AI credits on an oversized or empty payload before any
@@ -254,7 +280,6 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     // otherwise a short transcript paired with a huge `answer` field would slip past this check
     // even though the oversized text still gets stored.
     if ((transcript && transcript.length > MAX_TEXT_LENGTH) || (answerText && answerText.length > MAX_TEXT_LENGTH)) {
-      if (req.file) fs.unlink(req.file.path, () => {});
       return res.status(400).json({ message: `Response is too long (max ${MAX_TEXT_LENGTH} characters).`, code: "ANSWER_TOO_LONG" });
     }
     if (section === "writing" && !responseText.trim()) {
@@ -264,16 +289,31 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     // The editor blocks typing past these, but a request can be made without the editor.
     const taskCharLimit = TASK_CHAR_LIMITS[type];
     if (taskCharLimit && countCharacters(responseText) > taskCharLimit) {
-      if (req.file) fs.unlink(req.file.path, () => {});
       return res.status(400).json({
         message: `Response is too long (max ${taskCharLimit} characters, not counting spaces).`,
         code: "ANSWER_TOO_LONG"
       });
     }
 
-    if (req.file && !hasValidAudioSignature(req.file.path)) {
-      fs.unlink(req.file.path, () => {});
+    if (req.file && !hasValidAudioSignature(req.file.buffer)) {
       return res.status(400).json({ message: "The uploaded file does not look like a valid audio recording.", code: "INVALID_AUDIO_SIGNATURE" });
+    }
+
+    // Stored BEFORE the submission row is created, so a failed upload leaves nothing behind
+    // rather than a submission pointing at audio that was never saved. The key is namespaced by
+    // user and carries a random component, so one student can never guess another's.
+    let audioKey;
+    if (req.file) {
+      audioKey = `recordings/${req.user._id}/${Date.now()}-${crypto.randomUUID()}${extensionFor(req.file.mimetype)}`;
+      try {
+        await putRecording(audioKey, req.file.buffer, req.file.mimetype);
+      } catch (err) {
+        console.error("recording upload failed:", err?.message || err);
+        return res.status(503).json({
+          message: "Your recording could not be saved. Please try submitting again.",
+          code: "RECORDING_UPLOAD_FAILED"
+        });
+      }
     }
 
     const isSubjective = question ? question.evaluationType === "subjective" : true;
@@ -293,7 +333,7 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       answer: parsedAnswer,
       transcript,
       durationSeconds: Number(durationSeconds || 0),
-      audioPath: req.file ? req.file.filename : undefined
+      audioPath: audioKey
     };
 
     let submission;
@@ -370,6 +410,12 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
     if (e.code === 11000) {
       return res.status(409).json({ message: "You have already answered this question in this test attempt.", code: "DUPLICATE_SUBMISSION" });
     }
+    // Schema validation failing means the request carried a value of the wrong shape -- a string
+    // where an array was sent, for instance. That is the client's mistake, and answering 500 both
+    // misreports it and buries genuine server faults under ordinary bad input.
+    if (e.name === "ValidationError" || e.name === "CastError") {
+      return res.status(400).json({ message: "Some fields in the submission are invalid", code: "VALIDATION_ERROR" });
+    }
     console.error(e);
     res.status(500).json({ message: "Submission failed" });
   }
@@ -425,9 +471,25 @@ router.get("/:id/audio", requireAuth, asyncRoute(async (req, res) => {
   if (String(submission.user) !== String(req.user._id)) {
     return res.status(403).json({ message: "You cannot access another user's recording", code: "FORBIDDEN" });
   }
-  const filePath = path.join(uploadDir, path.basename(submission.audioPath));
-  if (!fs.existsSync(filePath)) return res.status(404).json({ message: "Recording not found", code: "NOT_FOUND" });
-  res.sendFile(filePath);
+  // Two cases end up on disk: a development machine with no R2 configured, and a recording
+  // written before the move to object storage, which carries a bare filename rather than a key.
+  // The second disappears once migrateRecordingsToR2.mjs has run everywhere.
+  const onDisk = !isRemoteStorage || !submission.audioPath.includes("/");
+  if (onDisk) {
+    const filePath = localRecordingPath(submission.audioPath);
+    if (fs.existsSync(filePath)) return res.sendFile(filePath);
+    return res.status(404).json({ message: "Recording not found", code: "NOT_FOUND" });
+  }
+
+  // A short-lived signed URL rather than proxying the bytes: the audio never passes through this
+  // server, and the link stops working minutes after it is issued, so it cannot be shared on.
+  try {
+    const url = await signedRecordingUrl(submission.audioPath);
+    return res.redirect(302, url);
+  } catch (err) {
+    console.error("could not sign recording url:", err?.message || err);
+    return res.status(503).json({ message: "Recording is temporarily unavailable.", code: "RECORDING_UNAVAILABLE" });
+  }
 }));
 
 // Everything a history row needs EXCEPT answer/transcript/feedback — those three are the whole

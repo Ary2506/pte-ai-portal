@@ -6,6 +6,7 @@ import { RECORDER_OPTIONS } from "./recording.js";
 import { useToast } from "../components/toast.jsx";
 import { Button } from "../components/Button.jsx";
 import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
+import { mediaUrl } from "../mediaUrl.js";
 
 const SPEAKING_DURATION_LIMITS = {
   "read-aloud": 45,
@@ -142,8 +143,16 @@ export default function Speaking({
     setTranscript("");
     chunks.current = [];
     elapsed.current = 0;
+    // Checked rather than optional-chained. `navigator.mediaDevices?.getUserMedia(...)` reads
+    // safely but then calls .then() on undefined, which throws synchronously -- before the
+    // .catch() at the end of this chain is attached, so the user would see nothing happen at all.
+    // mediaDevices is absent on any non-secure origin, which is the usual way this is hit.
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      toast.error("Recording is not supported in this browser. Try Chrome, Edge or Safari over https.");
+      return;
+    }
     navigator.mediaDevices
-      ?.getUserMedia({ audio: true })
+      .getUserMedia({ audio: true })
       .then((stream) => {
         activeStreamRef.current = stream;
         const mediaRecorder = new MediaRecorder(stream, RECORDER_OPTIONS);
@@ -155,7 +164,15 @@ export default function Speaking({
           stream.getTracks().forEach((track) => track.stop());
           activeStreamRef.current = null;
           if (!resettingRef.current) {
-            setBlob(new Blob(chunks.current, { type: "audio/webm" }));
+            // Take the type from the recorder, not a hardcoded "audio/webm". RECORDER_OPTIONS
+            // deliberately sets no mimeType, so each browser picks its own: Chrome and Firefox
+            // produce WebM, Safari and iOS produce MP4. Labelling an MP4 recording as WebM meant
+            // it was stored with a .webm extension and an audio/webm content type, so playback
+            // would be served bytes that contradict their declared format.
+            // Without the codecs parameter: browsers report "audio/webm;codecs=opus" (Chrome) or
+            // "audio/mp4;codecs=..." (Safari), and the server's allow-list matches the base type.
+            const type = (mediaRecorder.mimeType || "audio/webm").split(";")[0].trim();
+            setBlob(new Blob(chunks.current, { type }));
           }
         };
         mediaRecorder.start();
@@ -308,20 +325,20 @@ export default function Speaking({
             <div className="describe-image-frame">
               <img
                 className="describe-image-photo"
-                src={question.imageUrl}
+                src={mediaUrl(question.imageUrl)}
                 alt={question?.title || "Practice question image"}
               />
             </div>
           ) : (
             <img
-              src={question.imageUrl}
+              src={mediaUrl(question.imageUrl)}
               alt={question?.title || "Practice question image"}
               style={{ maxWidth: "100%", borderRadius: 9, margin: "12px 0" }}
             />
           )
         )}
         {question?.audioUrl && (
-          <audio className="audio" controls src={question.audioUrl} />
+          <audio className="audio" controls src={mediaUrl(question.audioUrl)} />
         )}
         {/* The speech lab's state machine. Each state looks different on purpose: a student
             mid-recording, a student waiting on the evaluator and a student who has not started

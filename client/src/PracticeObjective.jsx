@@ -6,6 +6,7 @@ import { Button, IconButton } from "./components/Button.jsx";
 import TaskTips, { AI_SCORING_NOTE, OBJECTIVE_SCORING_NOTE } from "./practice/TaskTips.jsx";
 import { ANSWER_MAX_LENGTH, BLANK_MAX_LENGTH, BLANK_CHAR_LIMITS, TASK_CHAR_LIMITS, countCharacters } from "./practice/answerLimits.js";
 import { audioUrl } from "./practice/listeningData/shared.js";
+import { mediaUrl } from "./mediaUrl.js";
 import { localTranscriptFor, TRANSCRIPT_IS_ANSWER } from "./practice/listeningData/localTranscripts.js";
 import BlankSelect from "./practice/BlankSelect.jsx";
 import summarizeSpokenTextContent from "../content/listening/summarize-spoken-text/summarize_spoken_text.json";
@@ -95,7 +96,8 @@ function scoreLocalListeningQuestion(question, { choice, multi, text }) {
 const getLocalTranscript = localTranscriptFor;
 
 function getLocalAudioUrl(question) {
-  if (question?.audioUrl) return question.audioUrl;
+  // An admin-uploaded clip is stored as /media/questions/audio/... and lives on the API origin.
+  if (question?.audioUrl) return mediaUrl(question.audioUrl);
   const match = LOCAL_SUMMARIZE_SPOKEN_TEXT.find(item => item.title === question?.title || String(item.id) === String(question?._id));
   if (!match?.audio?.src) return null;
   return audioUrl("summarize-spoken-text", match.audio.src);

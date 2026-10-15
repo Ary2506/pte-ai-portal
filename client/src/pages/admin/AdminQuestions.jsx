@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Eye, Pencil, Plus, RefreshCw, Trash2, X } from "luc
 import { api } from "../../api.js";
 import { Badge, ConfirmDialog, DataTable, Modal } from "../../components/common.jsx";
 import { Button, IconButton } from "../../components/Button.jsx";
+import { mediaUrl } from "../../mediaUrl.js";
 
 const DIFFICULTIES = ["easy", "medium", "hard"];
 const SECTIONS = ["speaking", "writing", "reading", "listening"];
@@ -134,8 +135,8 @@ function QuestionPreviewBody({ question }) {
     <h2>{question.title || <em className="muted">(untitled question)</em>}</h2>
     <p className="instruction">{question.prompt || <em className="muted">(no prompt yet)</em>}</p>
     {question.passage && <div className="passage">{question.passage}</div>}
-    {question.imageUrl && <img src={question.imageUrl} alt={question.title || "Question image"} style={{ maxWidth: "100%", borderRadius: 9, marginTop: 12 }}/>}
-    {question.audioUrl && <audio className="audio" controls src={question.audioUrl}/>}
+    {question.imageUrl && <img src={mediaUrl(question.imageUrl)} alt={question.title || "Question image"} style={{ maxWidth: "100%", borderRadius: 9, marginTop: 12 }}/>}
+    {question.audioUrl && <audio className="audio" controls src={mediaUrl(question.audioUrl)}/>}
     {!!question.options?.length && <div className="options">{question.options.map((o, i) => <label className="option" key={i}><input type="radio" disabled/>{o || `Item ${i + 1}`}</label>)}</div>}
   </div>;
 }
@@ -325,7 +326,7 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
         <input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload image" disabled={imageUploading} onChange={e => handleFileSelected(e, "image")}/>
         {imageUploading && <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>Uploading image…</p>}
         {imageUploadError && <div className="alert error" style={{ marginTop: 8 }}>{imageUploadError}</div>}
-        {form.imageUrl && !imageUploading && <img src={form.imageUrl} alt="Selected question" style={{ maxWidth: 220, borderRadius: 9, marginTop: 10, display: "block" }}/>}
+        {form.imageUrl && !imageUploading && <img src={mediaUrl(form.imageUrl)} alt="Selected question" style={{ maxWidth: 220, borderRadius: 9, marginTop: 10, display: "block" }}/>}
         <label style={{ marginTop: 10 }}>Image URL<input required value={form.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="https://..."/></label>
         {fieldErrors.imageUrl && <p className="field-error">{fieldErrors.imageUrl}</p>}
       </div>}
@@ -334,7 +335,7 @@ function QuestionForm({ types, initial, onCancel, onSave, saving, error }) {
         <input type="file" accept="audio/webm,audio/ogg,audio/wav,audio/mpeg,audio/mp4,audio/aac,audio/*" aria-label="Upload audio" disabled={audioUploading} onChange={e => handleFileSelected(e, "audio")}/>
         {audioUploading && <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>Uploading audio…</p>}
         {audioUploadError && <div className="alert error" style={{ marginTop: 8 }}>{audioUploadError}</div>}
-        {form.audioUrl && !audioUploading && <audio className="audio" controls src={form.audioUrl} style={{ marginTop: 10, display: "block" }}/>}
+        {form.audioUrl && !audioUploading && <audio className="audio" controls src={mediaUrl(form.audioUrl)} style={{ marginTop: 10, display: "block" }}/>}
         <label style={{ marginTop: 10 }}>Audio URL<input required value={form.audioUrl} onChange={e => update({ audioUrl: e.target.value })} placeholder="https://..."/></label>
         {fieldErrors.audioUrl && <p className="field-error">{fieldErrors.audioUrl}</p>}
       </div>}

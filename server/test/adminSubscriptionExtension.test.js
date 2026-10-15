@@ -146,7 +146,11 @@ describe("admin subscription extension — individual", () => {
   it("records a correctly-structured history row for the individual extension", async () => {
     const admin = await createAdmin({ username: "extadmin7" });
     const adminToken = await tokenFor(admin);
-    const target = await createUser({ username: "extuser8", subscriptionEndDate: new Date("2026-10-05T00:00:00.000Z") });
+    // Relative, not an absolute date. The route only extends a subscription that is active right
+    // now (subscriptionEndDate > now), so a hardcoded date silently becomes an expired-user test
+    // once that day passes -- which is exactly what happened to the original "2026-10-05".
+    const previousExpiry = daysFromNow(5);
+    const target = await createUser({ username: "extuser8", subscriptionEndDate: previousExpiry });
 
     const res = await request(app)
       .post(`/api/admin/subscription-extension/users/${target._id}`)
@@ -158,8 +162,9 @@ describe("admin subscription extension — individual", () => {
     expect(row.type).toBe("INDIVIDUAL");
     expect(row.daysAdded).toBe(10);
     expect(row.reason).toBe("Portal technical issue");
-    expect(row.previousExpiry.toISOString()).toBe("2026-10-05T00:00:00.000Z");
-    expect(row.newExpiry.toISOString()).toBe("2026-10-15T00:00:00.000Z");
+    expect(row.previousExpiry.toISOString()).toBe(previousExpiry.toISOString());
+    expect(row.newExpiry.toISOString())
+      .toBe(new Date(previousExpiry.getTime() + 10 * 864e5).toISOString());
     expect(row.extensionId).toBe(res.body.extensionId);
   });
 });
@@ -171,7 +176,10 @@ describe("admin subscription extension — bulk", () => {
 
     const activeAEnd = daysFromNow(10);
     const activeA = await createUser({ username: "bulkactivea", subscriptionEndDate: activeAEnd });
-    const activeB = await createUser({ username: "bulkactiveb", subscriptionEndDate: new Date("2026-10-15T00:00:00.000Z") });
+    // Also relative: as an absolute date this stopped counting as an active subscription the
+    // moment that day arrived, so the bulk run found one active user instead of two.
+    const activeBEnd = daysFromNow(20);
+    const activeB = await createUser({ username: "bulkactiveb", subscriptionEndDate: activeBEnd });
     const expiredDate = daysFromNow(-3);
     const expired = await createUser({ username: "bulkexpired", subscriptionEndDate: expiredDate });
     const noSub = await createUser({
@@ -191,7 +199,7 @@ describe("admin subscription extension — bulk", () => {
     const a = await request(app).get(`/api/admin/users/${activeA._id}`).set("Authorization", `Bearer ${adminToken}`);
     const b = await request(app).get(`/api/admin/users/${activeB._id}`).set("Authorization", `Bearer ${adminToken}`);
     expect(a.body.user.subscriptionEndDate).toBe(new Date(activeAEnd.getTime() + 7 * 864e5).toISOString());
-    expect(b.body.user.subscriptionEndDate).toBe("2026-10-22T00:00:00.000Z");
+    expect(b.body.user.subscriptionEndDate).toBe(new Date(activeBEnd.getTime() + 7 * 864e5).toISOString());
 
     const e = await request(app).get(`/api/admin/users/${expired._id}`).set("Authorization", `Bearer ${adminToken}`);
     expect(new Date(e.body.user.subscriptionEndDate).getTime()).toBe(expiredDate.getTime());

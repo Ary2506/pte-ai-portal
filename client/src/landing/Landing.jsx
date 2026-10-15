@@ -7,6 +7,7 @@ import SignInPanel from "./SignInPanel.jsx";
 import Voices from "./Voices.jsx";
 import "./landing.css";
 import SiteFooter from "../components/Footer.jsx";
+import { safeSession } from "../safeStorage.js";
 
 // The signed-out surface. App renders this for every path while there is no user, which is why it
 // carries its own navigation and its own theme toggle rather than relying on the app shell.
@@ -363,8 +364,8 @@ export default function Landing({ save, theme, toggleTheme }) {
   // itself. When there is one the sheet opens straight away — a message nobody can see because it
   // is behind a closed panel is not a message.
   const [notice] = useState(() => {
-    const value = sessionStorage.getItem("pte_login_notice");
-    sessionStorage.removeItem("pte_login_notice");
+    const value = safeSession.getItem("pte_login_notice");
+    safeSession.removeItem("pte_login_notice");
     return value || "";
   });
   const [signInOpen, setSignInOpen] = useState(() => !!notice);

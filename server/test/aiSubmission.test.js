@@ -146,10 +146,15 @@ describe("speaking audio validation", () => {
       .attach("audio", VALID_WEBM, { filename: "answer.webm", contentType: "audio/webm" });
     const submissionId = submitRes.body.submission._id;
 
-    const asOwner = await request(app).get(`/api/submissions/${submissionId}/audio`).set("Authorization", `Bearer ${ownerToken}`);
-    expect(asOwner.status).toBe(200);
+    // 200 when the recording is served from disk, 302 when object storage is configured and the
+    // route hands back a signed URL. This test is about who may reach a recording, not about how
+    // the bytes travel, so either counts as "the owner got in".
+    const asOwner = await request(app).get(`/api/submissions/${submissionId}/audio`)
+      .set("Authorization", `Bearer ${ownerToken}`).redirects(0);
+    expect([200, 302]).toContain(asOwner.status);
 
-    const asAttacker = await request(app).get(`/api/submissions/${submissionId}/audio`).set("Authorization", `Bearer ${attackerToken}`);
+    const asAttacker = await request(app).get(`/api/submissions/${submissionId}/audio`)
+      .set("Authorization", `Bearer ${attackerToken}`).redirects(0);
     expect(asAttacker.status).toBe(403);
   });
 });

@@ -11,12 +11,16 @@ import { Result, ObjectiveResult } from "./PracticeObjective.jsx";
 import PracticePage from "./practice/Practice.jsx";
 import PracticeHubPage from "./pages/PracticeHub.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
-import ProfilePage from "./pages/Profile.jsx";
-import MockPage from "./pages/Mock.jsx";
-import HistoryPage from "./pages/History.jsx";
-import ProgressPage from "./pages/Progress.jsx";
-import StudyPlanPage from "./pages/StudyPlan.jsx";
-import AdminPage from "./pages/Admin.jsx";
+
+// Loaded on demand. These routes are never part of the first paint -- a student lands on
+// the dashboard, and Admin in particular is code a student never runs at all. Splitting them
+// keeps the initial bundle to what the first screen actually needs.
+const MockPage = React.lazy(() => import("./pages/Mock.jsx"));
+const HistoryPage = React.lazy(() => import("./pages/History.jsx"));
+const ProgressPage = React.lazy(() => import("./pages/Progress.jsx"));
+const StudyPlanPage = React.lazy(() => import("./pages/StudyPlan.jsx"));
+const ProfilePage = React.lazy(() => import("./pages/Profile.jsx"));
+const AdminPage = React.lazy(() => import("./pages/Admin.jsx"));
 import { ReadingTask } from "./practice/Reading.jsx";
 import { ListeningTask } from "./practice/Listening.jsx";
 import SpeakingTaskModule from "./practice/Speaking.jsx";
@@ -26,8 +30,10 @@ import { IconButton } from "./components/Button.jsx";
 import Footer from "./components/Footer.jsx";
 import Landing from "./landing/Landing.jsx";
 import { ToastProvider } from "./components/toast.jsx";
+import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
+import { safeLocal, safeSession } from "./safeStorage.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
 
@@ -38,7 +44,7 @@ const SUBSCRIPTION_EXPIRED_MESSAGE = "Your 30-day subscription has expired. Plea
 const MAX_TIMEOUT_MS = 2_147_483_647;
 
 function getInitialTheme() {
-  const saved = localStorage.getItem("pte_theme");
+  const saved = safeLocal.getItem("pte_theme");
   if (saved === "light" || saved === "dark") return saved;
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
@@ -48,7 +54,7 @@ function useTheme() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#12182b" : "#f4f7fc");
-    localStorage.setItem("pte_theme", theme);
+    safeLocal.setItem("pte_theme", theme);
   }, [theme]);
   return { theme, toggleTheme: () => setTheme(current => current === "dark" ? "light" : "dark") };
 }
@@ -68,22 +74,22 @@ function ThemeToggle({ theme, onToggle, compact = false }) {
 
 function useAuth() {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("pte_user") || "null"); } catch { return null; }
+    try { return JSON.parse(safeLocal.getItem("pte_user") || "null"); } catch { return null; }
   });
   const save = (data) => {
-    localStorage.setItem("pte_token", data.token);
-    localStorage.setItem("pte_user", JSON.stringify(data.user));
+    safeLocal.setItem("pte_token", data.token);
+    safeLocal.setItem("pte_user", JSON.stringify(data.user));
     setUser(data.user);
   };
   // Replaces the stored user after a self-service change (currently the target score). Writes the
   // same localStorage key sign-in does, so a reload keeps the new value.
   const updateUser = (next) => {
-    localStorage.setItem("pte_user", JSON.stringify(next));
+    safeLocal.setItem("pte_user", JSON.stringify(next));
     setUser(next);
   };
   const logout = () => {
     api.auth.logout();
-    localStorage.removeItem("pte_token"); localStorage.removeItem("pte_user"); setUser(null);
+    safeLocal.removeItem("pte_token"); safeLocal.removeItem("pte_user"); setUser(null);
   };
   useEffect(() => {
     if (!user || user.role === "admin" || !user.subscriptionEndDate) return;
@@ -277,7 +283,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   // Remembered per browser: someone who works with the rail collapsed wants it collapsed next
   // time too. Read defensively — a private window can throw on storage access.
   const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem("pte_sidebar_collapsed") === "1"; } catch { return false; }
+    try { return safeLocal.getItem("pte_sidebar_collapsed") === "1"; } catch { return false; }
   });
   const location = useLocation();
   const inAdminSection = user?.role === "admin" && location.pathname === "/admin";
@@ -286,7 +292,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   function toggleCollapsed() {
     setCollapsed(value => {
       const next = !value;
-      try { localStorage.setItem("pte_sidebar_collapsed", next ? "1" : "0"); } catch { /* not fatal */ }
+      try { safeLocal.setItem("pte_sidebar_collapsed", next ? "1" : "0"); } catch { /* not fatal */ }
       return next;
     });
   }
@@ -337,7 +343,7 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
 // one-time notice (read by Dashboard) so the redirect is visible, not silent.
 function AdminRoute({ user, children }) {
   if (user.role !== "admin") {
-    sessionStorage.setItem("pte_access_denied_notice", "Access denied — this account does not have admin permissions.");
+    safeSession.setItem("pte_access_denied_notice", "Access denied — this account does not have admin permissions.");
     return <Navigate to="/dashboard" replace/>;
   }
   return children;
@@ -348,13 +354,22 @@ const PRACTICE_TASK_COMPONENTS = { speaking: SpeakingTaskModule, writing: Writin
 export default function App() {
   const auth=useAuth();
   const { theme, toggleTheme } = useTheme();
+  // Only used as the route boundary's reset key: when the path changes, a page that crashed stops
+  // showing its fallback.
+  const location = useLocation();
   // Signed out, every path renders the public landing surface, which carries its own nav,
   // theme toggle and the sign-in sheet. Unchanged: the auth gate itself and what follows it.
   // ToastProvider wraps both surfaces, so a toast works on the landing page and inside the
   // workspace alike. It lives here rather than in main.jsx so that anything rendering <App/> —
   // every test among other things — gets a real toast host rather than a silent no-op.
   if(!auth.user) return <ToastProvider><Routes><Route path="*" element={<Landing save={auth.save} theme={theme} toggleTheme={toggleTheme}/>}/></Routes></ToastProvider>;
-  return <ToastProvider><Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}><Routes>
+  // The boundary sits INSIDE Layout so a page that fails to render leaves the navigation, the
+  // theme toggle and sign-out working — a broken Progress page must not strand the user. Keyed on
+  // the path so moving to a working page clears the error without a reload.
+  // Suspense is required by the lazy routes above; without it React throws on first navigation.
+  return <ToastProvider><Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}>
+    <RouteErrorBoundary resetKey={location.pathname}>
+    <React.Suspense fallback={<Page><p className="muted">Loading…</p></Page>}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<DashboardPage user={auth.user}/>}/>
     <Route path="/practice" element={<PracticeHubPage/>}/>
@@ -369,5 +384,5 @@ export default function App() {
     <Route path="/profile" element={<ProfilePage user={auth.user} onUserChange={auth.updateUser}/>}/>
     <Route path="/admin" element={<AdminRoute user={auth.user}><AdminPage/></AdminRoute>}/>
     <Route path="*" element={<Navigate to="/dashboard"/>}/>
-  </Routes></Layout></ToastProvider>
+  </Routes></React.Suspense></RouteErrorBoundary></Layout></ToastProvider>
 }

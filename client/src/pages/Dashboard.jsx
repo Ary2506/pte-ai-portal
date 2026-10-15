@@ -13,6 +13,7 @@ import {
   bySection, focusAreas, formatRaw, improvement, pct, ptePerformance, scored, skillBalance, summarize,
   targetGap, trajectory, PTE_MAX_SCORE
 } from "../analytics/derive.js";
+import { safeSession } from "../safeStorage.js";
 
 function fmtLongDate(d) {
   return d
@@ -94,8 +95,8 @@ export default function Dashboard({ user }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(() => {
-    const notice = sessionStorage.getItem("pte_access_denied_notice");
-    sessionStorage.removeItem("pte_access_denied_notice");
+    const notice = safeSession.getItem("pte_access_denied_notice");
+    safeSession.removeItem("pte_access_denied_notice");
     return notice || "";
   });
   const navigate = useNavigate();

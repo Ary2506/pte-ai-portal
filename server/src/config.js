@@ -13,11 +13,36 @@ function required(name, { minLength } = {}) {
   return value;
 }
 
+/**
+ * A variable with a development default that must still be set explicitly in production.
+ *
+ * Distinct from required() above, which has no usable default at all. These are the ones where a
+ * sensible local fallback masks a missing production value, so the failure arrives later and
+ * looks like something else.
+ */
+function requiredInProduction(name, developmentDefault) {
+  const value = process.env[name];
+  if (value) return value;
+  if (process.env.NODE_ENV === "production") {
+    console.error(`Missing required environment variable in production: ${name}. Refusing to start on the development default.`);
+    if (isTest) throw new Error(`Missing env var ${name}`);
+    process.exit(1);
+  }
+  return developmentDefault;
+}
+
 export const config = {
   port: Number(process.env.PORT || 5000),
-  mongoUri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/pte_ai_portal",
+  // The local default is a development convenience. In production it is a trap: an unset
+  // MONGODB_URI would quietly point the server at a database that does not exist on that host,
+  // and the failure surfaces as a connection error with no hint that the variable was simply
+  // missing. JWT_SECRET already refuses to start for the same reason; this now matches it.
+  mongoUri: requiredInProduction("MONGODB_URI", "mongodb://127.0.0.1:27017/pte_ai_portal"),
   jwtSecret: required("JWT_SECRET", { minLength: 32 }),
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  // Drives the CORS origin. Unset in production, every browser request from the real site is
+  // blocked by CORS while the server itself looks perfectly healthy -- one of the hardest
+  // deployment faults to diagnose from the symptoms.
+  clientUrl: requiredInProduction("CLIENT_URL", "http://localhost:5173"),
   openaiKey: process.env.OPENAI_API_KEY || "",
   openaiModels: (process.env.OPENAI_MODEL || "llama-3.3-70b-versatile").split(","),
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
