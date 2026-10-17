@@ -39,11 +39,31 @@ describe("Summarize Spoken Text, the one task where a transcript is a study aid"
       .toBe(item.transcript);
   });
 
-  it("resolves every bundled item, by title and by authored id", () => {
+  it("resolves every bundled item by its authored id", () => {
+    // The id is exact and scoped per file, so it works for every item regardless of title.
     for (const item of summarizeSpokenText) {
-      const type = "summarize-spoken-text";
+      expect(localTranscriptFor({ type: "summarize-spoken-text", _id: String(item.id) })).toBe(item.transcript);
+    }
+  });
+
+  it("resolves by title only where the title is unambiguous", () => {
+    const type = "summarize-spoken-text";
+    const counts = new Map();
+    for (const item of summarizeSpokenText) counts.set(item.title, (counts.get(item.title) || 0) + 1);
+
+    const unique = summarizeSpokenText.filter(item => counts.get(item.title) === 1);
+    const shared = summarizeSpokenText.filter(item => counts.get(item.title) > 1);
+    expect(unique.length).toBeGreaterThan(0);
+
+    for (const item of unique) {
       expect(localTranscriptFor({ type, title: item.title })).toBe(item.transcript);
-      expect(localTranscriptFor({ type, _id: String(item.id) })).toBe(item.transcript);
+    }
+
+    // Two items may cover the same subject with different audio. Returning either one's
+    // transcript for the other would show the student text their clip never speaks, so an
+    // ambiguous title resolves to nothing and the caller falls back to sourceGroup or id.
+    for (const item of shared) {
+      expect(localTranscriptFor({ type, title: item.title })).toBe("");
     }
   });
 

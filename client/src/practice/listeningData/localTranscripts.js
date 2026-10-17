@@ -43,8 +43,15 @@ for (const { type, file, items } of SOURCES) {
       BY_SOURCE_GROUP.set(`${file}#${item.id}`, transcript);
       BY_TYPE_ID.set(typeKey(type, item.id), transcript);
     }
+    // Titles are not unique in the authored bank — two Summarize Spoken Text items may cover the
+    // same subject with different audio. First-wins would hand the second one the first one's
+    // transcript, which is the failure this module exists to prevent, so an ambiguous title is
+    // marked unusable instead. Those items are still reachable by sourceGroup or authored id,
+    // both of which are exact.
     const titled = typeKey(type, item.title);
-    if (item.title && !BY_TYPE_TITLE.has(titled)) BY_TYPE_TITLE.set(titled, transcript);
+    if (!item.title) continue;
+    if (BY_TYPE_TITLE.has(titled)) BY_TYPE_TITLE.set(titled, null);
+    else BY_TYPE_TITLE.set(titled, transcript);
   }
 }
 

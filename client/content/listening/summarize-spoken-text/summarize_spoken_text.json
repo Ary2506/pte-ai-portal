@@ -108,5 +108,105 @@
             "src": "52.mp3"
         },
         "transcript": "Skilled trades play a pivotal role in Canada's economy and society. They encompass various professions, including electricians, plumbers, welders, and carpenters, which are essential for infrastructure development, manufacturing, and day-to-day living. The Canadian government actively encourages individuals to pursue careers in skilled trades through initiatives like apprenticeship programs and financial incentives. This is driven by an increasing demand for skilled workers due to retiring baby boomers and evolving industries. One notable program is the Red Seal, which sets a national standard for trade skills and allows certified individuals to work across provinces with ease. Moreover, immigration policies favor skilled trade workers, making it a viable path for those seeking opportunities in Canada. Pursuing a career in skilled trades not only ensures job security but also offers competitive salaries and growth potential. Workers are well compensated and are active in daily life. They maintain products people use every day. In short, skilled trades are vital for Canada's development and provide a rewarding career choice for many."
+    },
+    {
+        "id": 1,
+        "title": "Phone Interviews",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "1.mp3"
+        },
+        "transcript": "The lecture was mainly about phone interviews. The speaker then discussed how tone, energy, and confidence create strong impressions. Finally, he talked about calmness and clarity being essential to success."
+    },
+    {
+        "id": 2,
+        "title": "New Employee Orientation",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "2.mp3"
+        },
+        "transcript": "The lecture was mainly about employee orientation. The speaker then discussed how company policies and job descriptions improve performance. Finally, he talked about training and interactive elements, such as group activities."
+    },
+    {
+        "id": 3,
+        "title": "Rail Pass / Train Pass",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "3.mp3"
+        },
+        "transcript": "The lecture was mainly about rail passes. The speaker then discussed how selecting routes and discounts makes travel affordable. Finally, he talked about planning ahead, confirming availability, and comfortable journeys."
+    },
+    {
+        "id": 4,
+        "title": "Canadian Trade Market",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "4.mp3"
+        },
+        "transcript": "The lecture was mainly about Canada's trade market. The speaker then discussed how job opportunities in plumbing and technical trades offer higher wages than many other jobs. Finally, he talked about the importance of skilled trades in the Canadian economy."
+    },
+    {
+        "id": 5,
+        "title": "Park Cleanup",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "5.mp3"
+        },
+        "transcript": "The lecture was mainly about park cleanup. The speaker then discussed how volunteers join tasks like picking up trash and removing plants. Finally, he talked about repainting tables and maintaining park areas."
+    },
+    {
+        "id": 6,
+        "title": "Washing Fruits and Vegetables",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "6.mp3"
+        },
+        "transcript": "The lecture was mainly about washing fruits and vegetables. The speaker then discussed how removing dirt, pesticides, and bacteria ensures safety. Finally, he talked about using cold water and checking labels."
+    },
+    {
+        "id": 7,
+        "title": "Children's School / First Day of School",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "7.mp3"
+        },
+        "transcript": "The lecture was mainly about the first day of school. The speaker then discussed how parents prepare children with information from teachers. Finally, he talked about organizing details and maintaining a positive routine."
+    },
+    {
+        "id": 8,
+        "title": "Job Interviews",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "8.mp3"
+        },
+        "transcript": "The lecture was mainly about job interviews. The speaker then discussed how interviewees communicate, describe their thoughts, and show experience. Finally, he talked about facial expressions and body language."
+    },
+    {
+        "id": 9,
+        "title": "Communication Skills",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "9.mp3"
+        },
+        "transcript": "The lecture was mainly about communication skills in interviews. The speaker then discussed how top recruiters value the ability to communicate and express emotions. Finally, he talked about job seekers."
+    },
+    {
+        "id": 10,
+        "title": "Skilled Trades",
+        "type": "summarize_spoken_text",
+        "subtype": "core_corep",
+        "audio": {
+            "src": "10.mp3"
+        },
+        "transcript": "The lecture was mainly about skilled trades. The speaker then discussed how job opportunities in various professions, including electricians, plumbers, and welders, offer competitive salaries and growth potential."
     }
 ]

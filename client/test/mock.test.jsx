@@ -64,6 +64,56 @@ afterEach(() => {
   localStorage.clear();
 });
 
+describe("Mock test — revisiting an answered question", () => {
+  // A mock allows one attempt per question and the server rejects a second with 409
+  // DUPLICATE_SUBMISSION, so navigating back has to show what was actually answered. A blank form
+  // would read as though the answer had been lost, and the student cannot re-submit to recover it.
+  //
+  // This is the opposite of standalone practice, which allows unlimited retries and deliberately
+  // reopens a question clean (see test/retryAttempt.test.jsx).
+  it("shows the stored answer and score again, and does not re-submit", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    // answer: 0 is the index of option "A", which answerCurrentQuestion() clicks. A real
+    // submission carries it; without it there is nothing to seed the restored selection from.
+    api.submit.mockResolvedValue({ submission: objectiveResult({ answer: 0 }) });
+    renderAt("/mock", studentAuthUser());
+
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await answerCurrentQuestion();
+    expect(api.submit).toHaveBeenCalledTimes(1);
+
+    // Move on, then come back.
+    fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Reading Q2");
+    fireEvent.click(screen.getByText("Previous"));
+    await screen.findByText("Reading Q1");
+
+    // The result is still there, the chosen option is still shown, and nothing was sent again.
+    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+    const chosen = (await screen.findAllByText("A"))[0].closest("label");
+    expect(chosen.querySelector("input")).toBeChecked();
+    expect(chosen.querySelector("input")).toBeDisabled();
+    expect(api.submit).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves an unanswered question blank when revisited", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    fireEvent.click(await screen.findByText("Next"));
+    await screen.findByText("Reading Q2");
+    fireEvent.click(screen.getByText("Previous"));
+    await screen.findByText("Reading Q1");
+
+    // Never answered, so there is nothing to restore — it must still be answerable.
+    const option = (await screen.findAllByText("A"))[0].closest("label");
+    expect(option.querySelector("input")).not.toBeChecked();
+    expect(option.querySelector("input")).not.toBeDisabled();
+    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+  });
+});
+
 describe("Mock test — countdown timer", () => {
   it("renders a countdown once the mock starts", async () => {
     api.testSessions.start.mockResolvedValue(startedSession());
@@ -71,7 +121,12 @@ describe("Mock test — countdown timer", () => {
 
     fireEvent.click(await screen.findByText("Start Mock Test"));
     expect(await screen.findByText("Time Remaining")).toBeInTheDocument();
-    expect(await screen.findByText("20:00")).toBeInTheDocument();
+
+    // Not an exact "20:00": this runs on real timers, so if the Mock chunk takes a moment to
+    // load the clock has already ticked by the time the assertion runs, and the test failed only
+    // under full-suite load. What matters here is that a countdown rendered near its start — the
+    // next test is the one that pins the ticking itself.
+    expect(await screen.findByText(/^(20:00|19:5\d)$/)).toBeInTheDocument();
   });
 
   it("counts down as real time (simulated) elapses", async () => {

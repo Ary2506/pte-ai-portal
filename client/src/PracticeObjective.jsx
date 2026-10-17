@@ -508,13 +508,16 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     const isDragFillQ = question?.type === "fill-blanks-dragdrop";
     const blankCount = isDragFillQ ? (question.passage?.match(/____/g) || []).length : 0;
     const submittedAnswer = existingResult?.answer;
-    // Reopening an already-answered question (Phase 19, Part 10) shows its real stored result —
-    // never re-scored, never re-sent to AI — instead of a blank form, with the selection/order
-    // seeded from what was actually submitted so the disabled options visually show the real
-    // answer (same convention ObjectiveResult already relies on for a fresh submission).
-    // existingResult is only ever set by the standalone practice flow (PracticeTask), which
-    // already remounts this component fresh per question; Mock never passes it, so this is a
-    // no-op there, exactly as before.
+    // Revisiting an already-answered question shows its real stored result — never re-scored,
+    // never re-sent to AI — instead of a blank form, with the selection/order seeded from what
+    // was actually submitted so the disabled options visually show the real answer (the same
+    // convention ObjectiveResult relies on for a fresh submission).
+    //
+    // This is now a MOCK-TEST concern. A mock allows one attempt per question and the server
+    // rejects a second (409 DUPLICATE_SUBMISSION), so moving back to an answered question has to
+    // show what was answered; a blank form would look like the answer had been lost. Standalone
+    // practice is the opposite case — unlimited retries — and deliberately passes nothing here,
+    // so reopening a practice question starts clean.
     setChoice(existingResult && !isReorderQ && !isMultiQ && !isDragFillQ && submittedAnswer !== undefined ? submittedAnswer : "");
     setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
     setOrder(isReorderQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : (question.options || []).map((_, i) => i)) : null);

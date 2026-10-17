@@ -344,10 +344,10 @@ function Mock() {
             survive on a useEffect keyed to question._id that clears their own state (see
             PracticeObjective.jsx) — but that effect is one forgotten setter away from the same
             bug, and a key cannot be forgotten in the same way. */}
-        {q.section==="speaking" && <SpeakingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-        {q.section==="writing" && <WritingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-        {q.section==="reading" && <ReadingTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
-        {q.section==="listening" && <ListeningTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered}/>}
+        {q.section==="speaking" && <SpeakingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
+        {q.section==="writing" && <WritingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
+        {q.section==="reading" && <ReadingTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
+        {q.section==="listening" && <ListeningTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
         </TaskRail>
         <div className="mock-nav btn-group" role="group" aria-label="Test navigation">
           <NavButton direction="previous" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>Previous</NavButton>

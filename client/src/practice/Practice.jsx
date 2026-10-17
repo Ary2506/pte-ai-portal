@@ -73,6 +73,47 @@ function WorkspaceHeader({ section, label, questions, progress, position }) {
   );
 }
 
+/**
+ * Gives a just-finished attempt the same shape a reloaded one has.
+ *
+ * Most tasks hand back the server's submission, which already carries `evaluationStatus`. The
+ * locally-scored listening questions hand back a plain { score, maxScore, feedback } computed in
+ * the browser. Without a status those attempts are dropped from the "average score" on the
+ * completion screen, so the figure would change on the next reload for no visible reason.
+ */
+function normalizeAttempt(attempt) {
+  if (attempt?.evaluationStatus) return attempt;
+  const scored = Number.isFinite(attempt?.score) && Number.isFinite(attempt?.maxScore) && attempt.maxScore > 0;
+  return scored ? { ...attempt, evaluationStatus: "COMPLETED" } : attempt;
+}
+
+/** An attempt's result as a fraction, or null when it never produced a usable score. */
+function attemptRatio(attempt) {
+  if (!attempt || attempt.evaluationStatus === "FAILED") return null;
+  const { score, maxScore } = attempt;
+  if (!Number.isFinite(score) || !Number.isFinite(maxScore) || maxScore <= 0) return null;
+  return score / maxScore;
+}
+
+/**
+ * Whether `candidate` should replace `current` as the attempt shown for a question.
+ *
+ * The list has room for one number per question, and the student's best result is the one worth
+ * showing: a weaker retry should never look like lost progress. An attempt that produced no usable
+ * score — still evaluating, or FAILED — cannot displace one that did, so a failed retry leaves the
+ * earlier result standing. Ties keep what is already there, which makes the order rows arrive in
+ * irrelevant.
+ */
+function isBetterAttempt(candidate, current) {
+  if (!candidate) return false;
+  if (!current) return true;
+  const next = attemptRatio(candidate);
+  const existing = attemptRatio(current);
+  if (next === null) return false;
+  if (existing === null) return true;
+  return next > existing;
+}
+
 function PracticeTask({ section, label, slug, taskComponents }) {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(null);
@@ -89,7 +130,7 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       // Scoped to this one task: the map below is only ever read for questions in this task, so
       // pulling the 50 most recent submissions across every section both shipped rows that were
       // discarded and could push this task's own older attempts out of the limit entirely.
-      // Full rows (not summary) — these become `existingResult`, which restores a previous
+      // Full rows (not summary) — the per-question map below is built from them, and the
       // answer and its feedback.
       Promise.resolve(api.history({ section, type: slug })).catch(() => ({ submissions: [] })),
     ])
@@ -111,8 +152,11 @@ function PracticeTask({ section, label, slug, taskComponents }) {
           // localQuestionId matches bundled local content (e.g. Listening) that has no real
           // Question document — see models/Submission.js.
           const questionId = submission.question?._id || submission.localQuestionId;
-          if (questionId && !map.has(questionId))
-            map.set(questionId, submission);
+          if (!questionId) continue;
+          // The BEST attempt, not the latest. The list shows one number per question and a
+          // student's best result is the one worth showing them; a weaker retry should not
+          // appear to undo progress they have already made.
+          if (isBetterAttempt(submission, map.get(questionId))) map.set(questionId, submission);
         }
         setQuestions(loadedQuestions);
         setProgress(map);
@@ -123,6 +167,27 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   }
 
   useEffect(load, [section, slug]);
+
+  /**
+   * Replaces this question's entry in `progress` with the attempt that just finished.
+   *
+   * Without this the map was only ever built by load(), which runs on [section, slug], so the
+   * list's "Done · n/90" badge never moved after a retry until the whole task was reloaded.
+   *
+   * Every task component already announced its result through onAnswered — the prop exists for
+   * mock tests — and this screen simply never listened. Only an improvement is kept, matching
+   * what a reload produces now that load() also keeps the best attempt per question.
+   */
+  function recordAttempt(questionId, submission) {
+    if (!questionId || !submission) return;
+    setProgress((previous) => {
+      const attempt = normalizeAttempt(submission);
+      if (!isBetterAttempt(attempt, previous.get(questionId))) return previous;
+      const next = new Map(previous);
+      next.set(questionId, attempt);
+      return next;
+    });
+  }
 
   if (loading)
     return (
@@ -160,7 +225,6 @@ function PracticeTask({ section, label, slug, taskComponents }) {
     );
 
   const question = questions[idx];
-  const existingResult = question ? progress.get(question._id) : null;
   const TaskComponent = taskComponents[section];
   if (!TaskComponent)
     return <Empty text="This practice section is not configured yet." />;
@@ -260,7 +324,7 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       <TaskComponent
         key={question?._id}
         question={question}
-        existingResult={existingResult}
+        onAnswered={(submission) => recordAttempt(question?._id, submission)}
       />
     </div>
   );

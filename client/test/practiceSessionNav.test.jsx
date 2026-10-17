@@ -213,13 +213,17 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
   });
 });
 
-describe("Reopening a completed question shows its stored result (Phase 19, Part 10)", () => {
+describe("Reopening a completed question starts a fresh attempt", () => {
+  // This reverses the original Phase 19 Part 10 behaviour, which restored the stored result when
+  // a question was reopened. Practice is now unlimited retries: reopening gives the student a
+  // clean attempt, the way a mock test always has, and the list badge carries their BEST score
+  // so nothing about their progress is lost by trying again.
   const TWO_MCQ = [
     { _id: "q1", section: "reading", type: "mcq-single", title: "Question One", prompt: "Pick one.", options: ["A", "B"] },
     { _id: "q2", section: "reading", type: "mcq-single", title: "Question Two", prompt: "Pick one.", options: ["C", "D"] }
   ];
 
-  it("shows the stored objective result immediately (with the actually-submitted option selected) and never calls submit again", async () => {
+  it("offers an unanswered objective question, and never re-submits on open", async () => {
     api.questions.mockResolvedValue({ questions: TWO_MCQ });
     api.history.mockResolvedValue({
       submissions: [{
@@ -230,23 +234,21 @@ describe("Reopening a completed question shows its stored result (Phase 19, Part
     });
     renderAt("/reading", studentAuthUser());
 
+    // The badge still shows the earlier result, which is where past performance belongs now.
     await screen.findByText("Done 1, Found 2 questions");
     fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
 
-    // The stored result renders immediately — no "Submit Answer" click, no new network call.
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
-    expect(api.submit).not.toHaveBeenCalled();
-
-    // The option the student actually chose (index 1 = "B") is shown selected and disabled.
+    // ...but the question itself opens clean: no stored verdict, nothing preselected, and
+    // opening a question must never fire a submission of its own.
+    expect(await screen.findByText("Question One")).toBeInTheDocument();
+    expect(screen.queryByText("Correct!")).not.toBeInTheDocument();
     const bOption = screen.getByText("B").closest("label");
-    expect(bOption.querySelector("input")).toBeChecked();
-    expect(bOption.querySelector("input")).toBeDisabled();
+    expect(bOption.querySelector("input")).not.toBeChecked();
+    expect(bOption.querySelector("input")).not.toBeDisabled();
+    expect(api.submit).not.toHaveBeenCalled();
   });
 
-  it("shows a FAILED subjective result (with its retry option) when reopened, never a fabricated score", async () => {
-    // Uses repeat-sentence, not read-aloud: Read Aloud now has its own dedicated, locally-curated
-    // 15-question practice flow (ReadAloudPractice) instead of the generic DB-backed Speaking
-    // task this test is actually exercising (reopening a stored FAILED subjective result).
+  it("does not resurrect a failed evaluation, and fabricates no score", async () => {
     const REPEAT_SENTENCE = [{ _id: "ra1", section: "speaking", type: "repeat-sentence", title: "Passage One", prompt: "Repeat this sentence." }];
     api.questions.mockResolvedValue({ questions: REPEAT_SENTENCE });
     api.history.mockResolvedValue({
@@ -258,8 +260,10 @@ describe("Reopening a completed question shows its stored result (Phase 19, Part
     });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
 
-    await screen.findByText("AI feedback is temporarily unavailable. Your objective score (if any) is still valid.");
-    expect(screen.getByText("Retry Evaluation")).toBeInTheDocument();
+    await screen.findByText("Passage One");
+    // The previous failure is not replayed into the new attempt, and no score is invented for it.
+    expect(screen.queryByText("AI feedback is temporarily unavailable. Your objective score (if any) is still valid.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Retry Evaluation")).not.toBeInTheDocument();
     expect(api.submit).not.toHaveBeenCalled();
   });
 });
