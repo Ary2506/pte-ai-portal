@@ -69,7 +69,10 @@ describe("AI cost control", () => {
 
 describe("subscription/account gating still applies to evaluation submissions", () => {
   it("rejects a submission once the subscription has expired mid-session", async () => {
-    await createUser({ username: "expired1", password: "password123", subscriptionEndDate: new Date(Date.now() + 2000) });
+    // Comfortably active, not 2 seconds: the expiry under test is the updateOne below, and a
+    // 2-second window could lapse during the bcrypt-backed login, refusing it with a 401 before
+    // the submission being tested was ever made.
+    await createUser({ username: "expired1", password: "password123", subscriptionEndDate: new Date(Date.now() + 10 * 60 * 1000) });
     const q = await createQuestion({ section: "writing", type: "essay", evaluationType: "subjective" });
     const token = await login("expired1");
     await User.updateOne({ username: "expired1" }, { subscriptionEndDate: new Date(Date.now() - 1000) });

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Eye, X } from "lucide-react";
 import { Badge, Empty, Page, Pager } from "../components/common.jsx";
-import { Button, IconButton } from "../components/Button.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
@@ -42,71 +40,6 @@ export function MockResultRow({ r }) {
   );
 }
 
-function MockAttemptDetail({ id, onClose }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    api.testSessions
-      .details(id)
-      .then(setData)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [id]);
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  const s = data?.testSession;
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-panel detail-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Mock Test Details"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-head">
-          <h3>Mock Test Details</h3>
-          <IconButton label="Close" icon={<X/>} onClick={onClose}/>
-        </div>
-        {loading ? (
-          <Empty text="Loading attempt..." />
-        ) : !s ? (
-          <div className="alert error">{error}</div>
-        ) : (
-          <>
-            <div className="mock-detail-summary">
-              <span className="score-pill">
-                {formatRaw(s.totalScore, s.totalMaxScore)}
-              </span>
-              <span className="muted">
-                {s.submittedAt
-                  ? new Date(s.submittedAt).toLocaleString()
-                  : "In progress"}
-              </span>
-            </div>
-            <div className="mock-detail-list">
-              {data.results.length ? (
-                data.results.map((r) => <MockResultRow key={r._id} r={r} />)
-              ) : (
-                <p className="muted">
-                  No answers were submitted in this attempt.
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function fmtRelativeDateTime(d) {
   if (!d) return "—";
@@ -145,7 +78,6 @@ export default function History() {
   const [rows, setRows] = useState([]);
   const [mocks, setMocks] = useState([]);
   const [mockPage, setMockPage] = useState(1);
-  const [detailId, setDetailId] = useState(null);
   const [sectionFilter, setSectionFilter] = useState("all");
   // The section filter is applied by the server, not by filtering `rows` in place as it once
   // was. With a page of attempts rather than all of them, a client-side filter could only ever
@@ -161,7 +93,7 @@ export default function History() {
     setRowsLoading(true);
     api
       // summary: this table renders type/section/evaluationType/score/date and nothing else —
-      // the mock-attempt detail below fetches its own full rows from testSessions.details().
+      // the mock table needs only the section totals it already receives.
       .history({ summary: 1, page, limit: PRACTICE_PAGE_SIZE, section: sectionFilter === "all" ? undefined : sectionFilter })
       .then((d) => {
         setRows(d.submissions);
@@ -257,7 +189,6 @@ export default function History() {
               <th>Writing</th>
               <th>Reading</th>
               <th>Listening</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -277,11 +208,6 @@ export default function History() {
                     <td key={sec}>{s ? `${s.score}/${s.maxScore}` : "—"}</td>
                   );
                 })}
-                <td>
-                  <Button variant="ghost" size="sm" icon={<Eye/>} onClick={() => setDetailId(m._id)}>
-                    View Details
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -370,9 +296,6 @@ export default function History() {
         onPrevious={() => setPage(page - 1)}
         onNext={() => setPage(page + 1)}
       />
-      {detailId && (
-        <MockAttemptDetail id={detailId} onClose={() => setDetailId(null)} />
-      )}
     </Page>
   );
 }

@@ -21,7 +21,10 @@ describe("active subscription", () => {
     await createUser({
       username: "active2",
       password: "password123",
-      subscriptionEndDate: new Date(Date.now() + 2000)
+      // Comfortably active, not 2 seconds. The lapse under test is applied by the updateOne
+      // below; this window only has to outlast signing in, and bcrypt makes that slow enough
+      // that a 2-second subscription could expire mid-login.
+      subscriptionEndDate: new Date(Date.now() + 10 * 60 * 1000)
     });
     const token = await login("active2");
     const ok = await request(app).get("/api/dashboard").set("Authorization", `Bearer ${token}`);

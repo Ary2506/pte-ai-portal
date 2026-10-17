@@ -3,14 +3,15 @@ import { NavLink } from "react-router-dom";
 import { BookOpen, CheckCircle2, Clock3, Flag, Headphones, Mic, PenLine, Play, Trophy } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
-import { Page } from "../components/common.jsx";
+import { Page, Pager } from "../components/common.jsx";
 import { Button, ButtonLink, NavButton } from "../components/Button.jsx";
 import { useToast } from "../components/toast.jsx";
+import { safeLocal } from "../safeStorage.js";
 import {
   EmptyState, Metric, MetricStrip, PerformanceTable, ScoreRing, SectionHeader, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
-import { formatRaw } from "../analytics/derive.js";
+import { formatRaw, PTE_MAX_SCORE } from "../analytics/derive.js";
 import { TaskRail } from "../practice/TaskTips.jsx";
 import { ReadingTask } from "../practice/Reading.jsx";
 import { ListeningTask } from "../practice/Listening.jsx";
@@ -23,6 +24,8 @@ const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, list
 // Used only to describe the test on the start card — the server picks what it picks, and a thin
 // section simply contributes fewer, which is why the copy says "up to".
 const MOCK_QUESTIONS_PER_SECTION = 20;
+// Ten per page, matching the attempt tables on My Results so the two read the same way.
+const RESULT_ROWS_PER_PAGE = 10;
 
 function formatMMSS(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -38,7 +41,7 @@ function MockTimer({ remainingMs }) {
   </div>;
 }
 
-function MockQuestionNav({ questions, idx, answered, onJump }) {
+function MockQuestionNav({ questions, idx, answered, saved, onJump }) {
   // Grouped by section, keeping each question's position in the WHOLE test as its number, so the
   // overview and the "Question 34 of 80" readout always agree. A flat strip of eighty numbers was
   // readable at four and is a wall at eighty.
@@ -50,6 +53,12 @@ function MockQuestionNav({ questions, idx, answered, onJump }) {
   });
 
   return <aside className="panel mock-qnav" role="tablist" aria-label="Question overview">
+    {/* The two squares mean different things to a student's score, so say which is which rather
+        than leaving them to infer it from colour alone. */}
+    <div className="mock-qnav__key">
+      <span><i className="mock-qnav-swatch is-answered" aria-hidden="true"/>Submitted</span>
+      <span><i className="mock-qnav-swatch is-saved" aria-hidden="true"/>Saved</span>
+    </div>
     {groups.map(group => {
       const answeredInGroup = group.items.filter(item => answered[item.i]).length;
       return <div className="mock-qnav__group" key={`${group.section}-${group.items[0].i}`}>
@@ -59,7 +68,11 @@ function MockQuestionNav({ questions, idx, answered, onJump }) {
         </span>
         <div className="mock-qnav__row">
           {group.items.map(({ question, i }) => {
-            const state = i === idx ? "current" : answered[i] ? "answered" : "unanswered";
+            // Submitted beats saved: a submitted answer is final, a saved one is still a draft.
+            const state = i === idx ? "current"
+              : answered[i] ? "answered"
+              : saved[i] ? "saved"
+              : "unanswered";
             return <button key={question._id || i} type="button" className={`mock-qnav-item ${state}`}
               onClick={() => onJump(i)} aria-current={i === idx || undefined}
               title={`Question ${i + 1} — ${state}`}>{i + 1}</button>;
@@ -79,7 +92,7 @@ function ConfirmDialog({ open, title, message, confirmLabel, busy, onConfirm, on
   }, [open, onCancel]);
   if (!open) return null;
   return <div className="modal-overlay confirm-overlay" onClick={e => { e.stopPropagation(); onCancel(); }}>
-    <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
+    <div className="modal-panel confirm-panel mock-confirm" role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}>
       <h3>{title}</h3><p className="muted">{message}</p>
       <div className="modal-actions btn-bar">
         <Button variant="tertiary" onClick={onCancel} disabled={busy}>Cancel</Button>
@@ -93,8 +106,21 @@ function Mock() {
   const [session,setSession]=useState(null);
   const [idx,setIdx]=useState(0);
   const [answered,setAnswered]=useState({});
+  // Saved-but-not-submitted drafts, keyed by question index. Deliberately client-only: saving is
+  // not answering, so nothing reaches the server until the student submits. Only submitted
+  // answers are ever scored — a draft left unsubmitted scores nothing, which is what the finish
+  // confirmation warns about.
+  const [saved,setSaved]=useState({});
+  // Drafts are read from storage in an effect, which lands AFTER the first render. A task
+  // component seeds its inputs once, on mount, so the question is held back until the drafts are
+  // in — remounting it afterwards instead would wipe a selection made in the interim.
+  const [draftsLoaded,setDraftsLoaded]=useState(false);
   const [result,setResult]=useState(null);
   const [resultRows,setResultRows]=useState([]);
+  // The per-question table pages client side: every row arrives in the completion response, so
+  // this is a slice rather than a refetch. A full mock is 80 questions, which is a long scroll
+  // past the section summary most students actually came for.
+  const [rowsPage,setRowsPage]=useState(1);
   const [starting,setStarting]=useState(false);
   const [finishing,setFinishing]=useState(false);
   const toast = useToast();
@@ -102,11 +128,47 @@ function Mock() {
   const [timeUp,setTimeUp]=useState(false);
   const [terminal,setTerminal]=useState(null);
   const [showConfirm,setShowConfirm]=useState(false);
+  // Until the server has been asked whether an attempt is already open, showing "Start Mock Test"
+  // would invite the student to abandon one they are halfway through.
+  const [resuming,setResuming]=useState(true);
   const [politeAnnouncement,setPoliteAnnouncement]=useState("");
   const [assertiveAnnouncement,setAssertiveAnnouncement]=useState("");
   const timerIdRef=useRef(null);
   const autoSubmittedRef=useRef(false);
   const lowTimeAnnouncedRef=useRef(false);
+
+  // Resume an attempt left open on the server — after a refresh, a closed tab, or a browser that
+  // decided to reload. The session keeps the exact questions it issued and the clock keeps
+  // running, so the attempt is handed back whole rather than restarted.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const d = await api.testSessions.active();
+        if (cancelled || !d?.testSession) return;
+        setSession({ testSession: d.testSession, questions: d.questions || [] });
+        // Submissions come back keyed by question; this screen works in positions, so they are
+        // mapped onto the question order the session was issued in.
+        const position = new Map((d.questions || []).map((q, i) => [String(q._id), i]));
+        const restored = {};
+        for (const submission of d.submissions || []) {
+          const id = String(submission.question?._id || submission.question || "");
+          const at = position.get(id);
+          if (at !== undefined) restored[at] = submission;
+        }
+        setAnswered(restored);
+        autoSubmittedRef.current = false;
+        lowTimeAnnouncedRef.current = false;
+        setPoliteAnnouncement("Resuming your mock test where you left off.");
+      } catch {
+        // Nothing to resume, or the lookup failed. Either way the start screen is the right
+        // fallback — it is never wrong to offer a new attempt.
+      } finally {
+        if (!cancelled) setResuming(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function start() {
     setStarting(true);
@@ -118,6 +180,50 @@ function Mock() {
     } catch(e){ toast.error(e.message); } finally { setStarting(false); }
   }
 
+  // Drafts survive a refresh. They are keyed per test session so a new attempt never inherits an
+  // older one's answers, and they are cleared the moment the test is finished — a completed
+  // attempt cannot be edited, so keeping them would only leave stale answers in the browser.
+  const draftKey = session?.testSession?._id ? `pte_mock_drafts_${session.testSession._id}` : null;
+  const idxKey = session?.testSession?._id ? `pte_mock_idx_${session.testSession._id}` : null;
+
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      const stored = JSON.parse(safeLocal.getItem(draftKey) || "{}");
+      if (stored && typeof stored === "object") setSaved(stored);
+    } catch {
+      // A corrupt or half-written value is not worth failing a test attempt over; start empty.
+      safeLocal.removeItem(draftKey);
+    } finally {
+      setDraftsLoaded(true);
+    }
+  }, [draftKey]);
+
+  // Which question they were on. Restored alongside the drafts so a refresh lands them back where
+  // they were rather than at question one of eighty.
+  useEffect(() => {
+    if (!idxKey) return;
+    // Read before converting: Number(null) is 0, not NaN, so an absent key would look like a
+    // stored position of zero rather than "nothing stored".
+    const raw = safeLocal.getItem(idxKey);
+    if (raw === null || raw === "") return;
+    const stored = Number(raw);
+    if (Number.isInteger(stored) && stored >= 0) setIdx(stored);
+  }, [idxKey]);
+
+  useEffect(() => {
+    if (!idxKey || !draftsLoaded) return;
+    safeLocal.setItem(idxKey, String(idx));
+  }, [idxKey, draftsLoaded, idx]);
+
+  useEffect(() => {
+    // Only once the stored drafts have been read, or the empty initial state would immediately
+    // overwrite them.
+    if (!draftKey || !draftsLoaded) return;
+    if (Object.keys(saved).length) safeLocal.setItem(draftKey, JSON.stringify(saved));
+    else safeLocal.removeItem(draftKey);
+  }, [draftKey, draftsLoaded, saved]);
+
   async function finish() {
     setFinishing(true); setPoliteAnnouncement("Finishing your test…");
     try {
@@ -125,6 +231,11 @@ function Mock() {
       setResult(d.testSession);
       // Already in the response; the old report threw them away and showed section totals only.
       setResultRows(d.results || []);
+      setRowsPage(1);
+      // The attempt is over and cannot be edited, so the drafts have nothing left to restore.
+      if (draftKey) safeLocal.removeItem(draftKey);
+      if (idxKey) safeLocal.removeItem(idxKey);
+      setSaved({});
       setPoliteAnnouncement("Your mock test has been completed and scored.");
     } catch(e){
       if (e.code === "TEST_SESSION_EXPIRED") { setTerminal("EXPIRED"); setAssertiveAnnouncement("Your test session has expired."); }
@@ -168,30 +279,56 @@ function Mock() {
   </>;
 
   if (result) {
-    const overallPct = result.totalMaxScore
-      ? Math.min(100, Math.max(0, Math.round((result.totalScore / result.totalMaxScore) * 100))) : null;
+    // Marks, not a band. Every question in a mock is worth one mark, so the total is simply how
+    // many of the 80 were earned — a figure the student can check against the question list.
+    const marksEarned = Number(result.totalScore ?? 0);
+    const marksAvailable = Number(result.totalMaxScore ?? 0);
     // Section rows, each as a percentage of its own maximum so sections of different lengths can
     // actually be compared with one another.
     const sectionRows = (result.sectionScores || []).map(s => ({
       ...s,
       percent: s.maxScore ? Math.min(100, Math.max(0, Math.round((s.score / s.maxScore) * 100))) : null
     }));
-    const ranked = sectionRows.filter(s => s.percent !== null).sort((a, b) => b.percent - a.percent);
-    const correct = resultRows.filter(r => r.maxScore && r.score >= r.maxScore).length;
+    // Counted from the mark the server assigned, so these always add up to the total above
+    // rather than re-deriving the banding rule here and drifting from it.
+    const correct = resultRows.filter(r => r.mark === 1).length;
+    const partial = resultRows.filter(r => r.mark === 0.5).length;
+    const incorrect = resultRows.filter(r => !r.mark).length;
+    // The attempt's own size, from whichever source still knows it: the completion payload, the
+    // session that is usually still in state, or — failing both — the rows themselves.
+    const totalQuestions = result.totalQuestions
+      ?? session?.questions?.length
+      ?? session?.testSession?.totalQuestions
+      ?? resultRows.length;
+    // Counted from the rows the server returns. `answered` is the fallback for an attempt whose
+    // rows could not be loaded — it is this screen's own record of what was submitted, so the
+    // figure stays truthful rather than silently reading zero.
+    const attemptedCount = resultRows.length || Object.keys(answered).length;
+    const rowsTotalPages = Math.max(1, Math.ceil(resultRows.length / RESULT_ROWS_PER_PAGE));
+    // Clamped rather than stored, so a page that no longer exists cannot strand the table empty.
+    const safeRowsPage = Math.min(rowsPage, rowsTotalPages);
+    const visibleRows = resultRows.slice((safeRowsPage - 1) * RESULT_ROWS_PER_PAGE, safeRowsPage * RESULT_ROWS_PER_PAGE);
+    const notAttemptedCount = Math.max(0, totalQuestions - attemptedCount);
 
     return <>{liveRegions}<Page title="Mock Test Complete" subtitle="Here is your practice report.">
       <section className="exam-report__hero">
-        <ScoreRing value={overallPct} max={100} size={184} caption="Overall"/>
+        <ScoreRing value={marksEarned} max={marksAvailable || totalQuestions} size={184} caption="Marks" round={false}/>
         <div className="exam-report__summary">
           <h2>Practice Score</h2>
           <p className="muted">Based on your actual answers this attempt — a practice score, not an official Pearson PTE score.</p>
           <MetricStrip>
-            <Metric label="Raw score" value={formatRaw(result.totalScore, result.totalMaxScore)}/>
-            <Metric label="Questions" value={resultRows.length || null}/>
-            <Metric label="Full marks" value={resultRows.length ? correct : null}
-              hint={resultRows.length ? `of ${resultRows.length} questions` : undefined}/>
-            <Metric label="Strongest" value={ranked.length ? titleCase(ranked[0].section) : null}
-              hint={ranked.length ? `${ranked[0].percent}%` : undefined}/>
+            {/* Counted against the whole test, not against the rows that came back: a question
+                never submitted produces no row, so resultRows.length alone would quietly report
+                a 40-question attempt as a 40-question test. */}
+            <Metric label="Correct" value={correct} hint="1 mark each"/>
+            {/* Only AI-evaluated answers can land here (40-59%), so it is hidden on an attempt
+                that had none rather than showing a permanent zero. */}
+            {partial > 0 && <Metric label="Partly correct" value={partial} hint="half a mark each"/>}
+            <Metric label="Incorrect" value={incorrect} hint="no marks"/>
+            <Metric label="Attempted" value={attemptedCount}
+              hint={`of ${totalQuestions} questions`}/>
+            <Metric label="Not attempted" value={notAttemptedCount}
+              hint={notAttemptedCount ? "scored nothing" : "nothing skipped"}/>
           </MetricStrip>
         </div>
       </section>
@@ -199,9 +336,7 @@ function Mock() {
       <div className="page-stack">
       <section className="panel">
         <SectionHeader label="Section comparison" title="How each section scored"
-          description={ranked.length > 1
-            ? `${titleCase(ranked[0].section)} was your strongest; ${titleCase(ranked[ranked.length - 1].section)} your weakest.`
-            : "Each section as a percentage of its own maximum."}/>
+          description="Each section is marked out of the questions it issued — one mark per question."/>
         <div className="skill-spectrum">
           {sectionRows.map(row => (
             <div className="skill-row" key={row.section} data-section={row.section}>
@@ -222,17 +357,24 @@ function Mock() {
           columns={[
             { key: "section", label: "Section", render: r => titleCase(r.section) },
             { key: "task", label: "Task", render: r => r.question?.title || taskLabel(r.type) },
-            { key: "score", label: "Score", align: "right", render: r => <b className="num-mono">{formatRaw(r.score, r.maxScore)}</b> },
-            { key: "status", label: "Result", render: r => r.evaluationStatus === "COMPLETED"
-                ? (r.maxScore && r.score >= r.maxScore
-                    ? <span className="exam-mark is-full">Full marks</span>
-                    : r.score > 0 ? <span className="exam-mark is-part">Partial</span>
-                    : <span className="exam-mark is-none">No marks</span>)
-                : <span className="muted">{titleCase(r.evaluationStatus || "pending")}</span> }
+            { key: "score", label: "Mark", align: "right", render: r => <b className="num-mono">{r.mark ?? 0}/1</b> },
+            { key: "status", label: "Result", render: r => r.evaluationStatus && r.evaluationStatus !== "COMPLETED"
+                ? <span className="muted">{titleCase(r.evaluationStatus)}</span>
+                : r.mark === 1 ? <span className="exam-mark is-full">Correct</span>
+                : r.mark === 0.5 ? <span className="exam-mark is-part">Partly correct</span>
+                : <span className="exam-mark is-none">Incorrect</span> }
           ]}
-          rows={resultRows.map((r, i) => ({ ...r, id: r._id || i }))}
+          rows={visibleRows.map((r, i) => ({ ...r, id: r._id || `${safeRowsPage}-${i}` }))}
           empty={<EmptyState title="Question-level detail is not available for this attempt"
             body="Your section scores above still reflect everything you answered."/>}
+        />
+        <Pager
+          page={safeRowsPage}
+          totalPages={rowsTotalPages}
+          total={resultRows.length}
+          itemLabel={resultRows.length === 1 ? "answer" : "answers"}
+          onPrevious={() => setRowsPage(safeRowsPage - 1)}
+          onNext={() => setRowsPage(safeRowsPage + 1)}
         />
       </section>
       </div>
@@ -263,6 +405,14 @@ function Mock() {
         <p>This mock attempt has already been submitted and scored.</p>
         <ButtonLink variant="primary" to="/history">View History</ButtonLink>
       </div>
+    </Page></>;
+  }
+
+  // Hold the start screen until the server has answered. Offering "Start Mock Test" to someone
+  // who has an attempt open would let them abandon it with one click.
+  if (resuming && !session) {
+    return <>{liveRegions}<Page title="Mock Tests" subtitle="Sit a full-length, timed test and get a sectioned report.">
+      <div className="mock-card panel"><p className="muted">Checking for a test in progress…</p></div>
     </Page></>;
   }
 
@@ -297,15 +447,31 @@ function Mock() {
   const isLast = idx === session.questions.length - 1;
   const answeredCount = Object.keys(answered).length;
   const unansweredCount = session.questions.length - answeredCount;
-  function onAnswered(submission){ setAnswered(a=>({...a,[idx]:submission})); }
-  // Both cases ask before submitting — an unfinished test warns about what is being left behind,
-  // a finished one still confirms, because submitting ends the attempt either way.
-  const confirmTitle = unansweredCount > 0 ? "Submit with questions unanswered?" : "Submit your test?";
-  const confirmMessage = unansweredCount > 0
+  function onAnswered(submission){
+    setAnswered(a=>({...a,[idx]:submission}));
+    // Submitting supersedes any draft, so the question stops counting as "saved only".
+    setSaved(d=>{ if(!(idx in d)) return d; const next={...d}; delete next[idx]; return next; });
+  }
+  function onSaveDraft(draft){ setSaved(d=>({...d,[idx]:draft})); }
+  // Saved but never submitted. These score NOTHING — a draft is not an answer — so the
+  // confirmation has to say so plainly while the student can still do something about it.
+  const savedOnlyCount = Object.keys(saved).filter(key => !answered[key]).length;
+
+  // Three cases, most urgent first. Saved-not-submitted is the one a student can lose real work
+  // to, so it leads whenever it applies; an unanswered question is merely one never attempted.
+  const confirmTitle = savedOnlyCount > 0
+    ? "You have saved answers that are not submitted"
+    : unansweredCount > 0 ? "Submit with questions unanswered?" : "Submit your test?";
+  const confirmMessage = savedOnlyCount > 0
+    ? `${savedOnlyCount} ${savedOnlyCount === 1 ? "question is" : "questions are"} saved but not submitted, `
+      + `and saved answers score nothing — only submitted ones are marked. `
+      + `You have attempted ${answeredCount} of ${session.questions.length} questions. `
+      + "Go back and submit them, or finish anyway?"
+    : unansweredCount > 0
     ? `You have attempted ${answeredCount} of ${session.questions.length} questions. `
       + `${unansweredCount} ${unansweredCount === 1 ? "question" : "questions"} will be left unanswered and score nothing. `
-      + `You still have ${formatMMSS(remainingMs ?? 0)} on the clock. Are you sure you want to submit?`
-    : `You have attempted all ${session.questions.length} questions, with ${formatMMSS(remainingMs ?? 0)} remaining. `
+      + "Are you sure you want to submit?"
+    : `You have attempted all ${session.questions.length} questions. `
       + "Are you sure you want to submit? You cannot return to this attempt afterwards.";
 
   return <>{liveRegions}<Page title="Mock Tests" subtitle="Simulate a full-length PTE test experience.">
@@ -344,17 +510,19 @@ function Mock() {
             survive on a useEffect keyed to question._id that clears their own state (see
             PracticeObjective.jsx) — but that effect is one forgotten setter away from the same
             bug, and a key cannot be forgotten in the same way. */}
+{draftsLoaded && <>
         {q.section==="speaking" && <SpeakingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
-        {q.section==="writing" && <WritingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
-        {q.section==="reading" && <ReadingTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
-        {q.section==="listening" && <ListeningTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]}/>}
+        {q.section==="writing" && <WritingTaskModule key={q._id} type={q.title} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]} savedDraft={saved[idx]} onSaveDraft={onSaveDraft}/>}
+        {q.section==="reading" && <ReadingTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]} savedDraft={saved[idx]} onSaveDraft={onSaveDraft}/>}
+        {q.section==="listening" && <ListeningTask key={q._id} question={q} testSessionId={session.testSession._id} onAnswered={onAnswered} existingResult={answered[idx]} savedDraft={saved[idx]} onSaveDraft={onSaveDraft}/>}
+        </>}
         </TaskRail>
         <div className="mock-nav btn-group" role="group" aria-label="Test navigation">
           <NavButton direction="previous" disabled={idx===0} onClick={()=>setIdx(i=>i-1)}>Previous</NavButton>
           {!isLast && <NavButton direction="next" onClick={()=>setIdx(i=>i+1)}>Next</NavButton>}
         </div>
       </div>
-      <MockQuestionNav questions={session.questions} idx={idx} answered={answered} onJump={setIdx}/>
+      <MockQuestionNav questions={session.questions} idx={idx} answered={answered} saved={saved} onJump={setIdx}/>
     </div>
     <ConfirmDialog open={showConfirm} title={confirmTitle} message={confirmMessage} confirmLabel="Finish Test" busy={finishing} onConfirm={()=>{ setShowConfirm(false); finish(); }} onCancel={()=>setShowConfirm(false)}/>
   </Page></>;

@@ -85,7 +85,10 @@ export function Delta({ value, suffix = "", label }) {
  * A radial score readout. The arc is drawn with stroke-dasharray on a circle, so there is no
  * chart dependency and it scales to any size.
  */
-export function ScoreRing({ value, max = 100, size = 168, label, caption }) {
+export function ScoreRing({ value, max = 100, size = 168, label, caption, round = true }) {
+  // Rounding is right for a percentage or a 0-90 band, and wrong for a mark count: a mock can
+  // legitimately total 2.5, and Math.round would print that as 3. Opt-in so every existing
+  // caller keeps the behaviour it was written against.
   const radius = (size - 16) / 2;
   const circumference = 2 * Math.PI * radius;
   const has = value !== null && value !== undefined && Number.isFinite(Number(value));
@@ -104,7 +107,7 @@ export function ScoreRing({ value, max = 100, size = 168, label, caption }) {
     </svg>
     <figcaption className="score-ring__body">
       {has
-        ? <><strong className="num-mono">{Math.round(shown)}</strong><span className="score-ring__max num-mono">/{max}</span></>
+        ? <><strong className="num-mono">{round ? Math.round(shown) : Number(shown.toFixed(1))}</strong><span className="score-ring__max num-mono">/{max}</span></>
         : <span className="score-ring__empty">—</span>}
       {(label || caption) && <span className="score-ring__label">{caption || label}</span>}
     </figcaption>

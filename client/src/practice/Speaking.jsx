@@ -224,6 +224,9 @@ export default function Speaking({
       const data = await api.submit(form);
       setResult(data.submission);
       onAnswered?.(data.submission);
+      // A mock shows nothing else on submit — no score, no verdict — so without this the only
+      // signal is the button quietly disappearing.
+      if (testSessionId) toast.success("Question submitted.");
     } catch (submitError) {
       toast.error(submitError.message);
     } finally {
@@ -370,8 +373,13 @@ export default function Speaking({
             <p>{transcript}</p>
           </div>
         )}
+        {/* No Save for speaking: a recording is captured in one take, so there is no partial
+            answer to come back and adjust. The verdict is still withheld during a mock — the
+            score belongs on the results screen once the whole test is finished. */}
         {result ? (
-          <Result result={result} onRetry={retry} retrying={retrying} />
+          // Nothing is shown for a submitted mock answer: the inputs are locked, the buttons are
+          // gone and the overview square has turned green. The score waits for the results screen.
+          testSessionId ? null : <Result result={result} onRetry={retry} retrying={retrying} />
         ) : (
           <div className="task-actions btn-bar is-end">
             {!testSessionId && (

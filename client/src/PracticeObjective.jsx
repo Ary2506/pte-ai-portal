@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Fragment } from "react";
-import { CheckCircle2, Eye, EyeOff, FileText, RefreshCw, RotateCcw, X } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, FileText, RefreshCw, RotateCcw, Save, X } from "lucide-react";
 import { api } from "./api.js";
 import { useToast } from "./components/toast.jsx";
 import { Button, IconButton } from "./components/Button.jsx";
@@ -309,7 +309,7 @@ function HighlightWords({ options, selected, toggle, disabled }) {
 // depended on it stopped firing and the only reachable outcome was "wrong pick", painting all of
 // a student's selections red and none of the right answers green. The server sends the indices
 // back with the score instead, which is also why this stays empty until there is a result.
-function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswer, corrections, answerIndexes }) {
+function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswer, corrections, answerIndexes, revealCorrectness = true }) {
   const isAnswer = (index) => answerIndexes.has(index);
   return <p className="highlight-words highlight-words-passage" role="group" aria-label="Click every word that does not match what you heard">
     {segments.map((segment, i) => {
@@ -318,7 +318,12 @@ function HighlightWordsPassage({ segments, selected, toggle, disabled, showAnswe
       let className = "highlight-word";
       let marker = null;
       let suffix = null;
-      if (disabled) {
+      if (disabled && !revealCorrectness) {
+        // Mock test: the answer is locked but the verdict is withheld until the whole test is
+        // finished, so a submitted pick keeps the same neutral accent it had before submitting.
+        // Showing green and red here would mark the paper in front of the student mid-exam.
+        if (isSelected) className += " picked";
+      } else if (disabled) {
         if (isAnswer(segment.index) && isSelected) {
           className += " correct-caught";
           marker = "✓ ";
@@ -482,7 +487,7 @@ function DragFillBlanks({ passage, options, placement, setPlacement, disabled, c
   </div>;
 }
 
-export function ReadingTask({ question, testSessionId, onAnswered, existingResult }) {
+export function ReadingTask({ question, testSessionId, onAnswered, existingResult, savedDraft, onSaveDraft }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
   // Seeded from the question itself, not null. The effect below re-seeds it on every question
@@ -499,6 +504,9 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   // Fill in the Blanks (Drag & Drop) only (Phase 24 — UI redesign to match a client-supplied
   // reference screenshot): an "Answer" hint toggle and a "Wrong blanks only" filter on top of it,
   // both no-ops unless correctAnswer below is non-null (i.e. never in Mock Test).
+  // A mock withholds every verdict until the test is finished; standalone practice marks each
+  // answer immediately, which is the point of practising.
+  const revealCorrectness = !testSessionId;
   const [showAnswer, setShowAnswer] = useState(false);
   const [wrongOnly, setWrongOnly] = useState(false);
 
@@ -507,7 +515,10 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     const isMultiQ = question?.type === "mcq-multiple";
     const isDragFillQ = question?.type === "fill-blanks-dragdrop";
     const blankCount = isDragFillQ ? (question.passage?.match(/____/g) || []).length : 0;
-    const submittedAnswer = existingResult?.answer;
+    // A submitted answer wins; a saved draft is the fallback. Only the submitted one sets
+    // `result`, because that is what locks the question — a draft stays editable by design.
+    const seeded = existingResult || savedDraft;
+    const submittedAnswer = existingResult ? existingResult.answer : savedDraft?.answer;
     // Revisiting an already-answered question shows its real stored result — never re-scored,
     // never re-sent to AI — instead of a blank form, with the selection/order seeded from what
     // was actually submitted so the disabled options visually show the real answer (the same
@@ -518,12 +529,12 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     // show what was answered; a blank form would look like the answer had been lost. Standalone
     // practice is the opposite case — unlimited retries — and deliberately passes nothing here,
     // so reopening a practice question starts clean.
-    setChoice(existingResult && !isReorderQ && !isMultiQ && !isDragFillQ && submittedAnswer !== undefined ? submittedAnswer : "");
-    setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
-    setOrder(isReorderQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : (question.options || []).map((_, i) => i)) : null);
-    setDragPlacement(isDragFillQ ? (existingResult && Array.isArray(submittedAnswer) ? submittedAnswer : Array(blankCount).fill(null)) : null);
+    setChoice(seeded && !isReorderQ && !isMultiQ && !isDragFillQ && submittedAnswer !== undefined ? submittedAnswer : "");
+    setMulti(seeded && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
+    setOrder(isReorderQ ? (seeded && Array.isArray(submittedAnswer) ? submittedAnswer : (question.options || []).map((_, i) => i)) : null);
+    setDragPlacement(isDragFillQ ? (seeded && Array.isArray(submittedAnswer) ? submittedAnswer : Array(blankCount).fill(null)) : null);
     const dropdownCount = (question?.content || []).filter(part => part?.type === "blank").length;
-    setDropdownValues(existingResult && Array.isArray(submittedAnswer) && dropdownCount
+    setDropdownValues(seeded && Array.isArray(submittedAnswer) && dropdownCount
       ? submittedAnswer
       : Array(dropdownCount).fill(null));
     setResult(existingResult || null);
@@ -564,18 +575,30 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     setWrongOnly(false);
   }
 
+  function currentAnswer() {
+    return isReorder ? order : isMulti ? multi : isDragFill ? dragPlacement : isDropdownBlanks ? dropdownValues : choice;
+  }
+
+  function saveDraft() {
+    onSaveDraft?.({ answer: currentAnswer() });
+    toast.success("Answer saved. You can change it until you submit.");
+  }
+
   async function submit() {
     setBusy(true);
     const f = new FormData();
     f.append("section", "reading");
     f.append("type", question.type);
-    f.append("answer", JSON.stringify(isReorder ? order : isMulti ? multi : isDragFill ? dragPlacement : isDropdownBlanks ? dropdownValues : choice));
+    f.append("answer", JSON.stringify(currentAnswer()));
     if (question._id) f.append("questionId", question._id);
     if (testSessionId) f.append("testSessionId", testSessionId);
     try {
       const d = await api.submit(f);
       setResult(d.submission);
       onAnswered?.(d.submission);
+      // A mock shows nothing else on submit — no score, no verdict — so without this the only
+      // signal is the button quietly disappearing.
+      if (testSessionId) toast.success("Question submitted.");
     } catch (e) { toast.error(e.message); } finally { setBusy(false); }
   }
 
@@ -595,23 +618,27 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
     {question.passage && !isDragFill && !isDropdownBlanks && <div className="passage">{question.passage}</div>}
     {isDropdownBlanks
       ? <DropdownBlanks content={question.content} values={dropdownValues} setValues={setDropdownValues}
-          disabled={!!result} correctIndexes={result?.feedback?.correctIndexes} />
+          disabled={!!result} correctIndexes={revealCorrectness ? result?.feedback?.correctIndexes : undefined} />
       : isReorder
       ? <ReorderList options={question.options} order={order} setOrder={setOrder} disabled={!!result} />
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
       : isDragFill
       ? (dragPlacement && <DragFillBlanks passage={question.passage} options={question.options} placement={dragPlacement} setPlacement={setDragPlacement} disabled={!!result}
-          correctWords={dragFillCorrectWords} showAnswer={showAnswer} wrongOnly={wrongOnly} />)
+          correctWords={revealCorrectness ? dragFillCorrectWords : null} showAnswer={showAnswer} wrongOnly={wrongOnly} />)
       : <div className="options">{(question.options || []).map((x, i) => <label className={String(choice) === String(i) ? "option selected" : "option"} key={i}>
           <input type="radio" checked={String(choice) === String(i)} onChange={() => setChoice(i)} disabled={!!result} />{x}
         </label>)}</div>}
-    {result && <ObjectiveResult result={result} />}
+    {/* A mock withholds the verdict: the score, the correct answer and whether this was right
+        are all shown on the results screen once the whole test is finished. Standalone practice
+        marks each answer immediately, which is the point of practising. */}
+    {result && !testSessionId && <ObjectiveResult result={result} />}
     {/* One row, both buttons — Submit used to float right while Re-do sat in its own block below,
         which is what put the two on different baselines. Re-do is standalone-practice only (Mock
         Test's timed, one-attempt-per-question flow is gated on testSessionId). */}
     <div className="task-actions">
       {!testSessionId && <Button variant="secondary" icon={<RotateCcw/>} onClick={resetQuestion} disabled={busy}>Re-do</Button>}
+      {!result && onSaveDraft && <Button variant="secondary" icon={<Save/>} onClick={saveDraft} disabled={!canSubmit || busy}>Save</Button>}
       {!result && <Button variant="primary" onClick={submit}
         loading={busy} loadingLabel="Submitting..." disabled={!canSubmit}>Submit Answer</Button>}
     </div>
@@ -620,7 +647,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
         "Answer" / "Wrong blanks only" toggles: the first reveals each blank's correct word inline
         (and the numbered list below); the second quiets that reveal for blanks already answered
         correctly so only the ones worth reviewing stay visible. */}
-    {isDragFill && dragFillCorrectWords && <>
+    {isDragFill && revealCorrectness && dragFillCorrectWords && <>
       <div className="drag-fill-toggles">
         <Button variant="tertiary" size="sm" className="answer-toggle"
           icon={showAnswer ? <EyeOff/> : <Eye/>} onClick={() => setShowAnswer(v => !v)}>
@@ -640,7 +667,7 @@ export function ReadingTask({ question, testSessionId, onAnswered, existingResul
   </div>;
 }
 
-export function ListeningTask({ question, testSessionId, onAnswered, existingResult }) {
+export function ListeningTask({ question, testSessionId, onAnswered, existingResult, savedDraft, onSaveDraft }) {
   const [choice, setChoice] = useState("");
   const [multi, setMulti] = useState([]);
   const [blankValues, setBlankValues] = useState([]);
@@ -650,6 +677,9 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
+  // A mock withholds every verdict until the test is finished; standalone practice marks each
+  // answer immediately, which is the point of practising.
+  const revealCorrectness = !testSessionId;
   const [showAnswer, setShowAnswer] = useState(false);
   const transcriptText = getLocalTranscript(question);
   const audioUrl = getLocalAudioUrl(question);
@@ -660,17 +690,20 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     // already convey.
     const isChoiceQ = ["mcq-single", "select-missing-word"].includes(question?.type);
     const isMultiQ = ["mcq-multiple", "highlight-incorrect-words"].includes(question?.type);
-    const submittedAnswer = existingResult?.answer;
+    // A submitted answer wins; a saved draft is the fallback. Only the submitted one sets
+    // `result`, because that is what locks the question — a draft stays editable by design.
+    const seeded = existingResult || savedDraft;
+    const submittedAnswer = existingResult ? existingResult.answer : savedDraft?.answer;
     // Same reopened-completed-question behavior as ReadingTask (Phase 19, Part 10) — seeded from
     // the stored submission, never re-evaluated.
-    setChoice(existingResult && isChoiceQ && submittedAnswer !== undefined ? submittedAnswer : "");
-    setMulti(existingResult && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
+    setChoice(seeded && isChoiceQ && submittedAnswer !== undefined ? submittedAnswer : "");
+    setMulti(seeded && isMultiQ && Array.isArray(submittedAnswer) ? submittedAnswer : []);
     // Counted from the passage's own ____ markers. It used to be counted from localBlankAnswers,
     // which is derived from the answer key and so is empty now that the key stays on the server.
     const blankCount = (question?.passage?.match(/____/g) || []).length;
     setBlankValues(Array.from({ length: blankCount }, (_, index) =>
       Array.isArray(submittedAnswer) ? submittedAnswer[index] || "" : ""));
-    setText(existingResult && !isChoiceQ && !isMultiQ ? (existingResult.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
+    setText(seeded && !isChoiceQ && !isMultiQ ? (existingResult?.transcript || (typeof submittedAnswer === "string" ? submittedAnswer : "")) : "");
     setResult(existingResult || null);
   }, [question?._id]);
 
@@ -754,7 +787,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
     const f = new FormData();
     f.append("section", "listening");
     f.append("type", question.type);
-    f.append("answer", JSON.stringify(isTypedBlanks ? blankValues : isChoice ? choice : isMulti ? multi : text));
+    f.append("answer", JSON.stringify(currentAnswer()));
     if (isFreeText) f.append("transcript", text);
     if (persisted) f.append("questionId", question._id);
     else if (!testSessionId) f.append("localQuestionId", question._id);
@@ -763,7 +796,19 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
       const d = await api.submit(f);
       setResult(d.submission);
       onAnswered?.(d.submission);
+      // A mock shows nothing else on submit — no score, no verdict — so without this the only
+      // signal is the button quietly disappearing.
+      if (testSessionId) toast.success("Question submitted.");
     } catch (e) { toast.error(e.message); } finally { setBusy(false); }
+  }
+
+  function currentAnswer() {
+    return isTypedBlanks ? blankValues : isChoice ? choice : isMulti ? multi : text;
+  }
+
+  function saveDraft() {
+    onSaveDraft?.({ answer: currentAnswer() });
+    toast.success("Answer saved. You can change it until you submit.");
   }
 
   async function retry() {
@@ -831,7 +876,7 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
         </label>)}</div>
       : isHighlight
       ? (Array.isArray(question.passageSegments)
-          ? <HighlightWordsPassage segments={question.passageSegments} selected={multi} toggle={toggleMulti} disabled={!!result} showAnswer={showAnswer} corrections={highlightCorrections} answerIndexes={highlightAnswerIndexes} />
+          ? <HighlightWordsPassage segments={question.passageSegments} selected={multi} toggle={toggleMulti} disabled={!!result} showAnswer={showAnswer} corrections={highlightCorrections} answerIndexes={highlightAnswerIndexes} revealCorrectness={revealCorrectness} />
           : <HighlightWords options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />)
       : isMulti
       ? <MultiChoiceOptions options={question.options} selected={multi} toggle={toggleMulti} disabled={!!result} />
@@ -845,15 +890,17 @@ export function ListeningTask({ question, testSessionId, onAnswered, existingRes
             </p>
           )}
         </div>}
-    {result && (question.evaluationType === "objective"
+    {/* Withheld during a mock — see the matching note in ReadingTask. */}
+    {result && !testSessionId && (question.evaluationType === "objective"
       ? <ObjectiveResult result={result} />
       : <Result result={result} onRetry={retry} retrying={retrying} />)}
     <div className="task-actions">
       {!testSessionId && <Button variant="secondary" icon={<RotateCcw/>} onClick={resetQuestion} disabled={busy || retrying}>Re-do</Button>}
+      {!result && onSaveDraft && <Button variant="secondary" icon={<Save/>} onClick={saveDraft} disabled={!canSubmit || busy}>Save</Button>}
       {!result && <Button variant="primary" onClick={submit}
         loading={busy} loadingLabel="Evaluating..." disabled={!canSubmit}>Submit</Button>}
     </div>
-    {answerText && <>
+    {answerText && revealCorrectness && <>
       <Button variant="tertiary" size="sm" className="answer-toggle"
         icon={showAnswer ? <EyeOff/> : <Eye/>} onClick={() => setShowAnswer(value => !value)}>
         {showAnswer ? "Hide Answer" : "Answer"}

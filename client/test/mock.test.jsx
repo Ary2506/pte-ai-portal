@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -14,7 +14,7 @@ vi.mock("../src/api.js", () => ({
       questions: { types: vi.fn(), stats: vi.fn(), list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), setStatus: vi.fn(), remove: vi.fn() }
     },
     dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), history: vi.fn(), submit: vi.fn(), retryEvaluation: vi.fn(),
-    testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn() }
+    testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn(), active: vi.fn() }
   }
 }));
 
@@ -47,21 +47,370 @@ function objectiveResult(overrides = {}) {
   return { _id: "sub1", score: 1, maxScore: 1, evaluationType: "objective", feedback: { correct: true, feedback: [] }, ...overrides };
 }
 
+// A submitted mock answer shows nothing of its own — no score, no verdict, no banner. What is
+// observable is that the question has closed: its Submit button is gone and its inputs are
+// disabled. Matches "Submit", "Submit Answer" and "Submit for AI Feedback" but never the test's
+// own "Submit Test"/"Finish Test" control.
+const submitButton = () => screen.queryByRole("button", { name: /^Submit( Answer| for AI Feedback)?$/ });
+
 async function answerCurrentQuestion() {
   const optionA = (await screen.findAllByText("A"))[0];
   fireEvent.click(optionA);
   fireEvent.click(screen.getByText("Submit Answer"));
-  await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+  await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // No attempt open unless a test says otherwise, so the start screen is reached as before.
+  api.testSessions.active.mockResolvedValue({ testSession: null });
   api.dashboard.mockResolvedValue({ stats: { overall: 0, practiceCount: 0, streak: 0, targetScore: 79 }, bySection: [], recent: [] });
 });
 
 afterEach(() => {
   vi.useRealTimers();
   localStorage.clear();
+});
+
+describe("Mock test — Save and Submit are different commitments", () => {
+  // A mock now separates the two. Save keeps a draft the student can still change; Submit is
+  // final and locks the question. Only submitted answers are ever scored, so a draft left
+  // unsubmitted counts for nothing — which is what the finish confirmation has to say.
+  it("lets a saved answer be changed, and sends nothing to the server", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    // Saving is client-side only: nothing is scored until the student submits.
+    expect(api.submit).not.toHaveBeenCalled();
+
+    // Still editable, and the choice survives a trip to another question and back.
+    fireEvent.click(screen.getByText("Next"));
+    await screen.findByText("Reading Q2");
+    fireEvent.click(screen.getByText("Previous"));
+    await screen.findByText("Reading Q1");
+
+    const optionA = (await screen.findAllByText("A"))[0].closest("label");
+    expect(optionA.querySelector("input")).toBeChecked();
+    expect(optionA.querySelector("input")).not.toBeDisabled();
+
+    // Change it, then submit — the submitted value is the changed one.
+    fireEvent.click((await screen.findAllByText("B"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Submit Answer" }));
+    await waitFor(() => expect(api.submit).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(api.submit.mock.calls[0][0].get("answer"))).toBe(1);
+  });
+
+  it("locks the question on submit and withholds the verdict", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    api.submit.mockResolvedValue({ submission: objectiveResult({ answer: 0 }) });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Submit Answer" }));
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
+
+    // No score, no right/wrong, no correct answer — all of that waits for the results screen.
+    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    // And no way back: neither Save nor Submit remains.
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Submit Answer" })).not.toBeInTheDocument();
+    expect((await screen.findAllByText("A"))[0].closest("label").querySelector("input")).toBeDisabled();
+  });
+
+  it("warns that saved answers score nothing before finishing", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(screen.getByRole("button", { name: /Finish Test|Submit Test/i }));
+
+    expect(await screen.findByText(/saved answers that are not submitted/i)).toBeInTheDocument();
+    expect(screen.getByText(/saved answers score nothing/i)).toBeInTheDocument();
+  });
+
+  it("offers no Save for speaking — a recording is one take", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts-speaking", status: "IN_PROGRESS", totalQuestions: 1, expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString() },
+      questions: [{ _id: "sp1", section: "speaking", type: "respond-to-situation",
+        title: "Respond to a Situation", prompt: "Your friends want Italian food.", evaluationType: "subjective" }]
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+
+    await screen.findByText("Your friends want Italian food.");
+    expect(screen.queryByRole("button", { name: "Save" })).not.toBeInTheDocument();
+  });
+});
+
+describe("Mock test — drafts survive a refresh", () => {
+  it("restores saved answers from storage and clears them when the test finishes", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    const { unmount } = renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    // Written under a key scoped to this attempt, so a later test never inherits these answers.
+    await waitFor(() => expect(localStorage.getItem("pte_mock_drafts_ts1")).toBeTruthy());
+
+    // Simulate a refresh: same session comes back, the draft is still there.
+    unmount();
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+    await waitFor(() => {
+      const option = screen.getAllByText("A")[0].closest("label");
+      expect(option.querySelector("input")).toBeChecked();
+    });
+
+    // Finishing ends the attempt, so the drafts have nothing left to restore.
+    api.testSessions.complete.mockResolvedValue({
+      testSession: { _id: "ts1", status: "COMPLETED", totalScore: 0, totalMaxScore: 4, sectionScores: [] },
+      results: []
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Finish Test" }));
+    const confirms = await screen.findAllByRole("button", { name: "Finish Test" });
+    fireEvent.click(confirms[confirms.length - 1]);
+    await waitFor(() => expect(localStorage.getItem("pte_mock_drafts_ts1")).toBeNull());
+  });
+});
+
+describe("Mock test — the report reports what actually happened", () => {
+  function completedWith(results, totals) {
+    api.testSessions.complete.mockResolvedValue({
+      testSession: { _id: "ts1", status: "COMPLETED", sectionScores: [], ...totals },
+      results
+    });
+  }
+
+  async function finishTest() {
+    fireEvent.click(screen.getByRole("button", { name: "Finish Test" }));
+    // The confirmation adds a second "Finish Test"; the dialog's is the last one rendered.
+    const confirms = await screen.findAllByRole("button", { name: "Finish Test" });
+    fireEvent.click(confirms[confirms.length - 1]);
+    await screen.findByText("Practice Score");
+  }
+
+  it("counts attempted and not attempted from the rows the server returns", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    completedWith(
+      [{ _id: "r1", section: "reading", type: "mcq-single", score: 1, maxScore: 1, evaluationStatus: "COMPLETED" },
+       { _id: "r2", section: "reading", type: "mcq-single", score: 0, maxScore: 1, evaluationStatus: "COMPLETED" }],
+      { totalScore: 1, totalMaxScore: 2 }
+    );
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+    await finishTest();
+
+    // Four questions in the attempt, two rows came back.
+    const attempted = screen.getByText("Attempted").closest(".metric");
+    const notAttempted = screen.getByText("Not attempted").closest(".metric");
+    expect(attempted).toHaveTextContent("2");
+    expect(attempted).toHaveTextContent("of 4 questions");
+    expect(notAttempted).toHaveTextContent("2");
+  });
+
+  it("pages the per-question table instead of printing all eighty rows", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    // Twelve answers: enough to need a second page at ten per page.
+    completedWith(
+      Array.from({ length: 12 }, (_, i) => ({
+        _id: `r${i}`, section: "reading", type: "mcq-single", mark: 1,
+        evaluationStatus: "COMPLETED", question: { title: `Answer ${i + 1}` }
+      })),
+      { totalScore: 12, totalMaxScore: 12 }
+    );
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+    await finishTest();
+
+    // Page one holds the first ten, and the eleventh is not rendered at all.
+    expect(await screen.findByText("Answer 1")).toBeInTheDocument();
+    expect(screen.getByText("Answer 10")).toBeInTheDocument();
+    expect(screen.queryByText("Answer 11")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+
+    expect(await screen.findByText("Answer 11")).toBeInTheDocument();
+    expect(screen.getByText("Answer 12")).toBeInTheDocument();
+    expect(screen.queryByText("Answer 1")).not.toBeInTheDocument();
+  });
+
+  it("shows no pager when every answer fits on one page", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    completedWith(
+      [{ _id: "r1", section: "reading", type: "mcq-single", mark: 1, evaluationStatus: "COMPLETED", question: { title: "Only Answer" } }],
+      { totalScore: 1, totalMaxScore: 4 }
+    );
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+    await finishTest();
+
+    await screen.findByText("Only Answer");
+    expect(screen.queryByRole("button", { name: /next/i })).not.toBeInTheDocument();
+  });
+
+  it("reports marks earned out of the questions issued, never a raw total", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    // One mark per question: three earned out of the four the attempt issued.
+    completedWith(
+      [{ _id: "r1", section: "reading", type: "mcq-single", mark: 1, evaluationStatus: "COMPLETED" },
+       { _id: "r2", section: "reading", type: "mcq-single", mark: 1, evaluationStatus: "COMPLETED" },
+       { _id: "r3", section: "writing", type: "essay", mark: 0.5, evaluationType: "subjective", evaluationStatus: "COMPLETED" },
+       { _id: "r4", section: "reading", type: "mcq-single", mark: 0, evaluationStatus: "COMPLETED" }],
+      { totalScore: 2.5, totalMaxScore: 4 }
+    );
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+    await finishTest();
+
+    expect(screen.getByText("2.5")).toBeInTheDocument();
+    expect(screen.getByText("/4")).toBeInTheDocument();
+    // The raw total was an internal sum of unlike maxima and meant nothing to a student.
+    expect(screen.queryByText("Raw score")).not.toBeInTheDocument();
+    // Strongest section is gone: a mark count per section says it better.
+    expect(screen.queryByText("Strongest")).not.toBeInTheDocument();
+
+    // Scoped to the summary: the per-question table below uses the same words as row labels.
+    const summary = within(document.querySelector(".exam-report__summary"));
+    expect(summary.getByText("Correct").closest(".metric")).toHaveTextContent("2");
+    expect(summary.getByText("Partly correct").closest(".metric")).toHaveTextContent("1");
+    expect(summary.getByText("Incorrect").closest(".metric")).toHaveTextContent("1");
+  });
+});
+
+describe("Mock test — the paper is never marked mid-exam", () => {
+  // Reading and listening questions that colour blanks green/red on submit would, in a mock, tell
+  // the student their result question by question. The marking still happens — it is just
+  // withheld until the results screen. Standalone practice is untouched and marks immediately;
+  // test/fibDropdown.test.jsx and the practice suites pin that side.
+  const HIGHLIGHT = [{
+    _id: "hl1", section: "listening", type: "highlight-incorrect-words",
+    title: "Clock", prompt: "Listen and answer.",
+    passageSegments: [
+      { type: "word", index: 0, text: "time" }, { type: "text", value: " " },
+      { type: "word", index: 1, text: "success" }, { type: "text", value: " " },
+      { type: "word", index: 2, text: "imagine" }
+    ],
+    evaluationType: "objective"
+  }];
+
+  it("keeps a chosen word neutral after submitting, never green or red", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts1", status: "IN_PROGRESS", totalQuestions: 1, expiresAt: new Date(Date.now() + 1200000).toISOString() },
+      questions: HIGHLIGHT
+    });
+    api.submit.mockResolvedValue({
+      submission: { _id: "s1", answer: [1], score: 0, maxScore: 1, evaluationType: "objective",
+        evaluationStatus: "COMPLETED", feedback: { correct: false, correctIndexes: [0] } }
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Clock");
+
+    fireEvent.click(screen.getByRole("button", { name: "success" }));
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
+
+    // The student's own pick keeps the neutral accent it had before submitting.
+    const picked = screen.getByRole("button", { name: "success" });
+    expect(picked.className).toContain("picked");
+    expect(picked.className).not.toContain("wrong-pick");
+    expect(picked.className).not.toContain("correct-caught");
+
+    // And the word they missed is not quietly revealed as the answer.
+    expect(screen.getByRole("button", { name: "time" }).className).not.toContain("correct-caught");
+    expect(screen.queryByText(/Answer:/)).not.toBeInTheDocument();
+  });
+
+  it("offers no Answer reveal during a mock", async () => {
+    api.testSessions.start.mockResolvedValue({
+      testSession: { _id: "ts1", status: "IN_PROGRESS", totalQuestions: 1, expiresAt: new Date(Date.now() + 1200000).toISOString() },
+      questions: HIGHLIGHT
+    });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Clock");
+
+    expect(screen.queryByRole("button", { name: /^(Answer|Hide Answer)$/ })).not.toBeInTheDocument();
+  });
+
+  it("confirms a submission with a toast, since nothing else changes on screen", async () => {
+    api.testSessions.start.mockResolvedValue(startedSession());
+    api.submit.mockResolvedValue({ submission: objectiveResult({ answer: 0 }) });
+    renderAt("/mock", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Mock Test"));
+    await screen.findByText("Reading Q1");
+
+    fireEvent.click((await screen.findAllByText("A"))[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Submit Answer" }));
+
+    expect(await screen.findByText("Question submitted.")).toBeInTheDocument();
+  });
+});
+
+describe("Mock test — a refresh resumes the attempt", () => {
+  // A mock runs for two hours. A refresh, a closed tab or a browser that reloads itself used to
+  // drop the student on the start screen while their attempt stayed open on the server with the
+  // clock running — and starting again was the only visible option.
+  const IN_PROGRESS = {
+    testSession: { _id: "ts1", status: "IN_PROGRESS", totalQuestions: 4,
+      expiresAt: new Date(Date.now() + 20 * 60 * 1000).toISOString() },
+    questions: mockQuestions(),
+    submissions: [{ _id: "s1", question: { _id: "q0" }, section: "reading", type: "mcq-single",
+      answer: 1, score: 1, maxScore: 1, evaluationType: "objective", evaluationStatus: "COMPLETED" }]
+  };
+
+  it("reopens the test itself, not the start screen", async () => {
+    api.testSessions.active.mockResolvedValue(IN_PROGRESS);
+    renderAt("/mock", studentAuthUser());
+
+    // Straight back into the attempt; no invitation to abandon it.
+    expect(await screen.findByText("Reading Q1")).toBeInTheDocument();
+    expect(screen.queryByText("Start Mock Test")).not.toBeInTheDocument();
+    expect(api.testSessions.start).not.toHaveBeenCalled();
+  });
+
+  it("brings back answers already submitted, still locked", async () => {
+    api.testSessions.active.mockResolvedValue(IN_PROGRESS);
+    renderAt("/mock", studentAuthUser());
+    await screen.findByText("Reading Q1");
+
+    // Question 1 was submitted before the refresh: its answer is shown and cannot be changed.
+    const chosen = (await screen.findAllByText("B"))[0].closest("label");
+    await waitFor(() => expect(chosen.querySelector("input")).toBeChecked());
+    expect(chosen.querySelector("input")).toBeDisabled();
+    expect(submitButton()).not.toBeInTheDocument();
+  });
+
+  it("falls back to the start screen when nothing is open", async () => {
+    api.testSessions.active.mockResolvedValue({ testSession: null });
+    renderAt("/mock", studentAuthUser());
+    expect(await screen.findByText("Start Mock Test")).toBeInTheDocument();
+  });
+
+  it("still offers a fresh attempt if the lookup fails", async () => {
+    // A failed check must never block the student from starting a test.
+    api.testSessions.active.mockRejectedValue(new Error("network"));
+    renderAt("/mock", studentAuthUser());
+    expect(await screen.findByText("Start Mock Test")).toBeInTheDocument();
+  });
 });
 
 describe("Mock test — revisiting an answered question", () => {
@@ -89,7 +438,7 @@ describe("Mock test — revisiting an answered question", () => {
     await screen.findByText("Reading Q1");
 
     // The result is still there, the chosen option is still shown, and nothing was sent again.
-    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
     const chosen = (await screen.findAllByText("A"))[0].closest("label");
     expect(chosen.querySelector("input")).toBeChecked();
     expect(chosen.querySelector("input")).toBeDisabled();
@@ -110,7 +459,7 @@ describe("Mock test — revisiting an answered question", () => {
     const option = (await screen.findAllByText("A"))[0].closest("label");
     expect(option.querySelector("input")).not.toBeChecked();
     expect(option.querySelector("input")).not.toBeDisabled();
-    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    expect(submitButton()).toBeInTheDocument();
   });
 });
 
@@ -555,11 +904,14 @@ describe("Mock test — a question never inherits the previous one's answer", ()
     const textarea = await screen.findByPlaceholderText("Type your answer here...");
     fireEvent.change(textarea, { target: { value: "My summary of the first passage." } });
     fireEvent.click(screen.getByRole("button", { name: "Submit for AI Feedback" }));
-    expect(await screen.findByText("Question 1's writing feedback.")).toBeInTheDocument();
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
+    // A mock withholds the verdict entirely — the AI's words belong on the results screen.
+    expect(screen.queryByText("Question 1's writing feedback.")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await screen.findByText("Summarize passage 2.");
     expect(screen.getByPlaceholderText("Type your answer here...").value).toBe("");
+    expect(submitButton()).toBeInTheDocument();
     expect(screen.queryByText("Question 1's writing feedback.")).not.toBeInTheDocument();
     expect(screen.queryByText("My summary of the first passage.")).not.toBeInTheDocument();
   });
@@ -574,11 +926,11 @@ describe("Mock test — a question never inherits the previous one's answer", ()
     await screen.findByText("Choose for passage 1.");
     fireEvent.click((await screen.findAllByText("A"))[0]);
     fireEvent.click(screen.getByRole("button", { name: "Submit Answer" }));
-    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await screen.findByText("Choose for passage 2.");
-    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    expect(submitButton()).toBeInTheDocument();
     for (const radio of document.querySelectorAll('input[type="radio"]')) {
       expect(radio.checked).toBe(false);
     }
@@ -595,11 +947,11 @@ describe("Mock test — a question never inherits the previous one's answer", ()
     await screen.findByText("Listen and choose 1.");
     fireEvent.click((await screen.findAllByText("A"))[0]);
     fireEvent.click(screen.getByRole("button", { name: "Submit" }));
-    await waitFor(() => expect(screen.getByText(/Correct!|Not quite\./)).toBeInTheDocument());
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await screen.findByText("Listen and choose 2.");
-    expect(screen.queryByText(/Correct!|Not quite\./)).not.toBeInTheDocument();
+    expect(submitButton()).toBeInTheDocument();
     for (const radio of document.querySelectorAll('input[type="radio"]')) {
       expect(radio.checked).toBe(false);
     }
@@ -774,11 +1126,13 @@ describe("Mock test — speaking question identity (result must not leak between
     fireEvent.click(screen.getByText("Stop Recording"));
     await waitFor(() => expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled());
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
-    expect(await screen.findByText("Question 1's feedback.")).toBeInTheDocument();
+    await waitFor(() => expect(submitButton()).not.toBeInTheDocument());
+    expect(screen.queryByText("Question 1's feedback.")).not.toBeInTheDocument();
 
     // Move to question 2 — its own prompt/audio must show, and question 1's result must be gone.
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Situation two: you feel too ill for dinner plans.")).toBeInTheDocument();
+    expect(submitButton()).toBeInTheDocument();
     expect(screen.queryByText("Question 1's feedback.")).not.toBeInTheDocument();
     expect(screen.getByText("Record your answer")).toBeInTheDocument();
     expect(screen.getByText("Start Recording")).toBeInTheDocument();

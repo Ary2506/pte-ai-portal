@@ -157,6 +157,9 @@ export const api = {
   retryEvaluation: (submissionId) => request(`/submissions/${submissionId}/retry-evaluation`, { method: "POST" }),
   testSessions: {
     start: () => request("/test-sessions", { method: "POST" }),
+    // The attempt still open on the server, if there is one, with its questions and the answers
+    // already submitted — so a refresh resumes rather than starting over.
+    active: () => request("/test-sessions/active"),
     get: (id) => request(`/test-sessions/${id}`),
     complete: (id) => request(`/test-sessions/${id}/complete`, { method: "POST" }),
     list: () => request("/test-sessions"),

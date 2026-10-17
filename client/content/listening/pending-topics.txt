@@ -69,3 +69,15 @@ and for submited audios first compressed then store
 8. use landing page PTE Core AI logo in whole website
 9. add pagination in my results -> Mock test attempts and add completed, best, latest,average analytics. remove test mock test -> Previous attempts
 10. error toaster
+
+
+
+
+1) implement this persisting the current question for PTE practice all section all questions also without breaking anything
+2) mock test scoring system: we will count 1 marks for each questions. it should be like this
+  i) for AI Evalation questions: if AI scores less than 40 means 0, if it is between 40 <= AI Score < 60 means 0.5, if it is 60 or more than 60  to 100 means mark it is 1 marks
+  ii) normal question non AI evalaution based question: if user submited answer matches with actual correct answer than 1 marks otherwise 0 marks
+show overall marks out of 80 bcz total 80 question, total correct questions, total incorrect questions, total attempted and total not attempted questions and remove strongest. and section wise marks out of 20 for each section this part is already there in UI just have to upafet the scoring logic as I told you 
+3) show toaster when user saves the questions
+4) increase the gap between "submitted" and purple box of saved
+implement this all without breaking exsiting feartures

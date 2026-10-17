@@ -14,6 +14,7 @@ import { QuestionListView } from "./QuestionListView.jsx";
 import ScrollTabs from "../components/ScrollTabs.jsx";
 import { Button, NavButton } from "../components/Button.jsx";
 import { List, RotateCcw } from "lucide-react";
+import { safeLocal } from "../safeStorage.js";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { applyStructuredContent } from "./listeningData/shared.js";
 
@@ -114,9 +115,18 @@ function isBetterAttempt(candidate, current) {
   return next > existing;
 }
 
+/** Where this student was in one task's question list. One key per section+task. */
+function positionKey(section, slug) {
+  return `pte_practice_pos_${section}_${slug}`;
+}
+
 function PracticeTask({ section, label, slug, taskComponents }) {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(null);
+  // The stored position must be READ before it can be written back. On mount `idx` is null, and
+  // without this the persist effect below would clear the key on first render — before load()
+  // had a chance to read it — so the position never survived anything.
+  const [positionRestored, setPositionRestored] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [progress, setProgress] = useState(new Map());
@@ -160,13 +170,34 @@ function PracticeTask({ section, label, slug, taskComponents }) {
         }
         setQuestions(loadedQuestions);
         setProgress(map);
-        setIdx(loadedQuestions.length === 1 ? 0 : null);
+        // Where the student was last time, so a refresh or a trip to another page returns them
+        // to the question they were on rather than the top of the list. Scoped per section+task
+        // because each has its own list, and bounds-checked because the bank can change under a
+        // stored position — a question can be deactivated between visits.
+        // Read before converting: Number(null) is 0, not NaN, so a missing key would otherwise
+        // read as "question 1" and the list would never be shown.
+        const storedRaw = safeLocal.getItem(positionKey(section, slug));
+        const storedIdx = storedRaw === null || storedRaw === "" ? null : Number(storedRaw);
+        const resumeAt = Number.isInteger(storedIdx) && storedIdx >= 0 && storedIdx < loadedQuestions.length
+          ? storedIdx
+          : null;
+        setIdx(resumeAt ?? (loadedQuestions.length === 1 ? 0 : null));
+        setPositionRestored(true);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
 
+  useEffect(() => { setPositionRestored(false); }, [section, slug]);
   useEffect(load, [section, slug]);
+
+  // Written on every move, including back to the list (null), so "where I was" survives a reload.
+  useEffect(() => {
+    if (!positionRestored) return;
+    const key = positionKey(section, slug);
+    if (idx === null || idx === undefined) safeLocal.removeItem(key);
+    else safeLocal.setItem(key, String(idx));
+  }, [section, slug, idx, positionRestored]);
 
   /**
    * Replaces this question's entry in `progress` with the attempt that just finished.

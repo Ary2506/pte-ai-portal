@@ -78,9 +78,13 @@ describe("mock test", () => {
     expect(result.status).toBe("COMPLETED");
     const readingScore = result.sectionScores.find(s => s.section === "reading").score;
     const listeningScore = result.sectionScores.find(s => s.section === "listening").score;
+    // Marks, not raw points: a mock is worth one mark per question, so an exact dictation match
+    // earns 1 like any other correct answer rather than the 3 raw points the task carries.
     expect(readingScore).toBe(1); // correct MCQ answer
-    expect(listeningScore).toBe(3); // exact dictation match
+    expect(listeningScore).toBe(1); // exact dictation match
     expect(result.totalScore).toBeGreaterThan(0);
+    // One mark per question issued, so the maximum is the question count.
+    expect(result.totalMaxScore).toBe(4);
   });
 
   it("produces a different result when the answers are different — no hardcoded score", async () => {

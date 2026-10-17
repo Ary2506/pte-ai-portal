@@ -1,117 +1,83 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
 
+// My Results used to offer a "View Details" action on each mock attempt, opening a modal that
+// listed every question in the attempt in one long scroll. Both were removed: the row's section
+// totals are what a student actually scans this table for, and the modal was an eighty-question
+// scroll that nobody read to the end of.
+//
+// This file now pins the removal, so the button cannot creep back in unnoticed. The equivalent
+// per-question view still exists for admins (AdminTestSessions, via MockResultRow).
 vi.mock("../src/api.js", () => ({
   api: {
     auth: { signin: vi.fn(), me: vi.fn(), logout: vi.fn(() => Promise.resolve()) },
-    admin: {
-      getStats: vi.fn(), getAuditLog: vi.fn(), createUser: vi.fn(), listUsers: vi.fn(), getUser: vi.fn(),
-      updateUser: vi.fn(), setStatus: vi.fn(), setSubscription: vi.fn(), renew: vi.fn(), resetPassword: vi.fn(), revokeSessions: vi.fn(),
-      questions: { types: vi.fn(), stats: vi.fn(), list: vi.fn(), get: vi.fn(), create: vi.fn(), update: vi.fn(), setStatus: vi.fn(), remove: vi.fn() }
-    },
-    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(), questionIndex: vi.fn(() => Promise.resolve({ questions: [] })), history: vi.fn(), submit: vi.fn(), retryEvaluation: vi.fn(),
-    testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn(), details: vi.fn() }
-  }
+    admin: { getStats: vi.fn(), getAuditLog: vi.fn(), listUsers: vi.fn(),
+      testSessions: { list: vi.fn(), get: vi.fn() } },
+    dashboard: vi.fn(), plan: vi.fn(), questions: vi.fn(),
+    questionIndex: vi.fn(() => Promise.resolve({ questions: [] })),
+    history: vi.fn(), submit: vi.fn(), retryEvaluation: vi.fn(),
+    testSessions: { start: vi.fn(), get: vi.fn(), complete: vi.fn(), list: vi.fn(), active: vi.fn(), details: vi.fn() }
+  },
+  forceLogout: vi.fn()
 }));
 
-function studentAuthUser() { return { role: "student", name: "Student", username: "pte001" }; }
-function renderAt(path, user) {
-  localStorage.setItem("pte_token", "test-token");
-  localStorage.setItem("pte_user", JSON.stringify(user));
-  return render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
-}
+const ATTEMPT = {
+  _id: "ts1",
+  submittedAt: new Date("2026-10-17T21:41:00Z").toISOString(),
+  totalScore: 1,
+  totalMaxScore: 80,
+  sectionScores: [
+    { section: "speaking", score: 0, maxScore: 20 },
+    { section: "writing", score: 1, maxScore: 20 },
+    { section: "reading", score: 0, maxScore: 20 },
+    { section: "listening", score: 0, maxScore: 20 }
+  ]
+};
 
-function mockAttempt() {
-  return {
-    _id: "ts1", submittedAt: "2026-08-31T10:00:00.000Z", totalScore: 2, totalMaxScore: 4,
-    sectionScores: [{ section: "reading", score: 1, maxScore: 1 }, { section: "listening", score: 1, maxScore: 3 }]
-  };
-}
-
-function detailResponse() {
-  return {
-    testSession: mockAttempt(),
-    results: [
-      {
-        _id: "sub1", section: "reading", type: "mcq-single",
-        question: { _id: "q1", title: "Reading MCQ", prompt: "Pick the best answer.", options: ["Wrong", "Right"] },
-        answer: 1, score: 1, maxScore: 1, evaluationType: "objective", evaluationStatus: "COMPLETED",
-        feedback: { correct: true, feedback: ["Correct."] }
-      },
-      {
-        _id: "sub2", section: "listening", type: "write-dictation",
-        question: { _id: "q2", title: "Dictation", prompt: "Type what you hear." },
-        answer: "hello there", transcript: "hello there", score: 1, maxScore: 3, evaluationType: "objective",
-        evaluationStatus: "COMPLETED", feedback: { correct: false, feedback: ["1 of 2 words matched."] }
-      },
-      {
-        _id: "sub3", section: "speaking", type: "read-aloud",
-        question: { _id: "q3", title: "Read Aloud", prompt: "Read this aloud." },
-        transcript: "my spoken answer", score: 60, maxScore: 90, evaluationType: "subjective",
-        evaluationStatus: "COMPLETED", scoringMethod: "heuristic",
-        feedback: { strengths: ["Clear structure"], improvements: [], overall: "Solid attempt.", note: "Heuristic note.", scoringMethod: "heuristic" }
-      }
-    ]
-  };
+function renderHistory() {
+  localStorage.setItem("pte_token", "t");
+  localStorage.setItem("pte_user", JSON.stringify({ role: "student", name: "S", username: "pte001" }));
+  return render(<MemoryRouter initialEntries={["/history"]}><App /></MemoryRouter>);
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
-  api.history.mockResolvedValue({ submissions: [] });
-  api.testSessions.list.mockResolvedValue({ testSessions: [mockAttempt()] });
+  api.history.mockResolvedValue({ submissions: [], total: 0 });
+  api.testSessions.list.mockResolvedValue({ testSessions: [ATTEMPT] });
 });
 
-describe("History — mock attempt question-level details", () => {
-  it("shows a View Details action for a completed mock attempt", async () => {
-    renderAt("/history", studentAuthUser());
-    expect(await screen.findByText("View Details")).toBeInTheDocument();
+describe("a mock attempt row carries its own totals", () => {
+  it("shows the overall mark and every section score", async () => {
+    renderHistory();
+
+    // Marks, not raw points: one mark per question, so the attempt is out of 80 and each
+    // section out of the 20 it issued.
+    expect(await screen.findByText("1/80")).toBeInTheDocument();
+    const row = screen.getByText("1/80").closest("tr");
+    expect(row).toHaveTextContent("1/20");
+    expect(row).toHaveTextContent("0/20");
   });
 
-  it("fetches and renders question-level results when opened", async () => {
-    api.testSessions.details.mockResolvedValue(detailResponse());
-    renderAt("/history", studentAuthUser());
-    fireEvent.click(await screen.findByText("View Details"));
+  it("offers no details action, and fetches no per-question rows", async () => {
+    renderHistory();
+    await screen.findByText("1/80");
 
-    await waitFor(() => expect(api.testSessions.details).toHaveBeenCalledWith("ts1"));
-    expect(await screen.findByText("Reading MCQ")).toBeInTheDocument();
-    expect(screen.getByText("Dictation")).toBeInTheDocument();
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
+    expect(screen.queryByText("View Details")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /details/i })).not.toBeInTheDocument();
+    // The removed modal was the only caller; nothing should request that payload now.
+    await waitFor(() => expect(api.testSessions.details).not.toHaveBeenCalled());
   });
 
-  it("renders feedback for both objective and subjective results", async () => {
-    api.testSessions.details.mockResolvedValue(detailResponse());
-    renderAt("/history", studentAuthUser());
-    fireEvent.click(await screen.findByText("View Details"));
+  it("never opens the attempt detail dialog", async () => {
+    renderHistory();
+    await screen.findByText("1/80");
 
-    expect(await screen.findByText("Correct!")).toBeInTheDocument();
-    expect(screen.getByText("Not quite.")).toBeInTheDocument();
-    expect(screen.getByText("Heuristic Practice Evaluation")).toBeInTheDocument();
-    expect(screen.getByText("Clear structure")).toBeInTheDocument();
-  });
-
-  it("shows the student's own answer for a choice-based question", async () => {
-    api.testSessions.details.mockResolvedValue(detailResponse());
-    renderAt("/history", studentAuthUser());
-    fireEvent.click(await screen.findByText("View Details"));
-
-    await screen.findByText("Reading MCQ");
-    expect(screen.getByText("Your answer: Right")).toBeInTheDocument();
-  });
-
-  it("never renders an answer key or explanation field, even though the mocked payload has none to leak", async () => {
-    api.testSessions.details.mockResolvedValue(detailResponse());
-    renderAt("/history", studentAuthUser());
-    fireEvent.click(await screen.findByText("View Details"));
-
-    await screen.findByText("Reading MCQ");
-    // The safe question objects above intentionally carry no answer/explanation field at all —
-    // this asserts the detail view never introduces text that looks like one being surfaced.
-    expect(screen.queryByText(/answer key/i)).not.toBeInTheDocument();
-    expect(screen.queryByText("Wrong")).not.toBeInTheDocument(); // an unchosen raw option label, not a rendered "answer"
+    expect(screen.queryByText("Mock Test Details")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

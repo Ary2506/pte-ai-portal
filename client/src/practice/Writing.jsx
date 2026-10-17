@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, RotateCcw, Sparkles } from "lucide-react";
+import { Eye, EyeOff, RotateCcw, Save, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { useToast } from "../components/toast.jsx";
@@ -27,11 +27,16 @@ export default function Writing({
   testSessionId,
   onAnswered,
   existingResult,
+  savedDraft,
+  onSaveDraft,
 }) {
   const [text, setText] = useState(
     () =>
+      // A submitted answer wins; a saved draft is the fallback. Only a submission sets `result`,
+      // so a draft leaves the question open and editable, which is the whole point of saving.
       existingResult?.transcript ||
-      (typeof existingResult?.answer === "string" ? existingResult.answer : ""),
+      (typeof existingResult?.answer === "string" ? existingResult.answer : "") ||
+      (typeof savedDraft?.answer === "string" ? savedDraft.answer : ""),
   );
   const [result, setResult] = useState(() => existingResult || null);
   const toast = useToast();
@@ -39,6 +44,11 @@ export default function Writing({
   // Reset per question by the key={question._id} remount PracticeTask already does.
   const [showAnswer, setShowAnswer] = useState(false);
   const [retrying, setRetrying] = useState(false);
+
+  function saveDraft() {
+    onSaveDraft?.({ answer: text });
+    toast.success("Answer saved. You can change it until you submit.");
+  }
 
   async function submit() {
     if (!text.trim()) {
@@ -61,6 +71,9 @@ export default function Writing({
       const data = await api.submit(form);
       setResult(data.submission);
       onAnswered?.(data.submission);
+      // A mock shows nothing else on submit — no score, no verdict — so without this the only
+      // signal is the button quietly disappearing.
+      if (testSessionId) toast.success("Question submitted.");
     } catch (submitError) {
       toast.error(submitError.message);
     } finally {
@@ -151,13 +164,20 @@ export default function Writing({
             )}
           </p>
         )}
-        {result && <Result result={result} onRetry={retry} retrying={retrying} />}
+        {/* Withheld during a mock: the verdict belongs on the results screen once the whole
+            test is finished. Standalone practice marks each answer immediately. */}
+        {result && !testSessionId && <Result result={result} onRetry={retry} retrying={retrying} />}
         {/* One row, both buttons. Submit used to float right while Re-do sat in a separate block
             below it, so the two landed on different baselines with the float's margin between
             them. Re-do is standalone-practice only — Mock Test's timed, one-attempt-per-question
             flow is untouched (gated on testSessionId, exactly as Mock always passes it and
             standalone practice never does). */}
         <div className="task-actions">
+          {!result && onSaveDraft && (
+            <Button variant="secondary" icon={<Save/>} onClick={saveDraft} disabled={!text.trim() || busy}>
+              Save
+            </Button>
+          )}
           {!testSessionId && (
             <Button
               variant="secondary"

@@ -624,6 +624,22 @@ html[data-theme="dark"] .skeleton::after{background:linear-gradient(90deg,transp
 .mock-qnav-item.answered{background:var(--success-bg);border-color:#bfe9d3;color:var(--success)}
 .mock-qnav-item.current{border-color:var(--blue);color:var(--blue);box-shadow:var(--focus-ring)}
 .mock-qnav-item.unanswered{color:var(--muted-soft)}
+/* Saved but not submitted. Violet rather than the green of a submitted answer, because the two
+   mean different things to a student's score: green is marked, violet is a draft that scores
+   nothing until it is submitted. Both tokens already flip for dark mode. */
+.mock-qnav-item.saved{background:var(--violet-soft);border-color:var(--violet);color:var(--violet)}
+.mock-qnav__key{display:flex;gap:var(--sp-10);flex-wrap:wrap;margin-bottom:var(--sp-4);padding-bottom:var(--sp-4);border-bottom:1px solid var(--line);font-size:var(--text-sm);color:var(--muted)}
+/* The gap here is the label's own breathing room; the gap above separates the two entries. */
+.mock-qnav__key span{display:inline-flex;align-items:center;gap:var(--sp-2)}
+/* Same square and corner as a question number box, so the legend reads as a smaller copy of the
+   thing it explains rather than a differently-shaped dot. */
+.mock-qnav-swatch{width:20px;height:20px;border-radius:var(--radius-sm);border:1px solid var(--line);flex:none}
+.mock-qnav-swatch.is-answered{background:var(--success-bg);border-color:#bfe9d3}
+.mock-qnav-swatch.is-saved{background:var(--violet-soft);border-color:var(--violet)}
+/* Shown in a mock in place of the score, which is withheld until the test is finished. */
+.mock-confirm{max-width:560px;padding:var(--sp-8)}
+.mock-confirm h3{font-size:var(--text-2xl);line-height:1.25}
+.mock-confirm p{font-size:var(--text-base);line-height:1.6}
 .mock-terminal{max-width:480px}
 .mock-progress-track{height:6px;border-radius:var(--radius-full);background:var(--bg-soft);overflow:hidden;margin-bottom:18px}
 .mock-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:var(--radius-full);transition:width .25s ease}
@@ -919,7 +935,7 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .highlight-words{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 14px;line-height:2.4;font-size:var(--text-md);margin:17px 0}
 .highlight-word{border:1px solid transparent;background:none;padding:3px 5px;border-radius:var(--radius-sm);font:inherit;color:var(--ink-soft);margin:0 1px}
 .highlight-word:hover:not(:disabled){background:var(--blue-soft);border-color:var(--blue-softer)}
-.highlight-word.selected{background:var(--danger-bg);border-color:#f3c9c9;color:var(--danger);font-weight:700}
+.highlight-word.selected{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
 .highlight-word:disabled{cursor:default}
 /* Full-passage variant — candidate words sit inline in the real sentence text, so they read as
    part of the passage (not a muted button) until selected, revealed, or scored. Text selection is
@@ -934,7 +950,8 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 .highlight-words-passage .highlight-word{color:inherit;padding:1px 2px;margin:0}
 /* Picked, not yet graded — neutral accent color (never red/green pre-submit, since the student
    doesn't know yet whether the guess is right). */
-.highlight-words-passage .highlight-word.picked{background:var(--blue-soft);border-color:var(--blue-softer);color:var(--blue2);font-weight:700}
+.highlight-word.picked,
+.highlight-words-passage .highlight-word.picked{background:var(--violet-soft);border-color:var(--violet);color:var(--violet);font-weight:700}
 .highlight-words-passage .highlight-word.reveal{background:var(--success-bg);border-color:var(--success);color:var(--success);font-weight:700}
 .highlight-words-passage .highlight-word.correct-caught{background:var(--success-bg);border-color:var(--success);color:var(--success);font-weight:700}
 .highlight-words-passage .highlight-word.wrong-pick{background:var(--danger-bg);border-color:#f3c9c9;color:var(--danger);font-weight:700}
