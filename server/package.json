@@ -2,6 +2,9 @@
   "name": "pte-core-ai-server",
   "description": "AI-powered PTE Core preparation, practice, mock tests, scoring, and performance analysis platform.",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
