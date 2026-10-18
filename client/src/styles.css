@@ -1126,7 +1126,14 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
      natural height once flex:1 makes the nav taller than its own content.
      Scoped to this breakpoint deliberately: on a laptop the rail is untouched. */
   .sidebar nav{align-content:start;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
-  .sidebar{transform:translateX(-100%);transition:transform .2s ease}
+  /* svh, not vh and not dvh. inset's top:0/bottom:0 measures the LAYOUT viewport, which on
+     Android Chrome and iOS Safari includes the strip sitting behind the URL bar — so the foot of
+     the rail, Profile and Log out with it, rendered below the glass and only appeared once the
+     bar scrolled away. svh is the SMALLEST viewport, the one with browser chrome showing, so the
+     footer is on screen in both states; dvh would track the bar and resize the rail mid-scroll,
+     and vh is the layout viewport again, which is the bug. A browser too old for svh ignores the
+     line and falls back to the inset height, exactly as today. */
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;height:100svh}
   .sidebar.mobile-open{transform:translateX(0);box-shadow:20px 0 45px rgba(16,24,42,.2)}
   /* The page behind an open drawer holds still. Without this a swipe meant for the menu scrolled
      the dashboard underneath it, which is what made the rail look like it had moved. */
