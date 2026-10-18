@@ -8,6 +8,7 @@ import Voices from "./Voices.jsx";
 import "./landing.css";
 import SiteFooter from "../components/Footer.jsx";
 import { safeSession } from "../safeStorage.js";
+import { warmApi } from "../warmApi.js";
 
 // The signed-out surface. App renders this for every path while there is no user, which is why it
 // carries its own navigation and its own theme toggle rather than relying on the app shell.
@@ -370,6 +371,11 @@ export default function Landing({ save, theme, toggleTheme }) {
   });
   const [signInOpen, setSignInOpen] = useState(() => !!notice);
   const openSignIn = () => setSignInOpen(true);
+
+  // Start waking the API now, while the visitor is reading. The host sleeps when idle and takes
+  // about a minute to boot, and without this that whole wait lands on them the moment they press
+  // Sign in. Fire-and-forget: nothing here renders from it or waits on it.
+  useEffect(warmApi, []);
 
   return <div className="ld-page">
     <TopNav theme={theme} onToggleTheme={toggleTheme} onSignIn={openSignIn}/>
