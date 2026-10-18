@@ -984,7 +984,7 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
    are shared, because the product uses them outside that form too. */
 .password-field{position:relative}
 .password-field input{padding-right:42px!important}
-.password-toggle{position:absolute;right:4px;top:11px;width:32px;height:32px;border:0;background:none;color:var(--muted-soft);border-radius:var(--radius-sm);display:grid;place-items:center}
+.password-toggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;background:none;color:var(--muted-soft);border-radius:var(--radius-sm);display:grid;place-items:center}
 .password-toggle:hover{color:var(--blue);background:var(--bg-soft)}
 .btn.mobile-menu,.btn.mobile-close{display:none}
 
@@ -1929,3 +1929,43 @@ html[data-theme="dark"] button:not(.btn):active{color:inherit}
 .ld-modal__submit{margin-top:8px}
 .pager__position{display:inline-flex;align-items:baseline;gap:4px;font-size:var(--text-sm);color:var(--muted)}
 .pager__position b{color:var(--ink);font-weight:700}
+
+/* ==========================================================================
+   Touch devices — 16px form controls
+   ========================================================================== */
+/* iOS Safari zooms the entire page whenever a focused input, textarea or select
+   computes to less than 16px, and leaves the viewport scaled and offset
+   afterwards. It hit the two worst places: the sign-in field a visitor taps
+   first, and the essay box a student taps to write three hundred words against
+   a clock, where the page jumped and then had to be pinched back out.
+
+   Scoped to `pointer:coarse`, not a width breakpoint, so a mouse-driven browser
+   is untouched at every window size — the sub-16px type scale on desktop is a
+   deliberate design choice and keeps rendering exactly as before. Narrowing a
+   desktop window therefore changes nothing here either.
+
+   Each selector repeats its original verbatim so specificity is equal and these
+   win only by sitting later in the file: no !important, and nothing but
+   font-size is restated, so padding, height and weight all still come from the
+   original rule.
+
+   Containers were checked for clipping before changing any of these: .search
+   (38px), .question-list-search (36px) and .library-search (38px) all centre a
+   16px line comfortably, .filter-bar select has 40px, .listening-fill-input's
+   blank is 30px with 2px borders and box-sizing:border-box, and
+   .target-editor__field's 92px box still fits a three-digit score in mono.
+
+   Deliberately excluded: .question-form input[type=file], whose font-size sets
+   the size of the "Choose file" button rather than any text the student types —
+   a file picker takes no keyboard focus, so it never triggers the zoom. */
+@media (pointer:coarse){
+  .search input,
+  .library-search input,
+  .question-list-search input,
+  .question-list-category-select select,
+  .admin-create-form input,.admin-create-form select,
+  .filter-bar select,
+  .listening-fill-input,
+  .target-editor__field input,
+  .answer-area{font-size:16px}
+}

@@ -481,8 +481,17 @@ html[data-theme="dark"] .ld-modal__card{box-shadow:0 1px 0 rgba(255,255,255,.05)
 html[data-theme="dark"] .ld-modal__card input{background:#11141C}
 .ld-modal__card input::placeholder{color:var(--ld-ink-3)}
 .ld-modal__card input:focus{border-color:var(--ld-accent);box-shadow:0 0 0 3px var(--ld-glow)}
-.ld-modal__card .password-field{position:relative}
-.ld-modal__card .password-toggle{position:absolute;right:6px;top:13px;width:32px;height:32px;color:var(--ld-ink-3);background:none;border:0;border-radius:7px;display:grid;place-items:center}
+/* The field owns the 7px gap under the label, and the input inside it owns none.
+   Previously the input carried margin-top:7px, which collapsed straight out of
+   .password-field (no padding, no border, and position:relative does not open a
+   new block formatting context), so the wrapper's box began at the input's top
+   edge while the toggle's hardcoded top was measured as though it began 7px
+   higher. Holding the margin here instead makes the wrapper exactly as tall as
+   the input, so centring below is exact and stays exact if the input's padding
+   or font-size ever changes. */
+.ld-modal__card .password-field{position:relative;margin-top:7px}
+.ld-modal__card .password-field input{margin-top:0}
+.ld-modal__card .password-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;color:var(--ld-ink-3);background:none;border:0;border-radius:7px;display:grid;place-items:center}
 .ld-modal__card .password-toggle:hover{color:var(--ld-ink);background:var(--ld-canvas-2)}
 
 /* Tighter than the old full-page form: still a fixed reservation so an error cannot move the
@@ -597,4 +606,11 @@ html[data-theme="dark"] .ld-modal__card .auth-message-slot .alert.error{
 
 @media(max-width:1040px){
   .ld-mock{grid-template-columns:1fr;gap:36px}
+}
+
+/* The sign-in and sign-up fields — the first thing a phone visitor taps. See the
+   touch-device note at the end of styles.css for why 16px and why pointer:coarse
+   rather than a width breakpoint. */
+@media (pointer:coarse){
+  .ld-modal__card input{font-size:16px}
 }
