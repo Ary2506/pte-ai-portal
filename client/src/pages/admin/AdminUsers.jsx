@@ -44,13 +44,13 @@ const STUDENT_LOGIN_URL = "https://pte-ai-portal.vercel.app";
 
 // The message an admin copies and sends to a newly created student.
 function buildAccountCreatedMessage({ username, password }) {
-  return `MyPTEScore – Your Path to PTE Success
+  return `PTE CORE AI – Your Path to PTE Success
 
 Comprehensive PTE exam preparation with AI-powered scoring at ${STUDENT_LOGIN_URL}
 
 Hello! 👋
 
-Your MyPTEScore account is ready.
+Your PTE CORE AI account is ready.
 
 🔐 Login Details
 
@@ -74,11 +74,11 @@ Please log in and start practicing. Feel free to reach out if you need any help!
 
 function buildPasswordResetMessage({ username, password }) {
   const loginUrl = window.location.origin;
-  return `MyPTEScore – Your Path to PTE Success
+  return `PTE CORE AI – Your Path to PTE Success
 
 Hello! 👋
 
-Your MyPTEScore password has been reset.
+Your PTE CORE AI password has been reset.
 
 🔐 Updated Login Details
 

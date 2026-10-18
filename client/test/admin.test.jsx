@@ -204,5 +204,9 @@ describe("user detail actions", () => {
     expect(await screen.findByRole("heading", { name: "Password reset" })).toBeInTheDocument();
     const messageBox = document.querySelector("textarea[readonly]");
     expect(messageBox.value).toContain("Your new password: newpass1");
+    // Branding: PTE CORE AI, never the retired MyPTEScore name or its domain.
+    expect(messageBox.value).toMatch(/^PTE CORE AI – Your Path to PTE Success\n/);
+    expect(messageBox.value).toContain("Your PTE CORE AI password has been reset.");
+    expect(messageBox.value).not.toMatch(/my\s*pte\s*score/i);
   });
 });

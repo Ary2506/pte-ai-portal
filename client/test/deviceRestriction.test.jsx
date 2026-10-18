@@ -80,7 +80,11 @@ describe("Admin — account-created message", () => {
     expect(messageBox.value).toContain("Your account can only be signed in on one device or browser at a time.");
     expect(messageBox.value).toContain("Signing in somewhere new will sign you out of other sessions");
     expect(messageBox.value).not.toContain("device restricted");
-    expect(messageBox.value).toContain("MyPTEScore");
+    // Branding: the project is PTE CORE AI. The retired MyPTEScore name and its myptescore.com
+    // domain (an unrelated site) must never appear in anything a student is sent.
+    expect(messageBox.value).toMatch(/^PTE CORE AI – Your Path to PTE Success\n/);
+    expect(messageBox.value).toContain("Your PTE CORE AI account is ready.");
+    expect(messageBox.value).not.toMatch(/my\s*pte\s*score/i);
     // The login link is the project's own site, fixed, on its own line so it stays tappable —
     // and the unrelated myptescore.com domain must never appear.
     expect(messageBox.value).toContain("🌐 Login here: https://pte-ai-portal.vercel.app\n");
