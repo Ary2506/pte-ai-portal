@@ -1132,6 +1132,19 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
      Dashboard stretched to match. minmax(0,1fr) gives the track a zero floor, which is what lets
      .perf-table-wrap's overflow-x:auto do its job — the same behaviour My Results already has,
      where the table sits in a plain block rather than a grid. */
+  /* The ring is the one hero element on the page, so it sits centred rather than hard left with
+     dead space beside it. Only the ring moves: the metrics keep their left edge, because a column
+     of figures is read by scanning down a shared edge and centring 90, 86, 15%, 99 and 2 would
+     make them zigzag. .score-ring is flex:none, so align-self cannot stretch it. */
+  .command-hero .score-ring,.intel-hero .score-ring{align-self:center}
+  /* Two explicit columns, so "last in the row" is something CSS can actually know. With auto-fit
+     the count varied with width and :last-child only ever cleared the final cell, which left every
+     right-hand cell drawing a divider against nothing. nth-child(2n) is that right-hand column:
+     no trailing rule, and it carries the 20px gutter instead of :not(:first-child), which was
+     indenting the left column's second and third rows out of line with the first. */
+  .metric-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-strip .metric:not(:first-child){padding-left:0}
+  .metric-strip .metric:nth-child(2n){border-right:0;padding-left:20px}
   .page-stack,.dashboard-split{grid-template-columns:minmax(0,1fr)}
   .sidebar nav{align-content:start;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
   /* svh, not vh and not dvh. inset's top:0/bottom:0 measures the LAYOUT viewport, which on
