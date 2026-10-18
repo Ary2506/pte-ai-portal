@@ -36,14 +36,17 @@ const SUBSCRIPTION_FILTERS = [
   ["", "All subscriptions"], ["ACTIVE","Active"], ["EXPIRING","Expiring soon (7 days)"], ["EXPIRED","Expired"], ["NOT_ACTIVATED","Not activated"]
 ];
 
-// The message an admin copies and sends to a newly created student — reuses window.location.origin
-// (the real address this admin panel is actually running at) rather than hardcoding a domain, so
-// it's correct in every environment without configuration.
+// The address students are told to log in at. Fixed rather than derived from window.location, so
+// the message is right even when an admin creates the account from localhost or a preview deploy.
+// Kept as bare text with nothing after it on the line: WhatsApp and most chat apps only turn a
+// URL into a tappable link when no punctuation is stuck to it.
+const STUDENT_LOGIN_URL = "https://pte-ai-portal.vercel.app";
+
+// The message an admin copies and sends to a newly created student.
 function buildAccountCreatedMessage({ username, password }) {
-  const loginUrl = window.location.origin;
   return `MyPTEScore – Your Path to PTE Success
 
-Comprehensive PTE exam preparation with AI-powered scoring at myptescore.com
+Comprehensive PTE exam preparation with AI-powered scoring at ${STUDENT_LOGIN_URL}
 
 Hello! 👋
 
@@ -54,19 +57,17 @@ Your MyPTEScore account is ready.
 👤 Username: ${username}
 🔑 Password: ${password}
 
-🌐 Login here: ${loginUrl}
+🌐 Login here: ${STUDENT_LOGIN_URL}
 
 ⚠️ IMPORTANT NOTE
 
-Your account can only be signed in one place at a time.
+Your account can only be signed in on one device or browser at a time.
 
-👉 You can use any device or browser — a laptop today, a phone tomorrow.
+👉 You can use any device or browser. Signing in somewhere new will sign you out of other sessions, so only one person can use the account at a time.
 
-Signing in somewhere new will sign you out everywhere else, so only one person can be using the account at any moment.
+🔒 This helps prevent account sharing while allowing you to switch devices freely.
 
-🔒 This prevents account sharing while still letting you switch devices freely.
-
-If you are unexpectedly signed out, someone else may be using your login — contact the administrator.
+If you are unexpectedly signed out, someone else may be using your login. Please contact the administrator.
 
 Please log in and start practicing. Feel free to reach out if you need any help! 😊`;
 }

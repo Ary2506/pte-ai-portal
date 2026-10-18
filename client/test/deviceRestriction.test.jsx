@@ -77,10 +77,15 @@ describe("Admin — account-created message", () => {
     expect(messageBox.value).toContain("🔑 Password: Tmp12345");
     // The message a student actually receives has to match what the server enforces — it used to
     // promise a permanent device lock that no longer exists.
-    expect(messageBox.value).toContain("Your account can only be signed in one place at a time.");
-    expect(messageBox.value).toContain("Signing in somewhere new will sign you out everywhere else");
+    expect(messageBox.value).toContain("Your account can only be signed in on one device or browser at a time.");
+    expect(messageBox.value).toContain("Signing in somewhere new will sign you out of other sessions");
     expect(messageBox.value).not.toContain("device restricted");
     expect(messageBox.value).toContain("MyPTEScore");
+    // The login link is the project's own site, fixed, on its own line so it stays tappable —
+    // and the unrelated myptescore.com domain must never appear.
+    expect(messageBox.value).toContain("🌐 Login here: https://pte-ai-portal.vercel.app\n");
+    expect(messageBox.value).not.toMatch(/myptescore\.com/i);
+    expect(messageBox.value).toContain("Comprehensive PTE exam preparation with AI-powered scoring at https://pte-ai-portal.vercel.app\n");
   });
 
   it("closing the account-created modal does not affect the existing temporary-password toast", async () => {
