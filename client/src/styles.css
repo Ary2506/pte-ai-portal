@@ -1125,6 +1125,14 @@ span.practice-more-link.disabled{color:var(--muted-soft);cursor:default}
      item refuses to go below its content otherwise. align-content:start keeps the rows at their
      natural height once flex:1 makes the nav taller than its own content.
      Scoped to this breakpoint deliberately: on a laptop the rail is untouched. */
+  /* Panels stop being sized by their widest child, so a table scrolls inside its own wrapper
+     instead of stretching the page. .page-stack's implicit column is `auto`, and an auto track
+     never shrinks below its items' min-content: PerformanceTable sets white-space:nowrap on every
+     cell, so the Latest attempts table's 410px min-content sized the column and every panel on the
+     Dashboard stretched to match. minmax(0,1fr) gives the track a zero floor, which is what lets
+     .perf-table-wrap's overflow-x:auto do its job — the same behaviour My Results already has,
+     where the table sits in a plain block rather than a grid. */
+  .page-stack,.dashboard-split{grid-template-columns:minmax(0,1fr)}
   .sidebar nav{align-content:start;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
   /* svh, not vh and not dvh. inset's top:0/bottom:0 measures the LAYOUT viewport, which on
      Android Chrome and iOS Safari includes the strip sitting behind the URL bar — so the foot of
