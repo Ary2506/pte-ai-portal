@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -58,6 +58,8 @@ beforeEach(() => {
   global.navigator.mediaDevices = {
     getUserMedia: vi.fn(() => Promise.resolve({ getTracks: () => [{ stop: vi.fn() }] }))
   };
+  global.window.SpeechRecognition = undefined;
+  global.window.webkitSpeechRecognition = undefined;
   global.MediaRecorder = class {
     constructor(stream) { this.stream = stream; }
     start() { this.ondataavailable?.({ data: new Blob(["fake-audio-bytes"], { type: "audio/webm" }) }); }
@@ -76,6 +78,29 @@ describe("Speaking practice", () => {
     renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled();
+  });
+
+  it("keeps earlier transcript when a later recognition result changes", async () => {
+    let speech;
+    global.window.SpeechRecognition = class {
+      constructor() { speech = this; }
+      start() {}
+      stop() {}
+    };
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
+    fireEvent.click(await screen.findByText("Start Recording"));
+    await screen.findByText("Stop Recording");
+
+    act(() => speech.onresult({
+      resultIndex: 0,
+      results: [[{ transcript: "First part" }]],
+    }));
+    act(() => speech.onresult({
+      resultIndex: 1,
+      results: [[{ transcript: "First part" }], [{ transcript: "second part" }]],
+    }));
+
+    expect(await screen.findByText("First part second part")).toBeInTheDocument();
   });
 
   it("sends the recorded audio to the backend", async () => {

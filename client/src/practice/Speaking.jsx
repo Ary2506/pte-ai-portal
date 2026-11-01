@@ -193,7 +193,7 @@ export default function Speaking({
           speech.onresult = (event) => {
             if (resettingRef.current) return;
             let value = "";
-            for (let i = event.resultIndex; i < event.results.length; i += 1)
+            for (let i = 0; i < event.results.length; i += 1)
               value += `${event.results[i][0].transcript} `;
             setTranscript(value.trim());
           };
