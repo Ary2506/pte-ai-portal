@@ -1,5 +1,6 @@
 import express from "express";
 import Question from "../models/Question.js";
+import TestSession from "../models/TestSession.js";
 import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { TRANSCRIPT_IS_ANSWER } from "../transcriptPolicy.js";
@@ -85,6 +86,34 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
   // `truncated` says plainly that the cap was reached and questions were withheld, so a bank that
   // outgrows it surfaces as a visible flag rather than as a quietly shorter list.
   res.json({ questions, total: questions.length, truncated: questions.length >= FULL_LIMIT });
+}));
+
+// The Repeat Sentence "Transcript" button. The transcript is the answer key, so it is never sent
+// with the question list (see TRANSCRIPT_IS_ANSWER above); the button fetches it on demand, one
+// question at a time, when the student asks for it. Deliberately limited to Repeat Sentence — the
+// other types in that set (dictation, blank-filling...) have no such button, and this endpoint
+// must not become a way to read their keys.
+//
+// Refused while the question is part of a mock test the student currently has open: a mock is a
+// closed-book sitting, and the client hiding the button is not enough on its own because the
+// request can be sent without the client.
+const OBJECT_ID = /^[a-fA-F0-9]{24}$/;
+router.get("/:id/transcript", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
+  if (!OBJECT_ID.test(req.params.id)) return res.status(404).json({ message: "Question not found", code: "NOT_FOUND" });
+  const question = await Question.findOne({ _id: req.params.id, active: true, type: "repeat-sentence" }).select("transcript").lean();
+  const transcript = typeof question?.transcript === "string" ? question.transcript.trim() : "";
+  if (!transcript) return res.status(404).json({ message: "No transcript is available for this question.", code: "NOT_FOUND" });
+
+  const inOpenMock = await TestSession.exists({
+    user: req.user._id,
+    status: "IN_PROGRESS",
+    questionIds: question._id,
+    $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }]
+  });
+  if (inOpenMock) {
+    return res.status(403).json({ message: "The transcript is not available during a mock test.", code: "TRANSCRIPT_LOCKED_IN_MOCK" });
+  }
+  res.json({ transcript });
 }));
 
 export default router;

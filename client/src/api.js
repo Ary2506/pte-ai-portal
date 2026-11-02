@@ -144,6 +144,9 @@ export const api = {
   // Ids and types only, for counting what a section holds. The full fetch is capped at 200
   // documents, which is fine for one task type but silently truncated a whole section.
   questionIndex: (section) => request(`/questions?section=${section || ""}&index=1`),
+  // Repeat Sentence's Transcript button. The transcript is never part of the question list, so it
+  // is fetched here, only when the student asks for it.
+  questionTranscript: (id) => request(`/questions/${id}/transcript`),
   // Optional params, all narrowing: `summary: 1` drops answer/transcript/feedback (only safe for
   // a caller that lists attempts without reopening one), `section`/`type` scope the rows to a
   // single task. No params keeps the original full, unfiltered shape.

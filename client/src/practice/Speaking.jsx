@@ -79,6 +79,12 @@ export default function Speaking({
   // because PracticeTask remounts this component via key={question._id}, the same mechanism that
   // already resets recording/result state.
   const [showAnswer, setShowAnswer] = useState(false);
+  // Repeat Sentence's Transcript button. The transcript is the answer key, so the server never
+  // sends it with the question — it is fetched the first time the student asks, then kept for the
+  // rest of this question. Not offered in a mock test (testSessionId), which is closed-book.
+  const [referenceText, setReferenceText] = useState(null);
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
   // Lets the student hear back what they just recorded before submitting it. Derived from `blob`
   // rather than created alongside it, so the one cleanup below covers every way a recording can
   // go away — a new take, Re-do clearing it, or the component unmounting — instead of each of
@@ -277,6 +283,21 @@ export default function Speaking({
     }, 0);
   }
 
+  async function toggleTranscript() {
+    if (showTranscript) { setShowTranscript(false); return; }
+    if (referenceText) { setShowTranscript(true); return; }
+    setTranscriptLoading(true);
+    try {
+      const data = await api.questionTranscript(question._id);
+      setReferenceText(data.transcript);
+      setShowTranscript(true);
+    } catch (transcriptError) {
+      toast.error(transcriptError.message || "Could not load the transcript.");
+    } finally {
+      setTranscriptLoading(false);
+    }
+  }
+
   const durationLabel = recording
     ? `${formatMMSS(seconds * 1000)} / ${formatMMSS(limit * 1000)}`
     : `Limit ${formatMMSS(limit * 1000)}`;
@@ -342,6 +363,27 @@ export default function Speaking({
         )}
         {question?.audioUrl && (
           <audio className="audio" controls src={mediaUrl(question.audioUrl)} />
+        )}
+        {question?.type === "repeat-sentence" && !testSessionId && question?._id && (
+          <>
+            <Button
+              variant="tertiary"
+              size="sm"
+              className="answer-toggle"
+              icon={showTranscript ? <EyeOff/> : <Eye/>}
+              loading={transcriptLoading}
+              loadingLabel="Loading..."
+              onClick={toggleTranscript}
+            >
+              {showTranscript ? "Hide Transcript" : "Transcript"}
+            </Button>
+            {showTranscript && referenceText && (
+              <div className="answer-reveal">
+                <b>Transcript</b>
+                <p>{referenceText}</p>
+              </div>
+            )}
+          </>
         )}
         {/* The speech lab's state machine. Each state looks different on purpose: a student
             mid-recording, a student waiting on the evaluator and a student who has not started
