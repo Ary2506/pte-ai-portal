@@ -110,14 +110,14 @@ describe("Practice Hub", () => {
     // Read Aloud is served from the question bank like every other speaking task now, so the
     // mocked DB question is what proves the navigation — it no longer has a bundled set of its
     // own to fall back on.
-    expect(await screen.findByText("Read Aloud Q")).toBeInTheDocument();
+    expect(await screen.findByText("Read Aloud 1", { selector: "h2" })).toBeInTheDocument(); // "<task> <n>", not the stored title
   });
 
   it("clicking Write Essay navigates into the writing practice session", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Write Essay").closest(".practice-row"));
-    await screen.findByText("Essay Q");
+    await screen.findByText("Write Essay 1", { selector: "h2" }); // "<task> <n>", not the stored title
   });
 
   it("clicking Multiple Choice Single (reading) navigates into the reading practice session", async () => {

@@ -260,7 +260,7 @@ describe("Reopening a completed question starts a fresh attempt", () => {
     });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
 
-    await screen.findByText("Passage One");
+    await screen.findByText("Repeat Sentence 1", { selector: "h2" }); // practice shows "<task> <n>", not the stored title
     // The previous failure is not replayed into the new attempt, and no score is invented for it.
     expect(screen.queryByText("AI feedback is temporarily unavailable. Your objective score (if any) is still valid.")).not.toBeInTheDocument();
     expect(screen.queryByText("Retry Evaluation")).not.toBeInTheDocument();
@@ -281,7 +281,7 @@ describe("Speaking task media rendering (Phase 19, Part 2/9)", () => {
     unmount();
 
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
-    await screen.findByText("Sentence");
+    await screen.findByText("Repeat Sentence 1", { selector: "h2" }); // practice shows "<task> <n>", not the stored title
     expect(document.querySelector('audio[src="https://example.com/clip.mp3"]')).toBeInTheDocument();
   });
 });

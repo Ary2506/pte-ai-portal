@@ -81,11 +81,13 @@ describe("Speaking duration cap — per-type limits", () => {
     expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:45");
   });
 
-  it("shows the 10s limit for Repeat Sentence", async () => {
+  // Repeat Sentence has its own hands-free flow with a fixed 30 second answer window (see
+  // RepeatSentencePractice.jsx); it no longer uses the shared task's per-type 10s limit.
+  it("shows the 30s answer window for Repeat Sentence", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("repeat-sentence", "Repeat Sentence")] });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
-    await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:10");
+    await screen.findByText("Press play to start");
+    expect(document.querySelector(".record-box__timer")).toHaveTextContent("00:30");
   });
 
   it("shows the 60s limit for Describe Image", async () => {

@@ -201,7 +201,7 @@ describe("Phase 20 — Respond to a Situation (speaking) reuses SpeakingTask wit
       questions: [{ _id: "sit1", section: "speaking", type: "respond-to-situation", title: "Situation", prompt: "Respond appropriately.", audioUrl: "https://example.com/situation.mp3" }]
     });
     renderAt("/speaking?type=respond-to-situation", studentAuthUser());
-    await screen.findByText("Situation");
+    await screen.findByText("Respond to a Situation 1", { selector: "h2" }); // practice shows "<task> <n>"
     expect(document.querySelector('audio[src="https://example.com/situation.mp3"]')).toBeInTheDocument();
     expect(screen.getByText("Start Recording")).toBeInTheDocument();
   });

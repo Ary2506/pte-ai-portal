@@ -119,7 +119,7 @@ describe("Show Answer stays specific to Describe Image", () => {
       questions: [{ _id: "rs1", section: "speaking", type: "repeat-sentence", title: "Repeat Sentence", prompt: "Repeat this.", evaluationType: "subjective" }]
     });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
-    await screen.findByText("Repeat Sentence", { selector: "h2" });
+    await screen.findByText("Repeat Sentence 1", { selector: "h2" }); // practice shows "<task> <n>", not the stored title
     expect(screen.queryByText("Show Answer")).not.toBeInTheDocument();
   });
 
@@ -211,8 +211,10 @@ describe("AI Answer Result — expected-answer comparison fields, shown only whe
   });
 
   it("does not show Status/Expected Answer/Corrected Answer when the server omits them — unaffected question types render exactly as before", async () => {
+    // Answer Short Question stands in as the "unaffected" type here. Repeat Sentence used to, but
+    // it now has its own hands-free record-and-submit flow, which has its own tests.
     api.questions.mockResolvedValue({
-      questions: [{ _id: "rs1", section: "speaking", type: "repeat-sentence", title: "Repeat Sentence", prompt: "Repeat this.", evaluationType: "subjective" }]
+      questions: [{ _id: "asq1", section: "speaking", type: "answer-short-question", title: "Answer Short Question", prompt: "Answer this.", evaluationType: "subjective" }]
     });
     api.submit.mockResolvedValue({
       submission: {
@@ -220,7 +222,7 @@ describe("AI Answer Result — expected-answer comparison fields, shown only whe
         feedback: { scoringMethod: "heuristic", overall: "Decent attempt.", strengths: ["Good length"], improvements: [], mistakes: [] }
       }
     });
-    renderAt("/speaking?type=repeat-sentence", studentAuthUser());
+    renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await recordAndStop();
     fireEvent.click(screen.getByText("Submit for AI Feedback"));
 

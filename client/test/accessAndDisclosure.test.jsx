@@ -67,7 +67,7 @@ describe("AI limitation disclosure — Part 7/27 item 30", () => {
     // disclosure text lives on.
     api.questions.mockResolvedValue({ questions: [{ _id: "q1", type: "repeat-sentence", title: "Repeat Sentence", prompt: "Repeat this." }] });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
-    await screen.findByText("Repeat Sentence", { selector: "h2" });
+    await screen.findByText("Repeat Sentence 1", { selector: "h2" }); // practice shows "<task> <n>", not the stored title
     expect(screen.getByText(/Only your transcript is evaluated — pronunciation and audio quality are not analyzed\./)).toBeInTheDocument();
   });
 });

@@ -120,6 +120,21 @@ function positionKey(section, slug) {
   return `pte_practice_pos_${section}_${slug}`;
 }
 
+// Speaking and Writing practice shows "<task name> <n>" in place of each question's own topic title
+// ("Read Aloud 3", not "Read Aloud - Climate Change"). Two tasks keep the title they have always had:
+// Describe Image and Summarize Written Text.
+//
+// This is a display copy only. The stored question is untouched, and so are the ids, which is what
+// progress and submissions are keyed on. `n` is the question's position in the list, so it is the
+// same number the list already shows as "#n", and the same after a refresh or when moving between
+// questions. Only this practice page is affected: Mock Tests render their questions elsewhere.
+const KEEP_OWN_TITLE = { speaking: "describe-image", writing: "swt" };
+
+function withNumberedTitles(questions, section, slug, label) {
+  if (!(section in KEEP_OWN_TITLE) || slug === KEEP_OWN_TITLE[section]) return questions;
+  return questions.map((question, index) => ({ ...question, title: `${label} ${index + 1}` }));
+}
+
 function PracticeTask({ section, label, slug, taskComponents }) {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(null);
@@ -241,12 +256,13 @@ function PracticeTask({ section, label, slug, taskComponents }) {
         body="This task type has no active questions in the library. Try another task, or check back once more are published."
       />
     );
+  const shownQuestions = withNumberedTitles(questions, section, slug, label);
   if (idx === null)
     return (
       <>
         <WorkspaceHeader section={section} label={label} questions={questions} progress={progress} />
         <QuestionListView
-          questions={questions}
+          questions={shownQuestions}
           progress={progress}
           onSelect={setIdx}
           section={section}
@@ -255,7 +271,7 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       </>
     );
 
-  const question = questions[idx];
+  const question = shownQuestions[idx];
   const TaskComponent = taskComponents[section];
   if (!TaskComponent)
     return <Empty text="This practice section is not configured yet." />;
