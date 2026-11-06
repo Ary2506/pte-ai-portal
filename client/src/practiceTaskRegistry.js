@@ -21,7 +21,7 @@ export const PRACTICE_TASKS = {
   writing: [
     { slug: "swt", label: "Summarize Written Text", supported: true, hasAI: true },
     { slug: "write-email", label: "Write Email", supported: true, hasAI: true },
-    { slug: "essay", label: "Write Essay", supported: true, hasAI: true }
+    { slug: "essay", label: "Write Essay", supported: false, hasAI: true }
   ],
   reading: [
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },

@@ -82,10 +82,11 @@ describe("Practice Hub", () => {
     expect(row).not.toHaveTextContent("Coming Soon");
   });
 
-  it("Phase 20: no task type in the PTE Practice menu shows 'Coming Soon' any more — every listed type is genuinely supported", async () => {
+  it("Write Essay is switched off (Coming Soon, not clickable); every other listed type is supported", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Coming Soon")).toHaveLength(1);
+    expect(screen.getByText("Write Essay").closest(".practice-row").querySelector(".practice-row-badge.soon")).not.toBeNull();
   });
 
   it("does not show an AI Score badge on a purely objective task", async () => {
@@ -113,11 +114,11 @@ describe("Practice Hub", () => {
     expect(await screen.findByText("Read Aloud 1", { selector: "h2" })).toBeInTheDocument(); // "<task> <n>", not the stored title
   });
 
-  it("clicking Write Essay navigates into the writing practice session", async () => {
+  it("clicking the disabled Write Essay row does not open a practice session", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getByText("Write Essay").closest(".practice-row"));
-    await screen.findByText("Write Essay 1", { selector: "h2" }); // "<task> <n>", not the stored title
+    expect(screen.queryByText("Write Essay 1", { selector: "h2" })).not.toBeInTheDocument();
   });
 
   it("clicking Multiple Choice Single (reading) navigates into the reading practice session", async () => {

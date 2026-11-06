@@ -106,16 +106,6 @@ describe("Speaking practice — numbered titles", () => {
 });
 
 describe("Writing practice — numbered titles", () => {
-  it("Write Essay shows 'Write Essay 1/2', never the topic", async () => {
-    api.questions.mockResolvedValue({ questions: topical("essay", "writing", ["Technology and Society", "Remote Work"]) });
-    renderAt("/writing?type=essay");
-    await screen.findByText("Write Essay 1");
-    expect(rowTitles().map((r) => r.title)).toEqual(["Write Essay 1", "Write Essay 2"]);
-    expect(screen.queryByText("Technology and Society")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText("Write Essay 2").closest("button"));
-    expect(heading()).toBe("Write Essay 2");
-  });
-
   it("EXCEPTION: Summarize Written Text keeps its own titles, exactly as before", async () => {
     api.questions.mockResolvedValue({ questions: topical("swt", "writing", ["The Rise of the Smartphone", "Urban Farming"], { passage: "A passage." }) });
     renderAt("/writing?type=swt");
