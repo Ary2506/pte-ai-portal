@@ -6,6 +6,12 @@
 // never guessed. `hasAI` mirrors that type's evaluationType === "subjective". A supported type
 // can still have zero active questions today (a *content* gap) — that is never encoded here; it
 // is checked at runtime against the real GET /api/questions response (see PracticeHub).
+//
+// `bundledContent: true` is the exception to that rule, and only because the rule cannot apply:
+// the task's material ships with the client instead of living in the question bank, so asking the
+// API how many questions of that type exist will always answer "none" however complete the task
+// is. Set it ONLY for a task whose content is genuinely client-side; a DB-backed type that simply
+// has no rows yet is a content gap and must keep reporting itself as empty.
 export const PRACTICE_SECTIONS = ["speaking", "writing", "reading", "listening"];
 
 export const SECTION_LABELS = { speaking: "Speaking", writing: "Writing", reading: "Reading", listening: "Listening" };
@@ -20,7 +26,9 @@ export const PRACTICE_TASKS = {
   ],
   writing: [
     { slug: "swt", label: "Summarize Written Text", supported: true, hasAI: true },
-    { slug: "write-email", label: "Write Email", supported: true, hasAI: true },
+    // Content is client/public/writing-resources/write-email-samples.pdf, rendered by
+    // WriteEmailPdf — 12 worked samples to read, with no submission and so nothing AI-scored.
+    { slug: "write-email", label: "Write Email", supported: true, hasAI: false, bundledContent: true, contentLabel: "Samples" },
     { slug: "essay", label: "Write Essay", supported: false, hasAI: true }
   ],
   reading: [

@@ -40,6 +40,10 @@ function PracticeTaskRow({ section, task, hasContent, onStart, progress }) {
     badge = <span className="practice-row-badge soon">Coming Soon</span>;
   else if (!hasContent)
     badge = <span className="practice-row-badge empty">No content yet</span>;
+  else if (task.bundledContent)
+    // Its own label, because "AI Score" would be a promise this task does not keep: bundled
+    // content is material to read, with nothing to submit and nothing scored.
+    badge = <span className="practice-row-badge">{task.contentLabel || "Reference"}</span>;
   else if (task.hasAI)
     badge = <span className="practice-row-badge ai">AI Score</span>;
 
@@ -113,6 +117,14 @@ function buildProgress(questionsBySection, history) {
     }
   }
   return map;
+}
+
+// Whether a task has anything for a student to open. Two different sources: most tasks are
+// answered from the question bank, so the API's index decides; a bundledContent task carries its
+// material in the client and is always ready, which no question count could ever show.
+function taskHasContent(available, section, task) {
+  if (task.bundledContent) return true;
+  return available ? available.has(`${section}:${task.slug}`) : false;
 }
 
 export default function PracticeHub() {
@@ -254,7 +266,7 @@ export default function PracticeHub() {
               const allTasks = PRACTICE_TASKS[section];
               const readyCount = available
                 ? allTasks.filter(
-                    (task) => task.supported && available.has(`${section}:${task.slug}`),
+                    (task) => task.supported && taskHasContent(available, section, task),
                   ).length
                 : null;
 
@@ -278,7 +290,7 @@ export default function PracticeHub() {
                         key={task.slug}
                         section={section}
                         task={task}
-                        hasContent={available ? available.has(`${section}:${task.slug}`) : false}
+                        hasContent={taskHasContent(available, section, task)}
                         onStart={start}
                         progress={progress.get(`${section}:${task.slug}`)}
                       />

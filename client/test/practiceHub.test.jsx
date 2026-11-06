@@ -72,14 +72,38 @@ describe("Practice Hub", () => {
     expect(screen.getAllByText("No content yet").length).toBeGreaterThan(0);
   });
 
-  it("Phase 20: Write Email is now genuinely supported — shows 'No content yet' (a content gap), never 'Coming Soon' (a functionality gap)", async () => {
+  // Write Email's material is a PDF bundled with the client (WriteEmailPdf), not rows in the
+  // question bank, so the question index it is counted against will always answer "none" however
+  // complete the task is. The row has to read that content off the registry instead — this test
+  // used to assert the opposite, back when the task genuinely had nothing behind it.
+  it("Write Email is startable and badged as bundled content, never 'No content yet' — its PDF does not live in the question bank", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
     const row = screen.getByText("Write Email").closest(".practice-row");
-    expect(row).toHaveClass("disabled"); // still not clickable — there's zero active content, not zero support
-    expect(row.tagName).toBe("SPAN");
-    expect(row).toHaveTextContent("No content yet");
+    expect(row).not.toHaveClass("disabled");
+    expect(row.tagName).toBe("BUTTON"); // a startable row is a real button
+    expect(row).toHaveTextContent("Samples");
+    expect(row).not.toHaveTextContent("No content yet");
     expect(row).not.toHaveTextContent("Coming Soon");
+    // Nothing is submitted or scored from a page of worked samples.
+    expect(row).not.toHaveTextContent("AI Score");
+  });
+
+  it("counts Write Email towards its section's ready tally, although the question bank is empty", async () => {
+    renderAt("/practice", studentAuthUser());
+    await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
+    // Writing has three listed tasks: SWT (no rows in this fixture), Write Email (bundled),
+    // Write Essay (unsupported). Only the bundled one is ready.
+    // findByText, not getByText: the call having been made does not mean the state it sets has
+    // rendered yet, and until it does the tally reads "…".
+    expect(await screen.findByText("1/3 ready")).toBeInTheDocument();
+  });
+
+  it("opens the Write Email PDF page when the row is clicked", async () => {
+    renderAt("/practice", studentAuthUser());
+    await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
+    fireEvent.click(screen.getByText("Write Email").closest(".practice-row"));
+    expect(await screen.findByText("Write Email — Sample Emails")).toBeInTheDocument();
   });
 
   it("Write Essay is switched off (Coming Soon, not clickable); every other listed type is supported", async () => {
