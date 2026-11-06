@@ -144,9 +144,11 @@ export default function Speaking({
   const [serverText, setServerText] = useState("");
   const meterRef = useRef(null);
   const micLabelRef = useRef("");
-  // Which input the browser actually gave us. Shown while recording: a student wearing earphones
-  // whose laptop microphone got picked (or the reverse) cannot tell from a level meter alone, and
-  // this is the one piece of information that explains it.
+  // Which input the browser actually gave us. Deliberately NOT shown next to the level meter:
+  // the raw device string Windows reports ("Communications - Microphone (2- Realtek(R) Audio)")
+  // is noise on a screen the student is trying to concentrate on. It is kept for the one place it
+  // earns its space — the message shown when no sound is reaching the preview at all, where
+  // naming the input is the whole point.
   const [micName, setMicName] = useState("");
   // Cleared on unmount. start() now awaits the microphone waking up, so by the time it is ready to
   // record the component may be gone — navigating between mock questions mid-start, for instance.
@@ -703,12 +705,7 @@ export default function Speaking({
               <div role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(micLevel * 100)} style={{ height: 6, borderRadius: 3, background: "rgba(127,127,127,.25)", overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${Math.round(micLevel * 100)}%`, background: "var(--success)", transition: "width 80ms linear" }} />
               </div>
-              {/* Named, not just metered. With earphones on, "Microphone level: 0" is ambiguous
-                  between a muted headset and the laptop microphone being the selected input, and
-                  only the device name tells the student which one they are looking at. */}
-              <p className="muted" style={{ marginTop: 6, fontSize: ".85rem" }}>
-                {micName ? `Microphone level — ${micName}` : "Microphone level"}
-              </p>
+              <p className="muted" style={{ marginTop: 6, fontSize: ".85rem" }}>Microphone level</p>
             </div>
           )}
         </div>

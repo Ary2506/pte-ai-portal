@@ -162,17 +162,6 @@ describe("Repeat Sentence with earphones", () => {
     expect(recorderStarts).toBe(1);
   });
 
-  it("names the microphone it is recording through, so the wrong input is visible", async () => {
-    const track = headsetTrack({ label: "Earbuds (Bluetooth)", muted: false });
-    global.navigator.mediaDevices = { getUserMedia: vi.fn(() => Promise.resolve(streamOf(track))) };
-    renderAt("/speaking?type=repeat-sentence");
-    await screen.findByText("Record your answer");
-
-    fireEvent.ended(document.querySelector("audio.audio"));
-    await screen.findByText("Recording...");
-    expect(screen.getByText(/Microphone level . Earbuds \(Bluetooth\)/)).toBeInTheDocument();
-  });
-
   it("releases the microphone instead of recording when the take is abandoned during the handover", async () => {
     const track = headsetTrack();
     global.navigator.mediaDevices = { getUserMedia: vi.fn(() => Promise.resolve(streamOf(track))) };
