@@ -92,6 +92,16 @@ export async function putObject(key, body, contentType) {
 }
 
 /**
+ * The bytes of one stored object, for server-side processing (re-transcribing a recording when an
+ * evaluation is retried). Reads, never writes; a missing object throws rather than returning null.
+ */
+export async function getObject(key) {
+  if (!isRemoteStorage) return fs.readFileSync(localObjectPath(key));
+  const out = await r2.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+  return Buffer.from(await out.Body.transformToByteArray());
+}
+
+/**
  * A signed URL for one read.
  *
  * The default is deliberately short: a recording link is for a single playback, not a shareable

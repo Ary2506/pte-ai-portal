@@ -7,6 +7,7 @@ import { useToast } from "../components/toast.jsx";
 import { Button } from "../components/Button.jsx";
 import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
 import { mediaUrl } from "../mediaUrl.js";
+import { recordedPeakLevel, rmsOf, SILENT_RECORDING_PEAK } from "./voiceActivity.js";
 
 const SPEAKING_DURATION_LIMITS = {
   "read-aloud": 45,
@@ -70,6 +71,19 @@ export default function Speaking({
   const [seconds, setSeconds] = useState(0);
   const [blob, setBlob] = useState(null);
   const [transcript, setTranscript] = useState("");
+  // Display only: the live microphone level while recording. It never decides whether a recording
+  // is accepted -- that is judged on the recorded audio itself, in submit().
+  const [micLevel, setMicLevel] = useState(0);
+  const [problem, setProblem] = useState("");
+  // The words shown while speaking are the browser's own live preview: a draft for the student
+  // to follow along with, never what is scored. "unavailable" = this browser has no speech
+  // recognition (or refused to use it); recording and scoring are unaffected either way.
+  const [previewState, setPreviewState] = useState("idle");
+  // The server's transcript of the uploaded recording, which replaces the preview once the
+  // answer has been evaluated. It is the text the answer was scored on.
+  const [serverText, setServerText] = useState("");
+  const meterRef = useRef(null);
+  const micLabelRef = useRef("");
   const [result, setResult] = useState(() => existingResult || null);
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -111,13 +125,43 @@ export default function Speaking({
   // e.g. navigating to another Mock Test question mid-recording. Stopping the tracks directly
   // (rather than calling recorder.current.stop()) avoids triggering onstop after unmount, which
   // would otherwise finalize a blob/object URL that nothing is left to clean up.
+  function stopMeter() {
+    if (!meterRef.current) return;
+    clearInterval(meterRef.current.timer);
+    try { meterRef.current.ctx.close?.(); } catch { /* already closed */ }
+    meterRef.current = null;
+    setMicLevel(0);
+  }
+
+  function startMeter(stream) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      const ctx = new Ctx();
+      Promise.resolve(ctx.resume?.()).catch(() => {});
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+      ctx.createMediaStreamSource(stream).connect(analyser); // analyser only: never played back
+      const samples = new Float32Array(analyser.fftSize);
+      const timer = setInterval(() => {
+        analyser.getFloatTimeDomainData(samples);
+        setMicLevel(Math.min(1, rmsOf(samples) * 6));
+      }, 100);
+      meterRef.current = { timer, ctx };
+    } catch {
+      meterRef.current = null; // a convenience only
+    }
+  }
+
   useEffect(() => () => {
+    stopMeter();
     clearInterval(timer.current);
     activeStreamRef.current?.getTracks().forEach((track) => track.stop());
     activeStreamRef.current = null;
     recorder.current = null;
-    recognition.current?.stop();
-    recognition.current = null;
+    const speech = recognition.current;
+    recognition.current = null; // cleared first: it marks the recognizer's end as deliberate
+    try { speech?.stop(); } catch { /* already stopped */ }
   }, []);
 
   useEffect(() => {
@@ -136,10 +180,12 @@ export default function Speaking({
   function stop() {
     if (!recorder.current) return;
     clearInterval(timer.current);
+    stopMeter();
     recorder.current.stop();
     recorder.current = null;
-    recognition.current?.stop();
-    recognition.current = null;
+    const speech = recognition.current;
+    recognition.current = null; // cleared first: it marks the recognizer's end as deliberate
+    try { speech?.stop(); } catch { /* already stopped */ }
     setRecording(false);
   }
 
@@ -147,6 +193,8 @@ export default function Speaking({
     setResult(null);
     setBlob(null);
     setTranscript("");
+    setServerText("");
+    setProblem("");
     chunks.current = [];
     elapsed.current = 0;
     // Checked rather than optional-chained. `navigator.mediaDevices?.getUserMedia(...)` reads
@@ -161,6 +209,7 @@ export default function Speaking({
       .getUserMedia({ audio: true })
       .then((stream) => {
         activeStreamRef.current = stream;
+        micLabelRef.current = stream.getAudioTracks?.()[0]?.label || "";
         const mediaRecorder = new MediaRecorder(stream, RECORDER_OPTIONS);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
@@ -182,6 +231,7 @@ export default function Speaking({
           }
         };
         mediaRecorder.start();
+        startMeter(stream);
         setRecording(true);
         setSeconds(0);
         timer.current = setInterval(() => {
@@ -189,22 +239,46 @@ export default function Speaking({
           setSeconds(elapsed.current);
           if (elapsed.current >= limit) stop();
         }, 1000);
-        const SpeechRecognition =
-          window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          const speech = new SpeechRecognition();
-          speech.continuous = true;
-          speech.interimResults = true;
-          speech.lang = "en-US";
-          speech.onresult = (event) => {
-            if (resettingRef.current) return;
-            let value = "";
-            for (let i = 0; i < event.results.length; i += 1)
-              value += `${event.results[i][0].transcript} `;
-            setTranscript(value.trim());
+        // Live preview. Entirely separate from the recorder: nothing here can start, stop or
+        // restart MediaRecorder, and any failure only switches the preview off.
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setPreviewState("unavailable");
+        } else {
+          setPreviewState("listening");
+          let earlier = ""; // text of sessions the browser has already ended, kept across restarts
+          const listen = () => {
+            const speech = new SpeechRecognition();
+            let session = ""; // everything this session has heard so far, rebuilt from its whole list
+            speech.continuous = true;
+            speech.interimResults = true;
+            speech.lang = "en-US";
+            speech.onresult = (event) => {
+              if (resettingRef.current || recognition.current !== speech) return;
+              // Rebuilt from the full result list every time rather than appended to: a phrase that
+              // turns from interim into final is the same list entry, so it can never appear twice.
+              let heard = "";
+              for (let i = 0; i < event.results.length; i += 1) heard += `${event.results[i][0]?.transcript || ""} `;
+              session = heard;
+              setTranscript(`${earlier} ${session}`.replace(/\s+/g, " ").trim());
+            };
+            speech.onerror = (event) => {
+              if (["not-allowed", "service-not-allowed", "audio-capture", "network", "language-not-supported"].includes(event?.error)) {
+                if (recognition.current === speech) recognition.current = null; // do not restart
+                setPreviewState("unavailable");
+              }
+            };
+            speech.onend = () => {
+              // Browsers end a session by themselves after a pause. Natural pauses must not end
+              // the preview, so while the student is still recording a new session continues it.
+              if (recognition.current !== speech) return;
+              earlier = `${earlier} ${session}`.replace(/\s+/g, " ").trim();
+              try { listen(); } catch { recognition.current = null; setPreviewState("unavailable"); }
+            };
+            recognition.current = speech;
+            speech.start();
           };
-          speech.start();
-          recognition.current = speech;
+          try { listen(); } catch { recognition.current = null; setPreviewState("unavailable"); }
         }
       })
       .catch(() =>
@@ -217,24 +291,44 @@ export default function Speaking({
       toast.error("Record an answer first.");
       return;
     }
+    setProblem("");
+    // Is there any sound in the recording itself? Only a take that is silent all the way through
+    // (muted or wrong microphone) with no browser transcript is held back: it would otherwise be
+    // scored 0 for something the student never got the chance to say. Anything audible is sent and
+    // the server transcribes it. If the level cannot be measured, the answer is sent.
     setBusy(true);
+    if (!transcript.trim()) {
+      const peak = await recordedPeakLevel(blob);
+      if (peak !== null && peak < SILENT_RECORDING_PEAK) {
+        setBusy(false);
+        setProblem(`We couldn't hear any sound in your recording${micLabelRef.current ? ` from "${micLabelRef.current}"` : ""}. Check that this is the microphone you are speaking into and that it isn't muted, then record again.`);
+        return;
+      }
+    }
     const form = new FormData();
     form.append("audio", blob, "speaking.webm");
     form.append("section", "speaking");
-    form.append("type", type);
+    // The practice page passes no `type` prop (Mock passes the question title), so this used to be
+    // submitted as the literal string "undefined" for every practice answer. Fall back to the
+    // question's own type; a caller that does pass one is unaffected.
+    form.append("type", type ?? question?.type);
     form.append("transcript", transcript);
+    // The live words are a draft: ask the server to transcribe the recording and score that.
+    form.append("serverTranscript", "1");
     form.append("durationSeconds", seconds);
     if (question?._id) form.append("questionId", question._id);
     if (testSessionId) form.append("testSessionId", testSessionId);
     try {
       const data = await api.submit(form);
       setResult(data.submission);
+      if (!testSessionId && typeof data.submission?.transcript === "string") setServerText(data.submission.transcript);
       onAnswered?.(data.submission);
       // A mock shows nothing else on submit — no score, no verdict — so without this the only
       // signal is the button quietly disappearing.
       if (testSessionId) toast.success("Question submitted.");
     } catch (submitError) {
       toast.error(submitError.message);
+      setProblem(submitError.message || "Your answer could not be submitted. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -265,8 +359,13 @@ export default function Speaking({
     recorder.current = null;
     activeStreamRef.current?.getTracks().forEach((track) => track.stop());
     activeStreamRef.current = null;
-    recognition.current?.stop();
+    stopMeter();
+    setProblem("");
+    setServerText("");
+    setPreviewState("idle");
+    const speech = recognition.current;
     recognition.current = null;
+    try { speech?.stop(); } catch { /* already stopped */ }
     chunks.current = [];
     elapsed.current = 0;
     setRecording(false);
@@ -407,14 +506,35 @@ export default function Speaking({
           )}
 
           <h3>{RECORD_STATES[recordState].title}</h3>
-          <p className="muted">{RECORD_STATES[recordState].note}</p>
+          <p className="muted" role={problem ? "alert" : undefined}>{problem || RECORD_STATES[recordState].note}</p>
+          {recordState === "recording" && (
+            <div style={{ width: "min(320px, 85%)", margin: "10px auto 0" }}>
+              <div role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(micLevel * 100)} style={{ height: 6, borderRadius: 3, background: "rgba(127,127,127,.25)", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${Math.round(micLevel * 100)}%`, background: "var(--success)", transition: "width 80ms linear" }} />
+              </div>
+              <p className="muted" style={{ marginTop: 6, fontSize: ".85rem" }}>Microphone level</p>
+            </div>
+          )}
         </div>
-        {transcript && (
-          <div className="transcript">
-            <b>Live transcript</b>
-            <p>{transcript}</p>
-          </div>
-        )}
+        {(recording || transcript || serverText || blob) && (() => {
+          const finalText = serverText || "";
+          const shown = finalText || transcript;
+          const heading = finalText ? "Final transcript" : recording ? "Live transcript" : "Transcript";
+          let status;
+          if (finalText) status = "Final transcript received from the server.";
+          else if (recording && previewState === "unavailable") status = "Live preview is unavailable in this browser. Your recording is still being captured; the final transcript will appear after it is processed.";
+          else if (recording && !transcript) status = micLevel > 0.05 ? "Listening..." : "Waiting for you to speak...";
+          else if (recording) status = "Listening...";
+          else if (blob && !result) status = previewState === "unavailable" ? "Recording completed. The transcript will appear after your answer is processed." : "Recording completed.";
+          else status = "";
+          return (
+            <div className="transcript" aria-live="polite">
+              <b>{heading}</b>
+              {shown ? <p>{shown}</p> : null}
+              {status ? <p className="muted" style={{ fontSize: ".85rem" }}>{status}</p> : null}
+            </div>
+          );
+        })()}
         {/* No Save for speaking: a recording is captured in one take, so there is no partial
             answer to come back and adjust. The verdict is still withheld during a mock — the
             score belongs on the results screen once the whole test is finished. */}

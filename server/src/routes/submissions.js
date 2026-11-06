@@ -13,7 +13,8 @@ import { evaluateAnswer } from "../scoring/index.js";
 import { evaluateSubjective } from "../services/ai/index.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { recordLearningActivity } from "../utils/streak.js";
-import { putRecording, signedRecordingUrl, isRemoteStorage, localRecordingPath } from "../storage.js";
+import { putRecording, signedRecordingUrl, isRemoteStorage, localRecordingPath, getObject } from "../storage.js";
+import { transcribeAudio, transcriptionEnabled, transcriptionFailureMessage } from "../services/transcription.js";
 
 const router = express.Router();
 // Recordings go to object storage (see ../storage.js), not to this process's filesystem.
@@ -157,6 +158,25 @@ async function evaluateSubmission(question, { section, type, answer, transcript,
     feedback: {
       strengths: ai.strengths, improvements: ai.improvements, overall: ai.overall, note: ai.note, scoringMethod: ai.scoringMethod,
       criteria: ai.criteria ?? null, mistakes: ai.mistakes ?? []
+    }
+  };
+}
+
+// A stored recording key ends in the extension derived from its verified type when it was saved.
+const KEY_MIME = { ".webm": "audio/webm", ".ogg": "audio/ogg", ".wav": "audio/wav", ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".aac": "audio/aac" };
+const mimetypeForKey = (key) => KEY_MIME[path.extname(String(key)).toLowerCase()] || "audio/webm";
+
+// The result stored when the recording could not be transcribed. FAILED, not COMPLETED: no score
+// was ever calculated, so none is claimed, and the existing retry flow applies.
+function transcriptionFailedEvaluation(error) {
+  return {
+    score: 0,
+    maxScore: MAX_TASK_SCORE,
+    evaluationStatus: "FAILED",
+    scoringMethod: null,
+    feedback: {
+      strengths: [], improvements: [], overall: transcriptionFailureMessage(error), note: null, scoringMethod: null,
+      criteria: null, mistakes: []
     }
   };
 }
@@ -316,6 +336,33 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       }
     }
 
+    // A speaking answer is scored from a transcript, which normally comes from the student's
+    // browser. When it arrives empty although a recording was uploaded, the browser's recognizer
+    // produced nothing -- not necessarily that the student said nothing -- so the recording is
+    // transcribed here instead. Silence (the recording holds no speech) is told apart from the
+    // system failing, which must never become a score. A transcript the browser did supply is used
+    // as it always was; nothing about those answers changes.
+    let spokenText = transcript;
+    let transcriptionFailure = null;
+    // The student's screen shows the browser's live preview while they speak and marks it with
+    // serverTranscript=1: that preview is only a draft, so the recording is transcribed here and
+    // that text is what is scored. If the service fails, the preview words are still real words the
+    // student spoke, so they are used rather than failing an answer that has a transcript.
+    const browserText = String(transcript || "").trim();
+    const wantsServerText = req.body?.serverTranscript === "1";
+    if (section === "speaking" && req.file && (!browserText || wantsServerText) && transcriptionEnabled()) {
+      try {
+        spokenText = (await transcribeAudio({ buffer: req.file.buffer, mimetype: req.file.mimetype })).text;
+      } catch (error) {
+        if (browserText) {
+          console.error("speech transcription failed, using the browser transcript:", error?.message || error);
+        } else {
+          transcriptionFailure = error;
+          console.error("speech transcription failed:", error?.message || error);
+        }
+      }
+    }
+
     const isSubjective = question ? question.evaluationType === "subjective" : true;
     // See the localQuestionId/trustedLocalResult comments above — both are only ever honored
     // when there is no real question and no test session.
@@ -331,7 +378,7 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       testSession: testSession?._id || null,
       section, type,
       answer: parsedAnswer,
-      transcript,
+      transcript: spokenText,
       durationSeconds: Number(durationSeconds || 0),
       audioPath: audioKey
     };
@@ -352,7 +399,11 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       submission.evaluationStatus = "PROCESSING";
       await submission.save();
 
-      const evaluation = await evaluateSubmission(question, { section, type, answer: parsedAnswer, transcript, durationSeconds: Number(durationSeconds || 0) });
+      // If transcribing the recording failed, nothing was evaluated: it is stored as FAILED (which
+      // the student can retry) instead of being scored 0 for words they may well have spoken.
+      const evaluation = transcriptionFailure
+        ? transcriptionFailedEvaluation(transcriptionFailure)
+        : await evaluateSubmission(question, { section, type, answer: parsedAnswer, transcript: spokenText, durationSeconds: Number(durationSeconds || 0) });
       submission.score = evaluation.score;
       submission.maxScore = evaluation.maxScore;
       submission.evaluationStatus = evaluation.evaluationStatus;
@@ -433,13 +484,45 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
   }
 
   const question = submission.question ? await Question.findById(submission.question) : null;
-  const text = submission.transcript || (typeof submission.answer === "string" ? submission.answer : "");
+  let text = submission.transcript || (typeof submission.answer === "string" ? submission.answer : "");
   // Same expected-answer pass-through as the initial evaluation (scoring/index.js) — a retry
   // must get the same comparison the first attempt would have, not a weaker one.
   const expectedAnswer = typeof question?.answer === "string" && question.answer.trim() ? question.answer.trim() : null;
 
+  // A speaking answer that failed because its recording could not be transcribed has no text yet.
+  // Retrying must transcribe the stored recording again; scoring an empty string would turn a
+  // system failure into a zero.
+  if (submission.section === "speaking" && !text.trim() && submission.audioPath && transcriptionEnabled()) {
+    try {
+      const audio = await getObject(submission.audioPath);
+      text = (await transcribeAudio({ buffer: audio, mimetype: mimetypeForKey(submission.audioPath) })).text;
+      submission.transcript = text;
+    } catch (error) {
+      console.error("speech transcription retry failed:", error?.message || error);
+      const failed = transcriptionFailedEvaluation(error);
+      submission.evaluationStatus = failed.evaluationStatus;
+      submission.feedback = failed.feedback;
+      await submission.save();
+      return res.json({ submission });
+    }
+  }
+
   submission.evaluationStatus = "PROCESSING";
   await submission.save();
+
+  // Repeat Sentence is scored by comparing the words with the question's own audio transcript
+  // (scoring/repeatSentence.js), exactly as on the first attempt. Without this a retry would send
+  // the answer to the general AI evaluator, which has no idea what the sentence was.
+  if (question?.type === "repeat-sentence") {
+    const evaluation = await evaluateAnswer(question, { answer: submission.answer, text, durationSeconds: submission.durationSeconds });
+    submission.evaluationStatus = evaluation.evaluationStatus;
+    submission.score = evaluation.score;
+    submission.maxScore = evaluation.maxScore;
+    submission.scoringMethod = evaluation.scoringMethod || null;
+    submission.feedback = evaluation.feedback;
+    await submission.save();
+    return res.json({ submission });
+  }
 
   const result = await evaluateSubjective({
     type: submission.type,
