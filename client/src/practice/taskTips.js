@@ -47,6 +47,7 @@ export const TASK_TIPS = {
   ],
   "repeat-sentence": [
     "Listen to the whole sentence before speaking.",
+    "Recording starts by itself the moment the audio ends — be ready.",
     "Match the speaker's rhythm and stress.",
     "Repeat it in one go, without restarting."
   ],

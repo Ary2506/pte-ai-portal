@@ -11,7 +11,7 @@ import { recordedPeakLevel, rmsOf, SILENT_RECORDING_PEAK } from "./voiceActivity
 
 const SPEAKING_DURATION_LIMITS = {
   "read-aloud": 45,
-  "repeat-sentence": 10,
+  "repeat-sentence": 30,
   "describe-image": 60,
   // Listed explicitly rather than left to fall through to DEFAULT_SPEAKING_DURATION_LIMIT: this
   // task's 60s is a deliberate choice, and leaving it implicit would silently change it again the
@@ -20,6 +20,39 @@ const SPEAKING_DURATION_LIMITS = {
   "answer-short-question": 10,
 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
+
+// Tasks that run themselves, the way the real exam does: the prompt audio finishing is the start
+// signal, the duration limit is the stop signal, and the answer is sent without the student
+// touching a record button. Every other speaking task keeps the manual Start/Stop controls.
+const AUTO_RECORD_TYPES = new Set(["repeat-sentence"]);
+
+// How long to wait for a microphone that reports itself muted to start delivering audio. Covers a
+// Bluetooth profile switch, which is the slowest case, with room to spare.
+const MIC_WAKE_TIMEOUT_MS = 2000;
+// An auto-flow task opens the microphone the instant the prompt audio ends, so it asks for the
+// device while the earphone is still busy being a speaker. This pause lets the output side settle
+// before the input side is claimed — the one thing a manual Start Recording press gave for free.
+const AUTO_RECORD_SETTLE_MS = 300;
+// Consecutive speech-preview sessions that end having heard nothing at all before the preview is
+// declared unavailable, and the length below which an empty session counts as a failure rather
+// than as a student who simply has not started speaking yet.
+//
+// Both halves matter. A microphone the speech service cannot hear ends sessions back to back in
+// milliseconds; a student thinking, pausing between clauses, or waiting a beat before answering
+// produces sessions that last seconds. Counting only the fast-failing ones is what keeps the
+// preview from switching itself off on somebody who is merely quiet for a moment.
+const MAX_SILENT_PREVIEW_SESSIONS = 4;
+const QUICK_FAIL_SESSION_MS = 1200;
+
+// Which English the preview is told to expect. Chrome's recognizer is markedly more accurate when
+// the variety matches the speaker — en-IN on Indian English, en-GB on British, and so on — and
+// the student's own browser locale is the best evidence available here. Anything that is not
+// English falls back to en-US rather than asking the recognizer for a language the student is not
+// being tested in. This only affects the on-screen preview; the score comes from the server's
+// transcript of the recording itself.
+export function previewLanguage(locale = globalThis.navigator?.language) {
+  return /^en([-_]|$)/i.test(String(locale || "")) ? String(locale).replace("_", "-") : "en-US";
+}
 
 // The five states a speaking attempt moves through, and what each one tells the student. The
 // disclosure about transcript-only evaluation lives in READY, where it is read before recording
@@ -52,6 +85,30 @@ const RECORD_STATES = {
   }
 };
 
+// Earphones and headsets do not hand over their microphone instantly. A Bluetooth headset is in
+// playback mode (A2DP) while the prompt audio is playing and has to renegotiate to headset mode
+// (HFP) the moment the microphone is opened; a wired headset's input has to be selected. For that
+// window the browser hands back a track that exists but is MUTED — it carries silence, and
+// `muted` is precisely the browser's flag for "this track is not delivering data right now".
+//
+// Recording through that window is what loses the start of a spoken answer, and it is also what
+// leaves the browser's speech preview with nothing to transcribe. So the recorder waits for the
+// track to go live first. The cap matters as much as the wait: a microphone that never unmutes
+// (a dead or hardware-muted headset) must still produce a recording, so the student gets the
+// honest "we couldn't hear any sound" message afterwards rather than a screen that never starts.
+export function waitForLiveMicTrack(track, timeoutMs = MIC_WAKE_TIMEOUT_MS) {
+  if (track?.muted !== true || typeof track.addEventListener !== "function") return Promise.resolve();
+  return new Promise((resolve) => {
+    const settled = () => {
+      clearTimeout(timer);
+      track.removeEventListener?.("unmute", settled);
+      resolve();
+    };
+    const timer = setTimeout(settled, timeoutMs);
+    track.addEventListener("unmute", settled);
+  });
+}
+
 // A fixed seed, so the waveform is a stable shape rather than re-randomising on every render.
 const RECORD_WAVE = [26, 48, 70, 38, 88, 56, 94, 44, 66, 82, 34, 72, 50, 90, 40, 62, 78, 30, 58, 86];
 
@@ -77,13 +134,29 @@ export default function Speaking({
   const [problem, setProblem] = useState("");
   // The words shown while speaking are the browser's own live preview: a draft for the student
   // to follow along with, never what is scored. "unavailable" = this browser has no speech
-  // recognition (or refused to use it); recording and scoring are unaffected either way.
+  // recognition (or refused to use it); "no-audio" = the preview ran but the microphone never
+  // reached it, which is what an earphone handing over its microphone looks like. The two are
+  // told apart because only one of them is something the student can do anything about.
+  // Recording and scoring are unaffected either way.
   const [previewState, setPreviewState] = useState("idle");
   // The server's transcript of the uploaded recording, which replaces the preview once the
   // answer has been evaluated. It is the text the answer was scored on.
   const [serverText, setServerText] = useState("");
   const meterRef = useRef(null);
   const micLabelRef = useRef("");
+  // Which input the browser actually gave us. Shown while recording: a student wearing earphones
+  // whose laptop microphone got picked (or the reverse) cannot tell from a level meter alone, and
+  // this is the one piece of information that explains it.
+  const [micName, setMicName] = useState("");
+  // Cleared on unmount. start() now awaits the microphone waking up, so by the time it is ready to
+  // record the component may be gone — navigating between mock questions mid-start, for instance.
+  const aliveRef = useRef(true);
+  // Which start attempt is the current one. Bumped by every start() and every reset, and checked
+  // after the awaits in start(), so a take abandoned while the microphone was still handing over
+  // releases the device instead of recording into a question the student has already left.
+  // resettingRef cannot answer this: it is cleared on a zero-delay timeout, which has long since
+  // fired by the time a headset finishes waking up.
+  const startTokenRef = useRef(0);
   const [result, setResult] = useState(() => existingResult || null);
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -120,6 +193,20 @@ export default function Speaking({
   const resettingRef = useRef(false);
   const limit =
     SPEAKING_DURATION_LIMITS[question?.type] || DEFAULT_SPEAKING_DURATION_LIMIT;
+  // Repeat Sentence (see AUTO_RECORD_TYPES) drives itself: the prompt audio ending arms the
+  // recorder, and the take is submitted either when the limit runs out or when the student says
+  // they are done — so it shows no Start/Stop Recording button at all. Conditional on the clip
+  // actually being there: without one there is nothing to end, and dropping the record button
+  // would leave a question with missing audio impossible to answer at all.
+  const autoFlow = AUTO_RECORD_TYPES.has(question?.type) && Boolean(question?.audioUrl);
+  // Set once the prompt audio has armed the recorder, so replaying the audio (its controls stay
+  // available) cannot start a second take over the top of the one already recorded. Cleared on
+  // Re-do, and on a failed start, so the student can always get another attempt.
+  const autoStartedRef = useRef(false);
+  // Set when the current recording should be submitted the moment it finalizes. The blob only
+  // exists after MediaRecorder's onstop, so the submit waits for it in the effect below rather
+  // than racing stop().
+  const autoSubmitRef = useRef(false);
 
   // Guarantees the microphone is released if this component unmounts while still recording —
   // e.g. navigating to another Mock Test question mid-recording. Stopping the tracks directly
@@ -153,15 +240,22 @@ export default function Speaking({
     }
   }
 
-  useEffect(() => () => {
-    stopMeter();
-    clearInterval(timer.current);
-    activeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    activeStreamRef.current = null;
-    recorder.current = null;
-    const speech = recognition.current;
-    recognition.current = null; // cleared first: it marks the recognizer's end as deliberate
-    try { speech?.stop(); } catch { /* already stopped */ }
+  useEffect(() => {
+    // Set on the way IN as well as cleared on the way out. StrictMode runs this effect mount →
+    // cleanup → mount in development, so a flag only ever cleared in the cleanup stays false for
+    // the whole life of the component — and every guard that reads it silently refuses to work.
+    aliveRef.current = true;
+    return () => {
+      aliveRef.current = false;
+      stopMeter();
+      clearInterval(timer.current);
+      activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+      activeStreamRef.current = null;
+      recorder.current = null;
+      const speech = recognition.current;
+      recognition.current = null; // cleared first: it marks the recognizer's end as deliberate
+      try { speech?.stop(); } catch { /* already stopped */ }
+    };
   }, []);
 
   useEffect(() => {
@@ -177,6 +271,16 @@ export default function Speaking({
     return () => URL.revokeObjectURL?.(url);
   }, [blob]);
 
+  // Sends an auto-flow take as soon as the recording it was flagged for has finalized. The flag is
+  // cleared before submitting, so a failed submit leaves the recording on screen with a working
+  // Submit button rather than retrying itself.
+  useEffect(() => {
+    if (!blob || !autoSubmitRef.current) return;
+    autoSubmitRef.current = false;
+    submit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed to the finished recording only
+  }, [blob]);
+
   function stop() {
     if (!recorder.current) return;
     clearInterval(timer.current);
@@ -190,6 +294,7 @@ export default function Speaking({
   }
 
   function start() {
+    const token = (startTokenRef.current += 1);
     setResult(null);
     setBlob(null);
     setTranscript("");
@@ -206,10 +311,27 @@ export default function Speaking({
       return;
     }
     navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
+      // Echo cancellation and noise suppression are asked for explicitly rather than left to the
+      // browser's default: a student wearing earphones is listening to the prompt on the same
+      // device that is about to record them, and without these the headset's own feed of that
+      // prompt audio can be captured alongside their voice.
+      .getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+      .then(async (stream) => {
+        // Assigned before the await, so unmounting mid-start still releases the device.
         activeStreamRef.current = stream;
-        micLabelRef.current = stream.getAudioTracks?.()[0]?.label || "";
+        const track = stream.getAudioTracks?.()[0];
+        micLabelRef.current = track?.label || "";
+        setMicName(track?.label || "");
+        // The device handover. See waitForLiveMicTrack: a headset's microphone is not ready the
+        // instant getUserMedia resolves, and recording into that gap is silence.
+        if (autoFlow) await new Promise((resolve) => setTimeout(resolve, AUTO_RECORD_SETTLE_MS));
+        await waitForLiveMicTrack(track);
+        // Gone, reset, or already recording via another path while we waited: release and stop.
+        if (!aliveRef.current || token !== startTokenRef.current || recorder.current) {
+          stream.getTracks().forEach((t) => t.stop());
+          if (activeStreamRef.current === stream) activeStreamRef.current = null;
+          return;
+        }
         const mediaRecorder = new MediaRecorder(stream, RECORDER_OPTIONS);
         recorder.current = mediaRecorder;
         mediaRecorder.ondataavailable = (event) => {
@@ -237,7 +359,12 @@ export default function Speaking({
         timer.current = setInterval(() => {
           elapsed.current += 1;
           setSeconds(elapsed.current);
-          if (elapsed.current >= limit) stop();
+          if (elapsed.current >= limit) {
+            // Running out of time is the end of an auto-flow attempt, not a pause: the take goes
+            // off for scoring by itself, exactly as it does in the real test.
+            if (autoFlow) autoSubmitRef.current = true;
+            stop();
+          }
         }, 1000);
         // Live preview. Entirely separate from the recorder: nothing here can start, stop or
         // restart MediaRecorder, and any failure only switches the preview off.
@@ -247,12 +374,14 @@ export default function Speaking({
         } else {
           setPreviewState("listening");
           let earlier = ""; // text of sessions the browser has already ended, kept across restarts
+          let silentSessions = 0; // consecutive fast failures — see MAX_SILENT_PREVIEW_SESSIONS
           const listen = () => {
             const speech = new SpeechRecognition();
             let session = ""; // everything this session has heard so far, rebuilt from its whole list
+            const openedAt = Date.now();
             speech.continuous = true;
             speech.interimResults = true;
-            speech.lang = "en-US";
+            speech.lang = previewLanguage();
             speech.onresult = (event) => {
               if (resettingRef.current || recognition.current !== speech) return;
               // Rebuilt from the full result list every time rather than appended to: a phrase that
@@ -265,7 +394,9 @@ export default function Speaking({
             speech.onerror = (event) => {
               if (["not-allowed", "service-not-allowed", "audio-capture", "network", "language-not-supported"].includes(event?.error)) {
                 if (recognition.current === speech) recognition.current = null; // do not restart
-                setPreviewState("unavailable");
+                // "audio-capture" means the service could not get the microphone at all — a
+                // device problem the student can act on, not a browser that cannot do previews.
+                setPreviewState(event?.error === "audio-capture" ? "no-audio" : "unavailable");
               }
             };
             speech.onend = () => {
@@ -273,6 +404,21 @@ export default function Speaking({
               // the preview, so while the student is still recording a new session continues it.
               if (recognition.current !== speech) return;
               earlier = `${earlier} ${session}`.replace(/\s+/g, " ").trim();
+              // A microphone the speech service cannot hear — an earphone still handing over, or
+              // one the service was not given — ends session after session instantly. Restarting
+              // for ever leaves "Listening..." on screen for the whole answer and never admits
+              // that no words are coming, so the preview gives up and says so instead.
+              //
+              // Only sessions that BOTH heard nothing and died immediately count. A session that
+              // ran its course without words is a student pausing, not a broken microphone, and
+              // cutting their preview off for thinking was the bug this clause is written against.
+              const failedFast = !session.trim() && Date.now() - openedAt < QUICK_FAIL_SESSION_MS;
+              silentSessions = failedFast ? silentSessions + 1 : 0;
+              if (silentSessions >= MAX_SILENT_PREVIEW_SESSIONS) {
+                recognition.current = null;
+                setPreviewState("no-audio");
+                return;
+              }
               try { listen(); } catch { recognition.current = null; setPreviewState("unavailable"); }
             };
             recognition.current = speech;
@@ -281,9 +427,33 @@ export default function Speaking({
           try { listen(); } catch { recognition.current = null; setPreviewState("unavailable"); }
         }
       })
-      .catch(() =>
-        toast.error("Microphone permission is required. Check your browser permissions and try again."),
-      );
+      .catch(() => {
+        // An auto-flow task has no record button to fall back on, so a refused or unavailable
+        // microphone must leave the prompt audio able to arm the recorder again.
+        autoStartedRef.current = false;
+        toast.error("Microphone permission is required. Check your browser permissions and try again.");
+      });
+  }
+
+  // The prompt audio finishing is the only thing that starts an auto-flow recording. Guarded on
+  // every state that means an attempt already happened, so a replay of the audio is just a replay.
+  function promptAudioEnded() {
+    if (!autoFlow || autoStartedRef.current) return;
+    if (recording || blob || busy || result) return;
+    autoStartedRef.current = true;
+    start();
+  }
+
+  // Submitting an auto-flow take while it is still being recorded: stop first, then let the effect
+  // below send it once the blob exists. Manual tasks are unchanged — their Submit only ever runs
+  // against a finished recording.
+  function submitClicked() {
+    if (autoFlow && recording) {
+      autoSubmitRef.current = true;
+      stop();
+      return;
+    }
+    submit();
   }
 
   async function submit() {
@@ -347,6 +517,12 @@ export default function Speaking({
 
   function resetQuestion() {
     resettingRef.current = true;
+    // Re-arm the auto flow: the next play of the prompt audio starts a fresh take, and the take
+    // being thrown away must not be submitted on its way out.
+    autoStartedRef.current = false;
+    autoSubmitRef.current = false;
+    // Abandons any start attempt still waiting on a microphone (see startTokenRef).
+    startTokenRef.current += 1;
     clearInterval(timer.current);
     timer.current = null;
     if (recorder.current) {
@@ -376,6 +552,7 @@ export default function Speaking({
     setBusy(false);
     setRetrying(false);
     setShowAnswer(false);
+    setMicName("");
     // Allow a future recording's onstop/onresult to set blob/transcript normally again.
     setTimeout(() => {
       resettingRef.current = false;
@@ -404,6 +581,15 @@ export default function Speaking({
   // One source of truth for which of the five states the workspace is in, read in priority
   // order: a scored result wins over everything, then evaluation, then live recording.
   const recordState = result ? "result" : busy ? "evaluating" : recording ? "recording" : blob ? "recorded" : "ready";
+  // An auto-flow task has no record button, so what happens next has to be said rather than shown.
+  // The READY text keeps its standard wording — the transcript-only disclosure included — and only
+  // adds how recording begins.
+  let stateNote = RECORD_STATES[recordState].note;
+  if (autoFlow && recordState === "ready") {
+    stateNote = `${stateNote} Recording starts on its own as soon as the audio has finished playing — there is no button to press.`;
+  } else if (autoFlow && recordState === "recording") {
+    stateNote = `Repeat the sentence now. Your answer is submitted automatically after ${limit} seconds, or press Submit as soon as you have finished.`;
+  }
   return (
     <div className="task-layout">
       <section className="panel task-main">
@@ -461,7 +647,12 @@ export default function Speaking({
           )
         )}
         {question?.audioUrl && (
-          <audio className="audio" controls src={mediaUrl(question.audioUrl)} />
+          <audio
+            className="audio"
+            controls
+            src={mediaUrl(question.audioUrl)}
+            onEnded={autoFlow ? promptAudioEnded : undefined}
+          />
         )}
         {question?.type === "repeat-sentence" && !testSessionId && question?._id && (
           <>
@@ -506,13 +697,18 @@ export default function Speaking({
           )}
 
           <h3>{RECORD_STATES[recordState].title}</h3>
-          <p className="muted" role={problem ? "alert" : undefined}>{problem || RECORD_STATES[recordState].note}</p>
+          <p className="muted" role={problem ? "alert" : undefined}>{problem || stateNote}</p>
           {recordState === "recording" && (
             <div style={{ width: "min(320px, 85%)", margin: "10px auto 0" }}>
               <div role="meter" aria-label="Microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(micLevel * 100)} style={{ height: 6, borderRadius: 3, background: "rgba(127,127,127,.25)", overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${Math.round(micLevel * 100)}%`, background: "var(--success)", transition: "width 80ms linear" }} />
               </div>
-              <p className="muted" style={{ marginTop: 6, fontSize: ".85rem" }}>Microphone level</p>
+              {/* Named, not just metered. With earphones on, "Microphone level: 0" is ambiguous
+                  between a muted headset and the laptop microphone being the selected input, and
+                  only the device name tells the student which one they are looking at. */}
+              <p className="muted" style={{ marginTop: 6, fontSize: ".85rem" }}>
+                {micName ? `Microphone level — ${micName}` : "Microphone level"}
+              </p>
             </div>
           )}
         </div>
@@ -520,12 +716,14 @@ export default function Speaking({
           const finalText = serverText || "";
           const shown = finalText || transcript;
           const heading = finalText ? "Final transcript" : recording ? "Live transcript" : "Transcript";
+          const previewDown = previewState === "unavailable" || previewState === "no-audio";
           let status;
           if (finalText) status = "Final transcript received from the server.";
           else if (recording && previewState === "unavailable") status = "Live preview is unavailable in this browser. Your recording is still being captured; the final transcript will appear after it is processed.";
+          else if (recording && previewState === "no-audio") status = `No sound is reaching the live preview${micName ? ` from "${micName}"` : ""}. If you are wearing earphones, check that the microphone you are speaking into is the one your browser has selected. Your recording is still being captured; the final transcript will appear after it is processed.`;
           else if (recording && !transcript) status = micLevel > 0.05 ? "Listening..." : "Waiting for you to speak...";
           else if (recording) status = "Listening...";
-          else if (blob && !result) status = previewState === "unavailable" ? "Recording completed. The transcript will appear after your answer is processed." : "Recording completed.";
+          else if (blob && !result) status = previewDown ? "Recording completed. The transcript will appear after your answer is processed." : "Recording completed.";
           else status = "";
           return (
             <div className="transcript" aria-live="polite">
@@ -556,16 +754,19 @@ export default function Speaking({
             )}
             {/* The primary tier moves as the task does: recording is the point of the screen
                 until a take exists, after which submitting it is. The two are never primary at
-                the same time, so there is always exactly one obvious next step. */}
-            <Button
-              variant={blob && !recording ? "secondary" : "primary"}
-              className={recording ? "btn--record is-recording" : "btn--record"}
-              icon={recording ? <Square/> : <Mic/>}
-              onClick={recording ? stop : start}
-              disabled={busy}
-            >
-              {recording ? "Stop Recording" : "Start Recording"}
-            </Button>
+                the same time, so there is always exactly one obvious next step. Omitted entirely
+                for an auto-flow task, which has nothing for the student to start or stop. */}
+            {!autoFlow && (
+              <Button
+                variant={blob && !recording ? "secondary" : "primary"}
+                className={recording ? "btn--record is-recording" : "btn--record"}
+                icon={recording ? <Square/> : <Mic/>}
+                onClick={recording ? stop : start}
+                disabled={busy}
+              >
+                {recording ? "Stop Recording" : "Start Recording"}
+              </Button>
+            )}
             {replayUrl && (
               <Button
                 variant="tertiary"
@@ -576,13 +777,15 @@ export default function Speaking({
                 Replay Recording
               </Button>
             )}
+            {/* Live during an auto-flow recording as well: it is how a student who has finished
+                repeating the sentence sends the answer without waiting out the full limit. */}
             <Button
               variant="primary"
               icon={<Sparkles/>}
-              disabled={!blob}
+              disabled={!blob && !(autoFlow && recording)}
               loading={busy}
               loadingLabel="Evaluating..."
-              onClick={submit}
+              onClick={submitClicked}
             >
               Submit for AI Feedback
             </Button>
