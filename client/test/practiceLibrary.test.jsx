@@ -171,9 +171,11 @@ describe("filters", () => {
   it("searches task labels", async () => {
     renderHub();
     await screen.findByText("Read Aloud");
-    fireEvent.change(screen.getByLabelText("Search task types"), { target: { value: "essay" } });
+    fireEvent.change(screen.getByLabelText("Search task types"), { target: { value: "email" } });
     await waitFor(() => expect(screen.queryByText("Read Aloud")).not.toBeInTheDocument());
-    expect(screen.getByText("Write Essay")).toBeInTheDocument();
+    expect(screen.getByText("Write Email")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Search task types"), { target: { value: "essay" } });
+    expect(await screen.findByText("No task types match these filters")).toBeInTheDocument(); // switched off
   });
 
   it("explains an empty result instead of showing a blank panel", async () => {

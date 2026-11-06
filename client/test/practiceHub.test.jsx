@@ -92,11 +92,11 @@ describe("Practice Hub", () => {
   it("counts Write Email towards its section's ready tally, although the question bank is empty", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    // Writing has three listed tasks: SWT (no rows in this fixture), Write Email (bundled),
-    // Write Essay (unsupported). Only the bundled one is ready.
+    // Writing lists two tasks: SWT (no rows in this fixture) and Write Email (bundled). Write Essay
+    // is switched off and hidden, so it is not counted. Only the bundled one is ready.
     // findByText, not getByText: the call having been made does not mean the state it sets has
     // rendered yet, and until it does the tally reads "…".
-    expect(await screen.findByText("1/3 ready")).toBeInTheDocument();
+    expect(await screen.findByText("1/2 ready")).toBeInTheDocument();
   });
 
   it("opens the Write Email PDF page when the row is clicked", async () => {
@@ -106,11 +106,11 @@ describe("Practice Hub", () => {
     expect(await screen.findByText("Write Email — Sample Emails")).toBeInTheDocument();
   });
 
-  it("Write Essay is switched off (Coming Soon, not clickable); every other listed type is supported", async () => {
+  it("Write Essay is switched off and hidden from the hub entirely; no task shows 'Coming Soon'", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    expect(screen.getAllByText("Coming Soon")).toHaveLength(1);
-    expect(screen.getByText("Write Essay").closest(".practice-row").querySelector(".practice-row-badge.soon")).not.toBeNull();
+    expect(screen.queryByText("Write Essay")).not.toBeInTheDocument();
+    expect(screen.queryByText("Coming Soon")).not.toBeInTheDocument();
   });
 
   it("does not show an AI Score badge on a purely objective task", async () => {
@@ -136,13 +136,6 @@ describe("Practice Hub", () => {
     // mocked DB question is what proves the navigation — it no longer has a bundled set of its
     // own to fall back on.
     expect(await screen.findByText("Read Aloud 1", { selector: "h2" })).toBeInTheDocument(); // "<task> <n>", not the stored title
-  });
-
-  it("clicking the disabled Write Essay row does not open a practice session", async () => {
-    renderAt("/practice", studentAuthUser());
-    await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    fireEvent.click(screen.getByText("Write Essay").closest(".practice-row"));
-    expect(screen.queryByText("Write Essay 1", { selector: "h2" })).not.toBeInTheDocument();
   });
 
   it("clicking Multiple Choice Single (reading) navigates into the reading practice session", async () => {

@@ -29,7 +29,7 @@ export const PRACTICE_TASKS = {
     // Content is client/public/writing-resources/write-email-samples.pdf, rendered by
     // WriteEmailPdf — 12 worked samples to read, with no submission and so nothing AI-scored.
     { slug: "write-email", label: "Write Email", supported: true, hasAI: false, bundledContent: true, contentLabel: "Samples" },
-    { slug: "essay", label: "Write Essay", supported: false, hasAI: true }
+    { slug: "essay", label: "Write Essay", supported: false, hidden: true, hasAI: true }
   ],
   reading: [
     { slug: "mcq-multiple", label: "Multiple Choice Multiple", supported: true, hasAI: false },

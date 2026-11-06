@@ -193,8 +193,9 @@ export default function PracticeHub() {
     s => sectionFilter === "all" || s === sectionFilter);
 
   function tasksFor(section) {
+    // `hidden` tasks are switched off completely: not even a "Coming Soon" row.
     return PRACTICE_TASKS[section].filter(
-      (task) => !query || task.label.toLowerCase().includes(query));
+      (task) => !task.hidden && (!query || task.label.toLowerCase().includes(query)));
   }
 
   const anyVisible = visibleSections.some(s => tasksFor(s).length > 0);
@@ -263,7 +264,7 @@ export default function PracticeHub() {
               const SectionIcon = SECTION_ICONS[section];
               const tasks = tasksFor(section);
               if (!tasks.length) return null;
-              const allTasks = PRACTICE_TASKS[section];
+              const allTasks = PRACTICE_TASKS[section].filter((task) => !task.hidden);
               const readyCount = available
                 ? allTasks.filter(
                     (task) => task.supported && taskHasContent(available, section, task),
