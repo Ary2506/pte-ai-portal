@@ -54,7 +54,7 @@ describe("Phase 20 — Fill in the Blanks, inline dropdown (reading)", () => {
       }]
     });
     renderAt("/reading?type=fib-dropdown", studentAuthUser());
-    await screen.findByText("FIB");
+    await screen.findByText("Fill in the Blanks Dropdown - 1");
     expect(document.querySelector(".dropdown-blank .blank-select")).toBeInTheDocument();
     expect(screen.getByText(/The committee will/)).toBeInTheDocument();
     expect(document.querySelector(".options")).not.toBeInTheDocument();
@@ -73,7 +73,7 @@ describe("Phase 20 — Fill in the Blanks, Drag and Drop (reading)", () => {
       submission: { _id: "s1", score: 2, maxScore: 2, evaluationType: "objective", evaluationStatus: "COMPLETED", feedback: { correct: true, feedback: ["All blanks filled correctly!"] } }
     });
     renderAt("/reading?type=fill-blanks-dragdrop", studentAuthUser());
-    await screen.findByText("Drag Fill");
+    await screen.findByText("Fill in the Blanks Drag/Drop - 1");
     // The word pool only appears once the placement state (set in a useEffect) has flushed —
     // wait for it rather than assuming it's there synchronously right after the title renders.
     fireEvent.click(await screen.findByText("cat"));
@@ -100,7 +100,7 @@ describe("Phase 20 — Fill in the Blanks, Drag and Drop (reading)", () => {
   it("clicking a filled blank clears it back to the word pool", async () => {
     api.questions.mockResolvedValue({ questions: [DRAG_Q] });
     renderAt("/reading?type=fill-blanks-dragdrop", studentAuthUser());
-    await screen.findByText("Drag Fill");
+    await screen.findByText("Fill in the Blanks Drag/Drop - 1");
 
     fireEvent.click(await screen.findByText("cat"));
     const blanks = document.querySelectorAll(".drag-fill-blank");
@@ -117,7 +117,7 @@ describe("Phase 20 — Fill in the Blanks, Drag and Drop (reading)", () => {
   it("keeps Submit disabled until every blank is filled", async () => {
     api.questions.mockResolvedValue({ questions: [DRAG_Q] });
     renderAt("/reading?type=fill-blanks-dragdrop", studentAuthUser());
-    await screen.findByText("Drag Fill");
+    await screen.findByText("Fill in the Blanks Drag/Drop - 1");
     expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
 
     fireEvent.click(await screen.findByText("cat"));
@@ -138,7 +138,7 @@ describe("Phase 20 — Highlight Incorrect Words (listening)", () => {
       submission: { _id: "s2", score: 2, maxScore: 2, evaluationType: "objective", evaluationStatus: "COMPLETED", feedback: { correct: true, feedback: [] } }
     });
     renderAt("/listening?type=highlight-incorrect-words", studentAuthUser());
-    await screen.findByText("Highlight");
+    await screen.findByText("Highlight Incorrect Words - 1");
 
     expect(document.querySelector('audio[src="https://example.com/clip.mp3"]')).toBeInTheDocument();
     const words = document.querySelectorAll(".highlight-word");
@@ -174,7 +174,7 @@ describe("Phase 22 — Listening Fill in the Blanks shows the blanked passage al
       }]
     });
     renderAt("/listening?type=fill-blanks-typed", studentAuthUser());
-    await screen.findByText("Library Hours");
+    await screen.findByText("Fill in the Blanks - 1");
     expect(document.querySelector('audio[src="https://example.com/lib.mp3"]')).toBeInTheDocument();
     // One input per blank in the passage, rather than a single free-text box.
     expect(document.querySelectorAll(".listening-fill-input").length).toBe(2);
@@ -188,7 +188,7 @@ describe("Phase 20 — Select Missing Word (listening) reuses the choice UI with
       questions: [{ _id: "smw1", section: "listening", type: "select-missing-word", title: "Missing Word", prompt: "Select the missing word.", audioUrl: "https://example.com/mw.mp3", options: ["quickly", "slowly", "never"], evaluationType: "objective" }]
     });
     renderAt("/listening?type=select-missing-word", studentAuthUser());
-    await screen.findByText("Missing Word");
+    await screen.findByText("Select Missing Word - 1");
     expect(document.querySelector('audio[src="https://example.com/mw.mp3"]')).toBeInTheDocument();
     expect(document.querySelector(".options")).toBeInTheDocument();
     expect(screen.getByText("quickly")).toBeInTheDocument();

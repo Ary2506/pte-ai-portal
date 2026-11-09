@@ -4,6 +4,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
+import { PRACTICE_TASKS } from "../src/practiceTaskRegistry.js";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -116,18 +117,28 @@ describe("Writing practice — numbered titles", () => {
   });
 });
 
-describe("Other sections are unaffected", () => {
-  it("Reading keeps its own titles", async () => {
+describe.each(["reading", "listening"])("%s practice — numbered titles", (section) => {
+  it.each(PRACTICE_TASKS[section].map((t) => [t.slug, t.label]))("%s lists its questions as '<task> - <n>'", async (slug, label) => {
+    api.questions.mockResolvedValue({ questions: topical(slug, section, ["Photosynthesis", "The Roman Empire"], { audioUrl: "/a.mp3", evaluationType: "objective" }) });
+    renderAt(`/${section}?type=${slug}`);
+    await screen.findByText(`${label} - 1`);
+    expect(rowTitles().map((r) => r.title)).toEqual([`${label} - 1`, `${label} - 2`]);
+    expect(screen.queryByText("Photosynthesis")).not.toBeInTheDocument();
+  });
+});
+
+describe("Numbered titles carry into the opened question", () => {
+  it("Reading", async () => {
     api.questions.mockResolvedValue({ questions: topical("mcq-single", "reading", ["Photosynthesis", "The Roman Empire"], { options: ["A", "B"], evaluationType: "objective" }) });
     renderAt("/reading?type=mcq-single");
-    await screen.findByText("Photosynthesis");
-    expect(rowTitles().map((r) => r.title)).toEqual(["Photosynthesis", "The Roman Empire"]);
+    fireEvent.click((await screen.findByText("Multiple Choice Single - 2")).closest("button"));
+    expect(heading()).toBe("Multiple Choice Single - 2");
   });
 
-  it("Listening keeps its own titles", async () => {
+  it("Listening", async () => {
     api.questions.mockResolvedValue({ questions: topical("write-dictation", "listening", ["Library Hours", "Lab Safety"], { audioUrl: "/a.mp3", evaluationType: "objective" }) });
     renderAt("/listening?type=write-dictation");
-    await screen.findByText("Library Hours");
-    expect(rowTitles().map((r) => r.title)).toEqual(["Library Hours", "Lab Safety"]);
+    fireEvent.click((await screen.findByText("Write From Dictation - 2")).closest("button"));
+    expect(heading()).toBe("Write From Dictation - 2");
   });
 });

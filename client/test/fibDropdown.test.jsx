@@ -53,7 +53,7 @@ beforeEach(() => {
 
 async function open() {
   renderAt("/reading?type=fib-dropdown");
-  await screen.findByText("Resultant Force");
+  await screen.findByText("Fill in the Blanks Dropdown - 1");
 }
 
 // Submit only enables once every blank has a value, and the state update that flips it is

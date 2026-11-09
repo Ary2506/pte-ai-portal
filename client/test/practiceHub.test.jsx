@@ -142,7 +142,7 @@ describe("Practice Hub", () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
     fireEvent.click(screen.getAllByText("Multiple Choice Single")[0].closest(".practice-row"));
-    await screen.findByText("MCQ Q");
+    await screen.findByText("Multiple Choice Single - 1");
   });
 
   it("clicking Write From Dictation navigates into the listening practice session", async () => {
@@ -151,7 +151,7 @@ describe("Practice Hub", () => {
     fireEvent.click(screen.getByText("Write From Dictation").closest(".practice-row"));
     // Listening comes from the question bank now, so the mocked DB question is what loads — it
     // no longer has a bundled set of its own to shadow it. One question means no picker list.
-    expect(await screen.findByText("Dictation Q")).toBeInTheDocument();
+    expect(await screen.findByText("Write From Dictation - 1")).toBeInTheDocument();
   });
 
   it("shows a PTE Core / PTE Academic-UKVI toggle without inventing a real content split", async () => {

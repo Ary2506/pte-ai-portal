@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
 import { pagerText } from "./pagerHelpers.js";
+import { PRACTICE_TASKS } from "../src/practiceTaskRegistry.js";
 
 vi.mock("../src/api.js", () => ({
   api: {
@@ -160,6 +161,6 @@ describe("Phase 23 — a real fetch failure shows a friendly error with Retry, d
 
     api.questions.mockResolvedValueOnce({ questions: [{ _id: "q1", section: "reading", type: "fill-blanks", title: "Q1", prompt: "P", options: ["a", "b"] }] });
     fireEvent.click(screen.getByText("Retry"));
-    await screen.findByText("Q1");
+    await screen.findByText(`${PRACTICE_TASKS.reading[0].label} - 1`);
   });
 });

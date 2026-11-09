@@ -46,6 +46,11 @@ async function findPosition(expected) {
   await waitFor(() => expect(positionText()).toBe(expected));
 }
 
+// Reading lists each question as "<task name> - <n>". Opening /reading with no ?type= lands on the
+// first task in the registry, so the name comes from there.
+const ROW_ONE = `${PRACTICE_TASKS.reading[0].label} - 1`;
+const ROW_TWO = `${PRACTICE_TASKS.reading[0].label} - 2`;
+
 describe("Practice session — multi-question navigation (Part 6/11/12)", () => {
   const TWO_MCQ = [
     { _id: "q1", section: "reading", type: "mcq-single", title: "Question One", prompt: "Pick one.", options: ["A", "B"] },
@@ -59,14 +64,14 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
 
     // Question list step first — not dropped straight into question 1.
     await screen.findByText("Done 0, Found 2 questions");
-    fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
+    fireEvent.click(screen.getByText(ROW_ONE).closest(".question-list-row"));
 
     await findPosition("Question 1 / 2");
     expect(positionText()).toBe("Question 1 / 2");
     expect(screen.getByText("Previous").closest("button")).toBeDisabled();
 
     fireEvent.click(screen.getByText("Next"));
-    await screen.findByText("Question Two");
+    await screen.findByText(ROW_TWO);
     expect(positionText()).toBe("Question 2 / 2");
     expect(screen.getByText("Next").closest("button")).toBeDisabled();
   });
@@ -77,11 +82,11 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     renderAt("/reading", studentAuthUser());
 
     await screen.findByText("Done 0, Found 2 questions");
-    fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
+    fireEvent.click(screen.getByText(ROW_ONE).closest(".question-list-row"));
 
     await findPosition("Question 1 / 2");
     fireEvent.click(screen.getByText("Next"));
-    await screen.findByText("Question Two");
+    await screen.findByText(ROW_TWO);
     fireEvent.click(screen.getByText("Previous"));
     await findPosition("Question 1 / 2");
     expect(api.submit).not.toHaveBeenCalled();
@@ -93,8 +98,8 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     renderAt("/reading", studentAuthUser());
 
     await screen.findByText("Done 1, Found 2 questions");
-    const row1 = screen.getByText("Question One").closest(".question-list-row");
-    const row2 = screen.getByText("Question Two").closest(".question-list-row");
+    const row1 = screen.getByText(ROW_ONE).closest(".question-list-row");
+    const row2 = screen.getByText(ROW_TWO).closest(".question-list-row");
     expect(row1).toHaveTextContent("Done · 1/1");
     expect(row2).toHaveTextContent("Undone");
   });
@@ -105,7 +110,7 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     renderAt("/reading", studentAuthUser());
 
     await screen.findByText("Done 0, Found 2 questions");
-    fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
+    fireEvent.click(screen.getByText(ROW_ONE).closest(".question-list-row"));
     await findPosition("Question 1 / 2");
 
     fireEvent.click(screen.getByText("Back to list"));
@@ -132,10 +137,10 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
     renderAt("/reading", studentAuthUser());
     await screen.findByText("Done 0, Found 2 questions");
 
-    fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "Two" } });
+    fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "- 2" } });
     await screen.findByText("Done 0, Found 1 question");
-    expect(screen.queryByText("Question One")).not.toBeInTheDocument();
-    expect(screen.getByText("Question Two")).toBeInTheDocument();
+    expect(screen.queryByText(ROW_ONE)).not.toBeInTheDocument();
+    expect(screen.getByText(ROW_TWO)).toBeInTheDocument();
     // The status-filter tabs still show the true unfiltered counts, unaffected by the search term.
     expect(screen.getByText("All").closest("button")).toHaveTextContent("All2");
   });
@@ -148,7 +153,7 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
 
     fireEvent.change(screen.getByPlaceholderText("Search by title or question number..."), { target: { value: "2" } });
     await screen.findByText("Done 0, Found 1 question");
-    expect(screen.getByText("Question Two")).toBeInTheDocument();
+    expect(screen.getByText(ROW_TWO)).toBeInTheDocument();
   });
 
   it("Phase 21: an unmatched search shows a real empty state, not a fabricated result", async () => {
@@ -164,7 +169,7 @@ describe("Practice session — multi-question navigation (Part 6/11/12)", () => 
   it("does not show question-navigation chrome when only one question exists", async () => {
     api.questions.mockResolvedValue({ questions: [TWO_MCQ[0]] });
     renderAt("/reading", studentAuthUser());
-    await screen.findByText("Question One");
+    await screen.findByText(ROW_ONE);
     expect(screen.queryByText(/Question 1 \//)).not.toBeInTheDocument();
   });
 });
@@ -185,7 +190,7 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
     });
     renderAt("/reading?type=mcq-multiple", studentAuthUser());
 
-    await screen.findByText("Pick two");
+    await screen.findByText("Multiple Choice Multiple - 1");
     fireEvent.click(screen.getByText("Apple"));
     fireEvent.click(screen.getByText("Carrot"));
     fireEvent.click(screen.getByText("Submit Answer"));
@@ -199,7 +204,7 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
   it("keeps Submit disabled until at least one option is selected", async () => {
     api.questions.mockResolvedValue({ questions: [MCQ_MULTI] });
     renderAt("/reading?type=mcq-multiple", studentAuthUser());
-    await screen.findByText("Pick two");
+    await screen.findByText("Multiple Choice Multiple - 1");
     expect(screen.getByRole("button", { name: "Submit Answer" })).toBeDisabled();
     fireEvent.click(screen.getByText("Apple"));
     expect(screen.getByRole("button", { name: "Submit Answer" })).not.toBeDisabled();
@@ -208,7 +213,7 @@ describe("Multiple Choice Multiple (mcq-multiple) — Phase 17 new UI", () => {
   it("deep-links from the URL's ?type= param directly to mcq-multiple, not the section's default tab", async () => {
     api.questions.mockResolvedValue({ questions: [MCQ_MULTI] });
     renderAt("/reading?type=mcq-multiple", studentAuthUser());
-    await screen.findByText("Pick two");
+    await screen.findByText("Multiple Choice Multiple - 1");
     expect(screen.getByText("Multiple Choice Multiple").closest("button")).toHaveClass("active");
   });
 });
@@ -236,11 +241,11 @@ describe("Reopening a completed question starts a fresh attempt", () => {
 
     // The badge still shows the earlier result, which is where past performance belongs now.
     await screen.findByText("Done 1, Found 2 questions");
-    fireEvent.click(screen.getByText("Question One").closest(".question-list-row"));
+    fireEvent.click(screen.getByText(ROW_ONE).closest(".question-list-row"));
 
     // ...but the question itself opens clean: no stored verdict, nothing preselected, and
     // opening a question must never fire a submission of its own.
-    expect(await screen.findByText("Question One")).toBeInTheDocument();
+    expect(await screen.findByText(ROW_ONE)).toBeInTheDocument();
     expect(screen.queryByText("Correct!")).not.toBeInTheDocument();
     const bOption = screen.getByText("B").closest("label");
     expect(bOption.querySelector("input")).not.toBeChecked();

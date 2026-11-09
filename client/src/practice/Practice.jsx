@@ -122,17 +122,20 @@ function positionKey(section, slug) {
 
 // Speaking and Writing practice shows "<task name> <n>" in place of each question's own topic title
 // ("Read Aloud 3", not "Read Aloud - Climate Change"). Two tasks keep the title they have always had:
-// Describe Image and Summarize Written Text.
+// Describe Image and Summarize Written Text. Reading and Listening number every task, as
+// "<task name> - <n>" ("Multiple Choice Multiple - 2").
 //
 // This is a display copy only. The stored question is untouched, and so are the ids, which is what
 // progress and submissions are keyed on. `n` is the question's position in the list, so it is the
 // same number the list already shows as "#n", and the same after a refresh or when moving between
 // questions. Only this practice page is affected: Mock Tests render their questions elsewhere.
-const KEEP_OWN_TITLE = { speaking: "describe-image", writing: "swt" };
+const KEEP_OWN_TITLE = { speaking: "describe-image", writing: "swt", reading: null, listening: null };
+const TITLE_SEPARATOR = { reading: " - ", listening: " - " };
 
 function withNumberedTitles(questions, section, slug, label) {
   if (!(section in KEEP_OWN_TITLE) || slug === KEEP_OWN_TITLE[section]) return questions;
-  return questions.map((question, index) => ({ ...question, title: `${label} ${index + 1}` }));
+  const separator = TITLE_SEPARATOR[section] || " ";
+  return questions.map((question, index) => ({ ...question, title: `${label}${separator}${index + 1}` }));
 }
 
 function PracticeTask({ section, label, slug, taskComponents }) {
