@@ -69,6 +69,8 @@ describe("Admin — account-created message", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte099" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "New Student" } });
+    // A paid account needs at least one section ticked before Create user is enabled.
+    fireEvent.click(screen.getByLabelText("Speaking"));
     fireEvent.click(screen.getByText("Create user"));
 
     await screen.findByText("Account created");
@@ -99,6 +101,8 @@ describe("Admin — account-created message", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte098" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "Another Student" } });
+    // A paid account needs at least one section ticked before Create user is enabled.
+    fireEvent.click(screen.getByLabelText("Speaking"));
     fireEvent.click(screen.getByText("Create user"));
 
     // Existing behaviour, unchanged: the toast still carries the temporary password.

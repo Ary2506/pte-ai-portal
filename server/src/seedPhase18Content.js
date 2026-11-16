@@ -315,7 +315,7 @@ const PHASE18_TEXT_ONLY_CANDIDATES = [
 // for the remainder — those questions simply were not created. See the Phase 18 report for the
 // exact shortfall and what a follow-up batch needs to cover.
 // ---------------------------------------------------------------------------
-const describeImagePrompt = "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing.";
+const describeImagePrompt = "Look at the image below. Please speak into the microphone and describe in detail what the image is showing.";
 const describeImage = [
   ["Describe Image 1 — Rainfall Bar Chart", "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260902_190455_72c567e6-d7e4-4ff0-9668-23a6fe6885eb.png", "easy"],
   ["Describe Image 2 — Revenue Line Graph", "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260902_190455_8a63ff94-8259-4ed8-b58c-b8530d7349da.png", "medium"],
@@ -337,7 +337,7 @@ const repeatSentence = [
   section: "speaking", type: "repeat-sentence", title, prompt: repeatSentencePrompt, audioUrl, difficulty
 }));
 
-const sstListeningPrompt = "Listen to the passage. Then, in 10 minutes, write a summary for someone who has not heard it. Your summary should be 50–70 words.";
+const sstListeningPrompt = "Listen to the passage. Write a summary for someone who has not heard it. Your summary should be 50–70 words.";
 const sstListening = [
   ["Summarize Spoken Text 1 — Bilingualism", "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260902_190733_830eb6f6-3d15-4637-9fa8-847a06267478.wav", "medium"],
   ["Summarize Spoken Text 2 — Postal Relay Systems", "https://d8j0ntlcm91z4.cloudfront.net/user_3HdRF1J7vWgr99MGyL631BlHLcd/hf_20260902_190818_7d3b83ec-a5b3-46bc-a136-4e6db1ed14bd.wav", "medium"],
@@ -447,7 +447,7 @@ const PHASE23_TEXT_CANDIDATES = [...clientReadAloud];
 // PHASE18_ALL_CANDIDATES, or the idempotent seeder will silently re-insert these 8 stale
 // questions the next time the server restarts (which is exactly what happened once already).
 // ---------------------------------------------------------------------------
-const describeImagePrompt2 = "Look at the image below. In 25 seconds, please speak into the microphone and describe in detail what the image is showing.";
+const describeImagePrompt2 = "Look at the image below. Please speak into the microphone and describe in detail what the image is showing.";
 const clientDescribeImage = [
   ["Describe Image 6", "/question-images/describe-image/describe_image_01.jpg", "The following graph gives information about the average rainfall in inches in New York, Dallas, Phoenix, and Honolulu. As we can see from the graph, New York has the largest amount, 47.25 inches, next to Dallas, 33.70 inches. When we look at the other two cities, they are significantly smaller than the first two, with Phoenix amounting to 7.66 and Honolulu, 22.02. In conclusion, the average rainfalls in the cities are largely affected by geographic locations."],
   ["Describe Image 7", "/question-images/describe-image/describe_image_02.jpg", "The following picture gives information about instant coffee. You can see from this graph that hot water is poured from a kettle into the cup. What's more, a packet of instant coffee is added into the cup. Then, the third step is that creamer from a sachet is poured into the cup. After that, sugar is added and a spoon stirs the coffee until everything dissolves evenly. Finally, the coffee is ready and is enjoyed by drinking. To sum up, this graph tells about how coffee is processed."],

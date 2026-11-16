@@ -67,39 +67,41 @@ describe("Speaking duration cap — per-type limits", () => {
   // is unreachable through the routed UI, and the only test that could exercise it would be one
   // asserting on a type a student can never actually open. The constant stays as the safety net
   // for a future task added to the registry without its own entry.
-  it("shows the 60s limit for Respond to a Situation", async () => {
+  it("shows the 40s limit for Respond to a Situation", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("respond-to-situation", "Respond to a Situation")] });
     renderAt("/speaking?type=respond-to-situation", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 01:00");
+    expect(document.querySelector(".speaking-duration-cap")).toHaveTextContent("Limit 00:40");
   });
 
-  it("shows the 45s limit for Read Aloud", async () => {
+  it("shows the 40s limit for Read Aloud", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("read-aloud", "Read Aloud")] });
     renderAt("/speaking?type=read-aloud", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:45");
+    expect(document.querySelector(".speaking-duration-cap")).toHaveTextContent("Limit 00:40");
+    // The limit is shown once, above the task; the recording box carries only its state label.
+    expect(document.querySelector(".record-box")).not.toHaveTextContent(/Limit|\d\d:\d\d/);
   });
 
   it("shows the 30s limit for Repeat Sentence", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("repeat-sentence", "Repeat Sentence")] });
     renderAt("/speaking?type=repeat-sentence", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:30");
+    expect(document.querySelector(".speaking-duration-cap")).toHaveTextContent("Limit 00:30");
   });
 
-  it("shows the 60s limit for Describe Image", async () => {
+  it("shows the 40s limit for Describe Image", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("describe-image", "Describe Image")] });
     renderAt("/speaking?type=describe-image", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 01:00");
+    expect(document.querySelector(".speaking-duration-cap")).toHaveTextContent("Limit 00:40");
   });
 
   it("shows the 10s limit for Answer Short Question", async () => {
     api.questions.mockResolvedValue({ questions: [speakingQuestion("answer-short-question", "Answer Short Question")] });
     renderAt("/speaking?type=answer-short-question", studentAuthUser());
     await screen.findByText("Record your answer");
-    expect(document.querySelector(".record-box__timer")).toHaveTextContent("Limit 00:10");
+    expect(document.querySelector(".speaking-duration-cap")).toHaveTextContent("Limit 00:10");
   });
 });
 

@@ -911,6 +911,8 @@ html[data-theme="dark"] .alert.notice{border-color:var(--blue-softer)}
 
 .speaking-duration-cap{font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
 .speaking-duration-cap.low{color:var(--danger);font-weight:700}
+.writing-timer{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+.writing-timer.low{color:var(--danger);font-weight:700}
 
 .checkbox-label{display:flex!important;align-items:center;gap:8px;font-size:var(--text-sm);font-weight:600;color:var(--ink-soft)}
 .checkbox-label input{width:auto!important;margin:0!important}
@@ -1628,13 +1630,11 @@ html[data-theme="dark"] button:not(.btn):active{color:inherit}
    glance whether the app is listening, thinking, or waiting for them. */
 .record-box{position:relative;display:grid;justify-items:center;gap:14px;text-align:center;transition:border-color .2s ease,background .2s ease}
 .record-box__status{position:absolute;top:14px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between}
-.record-box__timer{font-size:var(--text-xs);color:var(--muted-soft)}
 .record-box h3{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;letter-spacing:-.02em;margin:0}
 .record-box p{margin:0;max-width:52ch;font-size:var(--text-sm);line-height:1.6}
 
 .record-box.is-recording{border-color:var(--record);background:var(--record-bg)}
 .record-box.is-recording .record-box__status .stat-label{color:var(--record)}
-.record-box.is-recording .record-box__timer{color:var(--record);font-weight:700}
 .record-box.is-evaluating{border-color:var(--violet);background:var(--violet-soft)}
 .record-box.is-recorded{border-color:var(--success)}
 .record-box.is-result{border-color:var(--line);opacity:.85}

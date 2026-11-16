@@ -10,13 +10,13 @@ import { mediaUrl } from "../mediaUrl.js";
 import { recordedPeakLevel, rmsOf, SILENT_RECORDING_PEAK } from "./voiceActivity.js";
 
 const SPEAKING_DURATION_LIMITS = {
-  "read-aloud": 45,
+  "read-aloud": 40,
   "repeat-sentence": 30,
-  "describe-image": 60,
-  // Listed explicitly rather than left to fall through to DEFAULT_SPEAKING_DURATION_LIMIT: this
-  // task's 60s is a deliberate choice, and leaving it implicit would silently change it again the
-  // next time the default moves (or hand 60s to whatever new task type is added without an entry).
-  "respond-to-situation": 60,
+  "describe-image": 40,
+  // Listed explicitly rather than left to fall through to DEFAULT_SPEAKING_DURATION_LIMIT, even
+  // though the value is the same: this task's 40s is a deliberate choice, and leaving it implicit
+  // would silently change it the next time the default moves.
+  "respond-to-situation": 40,
   "answer-short-question": 10,
 };
 const DEFAULT_SPEAKING_DURATION_LIMIT = 40;
@@ -683,7 +683,6 @@ export default function Speaking({
         <div className={`record-box is-${recordState}`} data-state={recordState}>
           <div className="record-box__status">
             <span className="stat-label">{RECORD_STATES[recordState].label}</span>
-            <span className="record-box__timer num-mono">{durationLabel}</span>
           </div>
 
           {recordState === "recording" ? (

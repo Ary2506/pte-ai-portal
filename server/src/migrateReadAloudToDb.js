@@ -22,7 +22,7 @@ import Question from "./models/Question.js";
 // "Read Aloud 1..21" — a title match would miss every real duplicate.
 
 const SOURCE = path.resolve("../client/content/speaking/read-aloud/read_aloud.json");
-const INSTRUCTION = "Read the passage aloud. You have 60 seconds.";
+const INSTRUCTION = "Read the passage aloud.";
 
 // Compares the words only, so punctuation or whitespace differences between the JSON and a row
 // seeded from the same source text still count as the same question.

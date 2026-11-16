@@ -38,7 +38,7 @@ function dbReadAloud(n, overrides = {}) {
     section: "speaking",
     type: "read-aloud",
     title: `Read Aloud ${n}`,
-    prompt: "Read the passage aloud. You have 60 seconds.",
+    prompt: "Read the passage aloud.",
     passage: `Passage number ${n} to be read aloud by the student.`,
     answer: `Model answer ${n}.`,
     evaluationType: "subjective",

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Eye, EyeOff, RotateCcw, Save, Sparkles } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Clock3, Eye, EyeOff, RotateCcw, Save, Sparkles } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { useToast } from "../components/toast.jsx";
@@ -9,6 +9,14 @@ import { ANSWER_MAX_LENGTH, TASK_CHAR_LIMITS, countCharacters, lengthState } fro
 
 const WRITING_WORD_RANGES = { swt: [40, 100], essay: [200, 300] };
 const WRITING_TASK_NAMES = { swt: "Summarize Written Text", essay: "Write Essay", email: "Write Email" };
+// Practice countdown per task, in seconds. It starts when the question appears; PracticeTask
+// remounts this component per question (key={question._id}), so Next/Previous start it afresh.
+// Mock Tests run their own section timer and are left alone.
+const WRITING_TIME_LIMITS = { swt: 600 };
+
+function formatMMSS(seconds) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
 
 function WordCountBadge({ count, range }) {
   if (!range) return <span className="word-count">{count} words</span>;
@@ -44,6 +52,18 @@ export default function Writing({
   // Reset per question by the key={question._id} remount PracticeTask already does.
   const [showAnswer, setShowAnswer] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const timeLimit = testSessionId ? null : WRITING_TIME_LIMITS[question?.type] ?? null;
+  // Counted against a deadline rather than by decrementing, so a throttled background tab
+  // cannot make the clock run slow.
+  const [deadline, setDeadline] = useState(() => Date.now() + (timeLimit ?? 0) * 1000);
+  const [now, setNow] = useState(() => Date.now());
+  const remaining = Math.max(0, Math.ceil((deadline - now) / 1000));
+  const timerRunning = timeLimit !== null && !result && remaining > 0;
+  useEffect(() => {
+    if (!timerRunning) return undefined;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
 
   function saveDraft() {
     onSaveDraft?.({ answer: text });
@@ -97,6 +117,10 @@ export default function Writing({
     setResult(null);
     setBusy(false);
     setRetrying(false);
+    // A fresh attempt gets the full time again.
+    const restart = Date.now();
+    setDeadline(restart + (timeLimit ?? 0) * 1000);
+    setNow(restart);
   }
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -129,6 +153,12 @@ export default function Writing({
           {/* The section, matching the other three task components — not `type`, which rendered
               the raw slug ("swt", "essay") that the breadcrumb and task tabs already show. */}
           <span className="chip">Writing</span>
+          {timeLimit !== null && !result && (
+            <span className={remaining <= 60 ? "writing-timer low" : "writing-timer"} role="timer"
+              aria-label={remaining ? `${formatMMSS(remaining)} remaining` : "Time's up"}>
+              <Clock3 size={15} /> {remaining ? formatMMSS(remaining) : "Time's up"}
+            </span>
+          )}
           <WordCountBadge
             count={wordCount}
             range={WRITING_WORD_RANGES[question?.type]}
