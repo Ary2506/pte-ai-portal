@@ -9,7 +9,6 @@ import { fmtDate, fmtDateTime } from "./adminFormat.js";
 // two call sites below (each marked with a matching comment).
 import { ExtendAllActiveButton, ExtendSubscriptionButton, RevokeSubscriptionButton } from "./AdminSubscriptionExtension.jsx";
 import { SectionCheckboxes, SectionsSummary, UserSectionsPanel } from "./AdminSectionAccess.jsx";
-import { PRACTICE_SECTIONS } from "../../practiceTaskRegistry.js";
 
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
@@ -145,7 +144,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   const [error,setError]=useState("");
   const [showCreate,setShowCreate]=useState(false);
   const [creating,setCreating]=useState(false);
-  const [form,setForm]=useState({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[...PRACTICE_SECTIONS]});
+  const [form,setForm]=useState({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[]});
   const [detailId,setDetailId]=useState(null);
   const [createdAccount,setCreatedAccount]=useState(null);
 
@@ -174,7 +173,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
       const d = await api.admin.createUser(form.paymentStatus === "PAID" ? { ...rest, sections } : rest);
       notify("success", `User "${d.user.username}" created. Temporary password: ${d.temporaryPassword} — share this with them securely.`);
       setCreatedAccount({ username: d.user.username, password: d.temporaryPassword });
-      setForm({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[...PRACTICE_SECTIONS]});
+      setForm({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[]});
       setShowCreate(false);
       load(1);
     } catch (e) { setError(e.message); } finally { setCreating(false); }
@@ -207,9 +206,11 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
           <option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option>
         </select>
       </label>
-      {/* Which sections a paid account starts with — all four unless the plan sold was partial.
-          An unpaid account is granted nothing yet; its sections are added once it is paid for. */}
+      {/* Which sections a paid account starts with. Nothing is ticked up front: the admin chooses
+          exactly what was sold, rather than unticking from a full plan. An unpaid account is
+          granted nothing yet; its sections are added once it is paid for. */}
       {form.paymentStatus === "PAID" && <SectionCheckboxes value={form.sections} onChange={sections=>setForm({...form,sections})} legend="Sections"/>}
+      {form.paymentStatus === "PAID" && !form.sections.length && <p className="muted section-purchase-hint">Tick at least one section to create a paid account.</p>}
       <Button type="submit" variant="primary" loading={creating} loadingLabel="Creating..."
         disabled={form.paymentStatus === "PAID" && !form.sections.length}>Create user</Button>
     </form>}

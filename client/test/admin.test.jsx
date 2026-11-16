@@ -109,6 +109,8 @@ describe("user creation", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte099" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "New Student" } });
+    // No section is ticked up front; a paid account needs at least one.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Speaking" }));
     fireEvent.click(screen.getByText("Create user"));
     expect(await screen.findByText(/Temporary password: Tmp12345/)).toBeInTheDocument();
     expect(api.admin.createUser).toHaveBeenCalledWith(expect.objectContaining({ username: "pte099", name: "New Student" }));

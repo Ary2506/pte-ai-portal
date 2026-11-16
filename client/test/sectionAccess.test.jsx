@@ -234,8 +234,12 @@ describe("admin — granting sections", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Create user" }));
     fireEvent.change(screen.getByPlaceholderText("pte002"), { target: { value: "pte050" } });
     fireEvent.change(screen.getByPlaceholderText("Full name"), { target: { value: "Listener" } });
-    // All four start ticked; untick three.
-    for (const name of ["Speaking", "Writing", "Reading"]) fireEvent.click(screen.getByRole("checkbox", { name }));
+    // Nothing starts ticked, so Create is disabled until a section is chosen.
+    for (const name of ["Speaking", "Writing", "Reading", "Listening"]) {
+      expect(screen.getByRole("checkbox", { name })).not.toBeChecked();
+    }
+    expect(screen.getAllByRole("button", { name: "Create user" }).at(-1)).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: "Listening" }));
     fireEvent.click(screen.getAllByRole("button", { name: "Create user" }).at(-1));
 
     await waitFor(() => expect(api.admin.createUser).toHaveBeenCalledWith(expect.objectContaining({ username: "pte050", sections: ["listening"] })));
