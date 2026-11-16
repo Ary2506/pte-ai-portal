@@ -14,6 +14,7 @@ import {
   targetGap, trajectory, PTE_MAX_SCORE
 } from "../analytics/derive.js";
 import { safeSession } from "../safeStorage.js";
+import { SectionAccessList } from "../components/SectionAccessList.jsx";
 
 function fmtLongDate(d) {
   return d
@@ -78,6 +79,9 @@ function SubscriptionCard({ user }) {
           </div>
         </div>
       )}
+      {/* The dates above are the account's: they run to the LAST section to end. When sections
+          differ, each one's own state is listed so none of them quietly runs out first. */}
+      <SectionAccessList user={user} className="stat-card-sections" />
     </div>
   );
 }

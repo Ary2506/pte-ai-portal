@@ -2,6 +2,7 @@ import express from "express";
 import Submission from "../models/Submission.js";
 import TestSession from "../models/TestSession.js";
 import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
+import { activeSections, isFullAccess } from "../utils/subscription.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { getStreakInfo, utcDateString } from "../utils/streak.js";
 
@@ -100,7 +101,9 @@ router.get("/study-plan", requireAuth, requireActiveSubscription, asyncRoute(asy
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
-  const sectionScores = ["speaking", "writing", "reading", "listening"].map(section => {
+  // Only sections the student can open right now: a plan that tells them to practise a section
+  // that is locked to them is advice they cannot act on.
+  const sectionScores = activeSections(req.user).map(section => {
     const rows = submissions.filter(s => s.section === section);
     return { section, score: rows.length ? Math.round(rows.reduce((a, s) => a + s.score, 0) / rows.length) : 0 };
   }).sort((a,b) => a.score-b.score);
@@ -109,7 +112,8 @@ router.get("/study-plan", requireAuth, requireActiveSubscription, asyncRoute(asy
     `Complete 10 ${weakest} questions`,
     "Review yesterday's mistakes for 15 minutes",
     "Learn 10 high-frequency academic words",
-    "Complete one timed mini test"
+    // A mock needs every section; a partial plan gets the nearest thing it can actually do.
+    isFullAccess(req.user) ? "Complete one timed mini test" : `Complete one timed round of ${weakest} practice`
   ], sectionScores });
 }));
 

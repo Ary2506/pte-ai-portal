@@ -8,6 +8,8 @@ import {
   ScoreRing, SectionHeader, SkillSpectrum, titleCase
 } from "../components/analytics.jsx";
 import { bySection, focusAreas, pct, ptePerformance, scored, skillBalance, summarize, targetGap, PTE_MAX_SCORE } from "../analytics/derive.js";
+import { PRACTICE_SECTIONS } from "../practiceTaskRegistry.js";
+import { canAccessSection, isFullAccess } from "../access.js";
 
 // Target Score Plan.
 //
@@ -48,14 +50,23 @@ export function weekDates(today = new Date()) {
  *
  * A suggestion derived from real section averages, stated as such on the page — not a schedule
  * the product pretends to have authored for this student personally.
+ *
+ * `allowed` is the sections the student can open, and `mockAvailable` whether they can sit a mock
+ * (which needs all four). A plan never schedules a day the student would arrive at to find locked:
+ * the weekdays rotate through `allowed` only, and without a mock Saturday is one more section day.
+ * Both default to the full set, which is the week every student got before sections were sold
+ * separately.
  */
-export function buildWeek(sections, history, mockSessions = [], today = new Date()) {
+const ALL_SECTIONS = ["speaking", "writing", "reading", "listening"];
+
+export function buildWeek(sections, history, mockSessions = [], today = new Date(), { allowed = ALL_SECTIONS, mockAvailable = true } = {}) {
+  const open = allowed.length ? allowed : ALL_SECTIONS;
   const ranked = sections
-    .filter(s => s.average !== null)
+    .filter(s => s.average !== null && open.includes(s.section))
     .sort((a, b) => a.average - b.average)
     .map(s => s.section);
   // Nothing attempted yet: suggest each section once so the week is still a usable starting point.
-  const order = ranked.length ? ranked : ["speaking", "writing", "reading", "listening"];
+  const order = ranked.length ? ranked : open;
 
   const attempts = scored(history);
   const mockDates = new Set(
@@ -63,7 +74,7 @@ export function buildWeek(sections, history, mockSessions = [], today = new Date
   const todayKey = toKey(today);
 
   return weekDates(today).map((date, i) => {
-    const kind = i === 5 ? "mock" : i === 6 ? "review" : "section";
+    const kind = i === 5 && mockAvailable ? "mock" : i === 6 ? "review" : "section";
     const section = kind === "section" ? order[i % order.length] : null;
 
     // Each kind of day is "done" for its own reason. The mock day previously counted ordinary
@@ -114,10 +125,21 @@ export default function StudyPlan({ user }) {
   const stats = useMemo(() => summarize(history), [history]);
   const sections = useMemo(() => bySection(history), [history]);
   const balance = useMemo(() => skillBalance(history), [history]);
-  const areas = useMemo(() => focusAreas(history, { limit: 3 }), [history]);
+  // What this student can actually open. A plan pointing at a locked section is advice they cannot
+  // act on, so the week and the focus areas both stay inside it.
+  const allowed = PRACTICE_SECTIONS.filter(s => canAccessSection(user, s));
+  const allowedKey = allowed.join("|");
+  const mockAvailable = isFullAccess(user);
+  const areas = useMemo(
+    () => focusAreas(history, { limit: 3 }).filter(area => !area.section || allowed.includes(area.section)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [history, allowedKey]);
   const pte = useMemo(() => ptePerformance(history), [history]);
   const gap = useMemo(() => targetGap(pte.average, user?.targetScore), [pte.average, user?.targetScore]);
-  const week = useMemo(() => buildWeek(sections, history, mockSessions), [sections, history, mockSessions]);
+  const week = useMemo(
+    () => buildWeek(sections, history, mockSessions, new Date(), { allowed, mockAvailable }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sections, history, mockSessions, allowedKey, mockAvailable]);
 
   if (loading) {
     return <Page title="Study plan" subtitle="Built from your own practice history.">

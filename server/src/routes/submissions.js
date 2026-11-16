@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import Submission from "../models/Submission.js";
 import Question from "../models/Question.js";
 import TestSession from "../models/TestSession.js";
-import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
+import { requireAuth, requireActiveSubscription, sectionDenial } from "../middleware/auth.js";
 import { expireIfNeeded } from "./testSessions.js";
 import { evaluateAnswer } from "../scoring/index.js";
 import { evaluateSubjective } from "../services/ai/index.js";
@@ -293,6 +293,16 @@ router.post("/", requireAuth, requireActiveSubscription, submissionLimiter, uplo
       }
     }
 
+    // Section access, checked before anything is uploaded or scored. The section is the
+    // question's own whenever there is one; the request's `section` field is only relied on for
+    // content with no question record. A mock answer is exempt: a mock can only be started with
+    // every section active (routes/testSessions.js), so a section lapsing partway through the
+    // paper must not lock the student out of the attempt they are sitting.
+    if (!testSession) {
+      const denied = sectionDenial(req.user, question?.section || section);
+      if (denied) return res.status(403).json(denied);
+    }
+
     const parsedAnswer = answer ? JSON.parse(answer) : undefined;
     const answerText = typeof parsedAnswer === "string" ? parsedAnswer : "";
     const responseText = transcript || answerText;
@@ -481,6 +491,12 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
   // Cost control: a completed evaluation is never re-run. Only a genuinely FAILED one may retry.
   if (submission.evaluationStatus !== "FAILED") {
     return res.status(409).json({ message: "Only a failed evaluation can be retried", code: "RETRY_NOT_ALLOWED" });
+  }
+  // A retry runs a new evaluation, so it needs the section to still be open — unless the answer
+  // belongs to a mock, which is held to the access it was started with.
+  if (!submission.testSession) {
+    const denied = sectionDenial(req.user, submission.section);
+    if (denied) return res.status(403).json(denied);
   }
 
   const question = submission.question ? await Question.findById(submission.question) : null;

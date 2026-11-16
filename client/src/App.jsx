@@ -4,7 +4,7 @@ import {
   Activity, BarChart3, BookOpen, Brain, ChevronDown, Clock3, Headphones,
   Home, LogOut, Menu, Mic, PenLine, Play, Sparkles, Target,
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
-  Eye, EyeOff, Moon, Sun, PanelLeft, Search as SearchIcon
+  Eye, EyeOff, Moon, Sun, PanelLeft, Search as SearchIcon, Lock
 } from "lucide-react";
 import { api, forceLogout } from "./api.js";
 import { Result, ObjectiveResult } from "./PracticeObjective.jsx";
@@ -26,7 +26,7 @@ import { ListeningTask } from "./practice/Listening.jsx";
 import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
-import { IconButton } from "./components/Button.jsx";
+import { ButtonLink, IconButton } from "./components/Button.jsx";
 import Footer from "./components/Footer.jsx";
 import Landing from "./landing/Landing.jsx";
 import { ToastProvider } from "./components/toast.jsx";
@@ -34,6 +34,7 @@ import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
 import { safeLocal, safeSession } from "./safeStorage.js";
+import { CurrentUserContext, lockReason, activeSectionsByExpiry } from "./access.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
 
@@ -101,6 +102,38 @@ function useAuth() {
     const timer = setTimeout(() => forceLogout(SUBSCRIPTION_EXPIRED_MESSAGE), Math.min(msRemaining, MAX_TIMEOUT_MS));
     return () => clearTimeout(timer);
   }, [user?.id, user?.subscriptionEndDate, user?.subscriptionStatus, user?.role]);
+
+  // The stored user is whatever sign-in returned, possibly weeks ago. Re-read once per load so
+  // section access reflects what the admin has granted since — and so a student signed in from
+  // before per-section access existed picks up their `sections` list. Best-effort: on failure the
+  // stored user stays, and the server enforces access regardless.
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let cancelled = false;
+    Promise.resolve()
+      .then(() => api.auth.me?.())
+      .then(data => { if (!cancelled && data?.user) updateUser(data.user); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per signed-in user, not per update
+  }, [user?.id]);
+
+  // One section running out while others carry on is not a sign-out — the account timer above
+  // handles the last one. It is a reason to re-read access, so that section locks on screen at the
+  // moment it ends instead of on the next reload.
+  const nextSectionEnd = activeSectionsByExpiry(user)
+    .map(r => new Date(r.endDate).getTime())
+    .find(t => !user?.subscriptionEndDate || t < new Date(user.subscriptionEndDate).getTime());
+  useEffect(() => {
+    if (!nextSectionEnd) return undefined;
+    const wait = Math.min(Math.max(nextSectionEnd - Date.now(), 0) + 1000, MAX_TIMEOUT_MS);
+    const timer = setTimeout(() => {
+      Promise.resolve().then(() => api.auth.me?.()).then(data => { if (data?.user) updateUser(data.user); }).catch(() => {});
+    }, wait);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextSectionEnd]);
+
   return { user, save, updateUser, logout };
 }
 
@@ -108,6 +141,15 @@ function subscriptionLabel(user) {
   if (!user) return "";
   if (user.role === "admin") return "Admin access";
   if (!user.subscriptionEndDate || user.subscriptionStatus !== "ACTIVE") return "No active subscription";
+  // When the active sections end on different dates, the account's own date (the LAST of them)
+  // would overstate how long the student has, so the one running out first is named instead.
+  // Sections sharing one date — every full plan bought at once — read exactly as before.
+  const active = activeSectionsByExpiry(user);
+  const soonest = active[0];
+  if (soonest && active.some(r => r.endDate !== soonest.endDate)) {
+    const days = Math.max(0, Math.ceil((new Date(soonest.endDate) - Date.now()) / 86400000));
+    return `${SECTION_LABELS[soonest.section]}: ${days} day${days === 1 ? "" : "s"} left`;
+  }
   const daysLeft = Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000));
   return `${daysLeft} day${daysLeft === 1 ? "" : "s"} left`;
 }
@@ -180,9 +222,17 @@ function useSearchDestinations(user) {
       { label: "AI Study Plan", group: "Pages", to: "/plan" },
       { label: "Profile", group: "Pages", to: "/profile" }
     ];
-    const tasks = PRACTICE_SECTIONS.flatMap(section =>
-      supportedTasksFor(section).map(t => ({ label: `${t.label} — ${SECTION_LABELS[section]}`, group: "Practice tasks", to: `/${section}?type=${t.slug}` }))
-    );
+    // A task in a section the student does not hold stays findable — it shows them what their plan
+    // leaves out — but is marked and does not navigate.
+    const tasks = PRACTICE_SECTIONS.flatMap(section => {
+      const lock = lockReason(user, section);
+      return supportedTasksFor(section).map(t => ({
+        label: `${t.label} — ${SECTION_LABELS[section]}`,
+        group: "Practice tasks",
+        to: `/${section}?type=${t.slug}`,
+        locked: lock ? lock.label : null
+      }));
+    });
     const admin = user?.role === "admin" ? [
       { label: "Admin Dashboard", group: "Admin", to: "/admin" },
       { label: "Manage Users", group: "Admin", to: "/admin?tab=users" },
@@ -190,7 +240,7 @@ function useSearchDestinations(user) {
       { label: "Test Sessions", group: "Admin", to: "/admin?tab=testSessions" }
     ] : [];
     return [...pages, ...tasks, ...admin];
-  }, [user?.role]);
+  }, [user?.role, user?.sections]);
 }
 
 // Matching how every other product spells this shortcut: ⌘K on a Mac, Ctrl K elsewhere.
@@ -209,10 +259,10 @@ function HeaderSearch({ user }) {
     : [];
   const grouped = results.reduce((acc, r) => { (acc[r.group] ||= []).push(r); return acc; }, {});
 
-  function go(to) {
-    if (!to) return;
+  function go(result) {
+    if (!result?.to || result.locked) return;
     setTerm(""); setOpen(false);
-    navigate(to);
+    navigate(result.to);
   }
   useEffect(() => {
     function onShortcut(e) {
@@ -229,7 +279,7 @@ function HeaderSearch({ user }) {
     if (!results.length) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setHighlight(h => Math.min(results.length - 1, h + 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight(h => Math.max(0, h - 1)); }
-    else if (e.key === "Enter") { e.preventDefault(); go(results[highlight]?.to); }
+    else if (e.key === "Enter") { e.preventDefault(); go(results[highlight]); }
   }
 
   return <div className="search" ref={triggerRef}>
@@ -257,8 +307,11 @@ function HeaderSearch({ user }) {
             {items.map(r => {
               const idx = results.indexOf(r);
               return <button key={r.to} type="button" role="option" aria-selected={idx === highlight}
-                className={idx === highlight ? "search-result active" : "search-result"}
-                onMouseEnter={() => setHighlight(idx)} onClick={() => go(r.to)}>{r.label}</button>;
+                aria-disabled={r.locked ? "true" : undefined}
+                className={[idx === highlight ? "search-result active" : "search-result", r.locked ? "is-locked" : ""].filter(Boolean).join(" ")}
+                onMouseEnter={() => setHighlight(idx)} onClick={() => go(r)}>
+                {r.label}{r.locked && <span className="search-result-lock"><Lock size={12} aria-hidden="true"/> {r.locked}</span>}
+              </button>;
             })}
           </div>)
         : <div className="search-empty">No matches for "{term}"</div>}
@@ -349,6 +402,23 @@ function AdminRoute({ user, children }) {
   return children;
 }
 
+// A practice section the student does not hold, reached by a link, a bookmark or a typed URL.
+// Shown in place of the section rather than redirected away, so it is clear WHY nothing opened.
+// The server refuses the section's content regardless; this only keeps the student from landing on
+// a page that would fail one request at a time.
+function SectionRoute({ user, section, children }) {
+  const lock = lockReason(user, section);
+  if (!lock) return children;
+  return <Page title={SECTION_LABELS[section]} subtitle={lock.label}>
+    <section className="panel section-locked" role="status">
+      <span className="section-locked-icon" aria-hidden="true"><Lock size={22}/></span>
+      <h3>{lock.kind === "expired" ? `${SECTION_LABELS[section]} access has expired` : `${SECTION_LABELS[section]} is not in your plan`}</h3>
+      <p className="muted">{lock.message}</p>
+      <ButtonLink variant="secondary" to="/practice">Back to PTE Practice</ButtonLink>
+    </section>
+  </Page>;
+}
+
 const PRACTICE_TASK_COMPONENTS = { speaking: SpeakingTaskModule, writing: WritingTaskModule, reading: ReadingTask, listening: ListeningTask };
 
 export default function App() {
@@ -367,16 +437,17 @@ export default function App() {
   // theme toggle and sign-out working — a broken Progress page must not strand the user. Keyed on
   // the path so moving to a working page clears the error without a reload.
   // Suspense is required by the lazy routes above; without it React throws on first navigation.
-  return <ToastProvider><Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}>
+  return <ToastProvider><CurrentUserContext.Provider value={auth.user}><Layout user={auth.user} logout={auth.logout} theme={theme} toggleTheme={toggleTheme}>
     <RouteErrorBoundary resetKey={location.pathname}>
     <React.Suspense fallback={<Page><p className="muted">Loading…</p></Page>}><Routes>
     <Route path="/" element={<Navigate to={auth.user.role==="admin"?"/admin":"/dashboard"}/>}/>
     <Route path="/dashboard" element={<DashboardPage user={auth.user}/>}/>
     <Route path="/practice" element={<PracticeHubPage/>}/>
-    <Route path="/speaking" element={<PracticePage section="speaking" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
-    <Route path="/writing" element={<PracticePage section="writing" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
-    <Route path="/reading" element={<PracticePage section="reading" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
-    <Route path="/listening" element={<PracticePage section="listening" taskComponents={PRACTICE_TASK_COMPONENTS}/>}/>
+    {PRACTICE_SECTIONS.map(section => <Route key={section} path={`/${section}`} element={
+      <SectionRoute user={auth.user} section={section}>
+        <PracticePage section={section} taskComponents={PRACTICE_TASK_COMPONENTS}/>
+      </SectionRoute>
+    }/>)}
     <Route path="/mock" element={<MockPage/>}/>
     <Route path="/plan" element={<StudyPlanPage user={auth.user}/>}/>
     <Route path="/progress" element={<ProgressPage user={auth.user}/>}/>
@@ -384,5 +455,5 @@ export default function App() {
     <Route path="/profile" element={<ProfilePage user={auth.user} onUserChange={auth.updateUser}/>}/>
     <Route path="/admin" element={<AdminRoute user={auth.user}><AdminPage/></AdminRoute>}/>
     <Route path="*" element={<Navigate to="/dashboard"/>}/>
-  </Routes></React.Suspense></RouteErrorBoundary></Layout></ToastProvider>
+  </Routes></React.Suspense></RouteErrorBoundary></Layout></CurrentUserContext.Provider></ToastProvider>
 }

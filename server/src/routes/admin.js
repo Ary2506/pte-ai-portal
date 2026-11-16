@@ -5,8 +5,10 @@ import Session from "../models/Session.js";
 import AuditLog from "../models/AuditLog.js";
 import TestSession from "../models/TestSession.js";
 import LoginAttempt from "../models/LoginAttempt.js";
+import SectionPurchase from "../models/SectionPurchase.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
-import { publicUser } from "../utils/subscription.js";
+import { publicUser, grantSections, setSectionWindow, defaultSections } from "../utils/subscription.js";
+import { SECTIONS, parseSections } from "../sections.js";
 import { generateTempPassword } from "../utils/password.js";
 import { logAdminAction } from "../utils/audit.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
@@ -19,6 +21,10 @@ router.use(requireAuth, requireAdmin);
 function addDays(date, days) {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
+
+// The longest single grant an admin can make. Past about 100,000,000 days a Date overflows and
+// becomes Invalid; no real purchase is anywhere near this. Same cap the extension routes use.
+const MAX_GRANT_DAYS = 3650;
 
 function escapeRegex(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -127,6 +133,12 @@ router.post("/users", asyncRoute(async (req, res) => {
     if (!username?.trim() || !name?.trim()) {
       return res.status(400).json({ message: "User ID and name are required", code: "VALIDATION_ERROR" });
     }
+    // Which sections a paid account starts with. Omitted means all four, which is what every
+    // account got before sections could be bought separately, so an older client creates the same
+    // account it always did.
+    const parsed = parseSections(req.body.sections);
+    if (parsed.error) return res.status(400).json({ message: parsed.error, code: "VALIDATION_ERROR" });
+    const sections = parsed.sections || [...SECTIONS];
     const normalized = username.toLowerCase().trim();
     if (await User.findOne({ username: normalized })) {
       return res.status(409).json({ message: "This User ID is already taken", code: "USERNAME_TAKEN" });
@@ -142,18 +154,27 @@ router.post("/users", asyncRoute(async (req, res) => {
     const activate = paymentStatus === "PAID";
     const now = new Date();
 
-    const user = await User.create({
+    const user = new User({
       username: normalized,
       name: name.trim(),
       email: email?.trim() ? email.trim().toLowerCase() : undefined,
       passwordHash,
-      paymentStatus: activate ? "PAID" : "PENDING",
-      subscriptionStartDate: activate ? now : null,
-      subscriptionEndDate: activate ? addDays(now, days) : null,
+      paymentStatus: "PENDING",
       createdBy: req.user._id
     });
+    // A paid account is granted its sections, which also sets its subscription window and marks
+    // it PAID. An unpaid one gets nothing yet: its sections are granted once it is paid for.
+    const results = activate ? grantSections(user, sections, days, now) : null;
+    await user.save();
+    if (activate) {
+      await SectionPurchase.create({ user: user._id, sections, days, kind: "CREATE", results, grantedBy: req.user._id });
+    }
 
-    logAdminAction(req.user, "USER_CREATED", user, { paymentStatus: user.paymentStatus, subscriptionDays: activate ? days : null });
+    logAdminAction(req.user, "USER_CREATED", user, {
+      paymentStatus: user.paymentStatus,
+      subscriptionDays: activate ? days : null,
+      sections: activate ? sections : null
+    });
     res.status(201).json({ user: publicUser(user), temporaryPassword: plainPassword });
   } catch (e) {
     if (e.code === 11000) {
@@ -273,6 +294,9 @@ router.patch("/users/:id/subscription", asyncRoute(async (req, res) => {
     return res.status(400).json({ message: "Invalid payment status", code: "VALIDATION_ERROR" });
   }
 
+  const parsed = parseSections(req.body.sections);
+  if (parsed.error) return res.status(400).json({ message: parsed.error, code: "VALIDATION_ERROR" });
+
   const target = await User.findById(req.params.id);
   if (!target) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
 
@@ -283,35 +307,105 @@ router.patch("/users/:id/subscription", asyncRoute(async (req, res) => {
   }
 
   const update = {};
-  if (paymentStatus) update.paymentStatus = paymentStatus;
-  if (subscriptionStartDate) update.subscriptionStartDate = new Date(subscriptionStartDate);
-  // A new/changed expiry date is a fresh subscription cycle — clears any earlier cancellation so
-  // it isn't mislabeled "Cancelled" going forward (see models/User.js's subscriptionCancelledAt).
-  if (subscriptionEndDate) { update.subscriptionEndDate = new Date(subscriptionEndDate); update.subscriptionCancelledAt = null; }
-  if (paymentId !== undefined) update.paymentId = paymentId;
+  // Payment status first: whether the account is paid decides which sections it is read as
+  // holding when its dates are written below.
+  if (paymentStatus) { target.paymentStatus = paymentStatus; update.paymentStatus = paymentStatus; }
+  if (subscriptionStartDate || subscriptionEndDate) {
+    // The dates are written onto sections (the ones named, or by default all the account holds)
+    // and the account window is recomputed from them. A new end date is a new cycle and clears
+    // any earlier cancellation, as it always has.
+    const sections = parsed.sections || defaultSections(target);
+    setSectionWindow(target, sections, {
+      startDate: subscriptionStartDate ? new Date(subscriptionStartDate) : null,
+      endDate: subscriptionEndDate ? new Date(subscriptionEndDate) : null
+    });
+    if (subscriptionStartDate) update.subscriptionStartDate = new Date(subscriptionStartDate);
+    if (subscriptionEndDate) update.subscriptionEndDate = new Date(subscriptionEndDate);
+    update.sections = sections;
+  }
+  if (paymentId !== undefined) { target.paymentId = paymentId; update.paymentId = paymentId; }
 
-  const user = await User.findByIdAndUpdate(req.params.id, update, { new: true });
-  logAdminAction(req.user, "SUBSCRIPTION_CHANGED", user, update);
-  res.json({ user: publicUser(user) });
+  await target.save();
+  logAdminAction(req.user, "SUBSCRIPTION_CHANGED", target, update);
+  res.json({ user: publicUser(target) });
 }));
 
 router.post("/users/:id/renew", asyncRoute(async (req, res) => {
   const days = Number(req.body.days) > 0 ? Number(req.body.days) : config.subscriptionDefaultDays;
+  const parsed = parseSections(req.body.sections);
+  if (parsed.error) return res.status(400).json({ message: parsed.error, code: "VALIDATION_ERROR" });
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
-  const now = new Date();
-  // If still active, extend from the existing expiry so the user never loses remaining time.
-  // If already expired (or never activated), the new period starts from now.
-  const base = user.subscriptionEndDate && user.subscriptionEndDate > now ? user.subscriptionEndDate : now;
-  user.subscriptionStartDate = user.subscriptionStartDate && base > now ? user.subscriptionStartDate : now;
-  user.subscriptionEndDate = addDays(base, days);
-  user.paymentStatus = "PAID";
-  // A fresh renewal — any earlier cancellation no longer describes this subscription cycle.
-  user.subscriptionCancelledAt = null;
+  // Renews the sections named, or by default every section the account holds (all four for one
+  // that holds none). Per section: still active extends from its current expiry so no time is
+  // lost; lapsed or never bought starts from now; any earlier cancellation is cleared.
+  const sections = parsed.sections || defaultSections(user);
+  const results = grantSections(user, sections, days);
   await user.save();
-  logAdminAction(req.user, "SUBSCRIPTION_RENEWED", user, { days, newEndDate: user.subscriptionEndDate });
+  await SectionPurchase.create({ user: user._id, sections, days, kind: "RENEW", results, grantedBy: req.user._id });
+  logAdminAction(req.user, "SUBSCRIPTION_RENEWED", user, { days, sections, newEndDate: user.subscriptionEndDate });
   res.json({ user: publicUser(user) });
 }));
+
+// ---------------------------------------------------------------------------------------------
+// Section purchases. "Add purchase" grants `days` of each named section: a section still active
+// is extended from its own expiry, and one that has lapsed or was never bought starts today, so
+// sections bought at different times each run out on their own date. Every purchase is also
+// recorded in SectionPurchase, the permanent history of what was granted.
+// ---------------------------------------------------------------------------------------------
+router.post("/users/:id/purchases", asyncRoute(async (req, res) => {
+  const parsed = parseSections(req.body.sections);
+  if (parsed.error || !parsed.sections) {
+    return res.status(400).json({ message: parsed.error || "Choose at least one section.", code: "VALIDATION_ERROR" });
+  }
+  const days = req.body.days === undefined ? config.subscriptionDefaultDays : Number(req.body.days);
+  if (!Number.isInteger(days) || days <= 0 || days > MAX_GRANT_DAYS) {
+    return res.status(400).json({ message: `Days must be a whole number between 1 and ${MAX_GRANT_DAYS}.`, code: "VALIDATION_ERROR" });
+  }
+  const paymentId = typeof req.body.paymentId === "string" && req.body.paymentId.trim() ? req.body.paymentId.trim().slice(0, 200) : null;
+  const note = typeof req.body.note === "string" && req.body.note.trim() ? req.body.note.trim().slice(0, 500) : null;
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
+  if (user.role === "admin") {
+    return res.status(400).json({ message: "Admin accounts have every section already.", code: "CANNOT_MODIFY_ADMIN" });
+  }
+
+  const results = grantSections(user, parsed.sections, days);
+  if (paymentId) user.paymentId = paymentId;
+  await user.save();
+  const purchase = await SectionPurchase.create({
+    user: user._id, sections: parsed.sections, days, kind: "PURCHASE", paymentId, note, results, grantedBy: req.user._id
+  });
+
+  logAdminAction(req.user, "SECTION_PURCHASED", user, { sections: parsed.sections, days, paymentId, results });
+  res.status(201).json({ user: publicUser(user), purchase: publicPurchase(purchase) });
+}));
+
+router.get("/users/:id/purchases", asyncRoute(async (req, res) => {
+  const user = await User.findById(req.params.id).select("_id");
+  if (!user) return res.status(404).json({ message: "User not found", code: "NOT_FOUND" });
+  const purchases = await SectionPurchase.find({ user: user._id })
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .populate("grantedBy", "username name")
+    .lean();
+  res.json({ purchases: purchases.map(publicPurchase) });
+}));
+
+function publicPurchase(p) {
+  return {
+    id: p._id,
+    kind: p.kind,
+    sections: p.sections,
+    days: p.days,
+    paymentId: p.paymentId || null,
+    note: p.note || null,
+    results: (p.results || []).map(r => ({ section: r.section, previousEndDate: r.previousEndDate || null, endDate: r.endDate })),
+    grantedBy: p.grantedBy && p.grantedBy.username ? { username: p.grantedBy.username, name: p.grantedBy.name } : null,
+    createdAt: p.createdAt
+  };
+}
 
 router.patch("/users/:id/password", asyncRoute(async (req, res) => {
   const plainPassword = (req.body.password || "").trim() || generateTempPassword();

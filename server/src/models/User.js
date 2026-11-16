@@ -1,4 +1,15 @@
 import mongoose from "mongoose";
+import { SECTIONS } from "../sections.js";
+import { recomputeAccountDates } from "../utils/subscription.js";
+
+// One section a student has bought, with its own window — see utils/subscription.js for the
+// rules. No _id: an entry is identified by its section, and there is at most one per section.
+const sectionAccessSchema = new mongoose.Schema({
+  section: { type: String, enum: SECTIONS, required: true },
+  startDate: { type: Date, default: null },
+  endDate: { type: Date, default: null },
+  cancelledAt: { type: Date, default: null }
+}, { _id: false });
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -18,6 +29,13 @@ const userSchema = new mongoose.Schema({
   // renewed or its dates are changed by an admin (routes/admin.js), so a later, unrelated cycle
   // is never mislabeled from a stale cancellation.
   subscriptionCancelledAt: { type: Date, default: null },
+  // Per-section access. Deliberately `default: undefined` rather than Mongoose's usual [] for an
+  // array: an account with NO stored value is a pre-section account and is read as holding all four
+  // sections over its subscription window above, while an empty array means "holds nothing". The
+  // two must stay distinguishable, or every existing student would lose access the moment this
+  // field appeared. The subscription dates above are derived from this once it is set — see the
+  // pre-save hook below.
+  sectionAccess: { type: [sectionAccessSchema], default: undefined },
   targetScore: { type: Number, default: 90 },
   lastLoginAt: { type: Date, default: null },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
@@ -37,5 +55,18 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
+
+// The account window is a summary of the sections, so whenever the sections change it is
+// recomputed from them. The admin routes already do this through the helpers in
+// utils/subscription.js; this is the backstop for any write that changes sectionAccess without
+// going through one. Only on a change to the sections, so an unrelated save (a login timestamp)
+// never moves the dates. Raw updates (updateOne/bulkWrite) bypass this hook and must set the
+// account dates themselves — routes/adminSubscriptionExtension.js's bulk extension does.
+userSchema.pre("save", function syncAccountWindow(next) {
+  if (Array.isArray(this.sectionAccess) && this.sectionAccess.length && this.isModified("sectionAccess")) {
+    recomputeAccountDates(this);
+  }
+  next();
+});
 
 export default mongoose.model("User", userSchema);

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { BookOpen, CheckCircle2, Clock3, Flag, Headphones, Mic, PenLine, Play, Trophy } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock3, Flag, Headphones, Lock, Mic, PenLine, Play, Trophy } from "lucide-react";
 import { api } from "../api.js";
 import { Result } from "../PracticeObjective.jsx";
 import { Page, Pager } from "../components/common.jsx";
@@ -11,6 +11,7 @@ import {
   EmptyState, Metric, MetricStrip, PerformanceTable, ScoreRing, SectionHeader, taskLabel, titleCase
 } from "../components/analytics.jsx";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
+import { isFullAccess, lockReason, useCurrentUser } from "../access.js";
 import { formatRaw, PTE_MAX_SCORE } from "../analytics/derive.js";
 import { TaskRail } from "../practice/TaskTips.jsx";
 import { ReadingTask } from "../practice/Reading.jsx";
@@ -103,6 +104,11 @@ function ConfirmDialog({ open, title, message, confirmLabel, busy, onConfirm, on
 }
 
 function Mock() {
+  // A mock samples all four sections, so it needs all four active. The server refuses to start one
+  // otherwise (MOCK_REQUIRES_FULL_ACCESS); this says why before the student presses anything. An
+  // attempt already in progress is still resumed below either way — it was started with full access.
+  const currentUser = useCurrentUser();
+  const fullAccess = isFullAccess(currentUser);
   const [session,setSession]=useState(null);
   const [idx,setIdx]=useState(0);
   const [answered,setAnswered]=useState({});
@@ -424,10 +430,25 @@ function Mock() {
         <p>Up to {MOCK_QUESTIONS_PER_SECTION} questions per section across all four, scored from your
           actual answers — not a preset result.</p>
         <div className="mock-section-chips">
-          {PRACTICE_SECTIONS.map(s => { const Icon = SECTION_ICONS[s]; return <span className="mock-section-chip" key={s}>{Icon && <Icon size={14}/>} {SECTION_LABELS[s]}</span>; })}
+          {PRACTICE_SECTIONS.map(s => {
+            const Icon = SECTION_ICONS[s];
+            const lock = lockReason(currentUser, s);
+            return <span className={lock ? "mock-section-chip is-locked" : "mock-section-chip"} key={s} title={lock?.label}>
+              {lock ? <Lock size={14} aria-hidden="true"/> : Icon && <Icon size={14}/>} {SECTION_LABELS[s]}
+            </span>;
+          })}
         </div>
-        <p className="muted">Your time limit is set when you start and scales with the length of your test.</p>
-        <Button variant="primary" size="lg" icon={<Play/>} loading={starting} loadingLabel="Preparing..." onClick={start}>Start Mock Test</Button>
+        {fullAccess ? (
+          <p className="muted">Your time limit is set when you start and scales with the length of your test.</p>
+        ) : (
+          <p className="mock-locked-note" role="status">
+            Mock tests need all four sections active. Missing:{" "}
+            {PRACTICE_SECTIONS.filter(s => lockReason(currentUser, s))
+              .map(s => `${SECTION_LABELS[s]} (${lockReason(currentUser, s).label.toLowerCase()})`)
+              .join(", ")}. Contact the administrator to add them.
+          </p>
+        )}
+        <Button variant="primary" size="lg" icon={<Play/>} loading={starting} loadingLabel="Preparing..." onClick={start} disabled={!fullAccess}>Start Mock Test</Button>
         <NavLink className="link mock-card__history" to="/history">See your previous attempts</NavLink>
       </div>
     </Page></>;

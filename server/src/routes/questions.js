@@ -1,7 +1,8 @@
 import express from "express";
 import Question from "../models/Question.js";
 import TestSession from "../models/TestSession.js";
-import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
+import { requireAuth, requireActiveSubscription, sectionDenial } from "../middleware/auth.js";
+import { activeSections } from "../utils/subscription.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { TRANSCRIPT_IS_ANSWER } from "../transcriptPolicy.js";
 
@@ -29,7 +30,19 @@ const INDEX_LIMIT = 5000;
 
 router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
   const filter = { active: true };
-  if (req.query.section) filter.section = req.query.section;
+  // A string, or not given at all. Express hands a repeated parameter (?section=a&section=b) over
+  // as an array, and Mongoose turns an array into $in — which would read several sections in one
+  // request, past the per-section check below. Anything that is not a single string is treated
+  // as no section given, which only ever narrows what comes back.
+  const section = typeof req.query.section === "string" ? req.query.section : undefined;
+  if (section) {
+    const denied = sectionDenial(req.user, section);
+    if (denied) return res.status(403).json(denied);
+    filter.section = section;
+  } else if (req.user.role !== "admin") {
+    // No section asked for: everything the student may open, and nothing they may not.
+    filter.section = { $in: activeSections(req.user) };
+  }
   if (req.query.type) filter.type = req.query.type;
   // `index=1` returns only each question's id and type, for a caller that needs to know WHICH
   // questions exist rather than what is in them — the practice library's availability counts.
@@ -100,7 +113,9 @@ router.get("/", requireAuth, requireActiveSubscription, asyncRoute(async (req, r
 const OBJECT_ID = /^[a-fA-F0-9]{24}$/;
 router.get("/:id/transcript", requireAuth, requireActiveSubscription, asyncRoute(async (req, res) => {
   if (!OBJECT_ID.test(req.params.id)) return res.status(404).json({ message: "Question not found", code: "NOT_FOUND" });
-  const question = await Question.findOne({ _id: req.params.id, active: true, type: "repeat-sentence" }).select("transcript").lean();
+  const question = await Question.findOne({ _id: req.params.id, active: true, type: "repeat-sentence" }).select("transcript section").lean();
+  const denied = question ? sectionDenial(req.user, question.section) : null;
+  if (denied) return res.status(403).json(denied);
   const transcript = typeof question?.transcript === "string" ? question.transcript.trim() : "";
   if (!transcript) return res.status(404).json({ message: "No transcript is available for this question.", code: "NOT_FOUND" });
 

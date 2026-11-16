@@ -3,6 +3,8 @@ import Question from "../models/Question.js";
 import Submission from "../models/Submission.js";
 import TestSession from "../models/TestSession.js";
 import { requireAuth, requireActiveSubscription } from "../middleware/auth.js";
+import { SECTIONS } from "../sections.js";
+import { isFullAccess, sectionStatus } from "../utils/subscription.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { QUESTION_TYPES } from "../questionTypes.js";
 import { TRANSCRIPT_IS_ANSWER } from "../transcriptPolicy.js";
@@ -12,7 +14,7 @@ import { recordLearningActivity } from "../utils/streak.js";
 const router = express.Router();
 router.use(requireAuth, requireActiveSubscription);
 
-const MOCK_SECTIONS = ["speaking", "writing", "reading", "listening"];
+const MOCK_SECTIONS = SECTIONS;
 
 /**
  * What one answer is worth in a mock: 1, 0.5 or 0.
@@ -137,6 +139,17 @@ async function pickMockQuestions() {
 }
 
 router.post("/", asyncRoute(async (req, res) => {
+  // A mock samples every section, so it needs every section active. A student on a partial plan,
+  // or one whose sections were bought at different times and one has lapsed, is told which ones
+  // are missing rather than handed a paper with sections they cannot open.
+  if (!isFullAccess(req.user)) {
+    const missing = SECTIONS.filter(s => sectionStatus(req.user, s) !== "ACTIVE");
+    return res.status(403).json({
+      message: "Mock tests need all four sections active. Contact the administrator to add the missing ones.",
+      code: "MOCK_REQUIRES_FULL_ACCESS",
+      missingSections: missing
+    });
+  }
   const questions = await pickMockQuestions();
   if (!questions.length) {
     return res.status(409).json({ message: "No practice questions are available to build a mock test right now.", code: "NO_QUESTIONS" });

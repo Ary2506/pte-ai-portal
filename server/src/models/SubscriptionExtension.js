@@ -23,6 +23,10 @@ const subscriptionExtensionSchema = new mongoose.Schema({
   // Positive for an extension, negative for a revoke/cancel.
   daysAdded: { type: Number, required: true },
   newExpiry: { type: Date, required: true },
+  // Which sections the adjustment applied to. previousExpiry/newExpiry stay the ACCOUNT window
+  // (the latest-ending section), which is what this history has always recorded. Absent on rows
+  // written before sections existed, which applied to everything.
+  sections: { type: [String], default: undefined },
   reason: { type: String, required: true },
   performedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });

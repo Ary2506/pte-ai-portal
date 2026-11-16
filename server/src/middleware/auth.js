@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Session from "../models/Session.js";
 import { config } from "../config.js";
-import { getSubscriptionStatus } from "../utils/subscription.js";
+import { getSubscriptionStatus, sectionStatus } from "../utils/subscription.js";
+import { isSection } from "../sections.js";
 
 export async function requireAuth(req, res, next) {
   try {
@@ -55,6 +56,31 @@ export async function requireAuth(req, res, next) {
 export function requireAdmin(req, res, next) {
   if (req.user?.role !== "admin") return res.status(403).json({ message: "Admin access required", code: "ADMIN_REQUIRED" });
   next();
+}
+
+const SECTION_NAMES = { speaking: "Speaking", writing: "Writing", reading: "Reading", listening: "Listening" };
+
+/**
+ * Why this user may not use `section`, as a 403 body, or null if they may.
+ *
+ * requireActiveSubscription (below) answers "may this account use the app at all" — true while
+ * any section is active. This answers it for one section. Two codes, so the student is told which
+ * case they are in: never bought (SECTION_LOCKED) or bought and lapsed (SECTION_EXPIRED; a
+ * cancelled section reads as expired to the student). Neither is a reason to sign anyone out —
+ * the client must not treat them like SUBSCRIPTION_EXPIRED.
+ *
+ * Only a real section name is ever refused. Anything else holds no content to protect, and is
+ * left to behave as it did before sections existed (an empty question list, for example).
+ */
+export function sectionDenial(user, section) {
+  if (!isSection(section)) return null;
+  const status = sectionStatus(user, section);
+  if (status === "ACTIVE") return null;
+  const name = SECTION_NAMES[section];
+  if (status === "NOT_PURCHASED") {
+    return { message: `${name} is not part of your plan. Contact the administrator to add it.`, code: "SECTION_LOCKED", section };
+  }
+  return { message: `Your ${name} access has expired. Contact the administrator to renew it.`, code: "SECTION_EXPIRED", section };
 }
 
 export function requireActiveSubscription(req, res, next) {

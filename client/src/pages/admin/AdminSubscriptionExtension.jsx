@@ -4,6 +4,7 @@ import { api } from "../../api.js";
 import { Modal, ConfirmDialog } from "../../components/common.jsx";
 import { Button } from "../../components/Button.jsx";
 import { fmtDate } from "./adminFormat.js";
+import { SectionCheckboxes } from "./AdminSectionAccess.jsx";
 
 // Temporary/emergency Admin Subscription Extension feature (extend/revoke/cancel a user's
 // subscription) — deliberately kept in this one file plus the small integration points in
@@ -26,6 +27,18 @@ function addDaysPreview(dateStr, days) {
   return new Date(new Date(dateStr).getTime() + Number(days) * 86400000);
 }
 
+// Sections bought at different times end on different dates, so an extension or revocation can be
+// aimed at some of them. The choice is only offered when there IS a choice — two or more active
+// sections. Otherwise, and whenever every active section stays ticked, nothing extra is sent and
+// the server adjusts every active section: exactly what these dialogs did before sections existed.
+function useSectionChoice(user) {
+  const activeRows = Array.isArray(user.sections) ? user.sections.filter(r => r.status === "ACTIVE") : [];
+  const [picked, setPicked] = useState(() => activeRows.map(r => r.section));
+  const offered = activeRows.length > 1;
+  const subset = offered && picked.length < activeRows.length ? picked : undefined;
+  return { activeRows, picked, setPicked, offered, subset };
+}
+
 // --- Individual user extension --------------------------------------------------------------
 
 export function ExtendSubscriptionButton({ user, onExtended }) {
@@ -44,15 +57,24 @@ function ExtendSubscriptionModal({ user, onClose, onExtended }) {
   const [error, setError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const choice = useSectionChoice(user);
   const daysNum = Number(days);
   const daysValid = Number.isInteger(daysNum) && daysNum > 0;
   const reasonValid = reason.trim().length > 0;
-  const newExpiry = daysValid ? addDaysPreview(user.subscriptionEndDate, daysNum) : null;
+  const sectionsValid = !choice.offered || choice.picked.length > 0;
+  // The account's expiry is its latest-ending section, so the preview applies the extension to the
+  // picked sections only and takes the latest of the results.
+  const newExpiry = !daysValid ? null : choice.offered
+    ? new Date(Math.max(...choice.activeRows.map(r =>
+        new Date(r.endDate).getTime() + (choice.picked.includes(r.section) ? daysNum * 86400000 : 0))))
+    : addDaysPreview(user.subscriptionEndDate, daysNum);
 
   async function confirmExtend() {
     setBusy(true); setError("");
     try {
-      const result = await api.admin.subscriptionExtension.extendUser(user.id, daysNum, reason.trim());
+      const result = choice.subset
+        ? await api.admin.subscriptionExtension.extendUser(user.id, daysNum, reason.trim(), choice.subset)
+        : await api.admin.subscriptionExtension.extendUser(user.id, daysNum, reason.trim());
       onExtended?.(result);
       setShowConfirm(false);
       onClose();
@@ -68,7 +90,7 @@ function ExtendSubscriptionModal({ user, onClose, onExtended }) {
     <Modal onClose={onClose} title="Extend Subscription" ariaLabel="Extend Subscription"
       footer={<>
         <Button variant="tertiary" onClick={onClose} disabled={busy}>Cancel</Button>
-        <Button variant="primary" onClick={() => setShowConfirm(true)} disabled={busy || !daysValid || !reasonValid}>
+        <Button variant="primary" onClick={() => setShowConfirm(true)} disabled={busy || !daysValid || !reasonValid || !sectionsValid}>
           Extend Subscription
         </Button>
       </>}>
@@ -76,6 +98,8 @@ function ExtendSubscriptionModal({ user, onClose, onExtended }) {
       <dl>
         <dt>Current Expiry</dt><dd>{fmtDate(user.subscriptionEndDate)}</dd>
       </dl>
+      {choice.offered && <SectionCheckboxes value={choice.picked} onChange={choice.setPicked}
+        options={choice.activeRows.map(r => r.section)} legend="Extend these sections" />}
       <label>Extra Days
         <input type="number" min="1" step="1" value={days} onChange={e => setDays(e.target.value)} aria-label="Extra days" />
       </label>
@@ -109,11 +133,19 @@ export function RevokeSubscriptionButton({ user, onRevoked }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const choice = useSectionChoice(user);
+
   if (user.subscriptionStatus !== "ACTIVE") return null;
 
-  const remainingDays = Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000));
+  // Revoking can never take a section below zero, so with sections chosen the limit is the days
+  // left on the shortest of them — the same rule the server applies.
+  const remainingDays = choice.offered && choice.picked.length
+    ? Math.max(0, Math.min(...choice.activeRows.filter(r => choice.picked.includes(r.section))
+        .map(r => Math.ceil((new Date(r.endDate) - Date.now()) / 86400000))))
+    : Math.max(0, Math.ceil((new Date(user.subscriptionEndDate) - Date.now()) / 86400000));
   const daysNum = Number(days);
-  const daysValid = Number.isInteger(daysNum) && daysNum > 0 && daysNum <= remainingDays;
+  const daysValid = Number.isInteger(daysNum) && daysNum > 0 && daysNum <= remainingDays
+    && (!choice.offered || choice.picked.length > 0);
 
   function open() {
     setDays(""); setError(""); setStep("input");
@@ -122,7 +154,9 @@ export function RevokeSubscriptionButton({ user, onRevoked }) {
   async function confirmRevoke() {
     setBusy(true); setError("");
     try {
-      const result = await api.admin.subscriptionExtension.revokeUser(user.id, daysNum);
+      const result = choice.subset
+        ? await api.admin.subscriptionExtension.revokeUser(user.id, daysNum, choice.subset)
+        : await api.admin.subscriptionExtension.revokeUser(user.id, daysNum);
       onRevoked?.(result);
       setStep(null);
     } catch (e) {
@@ -142,6 +176,8 @@ export function RevokeSubscriptionButton({ user, onRevoked }) {
           <Button variant="primary" onClick={() => setStep("confirm")} disabled={!daysValid}>OK</Button>
         </>}>
         {error && <div className="alert error">{error}</div>}
+        {choice.offered && <SectionCheckboxes value={choice.picked} onChange={choice.setPicked}
+          options={choice.activeRows.map(r => r.section)} legend="Revoke from these sections" />}
         <dl>
           <dt>Days remaining</dt><dd>{remainingDays}</dd>
         </dl>

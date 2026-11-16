@@ -76,7 +76,12 @@ export const api = {
       request(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify({ accountStatus }) }),
     setSubscription: (id, body) =>
       request(`/admin/users/${id}/subscription`, { method: "PATCH", body: JSON.stringify(body) }),
-    renew: (id, days) => request(`/admin/users/${id}/renew`, { method: "POST", body: JSON.stringify({ days }) }),
+    // `sections` is optional: left out, the server renews every section the student holds.
+    renew: (id, days, sections) =>
+      request(`/admin/users/${id}/renew`, { method: "POST", body: JSON.stringify(sections ? { days, sections } : { days }) }),
+    // Grants `days` of each section: extended from its own expiry if still active, started today if not.
+    addPurchase: (id, body) => request(`/admin/users/${id}/purchases`, { method: "POST", body: JSON.stringify(body) }),
+    listPurchases: (id) => request(`/admin/users/${id}/purchases`),
     resetPassword: (id, password) =>
       request(`/admin/users/${id}/password`, { method: "PATCH", body: JSON.stringify({ password }) }),
     revokeSessions: (id) => request(`/admin/users/${id}/revoke-sessions`, { method: "POST" }),
@@ -84,12 +89,16 @@ export const api = {
     // server/src/models/SubscriptionExtension.js for how to remove this cleanly, including this
     // one nested block.
     subscriptionExtension: {
-      extendUser: (id, days, reason) =>
-        request(`/admin/subscription-extension/users/${id}`, { method: "POST", body: JSON.stringify({ days, reason }) }),
-      revokeUser: (id, days) =>
-        request(`/admin/subscription-extension/users/${id}/revoke`, { method: "POST", body: JSON.stringify({ days }) }),
-      cancelUser: (id) =>
-        request(`/admin/subscription-extension/users/${id}/cancel`, { method: "POST" }),
+      // `sections` is optional on both: left out, every active section is adjusted.
+      extendUser: (id, days, reason, sections) =>
+        request(`/admin/subscription-extension/users/${id}`, { method: "POST", body: JSON.stringify(sections ? { days, reason, sections } : { days, reason }) }),
+      revokeUser: (id, days, sections) =>
+        request(`/admin/subscription-extension/users/${id}/revoke`, { method: "POST", body: JSON.stringify(sections ? { days, sections } : { days }) }),
+      // Without `sections`, cancels everything still active — what this always did.
+      cancelUser: (id, sections) =>
+        request(`/admin/subscription-extension/users/${id}/cancel`, sections
+          ? { method: "POST", body: JSON.stringify({ sections }) }
+          : { method: "POST" }),
       bulkPreview: (days) =>
         request(`/admin/subscription-extension/bulk/preview`, { method: "POST", body: JSON.stringify({ days }) }),
       bulkExtend: (days, reason, clientRequestId) =>

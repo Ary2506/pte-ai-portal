@@ -8,6 +8,8 @@ import { fmtDate, fmtDateTime } from "./adminFormat.js";
 // AdminSubscriptionExtension.jsx for exactly what to delete, including these two lines and their
 // two call sites below (each marked with a matching comment).
 import { ExtendAllActiveButton, ExtendSubscriptionButton, RevokeSubscriptionButton } from "./AdminSubscriptionExtension.jsx";
+import { SectionCheckboxes, SectionsSummary, UserSectionsPanel } from "./AdminSectionAccess.jsx";
+import { PRACTICE_SECTIONS } from "../../practiceTaskRegistry.js";
 
 function accountStatusTone(s){ return s==="ACTIVE"?"good":s==="BLOCKED"?"bad":"warn" }
 function paymentStatusTone(s){ return s==="PAID"?"good":s==="PENDING"?"warn":s==="FAILED"?"bad":"neutral" }
@@ -143,7 +145,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   const [error,setError]=useState("");
   const [showCreate,setShowCreate]=useState(false);
   const [creating,setCreating]=useState(false);
-  const [form,setForm]=useState({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30});
+  const [form,setForm]=useState({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[...PRACTICE_SECTIONS]});
   const [detailId,setDetailId]=useState(null);
   const [createdAccount,setCreatedAccount]=useState(null);
 
@@ -167,10 +169,12 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
   async function createUser(e) {
     e.preventDefault(); setCreating(true); setError("");
     try {
-      const d = await api.admin.createUser(form);
+      // Sections only mean something for an account activated now; an unpaid one is granted none.
+      const { sections, ...rest } = form;
+      const d = await api.admin.createUser(form.paymentStatus === "PAID" ? { ...rest, sections } : rest);
       notify("success", `User "${d.user.username}" created. Temporary password: ${d.temporaryPassword} — share this with them securely.`);
       setCreatedAccount({ username: d.user.username, password: d.temporaryPassword });
-      setForm({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30});
+      setForm({username:"",name:"",email:"",password:"",paymentStatus:"PAID",subscriptionDays:30,sections:[...PRACTICE_SECTIONS]});
       setShowCreate(false);
       load(1);
     } catch (e) { setError(e.message); } finally { setCreating(false); }
@@ -203,7 +207,11 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
           <option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option>
         </select>
       </label>
-      <Button type="submit" variant="primary" loading={creating} loadingLabel="Creating...">Create user</Button>
+      {/* Which sections a paid account starts with — all four unless the plan sold was partial.
+          An unpaid account is granted nothing yet; its sections are added once it is paid for. */}
+      {form.paymentStatus === "PAID" && <SectionCheckboxes value={form.sections} onChange={sections=>setForm({...form,sections})} legend="Sections"/>}
+      <Button type="submit" variant="primary" loading={creating} loadingLabel="Creating..."
+        disabled={form.paymentStatus === "PAID" && !form.sections.length}>Create user</Button>
     </form>}
     <div className="filter-bar">
       <div className="search admin-search"><span aria-hidden="true">⌕</span><input placeholder="Search by User ID, name or email..." aria-label="Search users" value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load(1)}/></div>
@@ -230,6 +238,7 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
         { key: "status", header: "Status", render: u => <Badge tone={accountStatusTone(u.accountStatus)}>{u.accountStatus}</Badge> },
         { key: "payment", header: "Payment", render: u => <Badge tone={paymentStatusTone(u.paymentStatus)}>{u.paymentStatus}</Badge> },
         { key: "subscription", header: "Subscription", render: u => <Badge tone={subscriptionTone(u.subscriptionStatus)}>{u.subscriptionStatus.replace("_"," ")}</Badge> },
+        { key: "sections", header: "Sections", render: u => <SectionsSummary user={u}/> },
         { key: "daysLeft", header: "Days left", render: u => daysRemaining(u) },
         { key: "lastLogin", header: "Last login", render: u => fmtDateTime(u.lastLoginAt) },
         { key: "session", header: "Session", render: u => <Badge tone={u.sessionStatus==="ACTIVE"?"info":"neutral"}>{u.sessionStatus}</Badge> },
@@ -328,6 +337,8 @@ function AdminUserDetail({id, notify, onClose}) {
             </div>
           </section>
         </div>
+
+        <UserSectionsPanel user={u} notify={notify} onChanged={load}/>
 
         <h4>Recent login attempts</h4>
         <div className="session-list">

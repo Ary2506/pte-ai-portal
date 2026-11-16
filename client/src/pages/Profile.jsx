@@ -6,6 +6,7 @@ import { api } from "../api.js";
 import { Metric, MetricStrip, SectionHeader } from "../components/analytics.jsx";
 import StreakCalendar from "../components/StreakCalendar.jsx";
 import { useToast } from "../components/toast.jsx";
+import { SectionAccessList } from "../components/SectionAccessList.jsx";
 function fmtDate(d) {
   return d ? new Date(d).toLocaleDateString() : "—";
 }
@@ -172,6 +173,7 @@ export default function Profile({ user, onUserChange }) {
                   <dd>{daysRemaining(user)}</dd>
                 </dl>
               )}
+              {!isAdmin && <SectionAccessList user={user} />}
             </section>
           </div>
           {!isAdmin && (

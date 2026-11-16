@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { BookOpen, Headphones, Mic, PenLine, Search } from "lucide-react";
+import { BookOpen, Headphones, Lock, Mic, PenLine, Search } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import {
@@ -11,6 +11,7 @@ import {
 import { Page } from "../components/common.jsx";
 import { EmptyState, Metric, MetricStrip } from "../components/analytics.jsx";
 import { pct, scored } from "../analytics/derive.js";
+import { lockReason, useCurrentUser } from "../access.js";
 
 const SECTION_ICONS = {
   speaking: Mic,
@@ -33,11 +34,16 @@ const SECTION_DESCRIPTIONS = {
 // <span> that cannot be clicked or focused, and the badge says which of the two reasons applies.
 // The progress line below it is additive — the row's semantics and classes are what the practice
 // hub's tests pin, and they were right the first time.
-function PracticeTaskRow({ section, task, hasContent, onStart, progress }) {
-  const startable = task.supported && hasContent;
+// `lock` is checked before content on purpose. A locked section's question count is never fetched
+// (and the server would refuse it), so it reads as empty — and "No content yet" would tell the
+// student the library is missing something, when the truth is their plan does not include it.
+function PracticeTaskRow({ section, task, hasContent, onStart, progress, lock = null }) {
+  const startable = task.supported && hasContent && !lock;
   let badge = null;
   if (!task.supported)
     badge = <span className="practice-row-badge soon">Coming Soon</span>;
+  else if (lock)
+    badge = <span className="practice-row-badge locked"><Lock size={11} aria-hidden="true"/> {lock.label}</span>;
   else if (!hasContent)
     badge = <span className="practice-row-badge empty">No content yet</span>;
   else if (task.bundledContent)
@@ -129,6 +135,10 @@ function taskHasContent(available, section, task) {
 
 export default function PracticeHub() {
   const navigate = useNavigate();
+  const user = useCurrentUser();
+  // Which sections are locked, as one string, so the counts below are re-read when a section
+  // locks or unlocks — and only then, not on every refresh of an otherwise unchanged user.
+  const lockKey = PRACTICE_SECTIONS.map((section) => lockReason(user, section)?.kind || "").join("|");
   const [available, setAvailable] = useState(null);
   const [questionsBySection, setQuestionsBySection] = useState([]);
   const [history, setHistory] = useState([]);
@@ -147,10 +157,14 @@ export default function PracticeHub() {
     Promise.all([
       Promise.all(
         PRACTICE_SECTIONS.map((section) =>
-          api
-            .questionIndex(section)
-            .then((data) => ({ section, questions: data.questions }))
-            .catch(() => ({ section, questions: [] })),
+          // A locked section is not asked about at all: the server would refuse it, and the
+          // section is shown as locked whatever the count would have been.
+          lockReason(user, section)
+            ? Promise.resolve({ section, questions: [] })
+            : api
+                .questionIndex(section)
+                .then((data) => ({ section, questions: data.questions }))
+                .catch(() => ({ section, questions: [] })),
         ),
       ),
       safely(() => api.history({ limit: 100, page: 1 })),
@@ -163,7 +177,8 @@ export default function PracticeHub() {
       setQuestionsBySection(results.map(r => [r.section, r.questions || []]));
       setHistory(hist?.submissions || []);
     });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-read only when a section's lock changes
+  }, [lockKey]);
 
   const progress = useMemo(
     () => buildProgress(questionsBySection, history), [questionsBySection, history]);
@@ -265,14 +280,15 @@ export default function PracticeHub() {
               const tasks = tasksFor(section);
               if (!tasks.length) return null;
               const allTasks = PRACTICE_TASKS[section].filter((task) => !task.hidden);
+              const lock = lockReason(user, section);
               const readyCount = available
                 ? allTasks.filter(
-                    (task) => task.supported && taskHasContent(available, section, task),
+                    (task) => task.supported && !lock && taskHasContent(available, section, task),
                   ).length
                 : null;
 
               return (
-                <div className={`practice-column practice-${section}`} key={section}>
+                <div className={`practice-column practice-${section}${lock ? " is-locked" : ""}`} key={section}>
                   <div className="practice-column-header">
                     <div className="practice-column-icon">
                       <SectionIcon size={24} />
@@ -281,9 +297,15 @@ export default function PracticeHub() {
                       <h3 className="practice-column-head">{SECTION_LABELS[section]}</h3>
                       <p className="practice-column-desc">{SECTION_DESCRIPTIONS[section]}</p>
                     </div>
-                    <span className="practice-column-count">
-                      {readyCount == null ? "…" : `${readyCount}/${allTasks.length} ready`}
-                    </span>
+                    {lock ? (
+                      <span className="practice-column-count is-locked">
+                        <Lock size={12} aria-hidden="true" /> {lock.label}
+                      </span>
+                    ) : (
+                      <span className="practice-column-count">
+                        {readyCount == null ? "…" : `${readyCount}/${allTasks.length} ready`}
+                      </span>
+                    )}
                   </div>
                   <div className="practice-column-list">
                     {tasks.map((task) => (
@@ -292,6 +314,7 @@ export default function PracticeHub() {
                         section={section}
                         task={task}
                         hasContent={taskHasContent(available, section, task)}
+                        lock={lock}
                         onStart={start}
                         progress={progress.get(`${section}:${task.slug}`)}
                       />

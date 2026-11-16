@@ -2,7 +2,11 @@ import express from "express";
 import User from "../models/User.js";
 import { SubscriptionExtension, BulkExtensionRequest, nextExtensionId } from "../models/SubscriptionExtension.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
-import { getSubscriptionStatus, publicUser } from "../utils/subscription.js";
+import {
+  getSubscriptionStatus, publicUser, activeSections, shiftActiveSections, minRemainingDays,
+  cancelActiveSections, plainSectionAccess
+} from "../utils/subscription.js";
+import { SECTIONS, parseSections } from "../sections.js";
 import { logAdminAction } from "../utils/audit.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 
@@ -32,6 +36,18 @@ function addDays(date, days) {
 function activeSubscriptionFilter() {
   return { role: "student", paymentStatus: "PAID", subscriptionEndDate: { $gt: new Date() } };
 }
+
+// Which sections an adjustment applies to: the ones named in the request, or by default every
+// section active right now. For an account holding all four sections on one window (every account
+// before sections existed) the default is all four, so each route below does exactly what it did
+// before: move the one expiry date.
+function chosenSections(req, user) {
+  const parsed = parseSections(req.body.sections);
+  if (parsed.error) return { error: parsed.error };
+  return { sections: parsed.sections || activeSections(user) };
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function validateDaysAndReason(body) {
   const days = Number(body.days);
@@ -66,19 +82,25 @@ router.post("/users/:id", asyncRoute(async (req, res) => {
     });
   }
 
+  const chosen = chosenSections(req, user);
+  if (chosen.error) return res.status(400).json({ message: chosen.error, code: "VALIDATION_ERROR" });
+
   const previousExpiry = user.subscriptionEndDate;
-  const newExpiry = addDays(previousExpiry, days);
-  user.subscriptionEndDate = newExpiry;
+  const changed = shiftActiveSections(user, chosen.sections, days);
+  if (!changed.length) {
+    return res.status(409).json({ message: "None of the chosen sections is active, so there is nothing to extend.", code: "SUBSCRIPTION_NOT_ACTIVE" });
+  }
   await user.save();
+  const newExpiry = user.subscriptionEndDate;
 
   const extensionId = await nextExtensionId();
   await SubscriptionExtension.create({
     extensionId, type: "INDIVIDUAL", user: user._id,
-    previousExpiry, daysAdded: days, newExpiry, reason, performedBy: req.user._id
+    previousExpiry, daysAdded: days, newExpiry, sections: changed, reason, performedBy: req.user._id
   });
 
-  logAdminAction(req.user, "SUBSCRIPTION_EXTENDED", user, { extensionId, days, reason, previousExpiry, newExpiry });
-  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysAdded: days });
+  logAdminAction(req.user, "SUBSCRIPTION_EXTENDED", user, { extensionId, days, reason, previousExpiry, newExpiry, sections: changed });
+  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysAdded: days, sections: changed });
 }));
 
 // ---------------------------------------------------------------------------
@@ -103,8 +125,16 @@ router.post("/users/:id/revoke", asyncRoute(async (req, res) => {
     });
   }
 
+  const chosen = chosenSections(req, user);
+  if (chosen.error) return res.status(400).json({ message: chosen.error, code: "VALIDATION_ERROR" });
+
   const previousExpiry = user.subscriptionEndDate;
-  const remainingDays = Math.ceil((previousExpiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  // Checked against the shortest of the chosen sections, so no section is ever revoked past zero.
+  // For an account on one shared window that is simply the days the subscription has left.
+  const remainingDays = minRemainingDays(user, chosen.sections);
+  if (remainingDays === null) {
+    return res.status(409).json({ message: "None of the chosen sections is active, so there is nothing to revoke.", code: "SUBSCRIPTION_NOT_ACTIVE" });
+  }
   if (days > remainingDays) {
     return res.status(400).json({
       message: `Cannot revoke more than the ${remainingDays} day(s) this subscription has left.`,
@@ -112,18 +142,18 @@ router.post("/users/:id/revoke", asyncRoute(async (req, res) => {
     });
   }
 
-  const newExpiry = addDays(previousExpiry, -days);
-  user.subscriptionEndDate = newExpiry;
+  const changed = shiftActiveSections(user, chosen.sections, -days);
   await user.save();
+  const newExpiry = user.subscriptionEndDate;
 
   const extensionId = await nextExtensionId();
   await SubscriptionExtension.create({
     extensionId, type: "REVOKE", user: user._id,
-    previousExpiry, daysAdded: -days, newExpiry, reason: `Admin revoked ${days} day(s)`, performedBy: req.user._id
+    previousExpiry, daysAdded: -days, newExpiry, sections: changed, reason: `Admin revoked ${days} day(s)`, performedBy: req.user._id
   });
 
-  logAdminAction(req.user, "SUBSCRIPTION_REVOKED", user, { extensionId, days, previousExpiry, newExpiry });
-  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysRevoked: days });
+  logAdminAction(req.user, "SUBSCRIPTION_REVOKED", user, { extensionId, days, previousExpiry, newExpiry, sections: changed });
+  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysRevoked: days, sections: changed });
 }));
 
 // ---------------------------------------------------------------------------
@@ -142,21 +172,35 @@ router.post("/users/:id/cancel", asyncRoute(async (req, res) => {
     });
   }
 
+  const chosen = chosenSections(req, user);
+  if (chosen.error) return res.status(400).json({ message: chosen.error, code: "VALIDATION_ERROR" });
+
   const previousExpiry = user.subscriptionEndDate;
-  const remainingDays = Math.max(0, Math.ceil((previousExpiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
-  const newExpiry = new Date();
-  user.subscriptionEndDate = newExpiry;
-  user.subscriptionCancelledAt = newExpiry;
+  const now = new Date();
+  // The most days given up by any one cancelled section — for a whole-account cancel, the days
+  // the subscription had left, as before.
+  const cancelledEnds = user.sectionAccess === undefined && previousExpiry
+    ? [previousExpiry]
+    : (user.sectionAccess || []).filter(e => chosen.sections.includes(e.section) && e.endDate && e.endDate > now).map(e => e.endDate);
+  const remainingDays = Math.max(0, ...cancelledEnds.map(d => Math.ceil((new Date(d).getTime() - now.getTime()) / DAY_MS)));
+
+  const changed = cancelActiveSections(user, chosen.sections, now);
+  if (!changed.length) {
+    return res.status(409).json({ message: "None of the chosen sections is active, so there is nothing to cancel.", code: "SUBSCRIPTION_NOT_ACTIVE" });
+  }
   await user.save();
+  // The account's own end: now, if this cancelled everything that was left; unchanged, if another
+  // section is still running.
+  const newExpiry = user.subscriptionEndDate;
 
   const extensionId = await nextExtensionId();
   await SubscriptionExtension.create({
     extensionId, type: "CANCEL", user: user._id,
-    previousExpiry, daysAdded: -remainingDays, newExpiry, reason: "Admin cancelled remaining subscription", performedBy: req.user._id
+    previousExpiry, daysAdded: -remainingDays, newExpiry, sections: changed, reason: "Admin cancelled remaining subscription", performedBy: req.user._id
   });
 
-  logAdminAction(req.user, "SUBSCRIPTION_CANCELLED", user, { extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays });
-  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays });
+  logAdminAction(req.user, "SUBSCRIPTION_CANCELLED", user, { extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays, sections: changed });
+  res.json({ success: true, user: publicUser(user), extensionId, previousExpiry, newExpiry, daysCancelled: remainingDays, sections: changed });
 }));
 
 // ---------------------------------------------------------------------------
@@ -215,30 +259,40 @@ router.post("/bulk", asyncRoute(async (req, res) => {
     throw e;
   }
 
-  const eligible = await User.find(activeSubscriptionFilter()).select("subscriptionEndDate");
+  const eligible = await User.find(activeSubscriptionFilter())
+    .select("role paymentStatus subscriptionStartDate subscriptionEndDate subscriptionCancelledAt sectionAccess");
   const extensionId = await nextExtensionId();
 
-  const bulkOps = eligible.map(u => {
+  // Every active section of every eligible student moves by `days`. Computed per user in memory,
+  // then written raw: bulkWrite skips the User pre-save hook, so the account window is written
+  // alongside the sections here rather than left for the hook to derive.
+  const planned = eligible.map(u => {
     const previousExpiry = u.subscriptionEndDate;
-    const newExpiry = addDays(previousExpiry, days);
-    return {
-      updateOne: {
-        // Re-checks the exact expiry this read saw, so a user who somehow changed between the
-        // find() and this write is left untouched rather than double-extended.
-        filter: { _id: u._id, subscriptionEndDate: previousExpiry },
-        update: { $set: { subscriptionEndDate: newExpiry } }
-      }
-    };
+    const changed = shiftActiveSections(u, SECTIONS, days);
+    return { id: u._id, previousExpiry, changed, user: u };
   });
+  const bulkOps = planned.map(({ id, previousExpiry, user: u }) => ({
+    updateOne: {
+      // Re-checks the exact expiry this read saw, so a user who somehow changed between the
+      // find() and this write is left untouched rather than double-extended.
+      filter: { _id: id, subscriptionEndDate: previousExpiry },
+      update: { $set: {
+        sectionAccess: plainSectionAccess(u),
+        subscriptionStartDate: u.subscriptionStartDate,
+        subscriptionEndDate: u.subscriptionEndDate,
+        subscriptionCancelledAt: u.subscriptionCancelledAt
+      } }
+    }
+  }));
 
   const result = bulkOps.length ? await User.bulkWrite(bulkOps) : { modifiedCount: 0 };
   const affectedUsers = result.modifiedCount;
 
   if (affectedUsers) {
-    const historyDocs = eligible.map(u => ({
-      extensionId, type: "BULK", user: u._id,
-      previousExpiry: u.subscriptionEndDate, daysAdded: days,
-      newExpiry: addDays(u.subscriptionEndDate, days), reason, performedBy: req.user._id
+    const historyDocs = planned.map(({ id, previousExpiry, changed, user: u }) => ({
+      extensionId, type: "BULK", user: id,
+      previousExpiry, daysAdded: days,
+      newExpiry: u.subscriptionEndDate, sections: changed, reason, performedBy: req.user._id
     }));
     await SubscriptionExtension.insertMany(historyDocs);
   }
@@ -277,6 +331,7 @@ router.get("/history", asyncRoute(async (req, res) => {
       previousExpiry: r.previousExpiry,
       daysAdded: r.daysAdded,
       newExpiry: r.newExpiry,
+      sections: r.sections || null,
       reason: r.reason,
       performedBy: r.performedBy ? { username: r.performedBy.username, name: r.performedBy.name } : null,
       createdAt: r.createdAt

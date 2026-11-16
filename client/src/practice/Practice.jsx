@@ -17,6 +17,7 @@ import { List, RotateCcw } from "lucide-react";
 import { safeLocal } from "../safeStorage.js";
 import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { applyStructuredContent } from "./listeningData/shared.js";
+import { SECTION_DENIAL_CODES } from "../access.js";
 
 const SECTION_DESCRIPTIONS = {
   speaking:
@@ -147,12 +148,17 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   const [positionRestored, setPositionRestored] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  // The server's own reason when it refuses this section (SECTION_LOCKED / SECTION_EXPIRED). The
+  // route guard normally stops a locked section before this ever loads; this covers the gap where
+  // the stored user is older than the access change — a section that lapsed while the tab was open.
+  const [denied, setDenied] = useState(null);
   const [progress, setProgress] = useState(new Map());
   const [finished, setFinished] = useState(false);
 
   function load() {
     setLoading(true);
     setError(false);
+    setDenied(null);
     Promise.all([
       api.questions(section, slug),
       // Scoped to this one task: the map below is only ever read for questions in this task, so
@@ -202,7 +208,10 @@ function PracticeTask({ section, label, slug, taskComponents }) {
         setIdx(resumeAt ?? (loadedQuestions.length === 1 ? 0 : null));
         setPositionRestored(true);
       })
-      .catch(() => setError(true))
+      .catch((loadError) => {
+        if (SECTION_DENIAL_CODES.has(loadError?.code)) setDenied(loadError.message);
+        else setError(true);
+      })
       .finally(() => setLoading(false));
   }
 
@@ -243,6 +252,13 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       <div className="panel question-list-panel">
         <AnalyticsSkeleton rows={6} />
       </div>
+    );
+  if (denied)
+    return (
+      <EmptyState
+        title="This section is locked"
+        body={denied}
+      />
     );
   if (error)
     return (
