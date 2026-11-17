@@ -98,11 +98,22 @@ describe("per-task character caps", () => {
     expect(screen.getByRole("button", { name: "Submit for AI Feedback" })).not.toBeDisabled();
   });
 
-  it("leaves a task with no cap governed by the server ceiling", () => {
+  it("caps Write Email at 1000 characters, its 200-word limit at swt's 5 characters a word", () => {
+    expect(TASK_CHAR_LIMITS["write-email"]).toBe(1000);
     const email = { _id: "w3", type: "write-email", section: "writing", title: "Write Email", prompt: "Write." };
     render(<Writing type="write-email" question={email} />);
     expect(box()).toHaveAttribute("maxlength", String(ANSWER_MAX_LENGTH));
-    expect(document.getElementById("writing-length")).toHaveTextContent(`/${ANSWER_MAX_LENGTH}`);
+    // 100 ten-letter words: 1000 characters, well inside the 200-word limit.
+    const atCap = Array.from({ length: 100 }, () => "a".repeat(10)).join(" ");
+    fireEvent.change(box(), { target: { value: atCap } });
+    expect(countCharacters(box().value)).toBe(1000);
+    expect(document.getElementById("writing-length")).toHaveTextContent("1000/1000");
+    expect(screen.getByText(/reached the 1000-character limit/)).toBeInTheDocument();
+    // One more character is refused; shortening still works.
+    fireEvent.change(box(), { target: { value: `${atCap}a` } });
+    expect(countCharacters(box().value)).toBe(1000);
+    fireEvent.change(box(), { target: { value: "short reply" } });
+    expect(countCharacters(box().value)).toBe(10);
   });
 });
 

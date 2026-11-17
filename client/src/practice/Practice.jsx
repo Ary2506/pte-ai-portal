@@ -15,7 +15,6 @@ import ScrollTabs from "../components/ScrollTabs.jsx";
 import { Button, NavButton } from "../components/Button.jsx";
 import { List, RotateCcw } from "lucide-react";
 import { safeLocal } from "../safeStorage.js";
-import WriteEmailPdf from "./WriteEmailPdf.jsx";
 import { applyStructuredContent } from "./listeningData/shared.js";
 import { SECTION_DENIAL_CODES } from "../access.js";
 
@@ -122,19 +121,20 @@ function positionKey(section, slug) {
 }
 
 // Speaking and Writing practice shows "<task name> <n>" in place of each question's own topic title
-// ("Read Aloud 3", not "Read Aloud - Climate Change"). Two tasks keep the title they have always had:
-// Describe Image and Summarize Written Text. Reading and Listening number every task, as
+// ("Read Aloud 3", not "Read Aloud - Climate Change"). Three tasks keep their own titles: Describe
+// Image, Summarize Written Text and Write Email (titled as in its source PDF). Reading and Listening
+// number every task, as
 // "<task name> - <n>" ("Multiple Choice Multiple - 2").
 //
 // This is a display copy only. The stored question is untouched, and so are the ids, which is what
 // progress and submissions are keyed on. `n` is the question's position in the list, so it is the
 // same number the list already shows as "#n", and the same after a refresh or when moving between
 // questions. Only this practice page is affected: Mock Tests render their questions elsewhere.
-const KEEP_OWN_TITLE = { speaking: "describe-image", writing: "swt", reading: null, listening: null };
+const KEEP_OWN_TITLE = { speaking: ["describe-image"], writing: ["swt", "write-email"], reading: [], listening: [] };
 const TITLE_SEPARATOR = { reading: " - ", listening: " - " };
 
 function withNumberedTitles(questions, section, slug, label) {
-  if (!(section in KEEP_OWN_TITLE) || slug === KEEP_OWN_TITLE[section]) return questions;
+  if (!(section in KEEP_OWN_TITLE) || KEEP_OWN_TITLE[section].includes(slug)) return questions;
   const separator = TITLE_SEPARATOR[section] || " ";
   return questions.map((question, index) => ({ ...question, title: `${label}${separator}${index + 1}` }));
 }
@@ -333,9 +333,12 @@ function PracticeTask({ section, label, slug, taskComponents }) {
     );
   }
 
+  // Write Email lays out its own navigation, on the same row as Submit (see Writing.jsx), so the
+  // shared bar above the question is left out for it alone.
+  const ownNavigation = slug === "write-email";
   return (
     <div>
-      {questions.length > 1 && (
+      {questions.length > 1 && !ownNavigation && (
         <>
           {/* Previous | position | Next. The position is a readout, set in mono, not a label —
               and Previous stays visible when unavailable so the bar never shifts as you move. */}
@@ -391,6 +394,12 @@ function PracticeTask({ section, label, slug, taskComponents }) {
         key={question?._id}
         question={question}
         onAnswered={(submission) => recordAttempt(question?._id, submission)}
+        {...(ownNavigation && {
+          position: { number: idx + 1, total: questions.length },
+          onPrevious: idx > 0 ? () => setIdx(idx - 1) : null,
+          onNext: idx < questions.length - 1 ? () => setIdx(idx + 1) : null,
+          onBackToList: () => setIdx(null),
+        })}
       />
     </div>
   );
@@ -440,19 +449,12 @@ export default function Practice({ section, taskComponents }) {
         ))}
       </ScrollTabs>
       {type ? (
-        section === "writing" && type.slug === "write-email" ? (
-          // Write Email's content is the client's own PDF of 12 sample emails, shown and
-          // downloadable as-is — same bypass pattern as Read Aloud above, and equally isolated
-          // from every other task type's DB-backed PracticeTask flow.
-          <WriteEmailPdf />
-        ) : (
-          <PracticeTask
-            section={section}
-            label={type.label}
-            slug={type.slug}
-            taskComponents={taskComponents}
-          />
-        )
+        <PracticeTask
+          section={section}
+          label={type.label}
+          slug={type.slug}
+          taskComponents={taskComponents}
+        />
       ) : (
         <Empty text="No practice questions available yet." />
       )}

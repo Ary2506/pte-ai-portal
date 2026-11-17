@@ -79,7 +79,7 @@ export const TASK_TIPS = {
     "Aim for 200–300 words — longer is not better.",
     "Leave a minute to re-read for grammar and spelling."
   ],
-  email: [
+  "write-email": [
     "Open and close in the register the prompt asks for.",
     "Cover every bullet point you were given.",
     "Keep paragraphs short — one purpose each.",
@@ -149,7 +149,7 @@ export const TASK_TIP_HEADINGS = {
   "respond-to-situation": "Respond to a Situation",
   swt: "Summarize Written Text",
   essay: "Write Essay",
-  email: "Write Email",
+  "write-email": "Write Email",
   "mcq-single": "Multiple Choice",
   "mcq-multiple": "Multiple Choice",
   reorder: "Re-order Paragraphs",

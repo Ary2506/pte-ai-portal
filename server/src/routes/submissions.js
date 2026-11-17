@@ -27,7 +27,7 @@ const MAX_TEXT_LENGTH = 6000;
 // client/src/practice/answerLimits.js). The client blocks typing past these; this is what makes
 // them real, since a request can be sent without the client.
 const TASK_CHAR_LIMITS = {
-  swt: 500, essay: 1500,
+  swt: 500, essay: 1500, "write-email": 1000,
   "summarize-spoken-text": 400, "write-dictation": 100
 };
 const countCharacters = (text) => String(text || "").replace(/\s/g, "").length;

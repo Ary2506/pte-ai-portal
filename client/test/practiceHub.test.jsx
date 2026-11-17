@@ -72,38 +72,49 @@ describe("Practice Hub", () => {
     expect(screen.getAllByText("No content yet").length).toBeGreaterThan(0);
   });
 
-  // Write Email's material is a PDF bundled with the client (WriteEmailPdf), not rows in the
-  // question bank, so the question index it is counted against will always answer "none" however
-  // complete the task is. The row has to read that content off the registry instead — this test
-  // used to assert the opposite, back when the task genuinely had nothing behind it.
-  it("Write Email is startable and badged as bundled content, never 'No content yet' — its PDF does not live in the question bank", async () => {
+  // Write Email used to be a PDF bundled with the client. Its 12 questions now live in the question
+  // bank, so the row is counted against the question index exactly like every other task.
+  const withEmailQuestions = () => api.questionIndex.mockImplementation((section) => Promise.resolve({
+    questions: section === "writing"
+      ? [...questionsFor("writing"), { _id: "we1", type: "write-email", title: "Moving Furniture" }]
+      : questionsFor(section)
+  }));
+
+  it("Write Email reads its availability from the question bank: with no rows it is 'No content yet'", async () => {
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
     const row = screen.getByText("Write Email").closest(".practice-row");
-    expect(row).not.toHaveClass("disabled");
-    expect(row.tagName).toBe("BUTTON"); // a startable row is a real button
-    expect(row).toHaveTextContent("Samples");
-    expect(row).not.toHaveTextContent("No content yet");
-    expect(row).not.toHaveTextContent("Coming Soon");
-    // Nothing is submitted or scored from a page of worked samples.
-    expect(row).not.toHaveTextContent("AI Score");
+    await waitFor(() => expect(row).toHaveTextContent("No content yet"));
+    expect(row).not.toHaveTextContent("Samples");
   });
 
-  it("counts Write Email towards its section's ready tally, although the question bank is empty", async () => {
+  it("with Write Email questions in the bank, the row is startable, AI-scored and counted as ready", async () => {
+    withEmailQuestions();
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    // Writing lists two tasks: SWT (no rows in this fixture) and Write Email (bundled). Write Essay
-    // is switched off and hidden, so it is not counted. Only the bundled one is ready.
-    // findByText, not getByText: the call having been made does not mean the state it sets has
-    // rendered yet, and until it does the tally reads "…".
+    // Writing lists two tasks: SWT (no rows in this fixture) and Write Email. Write Essay is
+    // switched off and hidden, so it is not counted.
     expect(await screen.findByText("1/2 ready")).toBeInTheDocument();
+    const row = screen.getByText("Write Email").closest(".practice-row");
+    expect(row.tagName).toBe("BUTTON"); // a startable row is a real button
+    expect(row).not.toHaveClass("disabled");
+    expect(row).toHaveTextContent("AI Score");
+    expect(row).not.toHaveTextContent("Samples");
   });
 
-  it("opens the Write Email PDF page when the row is clicked", async () => {
+  it("opens Write Email as a question, not a PDF page, when the row is clicked", async () => {
+    withEmailQuestions();
+    api.questions.mockImplementation((section, type) => Promise.resolve({
+      questions: type === "write-email"
+        ? [{ _id: "we1", section: "writing", type: "write-email", title: "Moving Furniture", prompt: "Write to Jim.\n• work;\n• transport;\n• family." }]
+        : questionsFor(section)
+    }));
     renderAt("/practice", studentAuthUser());
     await waitFor(() => expect(api.questionIndex).toHaveBeenCalledTimes(4));
-    fireEvent.click(screen.getByText("Write Email").closest(".practice-row"));
-    expect(await screen.findByText("Write Email — Sample Emails")).toBeInTheDocument();
+    fireEvent.click(await screen.findByText("Write Email"));
+    expect(await screen.findByRole("heading", { name: "#1 Moving Furniture" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Type your answer here...")).toBeInTheDocument();
+    expect(screen.queryByText("Write Email — Sample Emails")).not.toBeInTheDocument();
   });
 
   it("Write Essay is switched off and hidden from the hub entirely; no task shows 'Coming Soon'", async () => {

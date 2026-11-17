@@ -207,17 +207,6 @@ describe("Phase 20 — Respond to a Situation (speaking) reuses SpeakingTask wit
   });
 });
 
-describe("Write Email — client PDF resource, bypasses the DB-backed question flow", () => {
-  it("renders the sample-emails PDF and a download link, without calling api.questions", async () => {
-    renderAt("/writing?type=write-email", studentAuthUser());
-    await screen.findByText("Write Email — Sample Emails");
-    const downloadLink = screen.getByText("Download PDF").closest("a");
-    expect(downloadLink).toHaveAttribute("href", "/writing-resources/write-email-samples.pdf");
-    expect(downloadLink).toHaveAttribute("download");
-    expect(api.questions).not.toHaveBeenCalledWith("writing", "write-email");
-  });
-});
-
 describe("Summarize Spoken Text transcript flow", () => {
   it("shows a transcript modal when the student clicks the transcript button", () => {
     const q = {

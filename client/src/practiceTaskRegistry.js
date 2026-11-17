@@ -26,9 +26,9 @@ export const PRACTICE_TASKS = {
   ],
   writing: [
     { slug: "swt", label: "Summarize Written Text", supported: true, hasAI: true },
-    // Content is client/public/writing-resources/write-email-samples.pdf, rendered by
-    // WriteEmailPdf — 12 worked samples to read, with no submission and so nothing AI-scored.
-    { slug: "write-email", label: "Write Email", supported: true, hasAI: false, bundledContent: true, contentLabel: "Samples" },
+    // 12 questions extracted from client/public/writing-resources/write-email-samples.pdf (kept as
+    // the source of record) into the question bank by server/src/importWriteEmail.js.
+    { slug: "write-email", label: "Write Email", supported: true, hasAI: true },
     { slug: "essay", label: "Write Essay", supported: false, hidden: true, hasAI: true }
   ],
   reading: [

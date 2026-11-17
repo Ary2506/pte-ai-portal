@@ -20,6 +20,8 @@ export const TASK_CHAR_LIMITS = {
   // Writing
   swt: 500,
   essay: 1500,
+  // Write Email's 200-word limit at the same 5 characters a word as swt's 100 words / 500.
+  "write-email": 1000,
   // Listening
   "summarize-spoken-text": 400,
   "write-dictation": 100

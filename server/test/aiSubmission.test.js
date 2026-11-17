@@ -57,6 +57,21 @@ describe("writing evaluation validation", () => {
     expect(res.body.code).toBe("ANSWER_TOO_LONG");
   });
 
+  it("rejects a Write Email answer over its 1000-character cap, spaces not counted", async () => {
+    await createUser({ username: "write5", password: "password123" });
+    const q = await createQuestion({ section: "writing", type: "write-email", evaluationType: "subjective" });
+    const token = await login("write5");
+    const overCap = Array.from({ length: 100 }, () => "a".repeat(10)).join(" ") + "a"; // 1001 characters
+
+    const res = await request(app).post("/api/submissions").set("Authorization", `Bearer ${token}`)
+      .field("section", "writing").field("type", "write-email").field("answer", JSON.stringify(overCap)).field("transcript", overCap)
+      .field("questionId", q._id.toString());
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("ANSWER_TOO_LONG");
+    expect(res.body.message).toContain("max 1000 characters");
+  });
+
   it("rejects an oversized answer even when a short transcript is sent alongside it", async () => {
     await createUser({ username: "write4", password: "password123" });
     const q = await createQuestion({ section: "writing", type: "essay", evaluationType: "subjective" });
