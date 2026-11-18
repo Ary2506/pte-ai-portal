@@ -115,6 +115,31 @@ function isBetterAttempt(candidate, current) {
   return next > existing;
 }
 
+// The Done map needs every attempt the student has made at a task, not the newest 50 that a bare
+// /submissions/history call returns: with more attempts than that, the questions answered first
+// fell out of the window and showed as Undone. So the history is read page by page, in the light
+// summary shape (score, status and question — all the map uses), until the server reports no more
+// pages. The cap is only a safety stop; reaching it is reported, never passed off as complete.
+const HISTORY_PAGE_SIZE = 100; // the server's maximum page size
+const HISTORY_MAX_PAGES = 50; // 5,000 attempts at one task
+
+/** Every attempt at one task, and whether that really is all of them. */
+async function loadTaskHistory(section, type) {
+  const submissions = [];
+  for (let page = 1; page <= HISTORY_MAX_PAGES; page += 1) {
+    let data;
+    try {
+      data = await api.history({ section, type, summary: 1, limit: HISTORY_PAGE_SIZE, page });
+    } catch {
+      // Keep what was read, but never as the whole history.
+      return { submissions, complete: false };
+    }
+    submissions.push(...(data?.submissions || []));
+    if (page >= (Number(data?.totalPages) || 1)) return { submissions, complete: true };
+  }
+  return { submissions, complete: false };
+}
+
 /** Where this student was in one task's question list. One key per section+task. */
 function positionKey(section, slug) {
   return `pte_practice_pos_${section}_${slug}`;
@@ -153,6 +178,9 @@ function PracticeTask({ section, label, slug, taskComponents }) {
   // the stored user is older than the access change — a section that lapsed while the tab was open.
   const [denied, setDenied] = useState(null);
   const [progress, setProgress] = useState(new Map());
+  // False when the attempt history could not be read in full: the questions still load, but the
+  // Done marks and figures are flagged as possibly incomplete instead of shown as if complete.
+  const [progressComplete, setProgressComplete] = useState(true);
   const [finished, setFinished] = useState(false);
 
   function load() {
@@ -161,14 +189,12 @@ function PracticeTask({ section, label, slug, taskComponents }) {
     setDenied(null);
     Promise.all([
       api.questions(section, slug),
-      // Scoped to this one task: the map below is only ever read for questions in this task, so
-      // pulling the 50 most recent submissions across every section both shipped rows that were
-      // discarded and could push this task's own older attempts out of the limit entirely.
-      // Full rows (not summary) — the per-question map below is built from them, and the
-      // answer and its feedback.
-      Promise.resolve(api.history({ section, type: slug })).catch(() => ({ submissions: [] })),
+      // Scoped to this one task, and read in full (see loadTaskHistory). A failure leaves the
+      // questions usable and says progress is incomplete, rather than treating it as "no attempts".
+      loadTaskHistory(section, slug).catch(() => ({ submissions: [], complete: false })),
     ])
       .then(([questionData, historyData]) => {
+        setProgressComplete(historyData.complete);
         // Every section now comes from the question bank. Listening used to be served from
         // bundled JSON that shadowed the database entirely — questions in the bank for those
         // types were unreachable in practice, and the bundled ones could never appear in a mock
@@ -276,9 +302,16 @@ function PracticeTask({ section, label, slug, taskComponents }) {
       />
     );
   const shownQuestions = withNumberedTitles(questions, section, slug, label);
+  const incompleteNotice = !progressComplete && (
+    <div className="alert notice" role="status">
+      <span>Your earlier attempts could not all be loaded, so some Done marks and figures may be missing.</span>
+      <Button variant="tertiary" size="sm" icon={<RotateCcw/>} onClick={load}>Retry</Button>
+    </div>
+  );
   if (idx === null)
     return (
       <>
+        {incompleteNotice}
         <WorkspaceHeader section={section} label={label} questions={questions} progress={progress} />
         <QuestionListView
           questions={shownQuestions}
@@ -312,6 +345,7 @@ function PracticeTask({ section, label, slug, taskComponents }) {
           <span className="chip">{SECTION_LABELS[section]}</span>
         </div>
         <h2>Practice complete</h2>
+        {incompleteNotice}
         <p className="instruction">
           You've gone through all {questions.length} {label} question
           {questions.length === 1 ? "" : "s"}.
