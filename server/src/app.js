@@ -13,6 +13,8 @@ import questionMediaRoutes from "./routes/questionMedia.js";
 import adminSubscriptionExtensionRoutes from "./routes/adminSubscriptionExtension.js";
 import questionRoutes from "./routes/questions.js";
 import submissionRoutes from "./routes/submissions.js";
+import { ownerShareRoutes, publicShareRoutes } from "./routes/shareLinks.js";
+import studentViewRoutes from "./routes/studentView.js";
 import testSessionRoutes from "./routes/testSessions.js";
 import dashboardRoutes from "./routes/dashboard.js";
 
@@ -107,7 +109,12 @@ app.use("/api/admin/questions", adminQuestionRoutes);
 app.use("/api/admin/subscription-extension", adminSubscriptionExtensionRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/questions", questionRoutes);
+app.use("/api/submissions", ownerShareRoutes);
 app.use("/api/submissions", submissionRoutes);
+// Shared answers: opened by anyone holding a link, with no session (see routes/shareLinks.js).
+app.use("/api/public/shared-answers", publicShareRoutes);
+// Ending an admin's read-only Student View (see routes/studentView.js).
+app.use("/api/student-view", studentViewRoutes);
 app.use("/api/test-sessions", testSessionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 

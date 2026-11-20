@@ -4,6 +4,58 @@ import Session from "../models/Session.js";
 import { config } from "../config.js";
 import { getSubscriptionStatus, sectionStatus } from "../utils/subscription.js";
 import { isSection } from "../sections.js";
+import { isStudentViewAdmin } from "../studentViewAccess.js";
+import StudentViewSession from "../models/StudentViewSession.js";
+
+// Student Website View (routes/admin.js POST /users/:id/view-session): a read-only pass that lets an
+// admin see the student-facing site as one student sees it. Its token carries kind "student-view".
+export const STUDENT_VIEW_KIND = "student-view";
+export const STUDENT_VIEW_TTL_SECONDS = 2 * 60 * 60;
+const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+// Who may open views: only the admins listed in STUDENT_VIEW_ADMIN_IDS, failing closed (see
+// studentViewAccess.js). Re-exported here because the routes take their auth helpers from this file.
+export { isStudentViewAdmin };
+
+/**
+ * A request made with a student-view pass. The viewed student becomes req.user, so every student
+ * route returns exactly what that student would see — and is still held to that student's own
+ * access. Nothing is written: no session is created or touched for anyone, and any request other
+ * than a read is refused here, before it reaches a route.
+ */
+// The one action a view pass may take that is not a read: ending its own view
+// (routes/studentView.js). It changes nothing that belongs to the student.
+const END_VIEW_PATH = "/api/student-view/end";
+
+const viewEnded = (res) => res.status(401).json({ message: "This student view has ended. Open it again from the admin panel.", code: "STUDENT_VIEW_ENDED" });
+
+async function authenticateStudentView(payload, req, res, next) {
+  const endingThisView = req.method === "POST" && req.originalUrl.split("?")[0] === END_VIEW_PATH;
+  if (!READ_METHODS.has(req.method) && !endingThisView) {
+    return res.status(403).json({ message: "Student view is read-only. Nothing can be changed from here.", code: "READ_ONLY_VIEW" });
+  }
+  // The pass's own record: once the view is ended there, the pass stops working immediately.
+  const view = payload.viewId ? await StudentViewSession.findById(payload.viewId) : null;
+  if (!view || view.endedAt || String(view.admin) !== payload.adminId || String(view.student) !== payload.studentId) {
+    return viewEnded(res);
+  }
+  // Tied to the admin's own sign-in: signing out (or that session ending) ends every view it opened.
+  const adminSession = await Session.findById(payload.adminSessionId);
+  if (!adminSession || String(adminSession.user) !== payload.adminId || adminSession.revokedAt || adminSession.expiresAt < new Date()) {
+    return viewEnded(res);
+  }
+  const admin = await User.findById(payload.adminId).select("-passwordHash");
+  if (!isStudentViewAdmin(admin)) {
+    return viewEnded(res);
+  }
+  const student = await User.findById(payload.studentId).select("-passwordHash");
+  if (!student || student.role !== "student") {
+    return res.status(404).json({ message: "Student not found", code: "NOT_FOUND" });
+  }
+  req.user = student;
+  req.studentView = { adminId: admin._id, viewId: view._id };
+  next();
+}
 
 export async function requireAuth(req, res, next) {
   try {
@@ -16,6 +68,7 @@ export async function requireAuth(req, res, next) {
     } catch {
       return res.status(401).json({ message: "Invalid or expired token", code: "SESSION_INVALID" });
     }
+    if (payload.kind === STUDENT_VIEW_KIND) return await authenticateStudentView(payload, req, res, next);
 
     const session = await Session.findById(payload.sessionId);
     if (!session || String(session.user) !== payload.userId) {

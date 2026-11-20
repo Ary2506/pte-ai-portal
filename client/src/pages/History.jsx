@@ -1,6 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Badge, Empty, Page, Pager } from "../components/common.jsx";
+import { Share2 } from "lucide-react";
+import { Badge, ConfirmDialog, Empty, Page, Pager } from "../components/common.jsx";
+import { Button } from "../components/Button.jsx";
+import ShareAnswerDialog from "../components/ShareAnswerDialog.jsx";
+import { ReadAloudRecordingHistory } from "../practice/MyRecordings.jsx";
+import { useToast } from "../components/toast.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS } from "../practiceTaskRegistry.js";
@@ -74,7 +79,14 @@ function historyScoreCell(r) {
   );
 }
 
+// A scored speaking answer with its recording can be shared as a public link (Share Answer).
+const canShare = (r) => r.section === "speaking" && r.evaluationStatus === "COMPLETED" && r.hasAudio;
+
 export default function History() {
+  const toast = useToast();
+  const [sharing, setSharing] = useState(null);
+  const [unsharing, setUnsharing] = useState(null);
+  const [unshareBusy, setUnshareBusy] = useState(false);
   const [rows, setRows] = useState([]);
   const [mocks, setMocks] = useState([]);
   const [mockPage, setMockPage] = useState(1);
@@ -120,6 +132,45 @@ export default function History() {
       .then((d) => setMocks(d.testSessions))
       .catch(() => {});
   }, []);
+
+  const markShared = useCallback((id, share) => {
+    setRows((current) => current.map((r) => (r._id === id ? { ...r, share } : r)));
+  }, []);
+  const onShared = useCallback((created) => {
+    if (sharing) markShared(sharing._id, { expiresAt: created.expiresAt });
+  }, [sharing, markShared]);
+
+  async function stopSharing() {
+    setUnshareBusy(true);
+    try {
+      await api.unshareSubmission(unsharing._id);
+      markShared(unsharing._id, null);
+      toast.success("Sharing stopped. The link no longer opens.");
+      setUnsharing(null);
+    } catch (err) {
+      toast.error(err.message || "Sharing could not be stopped. Please try again.");
+    } finally {
+      setUnshareBusy(false);
+    }
+  }
+
+  function shareCell(r) {
+    if (!canShare(r)) return <span className="muted">—</span>;
+    return (
+      <span className="history-share">
+        <Button variant="ghost" size="sm" icon={<Share2/>} onClick={() => setSharing(r)}
+          aria-label={`Share your answer to ${r.question?.title || taskLabel(r.type)}`}>
+          {r.share ? "Share again" : "Share"}
+        </Button>
+        {r.share && (
+          <button type="button" className="history-share__stop" onClick={() => setUnsharing(r)}
+            title={`Shared until ${new Date(r.share.expiresAt).toLocaleDateString()}`}>
+            Stop sharing
+          </button>
+        )}
+      </span>
+    );
+  }
 
   function selectSection(s) {
     if (s === sectionFilter) return;
@@ -272,7 +323,8 @@ export default function History() {
             {
               key: "duration", label: "Duration", align: "right",
               render: (r) => formatDuration(r.durationSeconds) || <span className="muted">—</span>
-            }
+            },
+            { key: "share", label: "Share", align: "right", render: (r) => shareCell(r) }
           ]}
           rows={withChange}
           empty={
@@ -295,6 +347,21 @@ export default function History() {
         busy={rowsLoading}
         onPrevious={() => setPage(page - 1)}
         onNext={() => setPage(page + 1)}
+      />
+      {/* Every Read Aloud recording with its player and Share; the question page shows the latest 5. */}
+      <div style={{ marginTop: 30 }}>
+        <ReadAloudRecordingHistory />
+      </div>
+      {sharing && <ShareAnswerDialog submission={sharing} onShared={onShared} onClose={() => setSharing(null)} />}
+      <ConfirmDialog
+        open={!!unsharing}
+        title="Stop sharing this answer?"
+        message="Every link you have sent for this answer stops working immediately for everyone who has it. You can share the answer again later, which creates a new link."
+        confirmLabel="Stop sharing"
+        danger
+        busy={unshareBusy}
+        onConfirm={stopSharing}
+        onCancel={() => setUnsharing(null)}
       />
     </Page>
   );

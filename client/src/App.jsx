@@ -6,7 +6,7 @@ import {
   Trophy, UserRound, Volume2, X, CheckCircle2, AlertCircle, Shield, ChevronLeft, ChevronRight,
   Eye, EyeOff, Moon, Sun, PanelLeft, Search as SearchIcon, Lock
 } from "lucide-react";
-import { api, forceLogout } from "./api.js";
+import { api, forceLogout, endStudentViewSession } from "./api.js";
 import { Result, ObjectiveResult } from "./PracticeObjective.jsx";
 import PracticePage from "./practice/Practice.jsx";
 import PracticeHubPage from "./pages/PracticeHub.jsx";
@@ -21,15 +21,17 @@ const ProgressPage = React.lazy(() => import("./pages/Progress.jsx"));
 const StudyPlanPage = React.lazy(() => import("./pages/StudyPlan.jsx"));
 const ProfilePage = React.lazy(() => import("./pages/Profile.jsx"));
 const AdminPage = React.lazy(() => import("./pages/Admin.jsx"));
+const SharedAnswerPage = React.lazy(() => import("./pages/SharedAnswer.jsx"));
 import { ReadingTask } from "./practice/Reading.jsx";
 import { ListeningTask } from "./practice/Listening.jsx";
 import SpeakingTaskModule from "./practice/Speaking.jsx";
 import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
-import { ButtonLink, IconButton } from "./components/Button.jsx";
+import { Button, ButtonLink, IconButton } from "./components/Button.jsx";
+import { activeStudentView, endStudentView, enterStudentViewFromUrl, updateStudentViewProfile } from "./studentView.js";
 import Footer from "./components/Footer.jsx";
 import Landing from "./landing/Landing.jsx";
-import { ToastProvider } from "./components/toast.jsx";
+import { ToastProvider, useToast } from "./components/toast.jsx";
 import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
@@ -75,6 +77,10 @@ function ThemeToggle({ theme, onToggle, compact = false }) {
 
 function useAuth() {
   const [user, setUser] = useState(() => {
+    // A student-view tab (studentView.js) runs as the viewed student, read only. The admin's own
+    // stored sign-in is left exactly as it is.
+    const view = enterStudentViewFromUrl() || activeStudentView();
+    if (view) return { ...view.student, viewOnly: true };
     try { return JSON.parse(safeLocal.getItem("pte_user") || "null"); } catch { return null; }
   });
   const save = (data) => {
@@ -85,6 +91,11 @@ function useAuth() {
   // Replaces the stored user after a self-service change (currently the target score). Writes the
   // same localStorage key sign-in does, so a reload keeps the new value.
   const updateUser = (next) => {
+    if (user?.viewOnly) {
+      updateStudentViewProfile(next);
+      setUser({ ...next, viewOnly: true });
+      return;
+    }
     safeLocal.setItem("pte_user", JSON.stringify(next));
     setUser(next);
   };
@@ -92,13 +103,23 @@ function useAuth() {
   // previous account's page, and the next account lands there first — a student signing in where
   // an admin signed out from /admin would hit the admin gate and be told "Access denied".
   const navigate = useNavigate();
-  const logout = () => {
+  const logout = async () => {
+    // Leaving a student view is not a sign-out: it ends the view and returns to the admin panel.
+    // The server ends the pass first; if that fails this throws and the view stays as it is, so the
+    // admin is never told it ended when it has not.
+    if (user?.viewOnly) {
+      await endStudentViewSession();
+      endStudentView();
+      window.location.assign("/admin");
+      return;
+    }
     api.auth.logout();
     safeLocal.removeItem("pte_token"); safeLocal.removeItem("pte_user"); setUser(null);
     navigate("/", { replace: true });
   };
   useEffect(() => {
-    if (!user || user.role === "admin" || !user.subscriptionEndDate) return;
+    // A viewed student's subscription running out ends nothing here; the admin is not signed out.
+    if (!user || user.viewOnly || user.role === "admin" || !user.subscriptionEndDate) return;
     const msRemaining = new Date(user.subscriptionEndDate).getTime() - Date.now();
     if (user.subscriptionStatus !== "ACTIVE" || msRemaining <= 0) {
       forceLogout(SUBSCRIPTION_EXPIRED_MESSAGE);
@@ -346,6 +367,20 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
   const location = useLocation();
   const inAdminSection = user?.role === "admin" && location.pathname === "/admin";
   const closeMobile = () => setMobile(false);
+  const toast = useToast();
+  // Ending a student view waits on the server: one press at a time, and a failure is shown.
+  const [leaving, setLeaving] = useState(false);
+  async function handleLogout() {
+    if (!user?.viewOnly) return logout();
+    if (leaving) return;
+    setLeaving(true);
+    try {
+      await logout();
+    } catch (err) {
+      toast?.error(err?.message || "Could not end this student view. Please try again.");
+      setLeaving(false);
+    }
+  }
 
   function toggleCollapsed() {
     setCollapsed(value => {
@@ -370,10 +405,19 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
       </nav>
       <div className="sidebar-bottom">
         <NavLink to="/profile" className="nav-item"><UserRound size={18}/><span>Profile</span></NavLink>
-        <button className="nav-item" onClick={logout}><LogOut size={18}/><span>Log out</span></button>
+        <button className="nav-item" onClick={handleLogout} disabled={leaving}><LogOut size={18}/><span>{user?.viewOnly ? "Exit student view" : "Log out"}</span></button>
       </div>
     </aside>
     <main className="main">
+      {/* Admin's read-only view of one student's site (studentView.js). Always on screen, so it is
+          never mistaken for the student's own session. */}
+      {user?.viewOnly && (
+        <div className="student-view-banner" role="status">
+          <Eye size={17} aria-hidden="true"/>
+          <span>Viewing Student: <b>{user.username}</b> — Read Only</span>
+          <Button variant="secondary" size="sm" onClick={handleLogout} disabled={leaving}>{leaving ? "Ending view…" : "Back to Admin Panel"}</Button>
+        </div>
+      )}
       <header className="topbar">
         <div className="topbar-left">
           <IconButton label="Open menu" className="mobile-menu" icon={<Menu/>} onClick={()=>setMobile(true)}/>
@@ -432,6 +476,15 @@ export default function App() {
   // Only used as the route boundary's reset key: when the path changes, a page that crashed stops
   // showing its fallback.
   const location = useLocation();
+  // A shared-answer link is the same standalone page for everyone, signed in or not: one report,
+  // none of the app around it. Decided before the auth gate so neither surface ever wraps it.
+  if (location.pathname.startsWith("/shared-answer/")) {
+    return <ToastProvider><RouteErrorBoundary resetKey={location.pathname}>
+      <React.Suspense fallback={<main className="shared-report"><p className="muted">Loading…</p></main>}>
+        <Routes><Route path="/shared-answer/:token" element={<SharedAnswerPage/>}/></Routes>
+      </React.Suspense>
+    </RouteErrorBoundary></ToastProvider>;
+  }
   // Signed out, every path renders the public landing surface, which carries its own nav,
   // theme toggle and the sign-in sheet. Unchanged: the auth gate itself and what follows it.
   // ToastProvider wraps both surfaces, so a toast works on the landing page and inside the

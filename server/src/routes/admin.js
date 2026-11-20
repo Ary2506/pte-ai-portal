@@ -3,10 +3,12 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Session from "../models/Session.js";
 import AuditLog from "../models/AuditLog.js";
+import StudentViewSession from "../models/StudentViewSession.js";
 import TestSession from "../models/TestSession.js";
 import LoginAttempt from "../models/LoginAttempt.js";
 import SectionPurchase from "../models/SectionPurchase.js";
-import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import jwt from "jsonwebtoken";
+import { requireAuth, requireAdmin, isStudentViewAdmin, STUDENT_VIEW_KIND, STUDENT_VIEW_TTL_SECONDS } from "../middleware/auth.js";
 import { publicUser, grantSections, setSectionWindow, defaultSections } from "../utils/subscription.js";
 import { SECTIONS, parseSections } from "../sections.js";
 import { generateTempPassword } from "../utils/password.js";
@@ -208,6 +210,36 @@ router.get("/users", asyncRoute(async (req, res) => {
     limit,
     totalPages: Math.max(1, Math.ceil(total / limit))
   });
+}));
+
+// Student Website View: a read-only pass to see the student-facing site as one student sees it.
+//
+// Not a login as the student. The pass is a separate token (kind "student-view") that the API
+// accepts for GET requests only (middleware/auth.js), tied to this admin's own session and to one
+// student, and short-lived. No session is created for the student, so their own sign-in, token,
+// password and account are untouched, and they can keep using the site at the same time.
+router.post("/users/:id/view-session", asyncRoute(async (req, res) => {
+  if (!isStudentViewAdmin(req.user)) {
+    return res.status(403).json({ message: "This admin account is not allowed to open student views.", code: "FORBIDDEN" });
+  }
+  const student = await User.findById(req.params.id).select("-passwordHash");
+  if (!student || student.role !== "student") {
+    return res.status(404).json({ message: "Student not found", code: "NOT_FOUND" });
+  }
+  const startedAt = new Date();
+  const expiresAt = new Date(startedAt.getTime() + STUDENT_VIEW_TTL_SECONDS * 1000);
+  // The pass names this record, so the view can be ended for good before the pass expires
+  // (POST /api/student-view/end) without touching the student or any other view.
+  const view = await StudentViewSession.create({
+    admin: req.user._id, student: student._id, adminSession: req.session._id, startedAt, expiresAt
+  });
+  const token = jwt.sign(
+    { kind: STUDENT_VIEW_KIND, viewId: String(view._id), studentId: String(student._id), adminId: String(req.user._id), adminSessionId: String(req.session._id) },
+    config.jwtSecret,
+    { expiresIn: STUDENT_VIEW_TTL_SECONDS }
+  );
+  logAdminAction(req.user, "STUDENT_VIEW_STARTED", student, { viewId: String(view._id), username: student.username, startedAt });
+  res.json({ token, expiresAt, student: publicUser(student) });
 }));
 
 router.get("/users/:id", asyncRoute(async (req, res) => {

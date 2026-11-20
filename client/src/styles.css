@@ -2094,3 +2094,72 @@ html[data-theme="dark"] button:not(.btn):active{color:inherit}
   .target-editor__field input,
   .answer-area{font-size:16px}
 }
+
+/* --- Share Answer (components/ShareAnswerDialog.jsx, pages/History.jsx, pages/SharedAnswer.jsx) --- */
+.modal-panel.share-dialog{max-width:520px}
+.share-dialog__body{display:grid;gap:12px}
+.share-dialog__lead{display:flex;align-items:flex-start;gap:10px;margin:0;font-weight:600;color:var(--ink)}
+.share-dialog__icon{flex:none;width:22px;height:22px;color:var(--success)}
+.share-dialog__meta{margin:0;font-size:var(--text-sm)}
+.share-dialog__headline{margin:0;font-size:var(--text-sm);font-weight:600}
+.share-dialog__url{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--bg-soft);color:var(--ink);font-family:var(--font-mono);font-size:var(--text-sm)}
+.share-dialog__error{margin:0;color:var(--danger)}
+.history-share{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.history-share__stop{border:0;background:none;padding:0;color:var(--muted);font-size:var(--text-xs);text-decoration:underline;cursor:pointer}
+.history-share__stop:hover{color:var(--danger)}
+
+/* The public report: a page of its own, no app chrome around it. */
+.shared-report{max-width:880px;margin:0 auto;padding:28px 16px 40px;display:grid;gap:18px;min-height:100vh;align-content:start}
+.shared-report__brand{margin-bottom:4px}
+.shared-report__card{display:grid;gap:12px}
+.shared-report__card h1{margin:0;font-size:var(--text-2xl, 26px)}
+.shared-report__card h2{margin:14px 0 0;font-size:var(--text-lg)}
+.shared-report__card h3{margin:8px 0 0;font-size:var(--text-base)}
+.shared-report__card ul{margin:4px 0 0;padding-left:20px;display:grid;gap:4px}
+.shared-report__task{margin:0;color:var(--blue);font-weight:700;font-size:var(--text-sm);text-transform:uppercase;letter-spacing:.06em}
+.shared-report__date{margin:0}
+.shared-report__table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-lg);margin-top:6px}
+.shared-report__table{width:100%;border-collapse:collapse}
+.shared-report__table th,.shared-report__table td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.shared-report__table th:last-child,.shared-report__table td:last-child{text-align:right;width:120px}
+.shared-report__table tfoot td{border-bottom:0;font-weight:700}
+.shared-report__total{color:var(--blue)}
+.shared-report__audio{width:100%;max-width:460px}
+.shared-report__audio-error{margin:0;color:var(--danger)}
+.shared-report__transcript{margin:0;font-size:var(--text-lg);line-height:1.7;color:var(--ink)}
+.shared-report__flag{background:var(--danger-bg);color:var(--danger);border-radius:4px;padding:0 2px}
+.shared-report__legend{margin:0;font-size:var(--text-sm)}
+.shared-report__footer{text-align:center;font-size:var(--text-sm);margin:0}
+.shared-report--message{align-content:center}
+.shared-report__message{text-align:center;display:grid;gap:8px}
+.shared-report__message h1{margin:0}
+.shared-report__message p{margin:0}
+@media(max-width:600px){.shared-report__table th,.shared-report__table td{padding:10px 12px}.shared-report__card h1{font-size:var(--text-xl, 22px)}}
+
+/* --- Read Aloud: the student's own recordings (practice/MyRecordings.jsx) --- */
+.my-recordings{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.my-recordings__title{margin:0 0 6px;font-size:var(--text-lg)}
+.my-recordings__list{list-style:none;margin:0;padding:0}
+.my-recordings__item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start;padding:18px 0;border-bottom:1px solid var(--line)}
+.my-recordings__item:last-child{border-bottom:0}
+.my-recordings__avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);font-weight:800}
+.my-recordings__body{display:grid;gap:10px;min-width:0}
+.my-recordings__who{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.my-recordings__who time{font-size:var(--text-sm)}
+.my-recordings__audio{width:100%;max-width:360px}
+.my-recordings__score{margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.my-recordings__chip{display:inline-flex;align-items:center;padding:3px 10px;border:1px solid var(--blue);border-radius:var(--radius-full);color:var(--blue);font-size:var(--text-sm);font-family:var(--font-mono)}
+.my-recordings__chip.is-shared{border-color:var(--success);color:var(--success);font-family:inherit}
+.my-recordings__error{margin:0;color:var(--danger);font-size:var(--text-sm)}
+.my-recordings__loading{margin:0;font-size:var(--text-sm)}
+@media(max-width:600px){.my-recordings__item{grid-template-columns:auto minmax(0,1fr)}.my-recordings__share{grid-column:2;justify-self:start}}
+.my-recordings__more{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.my-recordings__more p{margin:0;font-size:var(--text-sm)}
+.my-recordings--history{margin-top:0;border-top:0}
+.my-recordings__intro{margin:0 0 6px;font-size:var(--text-sm)}
+
+/* --- Admin's read-only Student Website View (App.jsx, studentView.js) --- */
+.student-view-banner{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:var(--warning-bg, #FFF7E6);color:var(--ink);border-bottom:2px solid var(--warning, #B54708);font-size:var(--text-sm)}
+.student-view-banner svg{color:var(--warning, #B54708);flex:none}
+.student-view-banner span{flex:1;min-width:200px}
+.admin-row-actions{display:inline-flex;gap:4px;flex-wrap:wrap}
