@@ -86,6 +86,24 @@ describe("Student is fully blocked from the admin surface (Part 3/10 item 1/3)",
     expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
   });
 
+  it("a student signing in after an admin logged out from /admin in the same tab gets no access-denied notice", async () => {
+    mockAdminDashboardApis();
+    renderAt("/admin", adminUser());
+    await screen.findByRole("heading", { name: "Admin Panel" });
+    fireEvent.click(screen.getByText("Log out"));
+
+    api.auth.signin.mockResolvedValue({ token: "t", user: studentUser() });
+    await openSignIn();
+    fireEvent.change(screen.getByPlaceholderText("e.g. pte001"), { target: { value: "pte001" } });
+    fireEvent.change(screen.getByPlaceholderText("Your password"), { target: { value: "pw" } });
+    fireEvent.click(screen.getByText("Sign In"));
+
+    await waitFor(() => expect(api.auth.signin).toHaveBeenCalled());
+    expect(await screen.findByText(/Welcome back/)).toBeInTheDocument();
+    expect(screen.queryByText(/Access denied/i)).not.toBeInTheDocument();
+    expect(sessionStorage.getItem("pte_access_denied_notice")).toBeNull();
+  });
+
   it("a student never sees any admin navigation (no Admin Mode badge, no Admin Panel link) anywhere on the student site", async () => {
     renderAt("/dashboard", studentUser());
     await screen.findByText(/Welcome back/);

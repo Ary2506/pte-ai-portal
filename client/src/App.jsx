@@ -88,9 +88,14 @@ function useAuth() {
     safeLocal.setItem("pte_user", JSON.stringify(next));
     setUser(next);
   };
+  // Signing out also leaves the current URL. Otherwise the sign-in sheet opens on top of the
+  // previous account's page, and the next account lands there first — a student signing in where
+  // an admin signed out from /admin would hit the admin gate and be told "Access denied".
+  const navigate = useNavigate();
   const logout = () => {
     api.auth.logout();
     safeLocal.removeItem("pte_token"); safeLocal.removeItem("pte_user"); setUser(null);
+    navigate("/", { replace: true });
   };
   useEffect(() => {
     if (!user || user.role === "admin" || !user.subscriptionEndDate) return;
