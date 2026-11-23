@@ -58,10 +58,12 @@ function mockDurationMs(questionCount) {
 // submissions.js, so expiry can never be checked two different ways. A legacy session with no
 // expiresAt (created before this field existed) has nothing to compare against and simply never
 // auto-expires; it keeps behaving exactly as it did before Phase 7.
-export async function expireIfNeeded(session) {
+// `persist: false` reports the expiry without saving it — for a read-only student view, which must
+// not change the student's data (the student's own next request saves it as usual).
+export async function expireIfNeeded(session, { persist = true } = {}) {
   if (session.status === "IN_PROGRESS" && session.expiresAt && Date.now() >= session.expiresAt.getTime()) {
     session.status = "EXPIRED";
-    await session.save();
+    if (persist) await session.save();
   }
   return session;
 }
@@ -189,7 +191,7 @@ router.get("/active", asyncRoute(async (req, res) => {
     .sort({ startedAt: -1 });
   if (!session) return res.json({ testSession: null });
 
-  await expireIfNeeded(session);
+  await expireIfNeeded(session, { persist: !req.studentView });
   // Expiring is the honest answer to "is there an attempt to resume?" — there is not, and the
   // results screen is reached through the normal completion path rather than by resuming.
   if (session.status !== "IN_PROGRESS") return res.json({ testSession: null });
@@ -209,7 +211,7 @@ router.get("/:id", asyncRoute(async (req, res) => {
   if (!session || String(session.user) !== String(req.user._id)) {
     return res.status(404).json({ message: "Test session not found", code: "NOT_FOUND" });
   }
-  await expireIfNeeded(session);
+  await expireIfNeeded(session, { persist: !req.studentView });
   res.json({ testSession: session });
 }));
 
@@ -247,7 +249,7 @@ router.get("/:id/details", asyncRoute(async (req, res) => {
   if (!session || String(session.user) !== String(req.user._id)) {
     return res.status(404).json({ message: "Test session not found", code: "NOT_FOUND" });
   }
-  await expireIfNeeded(session);
+  await expireIfNeeded(session, { persist: !req.studentView });
   const results = await loadSessionResults(session._id);
   res.json({ testSession: session, results });
 }));

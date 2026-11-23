@@ -1,4 +1,5 @@
 import { SECTIONS } from "../sections.js";
+import { isStudentViewAdmin } from "../studentViewAccess.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -249,6 +250,8 @@ export function publicUser(user) {
     sections: sectionSummaries(user),
     targetScore: user.targetScore,
     lastLoginAt: user.lastLoginAt,
-    createdAt: user.createdAt
+    createdAt: user.createdAt,
+    // Admins only: whether to offer Student View. A display hint — the server checks it again.
+    ...(user.role === "admin" ? { canViewStudents: isStudentViewAdmin(user) } : {})
   };
 }

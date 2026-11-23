@@ -82,6 +82,14 @@ describe("Phase 23 — header search is real, not decorative", () => {
 });
 
 describe("Phase 23 — Practice History section filter", () => {
+  // My Results also holds the Read Aloud recordings section, which asks for history with
+  // type=read-aloud. These tests are about the attempts table, so that request gets an empty
+  // answer and is left out when counting or checking the table's requests.
+  const tableHistory = (value) => api.history.mockImplementation((params) => Promise.resolve(
+    params?.type === "read-aloud" ? { submissions: [], total: 0, page: 1, totalPages: 1 } : value));
+  const tableCalls = () => api.history.mock.calls.filter(([params]) => params?.type !== "read-aloud");
+  const lastTableCall = () => tableCalls().at(-1)?.[0];
+
   const ROWS = [
     { _id: "s1", type: "read-aloud", section: "speaking", evaluationType: "subjective", score: 80, maxScore: 90, evaluationStatus: "COMPLETED", createdAt: "2026-01-01T00:00:00.000Z" },
     { _id: "s2", type: "mcq-single", section: "reading", evaluationType: "objective", score: 1, maxScore: 1, evaluationStatus: "COMPLETED", createdAt: "2026-01-02T00:00:00.000Z" }
@@ -93,58 +101,58 @@ describe("Phase 23 — Practice History section filter", () => {
   // attempt sitting on another page. These tests therefore assert the re-query, the same way the
   // admin user/question table tests do.
   it("re-queries the server with the chosen section, and back to unfiltered for All", async () => {
-    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
+    tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
     await screen.findByText("Read Aloud");
     expect(screen.getByText("Multiple Choice Single")).toBeInTheDocument();
 
     // "Speaking"/"Writing"/etc. also appear as mock-table column headers on this same page —
     // the filter tabs are scoped by role to disambiguate.
-    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
+    tableHistory({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
 
     await waitFor(() => expect(screen.queryByText("Multiple Choice Single")).not.toBeInTheDocument());
     expect(screen.getByText("Read Aloud")).toBeInTheDocument();
-    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: "speaking", page: 1 }));
+    expect(lastTableCall()).toEqual(expect.objectContaining({ section: "speaking", page: 1 }));
 
-    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
+    tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "All" }));
     expect(await screen.findByText("Multiple Choice Single")).toBeInTheDocument();
-    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: undefined }));
+    expect(lastTableCall()).toEqual(expect.objectContaining({ section: undefined }));
   });
 
   it("shows an honest empty state distinct from 'no submissions at all' when a filter matches nothing", async () => {
-    api.history.mockResolvedValue({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
+    tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
     await screen.findByText("Read Aloud");
 
-    api.history.mockResolvedValue({ submissions: [], total: 0, page: 1, totalPages: 1 });
+    tableHistory({ submissions: [], total: 0, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "Writing" }));
     expect(await screen.findByText("No attempts in this section")).toBeInTheDocument();
     expect(screen.getByText(/clear the filter/i)).toBeInTheDocument();
   });
 
   it("fetches the next page only when Next is clicked, and resets to page 1 on a filter change", async () => {
-    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 2, page: 1, totalPages: 2 });
+    tableHistory({ submissions: [ROWS[0]], total: 2, page: 1, totalPages: 2 });
     renderAt("/history", studentAuthUser());
     await screen.findByText("Read Aloud");
 
     // One page fetched on load — the second is not prefetched.
-    expect(api.history).toHaveBeenCalledTimes(1);
+    expect(tableCalls()).toHaveLength(1);
 
-    api.history.mockResolvedValue({ submissions: [ROWS[1]], total: 2, page: 2, totalPages: 2 });
+    tableHistory({ submissions: [ROWS[1]], total: 2, page: 2, totalPages: 2 });
     fireEvent.click(screen.getByRole("button", { name: /Next/ }));
 
     expect(await screen.findByText("Multiple Choice Single")).toBeInTheDocument();
-    expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
+    expect(lastTableCall()).toEqual(expect.objectContaining({ page: 2 }));
     expect(pagerText()).toMatch(/Page 2 of 2/);
 
     // Switching section while on page 2 must not leave the student stranded on a page that
     // section may not have.
-    api.history.mockResolvedValue({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
+    tableHistory({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
     fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
     await waitFor(() =>
-      expect(api.history).toHaveBeenLastCalledWith(expect.objectContaining({ section: "speaking", page: 1 }))
+      expect(lastTableCall()).toEqual(expect.objectContaining({ section: "speaking", page: 1 }))
     );
   });
 });

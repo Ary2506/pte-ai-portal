@@ -80,7 +80,9 @@ router.post("/register", registrationDisabled);
 router.post("/signin", loginIpLimiter, loginAccountLimiter, async (req, res) => {
   try {
     const username = (req.body.username || req.body.userId || "").toString().toLowerCase().trim();
-    const password = req.body.password || "";
+    // Text only. A JSON object or array here (e.g. {"$ne": ""}) made bcrypt throw, which surfaced
+    // as a 500; treated as missing it gets the same 400 as an empty password.
+    const password = typeof req.body.password === "string" ? req.body.password : "";
     if (!username || !password) {
       return res.status(400).json({ message: "User ID and password are required", code: "VALIDATION_ERROR" });
     }

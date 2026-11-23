@@ -6,6 +6,7 @@ import { RECORDER_OPTIONS } from "./recording.js";
 import { useToast } from "../components/toast.jsx";
 import { Button } from "../components/Button.jsx";
 import TaskTips, { AI_SCORING_NOTE } from "./TaskTips.jsx";
+import MyRecordings from "./MyRecordings.jsx";
 import { mediaUrl } from "../mediaUrl.js";
 import { recordedPeakLevel, rmsOf, SILENT_RECORDING_PEAK } from "./voiceActivity.js";
 
@@ -840,6 +841,11 @@ export default function Speaking({
             // as "no answer for this one" rather than "the feature is broken".
             <p className="muted answer-toggle">No model answer available for this question yet.</p>
           )
+        )}
+        {/* Read Aloud practice only: the student's own recorded attempts at this question, with
+            Share. Refetched when a new answer comes back so it appears straight away. */}
+        {question?.type === "read-aloud" && !testSessionId && (
+          <MyRecordings question={question} refreshKey={result?._id} />
         )}
       </section>
       <TaskTips type={question?.type} section="speaking" note={AI_SCORING_NOTE}/>

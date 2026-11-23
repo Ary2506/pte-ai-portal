@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/shared-answer/:token",
+      "destination": "/api/shared-answer-page?token=:token"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -14,6 +18,13 @@
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
         }
+      ]
+    },
+    {
+      "source": "/shared-answer/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "Cache-Control", "value": "no-store" }
       ]
     },
     {

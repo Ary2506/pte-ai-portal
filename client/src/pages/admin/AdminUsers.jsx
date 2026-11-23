@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Ban, Check, ClipboardCopy, KeyRound, LogOut, PauseCircle, Plus, Settings2, UserCheck, X } from "lucide-react";
+import React, { useContext, useEffect, useState } from "react";
+import { Ban, Check, ClipboardCopy, Eye, KeyRound, LogOut, PauseCircle, Plus, Settings2, UserCheck, X } from "lucide-react";
 import { api } from "../../api.js";
+import { studentViewUrl } from "../../studentView.js";
+import { CurrentUserContext } from "../../access.js";
 import { Badge, ConfirmDialog, DataTable, Empty, Modal } from "../../components/common.jsx";
 import { Button } from "../../components/Button.jsx";
 import { fmtDate, fmtDateTime } from "./adminFormat.js";
@@ -131,7 +133,24 @@ function PasswordResetModal({ account, onClose }) {
   />;
 }
 
+// Opens the student-facing site as this student, read only, in a new tab (see studentView.js).
+// The tab is opened before the request so a popup blocker treats it as part of the click.
+async function openStudentView(u, notify) {
+  const tab = window.open("", "_blank");
+  try {
+    const pass = await api.admin.startStudentView(u.id);
+    const url = studentViewUrl(pass);
+    if (tab) { tab.opener = null; tab.location.href = url; } else window.location.href = url;
+  } catch (e) {
+    tab?.close();
+    notify?.("error", e.message || "The student view could not be opened.");
+  }
+}
+
 export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
+  // Only the admins the server names in canViewStudents get the View button. Hiding it is a
+  // convenience: the server refuses anyone else on its own (studentViewAccess.js).
+  const canViewStudents = useContext(CurrentUserContext)?.canViewStudents === true;
   const [users,setUsers]=useState([]);
   const [total,setTotal]=useState(0);
   const [totalPages,setTotalPages]=useState(1);
@@ -244,7 +263,10 @@ export function AdminUsers({notify, initialFilters, onFiltersApplied}) {
         { key: "lastLogin", header: "Last login", render: u => fmtDateTime(u.lastLoginAt) },
         { key: "session", header: "Session", render: u => <Badge tone={u.sessionStatus==="ACTIVE"?"info":"neutral"}>{u.sessionStatus}</Badge> },
         { key: "created", header: "Created", render: u => fmtDate(u.createdAt) },
-        { key: "actions", header: "Actions", render: u => u.role!=="admin" && <Button variant="ghost" size="sm" icon={<Settings2/>} onClick={()=>setDetailId(u.id)}>Manage</Button> }
+        { key: "actions", header: "Actions", render: u => u.role!=="admin" && <span className="admin-row-actions">
+          {canViewStudents && <Button variant="ghost" size="sm" icon={<Eye/>} onClick={()=>openStudentView(u, notify)} aria-label={`View the student website as ${u.username} (read only)`}>View</Button>}
+          <Button variant="ghost" size="sm" icon={<Settings2/>} onClick={()=>setDetailId(u.id)}>Manage</Button>
+        </span> }
       ]}
     />
     {detailId && <AdminUserDetail id={detailId} notify={notify} onClose={()=>{setDetailId(null); load();}}/>}

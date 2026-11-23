@@ -1,7 +1,7 @@
 // server/src/storage.js
 import fs from "fs";
 import path from "path";
-import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, CopyObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Where uploaded files live.
@@ -15,6 +15,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 // simpler than two buckets with duplicated configuration:
 //
 //   recordings/<userId>/...         private  - student voice data, owner-gated, short signed URLs
+//   shared-audio/<shareId>/...      private  - a copy of one recording, made when its owner shares
+//                                              it; reachable only through that share's token, and
+//                                              kept by its own R2 lifecycle rule (see ShareLink.js)
 //   question-media/<kind>/...       public   - admin-authored question images and audio
 //
 // "Public" here means the same thing it meant when question media sat behind express.static: the
@@ -125,6 +128,39 @@ export async function objectExists(key) {
     if (err?.$metadata?.httpStatusCode === 404 || err?.name === "NotFound") return false;
     throw err;
   }
+}
+
+/**
+ * Copies one stored object to a new key, inside the store, without the bytes passing through this
+ * server: R2 supports S3's CopyObject, so a recording of any size is duplicated by a single request.
+ * The source is only read. The copy keeps the source's Content-Type and cache headers.
+ */
+export async function copyObject(sourceKey, destinationKey) {
+  if (!isRemoteStorage) {
+    const target = localObjectPath(destinationKey);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(localObjectPath(sourceKey), target);
+    return destinationKey;
+  }
+  await r2.send(new CopyObjectCommand({
+    Bucket: BUCKET,
+    Key: destinationKey,
+    // "<bucket>/<key>", with the key URL-encoded segment by segment as the S3 API requires.
+    CopySource: `${BUCKET}/${sourceKey.split("/").map(encodeURIComponent).join("/")}`
+  }));
+  return destinationKey;
+}
+
+/**
+ * Removes one object. Only ever called on a copy the caller itself has just made and failed to
+ * record (see routes/shareLinks.js), never on a student's original recording.
+ */
+export async function deleteObject(key) {
+  if (!isRemoteStorage) {
+    fs.rmSync(localObjectPath(key), { force: true });
+    return;
+  }
+  await r2.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
 }
 
 // The recording-specific names this module started with. Recordings are the majority of its

@@ -1,5 +1,6 @@
-import { API_URL as API } from "./apiBase.js";
+import { API_URL as API, API_ORIGIN } from "./apiBase.js";
 import { safeLocal, safeSession } from "./safeStorage.js";
+import { activeStudentView, endStudentView } from "./studentView.js";
 
 function getDeviceId() {
   let id = safeLocal.getItem("pte_device_id");
@@ -26,14 +27,38 @@ const FORCE_LOGOUT_CODES = new Set([
 // useAuth in App.jsx) can trigger the exact same clear-and-redirect flow as a rejected
 // API response, instead of a second logout mechanism.
 export function forceLogout(message) {
+  // In a student-view tab the stored sign-in is the admin's own; ending the view must never sign
+  // the admin out. It closes the view and returns this tab to the admin panel.
+  if (activeStudentView()) {
+    endStudentView();
+    window.location.href = "/admin";
+    return;
+  }
   safeLocal.removeItem("pte_token");
   safeLocal.removeItem("pte_user");
   safeSession.setItem("pte_login_notice", message || "You have been signed out.");
+  // A shared-answer link needs no session, so ending a stale one must not carry the visitor away
+  // from the report they opened.
+  if (window.location.pathname.startsWith("/shared-answer/")) return;
   window.location.href = "/";
 }
 
+// The token this tab's requests carry: a student-view pass when one is active here, otherwise the
+// signed-in user's own.
+function currentToken() {
+  return activeStudentView()?.token || safeLocal.getItem("pte_token");
+}
+
 async function request(path, options = {}) {
-  const token = safeLocal.getItem("pte_token");
+  const view = activeStudentView();
+  // A student view is read only. The server refuses writes from it too; stopping them here keeps
+  // the message clear and means nothing is even sent.
+  if (view && (options.method || "GET").toUpperCase() !== "GET") {
+    const err = new Error("Student view is read-only. Nothing can be changed from here.");
+    err.code = "READ_ONLY_VIEW";
+    throw err;
+  }
+  const token = currentToken();
   const headers = { ...(options.headers || {}) };
   if (!(options.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -41,7 +66,10 @@ async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (token && data.code && FORCE_LOGOUT_CODES.has(data.code)) {
+    if (view) {
+      // Only the view itself ending closes it; the student's own access limits are just shown.
+      if (data.code === "STUDENT_VIEW_ENDED" || data.code === "SESSION_INVALID") forceLogout(data.message);
+    } else if (token && data.code && FORCE_LOGOUT_CODES.has(data.code)) {
       forceLogout(data.message);
     }
     const err = new Error(data.message || "Request failed");
@@ -50,6 +78,55 @@ async function request(path, options = {}) {
   }
   return data;
 }
+
+/**
+ * Ends this tab's Student View on the server ("Back to Admin Panel" / "Exit student view").
+ *
+ * The one non-read a view pass may send, so it skips request()'s read-only guard. Resolves once the
+ * server has ended the view — or already had (STUDENT_VIEW_ENDED: it ended or expired before). Any
+ * other outcome, a network failure included, throws: the view may still be open, so the caller
+ * must not claim it ended.
+ */
+export async function endStudentViewSession() {
+  const view = activeStudentView();
+  if (!view) return { ended: true };
+  let res;
+  try {
+    res = await fetch(`${API}/student-view/end`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${view.token}`, "X-Device-Id": getDeviceId() }
+    });
+  } catch {
+    const err = new Error("Could not reach the server to end this student view. Check your connection and try again.");
+    err.code = "NETWORK_ERROR";
+    throw err;
+  }
+  const data = await res.json().catch(() => ({}));
+  if (res.ok || data.code === "STUDENT_VIEW_ENDED") return { ended: true };
+  const err = new Error(data.message ? `Could not end this student view: ${data.message}` : "Could not end this student view. Please try again.");
+  err.code = data.code;
+  throw err;
+}
+
+// The shared-answer page is opened by people who are not signed in. Its requests carry no session
+// token and no device id, and a refusal never signs anyone out: they are answered by the token in
+// the link alone.
+async function publicRequest(path) {
+  const res = await fetch(`${API}${path}`, { headers: { Accept: "application/json" }, cache: "no-store" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.message || "Request failed");
+    err.code = data.code;
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+export const publicApi = {
+  sharedAnswer: (token) => publicRequest(`/public/shared-answers/${encodeURIComponent(token)}`),
+  sharedAnswerAudioUrl: (token) => publicRequest(`/public/shared-answers/${encodeURIComponent(token)}/audio-url`)
+};
 
 export const api = {
   auth: {
@@ -62,6 +139,8 @@ export const api = {
   },
   admin: {
     getStats: () => request("/admin/dashboard/stats"),
+    // A read-only pass to view the student-facing site as this student (see studentView.js).
+    startStudentView: (userId) => request(`/admin/users/${userId}/view-session`, { method: "POST" }),
     getAuditLog: (limit = 10, page = 1) => request(`/admin/audit-log?limit=${limit}&page=${page}`),
     createUser: (body) => request("/admin/users", { method: "POST", body: JSON.stringify(body) }),
     listUsers: (params = {}) => {
@@ -167,6 +246,21 @@ export const api = {
   },
   submit: (form) => request("/submissions", { method: "POST", body: form }),
   retryEvaluation: (submissionId) => request(`/submissions/${submissionId}/retry-evaluation`, { method: "POST" }),
+  // The owner's own recording, as something an <audio> element can play: a signed URL when
+  // recordings are in R2, otherwise the file fetched with this session and handed over as a blob
+  // URL (the caller revokes it). Ownership is checked by the server on both requests.
+  ownRecordingSrc: async (submissionId) => {
+    const where = await request(`/submissions/${submissionId}/audio-url`);
+    if (where.url) return { src: where.url, isBlob: false };
+    const res = await fetch(`${API_ORIGIN}${where.path}`, {
+      headers: { Authorization: `Bearer ${currentToken()}`, "X-Device-Id": getDeviceId() }
+    });
+    if (!res.ok) throw new Error("Recording could not be loaded.");
+    return { src: URL.createObjectURL(await res.blob()), isBlob: true };
+  },
+  // Share Answer: a 30-day public link to one scored speaking answer, and withdrawing it.
+  shareSubmission: (submissionId) => request(`/submissions/${submissionId}/share`, { method: "POST" }),
+  unshareSubmission: (submissionId) => request(`/submissions/${submissionId}/share`, { method: "DELETE" }),
   testSessions: {
     start: () => request("/test-sessions", { method: "POST" }),
     // The attempt still open on the server, if there is one, with its questions and the answers
