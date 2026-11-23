@@ -110,13 +110,43 @@ function useAuth() {
     if (user?.viewOnly) {
       await endStudentViewSession();
       endStudentView();
-      window.location.assign("/admin");
+      // "/" leads the admin to the admin panel; see leaveStudentView in api.js for why not "/admin".
+      window.location.assign("/");
       return;
     }
     api.auth.logout();
     safeLocal.removeItem("pte_token"); safeLocal.removeItem("pte_user"); setUser(null);
     navigate("/", { replace: true });
   };
+
+  // Every tab shares one stored sign-in. When another tab signs in as someone else or signs out,
+  // this tab is no longer who it shows: it would act with the other account's token, and on its
+  // next load land wherever it was as the wrong account (a student on /admin is told "Access
+  // denied"). So it starts over from "/", which sends the account now signed in to its own home,
+  // or shows the sign-in page. The same account changing in another tab (a new sign-in, an updated
+  // target score) only refreshes what this tab shows. A student-view tab runs on its own pass and
+  // is left alone; its view ends by itself if the admin's sign-in goes away.
+  useEffect(() => {
+    if (user?.viewOnly) return undefined;
+    function onStorage(event) {
+      if (event.key !== null && event.key !== "pte_token" && event.key !== "pte_user") return;
+      let stored = null;
+      try { stored = JSON.parse(safeLocal.getItem("pte_user") || "null"); } catch { stored = null; }
+      const signedIn = Boolean(safeLocal.getItem("pte_token")) && Boolean(stored);
+      if (!user && !signedIn) return;
+      if (user && signedIn && stored.id === user.id) {
+        setUser(stored);
+        return;
+      }
+      // A sign-in writes the token and then the user; between the two the stored user is still the
+      // previous one, so wait for the write that names the new account.
+      if (event.key === "pte_token" && signedIn && user && stored.id === user.id) return;
+      window.location.replace("/");
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [user]);
+
   useEffect(() => {
     // A viewed student's subscription running out ends nothing here; the admin is not signed out.
     if (!user || user.viewOnly || user.role === "admin" || !user.subscriptionEndDate) return;

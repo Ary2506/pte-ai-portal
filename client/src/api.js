@@ -26,14 +26,27 @@ const FORCE_LOGOUT_CODES = new Set([
 // Exported so the client-side subscription-expiry timer (a UX convenience only — see
 // useAuth in App.jsx) can trigger the exact same clear-and-redirect flow as a rejected
 // API response, instead of a second logout mechanism.
+// Closes this tab's student view and returns it to the admin panel. The stored sign-in is not this
+// tab's (it belongs to whoever is signed in to the browser), so it is never touched here. It goes to
+// "/", which leads the admin to the admin panel but anyone else (another tab may have signed in a
+// student meanwhile) to their own home, never to an admin page they would be refused.
+let leftStudentView = false;
+function leaveStudentView() {
+  leftStudentView = true;
+  endStudentView();
+  window.location.href = "/";
+}
+
 export function forceLogout(message) {
   // In a student-view tab the stored sign-in is the admin's own; ending the view must never sign
   // the admin out. It closes the view and returns this tab to the admin panel.
   if (activeStudentView()) {
-    endStudentView();
-    window.location.href = "/admin";
+    leaveStudentView();
     return;
   }
+  // This tab's view has just been closed and the tab is on its way to the admin panel. A reply
+  // still arriving from the view is not a reason to sign anyone out.
+  if (leftStudentView) return;
   safeLocal.removeItem("pte_token");
   safeLocal.removeItem("pte_user");
   safeSession.setItem("pte_login_notice", message || "You have been signed out.");
@@ -68,7 +81,10 @@ async function request(path, options = {}) {
   if (!res.ok) {
     if (view) {
       // Only the view itself ending closes it; the student's own access limits are just shown.
-      if (data.code === "STUDENT_VIEW_ENDED" || data.code === "SESSION_INVALID") forceLogout(data.message);
+      // Decided by the view this request was SENT with: when several fail together, the first one
+      // has already closed the view by the time the others arrive, and they must still only close
+      // it, never fall through to signing the browser out.
+      if (data.code === "STUDENT_VIEW_ENDED" || data.code === "SESSION_INVALID") leaveStudentView();
     } else if (token && data.code && FORCE_LOGOUT_CODES.has(data.code)) {
       forceLogout(data.message);
     }
