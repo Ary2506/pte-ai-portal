@@ -155,13 +155,17 @@ export default function History() {
   }
 
   function shareCell(r) {
-    if (!canShare(r)) return <span className="muted">—</span>;
+    // A recording past retention can no longer be shared, but a link made before it expired keeps
+    // its own copy and can still be stopped.
+    if (!canShare(r) && !r.share) return <span className="muted">—</span>;
     return (
       <span className="history-share">
-        <Button variant="ghost" size="sm" icon={<Share2/>} onClick={() => setSharing(r)}
-          aria-label={`Share your answer to ${r.question?.title || taskLabel(r.type)}`}>
-          {r.share ? "Share again" : "Share"}
-        </Button>
+        {canShare(r) && (
+          <Button variant="ghost" size="sm" icon={<Share2/>} onClick={() => setSharing(r)}
+            aria-label={`Share your answer to ${r.question?.title || taskLabel(r.type)}`}>
+            {r.share ? "Share again" : "Share"}
+          </Button>
+        )}
         {r.share && (
           <button type="button" className="history-share__stop" onClick={() => setUnsharing(r)}
             title={`Shared until ${new Date(r.share.expiresAt).toLocaleDateString()}`}>

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import request from "supertest";
 import { app } from "../src/app.js";
+import mongoose from "mongoose";
+import Submission from "../src/models/Submission.js";
 import { createUser, createQuestion } from "./helpers.js";
 
 // Read Aloud's "My recordings" list: one question's attempts, and the URL each recording plays
@@ -67,5 +69,52 @@ describe("the owner's recording URL", () => {
     const other = await request(app).get(`/api/submissions/${sub._id}/audio-url`).set("Authorization", `Bearer ${await login("ra3other")}`);
     expect(other.status).toBe(403);
     expect((await request(app).get(`/api/submissions/${sub._id}/audio-url`)).status).toBe(401);
+  });
+});
+
+// Recordings are deleted from storage after the retention period (an R2 lifecycle rule; 7 days by
+// default here too). Past it, a recording is not listed as playable and its URL is not handed out.
+describe("recording retention", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const age = (id, days) => Submission.collection.updateOne(
+    { _id: new mongoose.Types.ObjectId(id) }, { $set: { createdAt: new Date(Date.now() - days * DAY) } }
+  );
+
+  it("lists only recordings still kept with withAudio=1, and marks older ones as having no audio", async () => {
+    await createUser({ username: "ret1" });
+    const token = await login("ret1");
+    const q = await ra("Retention");
+    const fresh = await answer(token, q._id);
+    const old = await answer(token, q._id);
+    await age(old._id, 8);
+
+    const kept = await request(app).get(`/api/submissions/history?summary=1&type=read-aloud&withAudio=1`).set("Authorization", `Bearer ${token}`);
+    expect(kept.status).toBe(200);
+    expect(kept.body.submissions.map((s) => s._id)).toEqual([fresh._id]);
+    expect(kept.body.total).toBe(1);
+    expect(kept.body.recordingRetentionDays).toBe(7);
+    const until = new Date(kept.body.submissions[0].audioAvailableUntil).getTime();
+    expect(until - new Date(kept.body.submissions[0].createdAt).getTime()).toBe(7 * DAY);
+
+    const all = await request(app).get(`/api/submissions/history?summary=1&type=read-aloud`).set("Authorization", `Bearer ${token}`);
+    const byId = Object.fromEntries(all.body.submissions.map((s) => [s._id, s]));
+    expect(byId[fresh._id].hasAudio).toBe(true);
+    expect(byId[old._id].hasAudio).toBe(false);
+  });
+
+  it("answers 410 RECORDING_EXPIRED for an expired recording's URL and file, and still 403 for someone else's", async () => {
+    await createUser({ username: "ret2" });
+    await createUser({ username: "ret2other" });
+    const token = await login("ret2");
+    const sub = await answer(token, (await ra("Retention 2"))._id);
+    await age(sub._id, 8);
+
+    for (const path of [`/api/submissions/${sub._id}/audio-url`, `/api/submissions/${sub._id}/audio`]) {
+      const res = await request(app).get(path).set("Authorization", `Bearer ${token}`);
+      expect(res.status).toBe(410);
+      expect(res.body.code).toBe("RECORDING_EXPIRED");
+    }
+    const other = await request(app).get(`/api/submissions/${sub._id}/audio-url`).set("Authorization", `Bearer ${await login("ret2other")}`);
+    expect(other.status).toBe(403);
   });
 });

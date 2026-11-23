@@ -48,6 +48,10 @@ export const config = {
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   subscriptionDefaultDays: Number(process.env.SUBSCRIPTION_DEFAULT_DAYS || 30),
+  // How long a student's own recording is kept. Must match the R2 lifecycle rule on the
+  // recordings/ prefix, which deletes the files; the app only uses it to stop offering a recording
+  // once its file is due to be gone. 0 means recordings are never deleted.
+  recordingRetentionDays: Math.max(0, Number(process.env.RECORDING_RETENTION_DAYS ?? 7) || 0),
   // How many questions each section contributes to a mock test. 20 x 4 sections = 80, close to a
   // real PTE Core sitting. Picking is type-balanced, so a section whose bank is dominated by one
   // task type does not hand out twenty of it — see pickSectionQuestions in routes/testSessions.js.

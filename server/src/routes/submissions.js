@@ -17,6 +17,7 @@ import { asyncRoute } from "../utils/asyncRoute.js";
 import { recordLearningActivity } from "../utils/streak.js";
 import { putRecording, signedRecordingUrl, isRemoteStorage, localRecordingPath, getObject } from "../storage.js";
 import { transcribeAudio, transcriptionEnabled, transcriptionFailureMessage } from "../services/transcription.js";
+import { isRecordingRetained, recordingAvailableUntil, recordingCutoff, recordingRetentionDays } from "../recordingRetention.js";
 
 const router = express.Router();
 // Recordings go to object storage (see ../storage.js), not to this process's filesystem.
@@ -566,12 +567,17 @@ router.post("/:id/retry-evaluation", requireAuth, requireActiveSubscription, ret
   res.json({ submission });
 }));
 
+// Past the retention period the file has been (or is about to be) deleted from storage, so there is
+// nothing to sign or send. 410 rather than 404: the recording existed and is gone for good.
+const recordingExpired = (res) => res.status(410).json({ message: "This recording has expired and is no longer stored.", code: "RECORDING_EXPIRED" });
+
 router.get("/:id/audio", requireAuth, asyncRoute(async (req, res) => {
   const submission = await Submission.findById(req.params.id);
   if (!submission || !submission.audioPath) return res.status(404).json({ message: "Recording not found", code: "NOT_FOUND" });
   if (String(submission.user) !== String(req.user._id)) {
     return res.status(403).json({ message: "You cannot access another user's recording", code: "FORBIDDEN" });
   }
+  if (!isRecordingRetained(submission.createdAt)) return recordingExpired(res);
   // Two cases end up on disk: a development machine with no R2 configured, and a recording
   // written before the move to object storage, which carries a bare filename rather than a key.
   // The second disappears once migrateRecordingsToR2.mjs has run everywhere.
@@ -597,11 +603,12 @@ router.get("/:id/audio", requireAuth, asyncRoute(async (req, res) => {
 // Authorization header the route above needs, so: with R2, a short signed URL the element can use
 // directly; on local disk, the path of the route above, which the page fetches with the header.
 router.get("/:id/audio-url", requireAuth, asyncRoute(async (req, res) => {
-  const submission = await Submission.findById(req.params.id).select("user audioPath");
+  const submission = await Submission.findById(req.params.id).select("user audioPath createdAt");
   if (!submission || !submission.audioPath) return res.status(404).json({ message: "Recording not found", code: "NOT_FOUND" });
   if (String(submission.user) !== String(req.user._id)) {
     return res.status(403).json({ message: "You cannot access another user's recording", code: "FORBIDDEN" });
   }
+  if (!isRecordingRetained(submission.createdAt)) return recordingExpired(res);
   if (!isRemoteStorage || !submission.audioPath.includes("/")) {
     return res.json({ path: `/api/submissions/${submission._id}/audio` });
   }
@@ -640,6 +647,13 @@ router.get("/history", requireAuth, requireActiveSubscription, asyncRoute(async 
     }
     filter.question = req.query.question;
   }
+  // Only attempts whose recording is still kept (the recordings lists). Applied to the count as
+  // well, so pages and "more" links reflect what can actually be played.
+  if (req.query.withAudio === "1") {
+    filter.audioPath = { $nin: [null, ""] };
+    const cutoff = recordingCutoff();
+    if (cutoff) filter.createdAt = { $gt: cutoff };
+  }
 
   // Both default to the original behaviour — the newest 50 rows — so Practice.jsx, which needs
   // every attempt for one task to build its done/undone map rather than a page of them, keeps
@@ -673,8 +687,13 @@ router.get("/history", requireAuth, requireActiveSubscription, asyncRoute(async 
       submission: { $in: submissions.map((s) => s._id) }, status: "ACTIVE", expiresAt: { $gt: new Date() }
     }).select("submission expiresAt").lean();
     const shareBySubmission = new Map(liveShares.map((s) => [String(s.submission), { expiresAt: s.expiresAt }]));
+    // hasAudio is false once the recording is past retention, so nothing offers a player or a
+    // Share for a file that is gone; a live share keeps its own copy and is still reported.
     submissions = submissions.map(({ audioPath, ...row }) => ({
-      ...row, hasAudio: Boolean(audioPath), share: shareBySubmission.get(String(row._id)) || null
+      ...row,
+      hasAudio: Boolean(audioPath) && isRecordingRetained(row.createdAt),
+      audioAvailableUntil: audioPath ? recordingAvailableUntil(row.createdAt) : null,
+      share: shareBySubmission.get(String(row._id)) || null
     }));
   }
   res.json({
@@ -682,7 +701,8 @@ router.get("/history", requireAuth, requireActiveSubscription, asyncRoute(async 
     total,
     page,
     limit,
-    totalPages: Math.max(1, Math.ceil(total / limit))
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+    recordingRetentionDays: recordingRetentionDays()
   });
 }));
 
