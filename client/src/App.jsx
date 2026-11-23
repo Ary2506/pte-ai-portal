@@ -36,7 +36,7 @@ import { ToastProvider, useToast } from "./components/toast.jsx";
 import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { SEARCH_MAX_LENGTH } from "./practice/answerLimits.js";
 import { PRACTICE_SECTIONS, SECTION_LABELS, supportedTasksFor } from "./practiceTaskRegistry.js";
-import { safeLocal, safeSession } from "./safeStorage.js";
+import { safeLocal } from "./safeStorage.js";
 import { CurrentUserContext, lockReason, activeSectionsByExpiry } from "./access.js";
 
 const SECTION_ICONS = { speaking: Mic, writing: PenLine, reading: BookOpen, listening: Headphones };
@@ -102,7 +102,7 @@ function useAuth() {
   };
   // Signing out also leaves the current URL. Otherwise the sign-in sheet opens on top of the
   // previous account's page, and the next account lands there first — a student signing in where
-  // an admin signed out from /admin would hit the admin gate and be told "Access denied".
+  // an admin signed out from /admin would land on the admin gate first.
   const navigate = useNavigate();
   const logout = async () => {
     // Leaving a student view is not a sign-out: it ends the view and returns to the admin panel.
@@ -466,13 +466,11 @@ function Layout({ user, logout, children, theme, toggleTheme }) {
 // Users/Questions/Test Sessions tabs inside it are React state, not separate routes, so there is
 // nothing nested left to separately guard). The role checked here is req.user.role as returned by
 // the server at login/refresh — never anything derived client-side. A non-admin is never shown
-// the Admin component itself, not even for a frame; they're redirected immediately, with a
-// one-time notice (read by Dashboard) so the redirect is visible, not silent.
+// the Admin component itself, not even for a frame; they're sent to their dashboard, with no
+// message — for them the admin page simply is not there. The server refuses every admin request
+// from a non-admin regardless.
 function AdminRoute({ user, children }) {
-  if (user.role !== "admin") {
-    safeSession.setItem("pte_access_denied_notice", "Access denied — this account does not have admin permissions.");
-    return <Navigate to="/dashboard" replace/>;
-  }
+  if (user.role !== "admin") return <Navigate to="/dashboard" replace/>;
   return children;
 }
 

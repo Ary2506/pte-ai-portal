@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Play, Trophy, AlertCircle, CreditCard } from "lucide-react";
+import { Play, Trophy, CreditCard } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api } from "../api.js";
 import { Badge, Empty, Page } from "../components/common.jsx";
@@ -13,7 +13,6 @@ import {
   bySection, focusAreas, formatRaw, improvement, pct, ptePerformance, scored, skillBalance, summarize,
   targetGap, trajectory, PTE_MAX_SCORE
 } from "../analytics/derive.js";
-import { safeSession } from "../safeStorage.js";
 import { SectionAccessList } from "../components/SectionAccessList.jsx";
 
 function fmtLongDate(d) {
@@ -98,11 +97,6 @@ export default function Dashboard({ user }) {
   const [data, setData] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(() => {
-    const notice = safeSession.getItem("pte_access_denied_notice");
-    safeSession.removeItem("pte_access_denied_notice");
-    return notice || "";
-  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -162,13 +156,6 @@ export default function Dashboard({ user }) {
         <ButtonLink variant="primary" to="/speaking" icon={<Play/>}>Continue practice</ButtonLink>
       }
     >
-      {accessDenied && (
-        <div className="alert error">
-          <AlertCircle size={17} />
-          {accessDenied}
-        </div>
-      )}
-
       <div className="page-stack">
 
       {/* --- Where am I ------------------------------------------------------------------- */}
