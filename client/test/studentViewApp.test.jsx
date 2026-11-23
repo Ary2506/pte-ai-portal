@@ -74,7 +74,7 @@ describe("the student website, as an admin sees it", () => {
     return Promise.resolve(run(assign)).finally(() => { window.location = original; });
   }
 
-  it("Back to Admin Panel ends the view on the server, then returns to /admin, signed in as the admin", async () => {
+  it("Back to Admin Panel ends the view on the server, then returns to the home page (the admin panel for an admin), signed in as the admin", async () => {
     sessionStorage.setItem("pte_student_view", JSON.stringify(VIEW));
     let finish;
     endStudentViewSession.mockReturnValue(new Promise((resolve) => { finish = resolve; }));
@@ -90,7 +90,7 @@ describe("the student website, as an admin sees it", () => {
       expect(assign).not.toHaveBeenCalled();
 
       finish({ ended: true });
-      await waitFor(() => expect(assign).toHaveBeenCalledWith("/admin"));
+      await waitFor(() => expect(assign).toHaveBeenCalledWith("/"));
       expect(sessionStorage.getItem("pte_student_view")).toBeNull();
       expect(localStorage.getItem("pte_token")).toBe("admin-token");
       expect(api.auth.logout).not.toHaveBeenCalled();
@@ -103,7 +103,7 @@ describe("the student website, as an admin sees it", () => {
     await withLocation(async (assign) => {
       renderAt("/dashboard");
       fireEvent.click(await screen.findByText("Exit student view"));
-      await waitFor(() => expect(assign).toHaveBeenCalledWith("/admin"));
+      await waitFor(() => expect(assign).toHaveBeenCalledWith("/"));
       expect(endStudentViewSession).toHaveBeenCalledTimes(1);
       expect(sessionStorage.getItem("pte_student_view")).toBeNull();
       expect(api.auth.logout).not.toHaveBeenCalled();
