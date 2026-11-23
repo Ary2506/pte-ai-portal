@@ -56,7 +56,21 @@ describe("api.js in a student-view tab", () => {
     expect(sessionStorage.getItem("pte_student_view")).toBeNull();
     expect(localStorage.getItem("pte_token")).toBe("admin-own-token");
     expect(localStorage.getItem("pte_user")).toContain("admin");
-    expect(window.location.href).toBe("/admin");
+    expect(window.location.href).toBe("/");
+  });
+
+  it("when several requests all report the view ended at once, the admin still stays signed in", async () => {
+    // A page loads several things together, so they fail together. Only the first ends the view;
+    // the rest must not mistake the tab for an ordinary signed-in one and clear the sign-in.
+    global.fetch = vi.fn(() => Promise.resolve({ ok: false, json: () => Promise.resolve({ message: "ended", code: "STUDENT_VIEW_ENDED" }) }));
+    const { api } = await import("../src/api.js");
+    const results = await Promise.allSettled([api.dashboard(), api.history(), api.auth.me(), api.testSessions.list()]);
+    expect(results.every((r) => r.status === "rejected")).toBe(true);
+    expect(sessionStorage.getItem("pte_student_view")).toBeNull();
+    expect(localStorage.getItem("pte_token")).toBe("admin-own-token");
+    expect(localStorage.getItem("pte_user")).toContain("admin");
+    expect(sessionStorage.getItem("pte_login_notice")).toBeNull();
+    expect(window.location.href).toBe("/");
   });
 
   it("an expired pass is ignored: the tab is the admin again", async () => {
