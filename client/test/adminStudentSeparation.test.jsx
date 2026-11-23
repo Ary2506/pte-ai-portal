@@ -79,10 +79,11 @@ describe("Login routing by verified server role (Part 5/10 items 6-7)", () => {
 });
 
 describe("Student is fully blocked from the admin surface (Part 3/10 item 1/3)", () => {
-  it("a student directly navigating (or refreshing) to /admin is redirected to the dashboard and shown an explicit access-denied message, not a silent bounce", async () => {
+  it("a student directly navigating (or refreshing) to /admin is sent to the dashboard with no message, and never sees the admin page", async () => {
     renderAt("/admin", studentUser());
     expect(await screen.findByText(/Welcome back/)).toBeInTheDocument();
-    expect(screen.getByText(/Access denied.*admin permissions/i)).toBeInTheDocument();
+    // No message: for a student the admin page simply is not there.
+    expect(screen.queryByText(/Access denied/i)).not.toBeInTheDocument();
     expect(screen.queryByText("Admin Panel")).not.toBeInTheDocument();
   });
 
