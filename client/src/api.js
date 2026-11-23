@@ -1,6 +1,7 @@
 import { API_URL as API, API_ORIGIN } from "./apiBase.js";
 import { safeLocal, safeSession } from "./safeStorage.js";
 import { activeStudentView, endStudentView } from "./studentView.js";
+import { clearSession, recoverSameAccountSession, tabSession } from "./session.js";
 
 function getDeviceId() {
   let id = safeLocal.getItem("pte_device_id");
@@ -23,9 +24,6 @@ const FORCE_LOGOUT_CODES = new Set([
   "SESSION_INVALID"
 ]);
 
-// Exported so the client-side subscription-expiry timer (a UX convenience only — see
-// useAuth in App.jsx) can trigger the exact same clear-and-redirect flow as a rejected
-// API response, instead of a second logout mechanism.
 // Closes this tab's student view and returns it to the admin panel. The stored sign-in is not this
 // tab's (it belongs to whoever is signed in to the browser), so it is never touched here. It goes to
 // "/", which leads the admin to the admin panel but anyone else (another tab may have signed in a
@@ -37,6 +35,10 @@ function leaveStudentView() {
   window.location.href = "/";
 }
 
+// Exported so the client-side subscription-expiry timer (a UX convenience only — see
+// useAuth in App.jsx) can trigger the exact same clear-and-redirect flow as a rejected
+// API response, instead of a second logout mechanism. It signs out this tab only (session.js):
+// another tab signed in as a different account carries on.
 export function forceLogout(message) {
   // In a student-view tab the stored sign-in is the admin's own; ending the view must never sign
   // the admin out. It closes the view and returns this tab to the admin panel.
@@ -47,8 +49,7 @@ export function forceLogout(message) {
   // This tab's view has just been closed and the tab is on its way to the admin panel. A reply
   // still arriving from the view is not a reason to sign anyone out.
   if (leftStudentView) return;
-  safeLocal.removeItem("pte_token");
-  safeLocal.removeItem("pte_user");
+  clearSession();
   safeSession.setItem("pte_login_notice", message || "You have been signed out.");
   // A shared-answer link needs no session, so ending a stale one must not carry the visitor away
   // from the report they opened.
@@ -56,10 +57,10 @@ export function forceLogout(message) {
   window.location.href = "/";
 }
 
-// The token this tab's requests carry: a student-view pass when one is active here, otherwise the
-// signed-in user's own.
+// The token this tab's requests carry: a student-view pass when one is active here, otherwise this
+// tab's own sign-in (session.js), which may differ from another tab's.
 function currentToken() {
-  return activeStudentView()?.token || safeLocal.getItem("pte_token");
+  return activeStudentView()?.token || tabSession()?.token || null;
 }
 
 async function request(path, options = {}) {
@@ -86,7 +87,10 @@ async function request(path, options = {}) {
       // it, never fall through to signing the browser out.
       if (data.code === "STUDENT_VIEW_ENDED" || data.code === "SESSION_INVALID") leaveStudentView();
     } else if (token && data.code && FORCE_LOGOUT_CODES.has(data.code)) {
-      forceLogout(data.message);
+      // The server keeps one session per account, so this account signing in again in another tab
+      // ends this tab's session. That is not a reason to sign this tab out: it carries on with the
+      // newer session. Anything else (blocked, expired, signed out by an admin) signs it out.
+      if (!recoverSameAccountSession(token)) forceLogout(data.message);
     }
     const err = new Error(data.message || "Request failed");
     err.code = data.code;
