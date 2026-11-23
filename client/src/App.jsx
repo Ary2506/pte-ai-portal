@@ -29,6 +29,7 @@ import WritingTaskModule from "./practice/Writing.jsx";
 import { Badge, Page } from "./components/common.jsx";
 import { Button, ButtonLink, IconButton } from "./components/Button.jsx";
 import { activeStudentView, endStudentView, enterStudentViewFromUrl, updateStudentViewProfile } from "./studentView.js";
+import { adoptSameAccountSession, answerOtherTabs, clearSession, otherTabsUse, saveSession, tabSession, updateSessionUser } from "./session.js";
 import Footer from "./components/Footer.jsx";
 import Landing from "./landing/Landing.jsx";
 import { ToastProvider, useToast } from "./components/toast.jsx";
@@ -81,22 +82,22 @@ function useAuth() {
     // stored sign-in is left exactly as it is.
     const view = enterStudentViewFromUrl() || activeStudentView();
     if (view) return { ...view.student, viewOnly: true };
-    try { return JSON.parse(safeLocal.getItem("pte_user") || "null"); } catch { return null; }
+    // Each tab keeps its own sign-in (session.js): a student here and an admin in another tab.
+    return tabSession()?.user || null;
   });
   const save = (data) => {
-    safeLocal.setItem("pte_token", data.token);
-    safeLocal.setItem("pte_user", JSON.stringify(data.user));
+    saveSession(data.token, data.user);
     setUser(data.user);
   };
-  // Replaces the stored user after a self-service change (currently the target score). Writes the
-  // same localStorage key sign-in does, so a reload keeps the new value.
+  // Replaces the stored user after a self-service change (currently the target score). Written to
+  // this tab's sign-in, so a reload keeps the new value.
   const updateUser = (next) => {
     if (user?.viewOnly) {
       updateStudentViewProfile(next);
       setUser({ ...next, viewOnly: true });
       return;
     }
-    safeLocal.setItem("pte_user", JSON.stringify(next));
+    updateSessionUser(next);
     setUser(next);
   };
   // Signing out also leaves the current URL. Otherwise the sign-in sheet opens on top of the
@@ -114,34 +115,28 @@ function useAuth() {
       window.location.assign("/");
       return;
     }
-    api.auth.logout();
-    safeLocal.removeItem("pte_token"); safeLocal.removeItem("pte_user"); setUser(null);
+    // A new tab starts on the same session as the tab that signed in. If another open tab is still
+    // using this one, only this tab signs out; ending the session on the server would sign that tab
+    // out too. Otherwise the session is ended there as well. The request reads this tab's token as
+    // it is sent, before the sign-in is cleared below.
+    const shared = await otherTabsUse(tabSession()?.token);
+    if (!shared) api.auth.logout();
+    clearSession({ keepBrowser: shared }); setUser(null);
     navigate("/", { replace: true });
   };
+  // Lets other tabs ask whether this tab is using their session (see logout above).
+  useEffect(() => { answerOtherTabs(); }, []);
 
-  // Every tab shares one stored sign-in. When another tab signs in as someone else or signs out,
-  // this tab is no longer who it shows: it would act with the other account's token, and on its
-  // next load land wherever it was as the wrong account (a student on /admin is told "Access
-  // denied"). So it starts over from "/", which sends the account now signed in to its own home,
-  // or shows the sign-in page. The same account changing in another tab (a new sign-in, an updated
-  // target score) only refreshes what this tab shows. A student-view tab runs on its own pass and
-  // is left alone; its view ends by itself if the admin's sign-in goes away.
+  // Another tab signing in as a different account, or signing out, does not change this tab: each
+  // tab keeps its own sign-in. The one thing taken from another tab is this same account signing in
+  // again there — the server keeps one session per account, so that ended this tab's session, and
+  // this tab carries on with the new one (and any newer profile details) instead of being signed out.
   useEffect(() => {
-    if (user?.viewOnly) return undefined;
+    if (!user || user.viewOnly) return undefined;
     function onStorage(event) {
       if (event.key !== null && event.key !== "pte_token" && event.key !== "pte_user") return;
-      let stored = null;
-      try { stored = JSON.parse(safeLocal.getItem("pte_user") || "null"); } catch { stored = null; }
-      const signedIn = Boolean(safeLocal.getItem("pte_token")) && Boolean(stored);
-      if (!user && !signedIn) return;
-      if (user && signedIn && stored.id === user.id) {
-        setUser(stored);
-        return;
-      }
-      // A sign-in writes the token and then the user; between the two the stored user is still the
-      // previous one, so wait for the write that names the new account.
-      if (event.key === "pte_token" && signedIn && user && stored.id === user.id) return;
-      window.location.replace("/");
+      const adopted = adoptSameAccountSession();
+      if (adopted) setUser(adopted);
     }
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);

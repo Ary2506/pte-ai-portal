@@ -91,6 +91,9 @@ describe("Student is fully blocked from the admin surface (Part 3/10 item 1/3)",
     renderAt("/admin", adminUser());
     await screen.findByRole("heading", { name: "Admin Panel" });
     fireEvent.click(screen.getByText("Log out"));
+    // Logging out first checks whether another open tab shares the session, so the sign-in page
+    // appears a moment later.
+    await screen.findAllByRole("button", { name: "Sign in" });
 
     api.auth.signin.mockResolvedValue({ token: "t", user: studentUser() });
     await openSignIn();

@@ -6,7 +6,9 @@ describe("api.js force-logout on session/subscription failure codes", () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
+    // A sign-in always stores the token together with its account.
     localStorage.setItem("pte_token", "some-token");
+    localStorage.setItem("pte_user", JSON.stringify({ id: "u1", username: "pte001", role: "student" }));
     delete window.location;
     window.location = { href: "", pathname: "/dashboard" };
   });
