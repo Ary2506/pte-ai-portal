@@ -25,7 +25,9 @@ process.env.NODE_ENV = "test";
 // so they are unaffected by this.
 for (const name of [
   "R2_ENDPOINT", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "R2_RECORDINGS_BUCKET",
-  "OPENAI_API_KEY", "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET"
+  "OPENAI_API_KEY", "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET",
+  // Share links: tests that need reusable links set their own secret.
+  "SHARE_LINK_SECRET"
 ]) {
   process.env[name] = "";
 }

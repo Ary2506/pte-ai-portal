@@ -15,8 +15,8 @@ export function shareHeadline(summary, submission) {
   return [code, title, `PTE CORE AI Score ${score}/${maxScore}`].filter(Boolean).join(" · ");
 }
 
-// Share Answer's popup. Opening it creates the link (POST /submissions/:id/share); the URL is shown
-// once, since the server keeps only its hash. Copy Link puts it on the clipboard.
+// Share Answer's popup. Opening it asks for the answer's link (POST /submissions/:id/share): its
+// existing live link when it has one, otherwise a new one. Copy Link puts it on the clipboard.
 export default function ShareAnswerDialog({ submission, onShared, onClose }) {
   const toast = useToast();
   const [share, setShare] = useState(null);
@@ -71,7 +71,8 @@ export default function ShareAnswerDialog({ submission, onShared, onClose }) {
     }
   }
 
-  const title = share ? "Answer Link Created" : error ? "Could not share this answer" : "Creating link…";
+  // An answer already shared gets its existing link back (same address, same expiry), not a new one.
+  const title = share ? (share.reused ? "Your Answer Link" : "Answer Link Created") : error ? "Could not share this answer" : "Creating link…";
   return (
     <Modal onClose={onClose} title={title} panelClassName="share-dialog"
       footer={<>

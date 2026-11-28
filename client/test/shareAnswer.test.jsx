@@ -119,9 +119,9 @@ describe("sharing from Practice History", () => {
   });
 
   function showHistory(rows) {
-    // The attempts table gets these rows; the Read Aloud recordings section on the same page
-    // (requested with type=read-aloud) is left empty, so each row appears once.
-    api.history.mockImplementation((params) => Promise.resolve(params?.type === "read-aloud"
+    // The attempts table gets these rows; the Speaking recordings section on the same page
+    // (requested with withAudio=1) is left empty, so each row appears once.
+    api.history.mockImplementation((params) => Promise.resolve(params?.withAudio
       ? { submissions: [], total: 0, totalPages: 1 }
       : { submissions: rows, total: rows.length, totalPages: 1 }));
     renderAt("/history", studentUser);
@@ -169,6 +169,23 @@ describe("sharing from Practice History", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     // The row now shows it is shared and can be stopped.
     expect(screen.getByText("Stop sharing")).toBeInTheDocument();
+  });
+
+  it("an answer already shared shows its existing link with the original expiry, under a plain Share button", async () => {
+    const url = `http://localhost:5173/shared-answer/${TOKEN}`;
+    api.shareSubmission.mockResolvedValue({ share: {
+      url, createdAt: "2026-11-20T10:00:00.000Z", expiresAt: "2026-12-20T10:00:00.000Z", reused: true,
+      summary: { taskCode: "RA", taskLabel: "Read Aloud", questionTitle: "Visit to Canada", score: 71, maxScore: 90 }
+    } });
+    showHistory([row({ share: { expiresAt: "2026-12-20T10:00:00.000Z" } })]);
+    const button = await screen.findByRole("button", { name: /^Share your answer/ });
+    expect(button).toHaveTextContent(/^Share$/);
+    expect(screen.queryByText("Share again")).toBeNull();
+    fireEvent.click(button);
+
+    const dialog = await screen.findByRole("dialog", { name: "Your Answer Link" });
+    expect(within(dialog).getByRole("textbox", { name: "Share link" })).toHaveValue(url);
+    expect(dialog).toHaveTextContent(new Date("2026-12-20T10:00:00.000Z").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }));
   });
 
   it("stops sharing after confirmation", async () => {

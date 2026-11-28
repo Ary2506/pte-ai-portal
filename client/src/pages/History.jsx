@@ -163,7 +163,7 @@ export default function History() {
         {canShare(r) && (
           <Button variant="ghost" size="sm" icon={<Share2/>} onClick={() => setSharing(r)}
             aria-label={`Share your answer to ${r.question?.title || taskLabel(r.type)}`}>
-            {r.share ? "Share again" : "Share"}
+            Share
           </Button>
         )}
         {r.share && (

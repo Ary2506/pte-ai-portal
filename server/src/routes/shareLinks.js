@@ -22,6 +22,14 @@ import { copyObject, deleteObject, objectExists, signedObjectUrl, isRemoteStorag
 // A link opens exactly one report and one recording, for SHARE_LIFETIME_DAYS from creation. The
 // public routes take no session, read only through the token, and return a whitelisted report —
 // never the submission document, its ids, the owner, or any storage key.
+//
+// One live link per answer: sharing an answer that already has one shows that same link again,
+// with its original expiry, instead of making another link and another audio copy. That needs the
+// server to be able to rebuild a link it made earlier, while still storing only the token's hash.
+// So when SHARE_LINK_SECRET is set, a token is not random but an HMAC of the link's own id under
+// that secret: unguessable without the secret, and recomputable from the id. A rebuilt token is
+// shown only if it matches the stored hash, so a missing or changed secret can never show a wrong
+// link — the answer simply gets a new one, as every share did before.
 
 // R2 caps a presigned GET at 7 days; the page asks for a fresh URL whenever one lapses, so an hour
 // is plenty and limits what a leaked URL is worth.
@@ -30,7 +38,38 @@ export const AUDIO_URL_TTL_SECONDS = 60 * 60;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 export const hashShareToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
-const newShareToken = () => crypto.randomBytes(32).toString("base64url");
+
+// Read on each use, not cached, so it can be set or rotated with a restart and no other change.
+// Too short to be a real secret counts as unset.
+const SHARE_SECRET_MIN_LENGTH = 32;
+let warnedShortSecret = false;
+function shareLinkSecret() {
+  const secret = process.env.SHARE_LINK_SECRET || "";
+  if (!secret) return null;
+  if (secret.length < SHARE_SECRET_MIN_LENGTH) {
+    if (!warnedShortSecret) {
+      warnedShortSecret = true;
+      console.warn(`[share] SHARE_LINK_SECRET is shorter than ${SHARE_SECRET_MIN_LENGTH} characters; links are random and are not reused.`);
+    }
+    return null;
+  }
+  return secret;
+}
+
+/** The token for a link: rebuildable from its id when a secret is set, random otherwise. */
+function tokenForShare(shareId) {
+  const secret = shareLinkSecret();
+  if (!secret) return crypto.randomBytes(32).toString("base64url");
+  // 32-byte HMAC, base64url: 43 characters, the same shape as a random token.
+  return crypto.createHmac("sha256", secret).update(`share-link:${shareId}`).digest("base64url");
+}
+
+/** The token of an existing link, or null when it cannot be rebuilt (random, or another secret). */
+function rebuiltToken(share) {
+  if (!shareLinkSecret()) return null;
+  const token = tokenForShare(share._id);
+  return hashShareToken(token) === share.tokenHash ? token : null;
+}
 const shareUrlFor = (token) => `${config.clientUrl.replace(/\/+$/, "")}/shared-answer/${token}`;
 // The short task codes PTE students use, for the copied share message.
 const TASK_CODES = {
@@ -43,12 +82,15 @@ const TASK_CODES = {
 
 export const ownerShareRoutes = express.Router();
 
-// Each share makes a copy in storage, so creating them is limited per student.
-const createShareLimiter = rateLimit({
+// Each new link makes a copy in storage, so new links are limited per student: counted from the
+// links themselves, so showing an existing link again never counts, and the limit holds across
+// restarts and server instances. The request limiter only stops the route being hammered.
+const NEW_LINKS_PER_HOUR = 30;
+const shareRequestLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 30,
+  max: 120,
   keyGenerator: (req) => `share:${req.user?._id || req.ip}`,
-  message: { message: "Too many share links created. Please try again later.", code: "RATE_LIMITED" }
+  message: { message: "Too many share requests. Please try again later.", code: "RATE_LIMITED" }
 });
 
 async function ownedSubmission(req, res) {
@@ -68,7 +110,31 @@ async function ownedSubmission(req, res) {
   return submission;
 }
 
-ownerShareRoutes.post("/:submissionId/share", requireAuth, requireActiveSubscription, createShareLimiter, asyncRoute(async (req, res) => {
+// What the copied message says about the answer, e.g. "RA · Visit to Canada · PTE CORE AI Score 71/90".
+async function shareSummary(submission) {
+  await submission.populate("question", "title");
+  return {
+    taskCode: TASK_CODES[submission.type] || null,
+    taskLabel: QUESTION_TYPES[submission.type]?.label || submission.type,
+    questionTitle: submission.question?.title || null,
+    score: submission.score,
+    maxScore: submission.maxScore
+  };
+}
+
+/** This answer's live link, rebuilt, or null when it has none that can be shown again. */
+async function existingLink(submission, now) {
+  const live = await ShareLink.find({ submission: submission._id, status: "ACTIVE", expiresAt: { $gt: now } })
+    .sort({ createdAt: -1 });
+  for (const share of live) {
+    const token = rebuiltToken(share);
+    // A link whose audio copy is gone cannot play; it is not offered again.
+    if (token && await objectExists(share.sharedAudioObjectKey)) return { share, token };
+  }
+  return null;
+}
+
+ownerShareRoutes.post("/:submissionId/share", requireAuth, requireActiveSubscription, shareRequestLimiter, asyncRoute(async (req, res) => {
   const submission = await ownedSubmission(req, res);
   if (!submission) return;
 
@@ -77,6 +143,21 @@ ownerShareRoutes.post("/:submissionId/share", requireAuth, requireActiveSubscrip
   }
   if (submission.evaluationStatus !== "COMPLETED") {
     return res.status(409).json({ message: "This answer can be shared once it has been scored.", code: "SHARE_NOT_READY" });
+  }
+
+  // Already shared: the same link again, with its original expiry. Checked before the original
+  // recording, which the link no longer needs (it plays its own copy).
+  const reused = await existingLink(submission, new Date());
+  if (reused) {
+    return res.json({ share: {
+      url: shareUrlFor(reused.token), createdAt: reused.share.createdAt, expiresAt: reused.share.expiresAt,
+      summary: await shareSummary(submission), reused: true
+    } });
+  }
+
+  const madeThisHour = await ShareLink.countDocuments({ owner: req.user._id, createdAt: { $gt: new Date(Date.now() - 60 * 60 * 1000) } });
+  if (madeThisHour >= NEW_LINKS_PER_HOUR) {
+    return res.status(429).json({ message: "Too many share links created. Please try again later.", code: "RATE_LIMITED" });
   }
   // A bare filename is a recording from before object storage, still on one server's disk; it
   // cannot be copied into the bucket from here.
@@ -99,7 +180,7 @@ ownerShareRoutes.post("/:submissionId/share", requireAuth, requireActiveSubscrip
     return res.status(503).json({ message: "The answer could not be shared right now. Please try again.", code: "SHARE_COPY_FAILED" });
   }
 
-  const token = newShareToken();
+  const token = tokenForShare(shareId);
   const now = new Date();
   let share;
   try {
@@ -119,30 +200,30 @@ ownerShareRoutes.post("/:submissionId/share", requireAuth, requireActiveSubscrip
     throw err;
   }
 
-  // Sharing again adds a link; it never cancels one already sent, which would leave everyone who
-  // was given the earlier link looking at "no longer shared". Each link keeps its own 30 days and
-  // its own audio copy, and DELETE below withdraws them all at once.
-
-  // What the copied message says about the answer, e.g. "RA · Visit to Canada · PTE CORE AI Score 71/90".
-  await submission.populate("question", "title");
-  const summary = {
-    taskCode: TASK_CODES[submission.type] || null,
-    taskLabel: QUESTION_TYPES[submission.type]?.label || submission.type,
-    questionTitle: submission.question?.title || null,
-    score: submission.score,
-    maxScore: submission.maxScore
-  };
-  res.status(201).json({ share: { url: shareUrlFor(token), createdAt: share.createdAt, expiresAt: share.expiresAt, summary } });
+  // A new link never cancels one already sent (one that cannot be rebuilt, made before links were
+  // reusable): everyone given it keeps it. DELETE below withdraws them all at once.
+  res.status(201).json({ share: {
+    url: shareUrlFor(token), createdAt: share.createdAt, expiresAt: share.expiresAt,
+    summary: await shareSummary(submission), reused: false
+  } });
 }));
 
 // No subscription check: a student whose plan has ended must still be able to withdraw a link.
+// The links stop working at once, and their audio copies are deleted straight away rather than
+// left for the storage lifecycle rule: stopping sharing removes the shared recording.
 ownerShareRoutes.delete("/:submissionId/share", requireAuth, asyncRoute(async (req, res) => {
   const submission = await ownedSubmission(req, res);
   if (!submission) return;
+  const active = await ShareLink.find({ submission: submission._id, status: "ACTIVE" }).select("sharedAudioObjectKey").lean();
   const { modifiedCount } = await ShareLink.updateMany(
-    { submission: submission._id, status: "ACTIVE" },
+    { _id: { $in: active.map((s) => s._id) }, status: "ACTIVE" },
     { $set: { status: "REVOKED", revokedAt: new Date() } }
   );
+  // Only copies of links just revoked, and only under shared-audio/: never a student's original.
+  // Best effort: a copy that fails to delete is unreachable anyway and the lifecycle rule ends it.
+  await Promise.all(active
+    .filter((s) => s.sharedAudioObjectKey?.startsWith(SHARED_AUDIO_PREFIX))
+    .map((s) => deleteObject(s.sharedAudioObjectKey).catch((err) => console.error("shared audio delete failed:", err?.message || err))));
   res.json({ revoked: modifiedCount });
 }));
 

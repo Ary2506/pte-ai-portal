@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import fs from "fs";
 import request from "supertest";
 import { app } from "../src/app.js";
@@ -102,7 +102,7 @@ describe("creating a share link", () => {
     expect(await ShareLink.countDocuments()).toBe(0);
   });
 
-  it("sharing again adds a link without breaking the one already sent; Stop sharing withdraws both", async () => {
+  it("without SHARE_LINK_SECRET, sharing again adds a link without breaking the one already sent; Stop sharing withdraws both and deletes their copies", async () => {
     await createUser({ username: "sharer6" });
     const { token, submission } = await speakingAnswer("sharer6");
     const first = tokenOf((await share(token, submission._id)).body.share.url);
@@ -110,11 +110,116 @@ describe("creating a share link", () => {
     expect(second).not.toBe(first);
     expect((await request(app).get(`/api/public/shared-answers/${first}`)).status).toBe(200);
     expect((await request(app).get(`/api/public/shared-answers/${second}`)).status).toBe(200);
+    const copies = (await ShareLink.find({})).map((l) => l.sharedAudioObjectKey);
+    expect(copies).toHaveLength(2);
 
     const del = await request(app).delete(`/api/submissions/${submission._id}/share`).set("Authorization", `Bearer ${token}`);
     expect(del.body.revoked).toBe(2);
     expect((await request(app).get(`/api/public/shared-answers/${first}`)).body.code).toBe("SHARE_REVOKED");
     expect((await request(app).get(`/api/public/shared-answers/${second}`)).body.code).toBe("SHARE_REVOKED");
+    // The shared copies are gone at once; the student's own recording is untouched.
+    for (const key of copies) expect(await objectExists(key)).toBe(false);
+    expect(await objectExists(submission.audioPath)).toBe(true);
+  });
+});
+
+describe("one live link per answer (SHARE_LINK_SECRET set)", () => {
+  const SECRET = "test-share-link-secret-0123456789abcdefghijklmnop";
+  beforeEach(() => { process.env.SHARE_LINK_SECRET = SECRET; });
+  afterEach(() => { delete process.env.SHARE_LINK_SECRET; });
+
+  it("sharing again shows the same link with its original expiry, and makes no new link or copy", async () => {
+    await createUser({ username: "reuse1" });
+    const { token, submission } = await speakingAnswer("reuse1");
+    const first = await share(token, submission._id);
+    expect(first.status).toBe(201);
+    expect(first.body.share.reused).toBe(false);
+
+    vi.useFakeTimers({ now: Date.now() + 3 * DAY, toFake: ["Date"] });
+    const again = await share(token, submission._id);
+    expect(again.status).toBe(200);
+    expect(again.body.share.reused).toBe(true);
+    expect(again.body.share.url).toBe(first.body.share.url);
+    expect(again.body.share.expiresAt).toBe(first.body.share.expiresAt); // not extended
+    expect(again.body.share.summary).toEqual(first.body.share.summary);
+    expect(await ShareLink.countDocuments()).toBe(1);
+
+    // Still only the token's hash is stored, never the token.
+    const row = await ShareLink.findOne({});
+    expect(row.tokenHash).toBe(hashShareToken(tokenOf(first.body.share.url)));
+    expect(JSON.stringify(row)).not.toContain(tokenOf(first.body.share.url));
+    expect(first.body.share.url).toMatch(/\/shared-answer\/[A-Za-z0-9_-]{43}$/);
+  });
+
+  it("shows the link again even after the original recording has expired from storage", async () => {
+    await createUser({ username: "reuse2" });
+    const { token, submission } = await speakingAnswer("reuse2");
+    const url = (await share(token, submission._id)).body.share.url;
+    fs.rmSync(localObjectPath(submission.audioPath));
+    const again = await share(token, submission._id);
+    expect(again.status).toBe(200);
+    expect(again.body.share.url).toBe(url);
+  });
+
+  it("makes a new link once the old one has expired or been stopped", async () => {
+    await createUser({ username: "reuse3" });
+    const { token, submission } = await speakingAnswer("reuse3");
+    const first = (await share(token, submission._id)).body.share.url;
+
+    // The link's 30 days are over (moving the clock instead would also end the student's session).
+    await ShareLink.updateMany({}, { $set: { expiresAt: new Date(Date.now() - 1000) } });
+    const afterExpiry = await share(token, submission._id);
+    expect(afterExpiry.status).toBe(201);
+    expect(afterExpiry.body.share.url).not.toBe(first);
+
+    await request(app).delete(`/api/submissions/${submission._id}/share`).set("Authorization", `Bearer ${token}`);
+    const afterStop = await share(token, submission._id);
+    expect(afterStop.status).toBe(201);
+    expect(afterStop.body.share.url).not.toBe(afterExpiry.body.share.url);
+    expect((await request(app).get(`/api/public/shared-answers/${tokenOf(afterExpiry.body.share.url)}`)).body.code).toBe("SHARE_REVOKED");
+  });
+
+  it("after the secret changes, makes a new link rather than show a wrong one; the old link keeps working", async () => {
+    await createUser({ username: "reuse4" });
+    const { token, submission } = await speakingAnswer("reuse4");
+    const old = (await share(token, submission._id)).body.share.url;
+    process.env.SHARE_LINK_SECRET = `${SECRET}-rotated`;
+    const fresh = await share(token, submission._id);
+    expect(fresh.status).toBe(201);
+    expect(fresh.body.share.url).not.toBe(old);
+    expect((await request(app).get(`/api/public/shared-answers/${tokenOf(old)}`)).status).toBe(200);
+  });
+
+  it("a link made before reuse existed (random token) is not shown again; the answer gets one new reusable link", async () => {
+    await createUser({ username: "reuse5" });
+    const { token, submission } = await speakingAnswer("reuse5");
+    delete process.env.SHARE_LINK_SECRET;
+    const legacy = (await share(token, submission._id)).body.share.url;
+    process.env.SHARE_LINK_SECRET = SECRET;
+    const next = (await share(token, submission._id)).body.share.url;
+    expect(next).not.toBe(legacy);
+    expect((await share(token, submission._id)).body.share.url).toBe(next);
+    expect((await request(app).get(`/api/public/shared-answers/${tokenOf(legacy)}`)).status).toBe(200);
+  });
+
+  it("limits new links per student per hour, but showing an existing link again is never limited", async () => {
+    const user = await createUser({ username: "reuse6" });
+    const { token, submission } = await speakingAnswer("reuse6");
+    const url = (await share(token, submission._id)).body.share.url;
+    const filler = Array.from({ length: 29 }, (_, i) => ({
+      owner: user._id, submission: submission._id, tokenHash: hashShareToken(`filler-${i}`.padEnd(43, "x")),
+      sharedAudioObjectKey: `shared-audio/filler-${i}/x.webm`, expiresAt: new Date(Date.now() + DAY), status: "REVOKED"
+    }));
+    await ShareLink.insertMany(filler);
+    // 30 links this hour: showing the existing one still works ...
+    const again = await share(token, submission._id);
+    expect(again.status).toBe(200);
+    expect(again.body.share.url).toBe(url);
+    // ... but a new one (after Stop sharing) is refused.
+    await request(app).delete(`/api/submissions/${submission._id}/share`).set("Authorization", `Bearer ${token}`);
+    const refused = await share(token, submission._id);
+    expect(refused.status).toBe(429);
+    expect(refused.body.code).toBe("RATE_LIMITED");
   });
 });
 
