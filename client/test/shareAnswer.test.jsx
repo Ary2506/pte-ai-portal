@@ -71,8 +71,14 @@ describe("the public shared-answer page", () => {
     expect(api.dashboard).not.toHaveBeenCalled();
   });
 
-  it("plays the recording from a temporary URL and fetches a new one when it fails", async () => {
+  it("loads nothing for the recording until Play, then plays it from a temporary URL and fetches a new one when it fails", async () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
     renderAt(`/shared-answer/${TOKEN}`);
+    await screen.findByRole("heading", { name: "Visit to Canada" });
+    // Opening the link costs the report alone: no audio URL, no audio.
+    expect(publicApi.sharedAnswerAudioUrl).not.toHaveBeenCalled();
+    expect(document.querySelector("audio")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Play the recording" }));
     const audio = await waitFor(() => {
       const el = document.querySelector("audio.shared-report__audio");
       expect(el).not.toBeNull();
@@ -83,6 +89,8 @@ describe("the public shared-answer page", () => {
     fireEvent.error(audio);
     await waitFor(() => expect(document.querySelector("audio.shared-report__audio").getAttribute("src")).toBe("https://signed.example/a.webm?sig=2"));
     expect(publicApi.sharedAnswerAudioUrl).toHaveBeenCalledTimes(2);
+    expect(play).toHaveBeenCalledTimes(1); // started by the Play press, not again by the refresh
+    play.mockRestore();
   });
 
   it.each([

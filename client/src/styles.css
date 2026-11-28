@@ -2153,7 +2153,7 @@ html[data-theme="dark"] button:not(.btn):active{color:inherit}
 .my-recordings__error{margin:0;color:var(--danger);font-size:var(--text-sm)}
 .my-recordings__loading{margin:0;font-size:var(--text-sm)}
 .my-recordings__play{justify-self:start}
-.my-recordings__duration{margin-left:8px;font-family:var(--font-mono);font-weight:500;opacity:.75}
+.play-duration{margin-left:8px;font-family:var(--font-mono);font-weight:500;opacity:.75}
 .my-recordings__player-error{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .my-recordings__expiry{align-self:center;color:var(--muted);font-size:var(--text-sm)}
 .my-recordings__expiry.is-soon{color:var(--warning);font-weight:600}
@@ -2161,6 +2161,9 @@ html[data-theme="dark"] button:not(.btn):active{color:inherit}
 .my-recordings__more{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
 .my-recordings__more p{margin:0;font-size:var(--text-sm)}
 .my-recordings--history{margin-top:0;border-top:0}
+.my-recordings__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.my-recordings__head .my-recordings__title{margin:0}
+.my-recordings__task{font-size:var(--text-sm);color:var(--blue);font-weight:600}
 /* --- Admin's read-only Student Website View (App.jsx, studentView.js) --- */
 .student-view-banner{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:var(--warning-bg, #FFF7E6);color:var(--ink);border-bottom:2px solid var(--warning, #B54708);font-size:var(--text-sm)}
 .student-view-banner svg{color:var(--warning, #B54708);flex:none}

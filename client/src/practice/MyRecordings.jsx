@@ -1,16 +1,21 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useSearchParams } from "react-router-dom";
 import { Play, RotateCcw, Share2 } from "lucide-react";
 import { api } from "../api.js";
 import { CurrentUserContext } from "../access.js";
 import { Button } from "../components/Button.jsx";
 import { Pager } from "../components/common.jsx";
 import ShareAnswerDialog from "../components/ShareAnswerDialog.jsx";
+import { PRACTICE_TASKS } from "../practiceTaskRegistry.js";
+import { fmtDuration } from "../audioDuration.js";
 
-// Read Aloud only: the signed-in student's own recorded attempts at this question, newest first,
-// each with its player, its real score and a Share action. Never anyone else's — the history
+// Every Speaking task: the signed-in student's own recorded attempts at this question, newest
+// first, each with its player, its real score and a Share action. Never anyone else's — the history
 // endpoint returns only the requesting student's submissions, and every recording is checked
-// against its owner again when it is loaded.
+// against its owner again when it is loaded. Audio is fetched only for a recording that is played.
+
+const SPEAKING_TASKS = PRACTICE_TASKS.speaking;
+const taskLabel = (type) => SPEAKING_TASKS.find((t) => t.slug === type)?.label || "Speaking";
 
 const fmtWhen = (d) => new Date(d).toLocaleString(undefined, {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
@@ -21,13 +26,6 @@ function scoreText(r) {
   if (r.evaluationStatus === "FAILED") return "Not scored";
   return `${r.score}/${r.maxScore}`;
 }
-
-// m:ss, from the duration stored with the attempt, so a length shows before any audio loads.
-const fmtDuration = (seconds) => {
-  const total = Math.round(Number(seconds));
-  if (!Number.isFinite(total) || total <= 0) return "";
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -147,28 +145,30 @@ function OwnRecording({ submissionId, durationSeconds, label }) {
   return (
     <Button variant="secondary" size="sm" icon={<Play/>} className="my-recordings__play"
       loading={state === "loading"} loadingLabel="Loading…" onClick={start} aria-label={`Play ${label}`}>
-      Play{duration && <span className="my-recordings__duration">{duration}</span>}
+      Play{duration && <span className="play-duration">{duration}</span>}
     </Button>
   );
 }
 
 // How many recordings the question page lists; the full history is on My Results.
 export const LATEST_RECORDINGS_SHOWN = 5;
-// Where "Go to My Results" leads: the recordings section of the My Results page.
-export const RECORDING_HISTORY_PATH = "/history#read-aloud-recordings";
+// The recordings section of the My Results page, and the "Go to My Results" link to it, already
+// filtered to the task the student came from.
+export const RECORDINGS_SECTION_ID = "speaking-recordings";
+export const recordingHistoryPath = (type) => `/history?recordings=${encodeURIComponent(type)}#${RECORDINGS_SECTION_ID}`;
 
 /**
  * One recorded attempt: who and when (or which question, in the full history), its player, its
  * real score, whether a link to it is live, and a Share button for exactly this attempt.
  */
-function RecordingItem({ row, name, questionTitle, onShare }) {
+function RecordingItem({ row, name, questionTitle, task, onShare }) {
   const note = row.hasAudio ? availabilityNote(row.audioAvailableUntil) : null;
   return (
     <li className="my-recordings__item">
       <span className="my-recordings__avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</span>
       <div className="my-recordings__body">
         <p className="my-recordings__who">
-          <b>{questionTitle || name}</b> <time dateTime={row.createdAt} className="muted">{fmtWhen(row.createdAt)}</time>
+          <b>{questionTitle || name}</b> {task && <span className="my-recordings__task">{task}</span>} <time dateTime={row.createdAt} className="muted">{fmtWhen(row.createdAt)}</time>
         </p>
         {row.hasAudio
           ? <OwnRecording submissionId={row._id} durationSeconds={row.durationSeconds} label={`your recording from ${fmtWhen(row.createdAt)}`} />
@@ -214,7 +214,7 @@ export default function MyRecordings({ question, refreshKey }) {
     // is read, so the list knows whether to point to My Results for the rest.
     const fetchSize = LATEST_RECORDINGS_SHOWN + 1;
     Promise.resolve()
-      .then(() => api.history({ summary: 1, type: "read-aloud", question: question._id, withAudio: 1, limit: fetchSize }))
+      .then(() => api.history({ summary: 1, type: question.type, question: question._id, withAudio: 1, limit: fetchSize }))
       .then((d) => {
         if (cancelled) return;
         const recordings = (d?.submissions || []).filter((s) => s.hasAudio);
@@ -223,7 +223,7 @@ export default function MyRecordings({ question, refreshKey }) {
       })
       .catch(() => { if (!cancelled) setRows([]); });
     return () => { cancelled = true; };
-  }, [question?._id, refreshKey]);
+  }, [question?._id, question?.type, refreshKey]);
 
   if (!rows || !rows.length) return null;
   const name = user?.name || user?.username || "You";
@@ -236,7 +236,7 @@ export default function MyRecordings({ question, refreshKey }) {
       {hasMore && (
         <div className="my-recordings__more">
           <p className="muted">Showing your latest 5 recordings. To view and share your other recordings, visit My Results.</p>
-          <NavLink to={RECORDING_HISTORY_PATH} className="link">Go to My Results →</NavLink>
+          <NavLink to={recordingHistoryPath(question.type)} className="link">Go to My Results →</NavLink>
         </div>
       )}
       {sharing && <ShareFor row={sharing} title={question.title} setRows={setRows} onClose={() => setSharing(null)} />}
@@ -245,16 +245,24 @@ export default function MyRecordings({ question, refreshKey }) {
 }
 
 const HISTORY_PAGE_SIZE = 10;
+const FILTERS = ["all", ...SPEAKING_TASKS.map((t) => t.slug)];
+// Links made before every Speaking task had recordings pointed here.
+const OLD_SECTION_HASH = "#read-aloud-recordings";
 
 /**
- * Every Read Aloud recording this student still has, newest first, ten to a page, each with its
- * own player and Share — the history on My Results that the question page's latest five point to.
- * Recordings past the retention period are deleted from storage and not listed; their scores stay
- * in the attempts table above. The server returns only the signed-in student's own submissions.
+ * Every Speaking recording this student still has, newest first, ten to a page, each with its own
+ * player and Share — the history on My Results that each question's latest five point to. Filtered
+ * by task (all, or one); the filter is kept in the address (?recordings=<task>) so "Go to My
+ * Results" opens on the task the student came from. Recordings past the retention period are
+ * deleted from storage and not listed; their scores stay in the attempts table above. One request
+ * per page or filter; no audio until a recording is played.
  */
-export function ReadAloudRecordingHistory() {
+export function SpeakingRecordingHistory() {
   const user = useContext(CurrentUserContext);
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = searchParams.get("recordings");
+  const filter = FILTERS.includes(requested) ? requested : "all";
   const [rows, setRows] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -268,8 +276,9 @@ export function ReadAloudRecordingHistory() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    const scope = filter === "all" ? { section: "speaking" } : { type: filter };
     Promise.resolve()
-      .then(() => api.history({ summary: 1, type: "read-aloud", withAudio: 1, limit: HISTORY_PAGE_SIZE, page }))
+      .then(() => api.history({ summary: 1, ...scope, withAudio: 1, limit: HISTORY_PAGE_SIZE, page }))
       .then((d) => {
         if (cancelled) return;
         setRows((d?.submissions || []).filter((s) => s.hasAudio));
@@ -281,34 +290,59 @@ export function ReadAloudRecordingHistory() {
       .catch(() => { if (!cancelled) { setRows([]); setFailed(true); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [page]);
+  }, [page, filter]);
+
+  function selectFilter(next) {
+    if (next === filter) return;
+    setPage(1);
+    setSearchParams((params) => {
+      const updated = new URLSearchParams(params);
+      if (next === "all") updated.delete("recordings"); else updated.set("recordings", next);
+      return updated;
+    }, { replace: true, preventScrollReset: true });
+  }
 
   // Arriving from "Go to My Results": bring this section into view once it has rendered.
   useEffect(() => {
-    if (location.hash !== "#read-aloud-recordings" || rows === null) return;
+    if ((location.hash !== `#${RECORDINGS_SECTION_ID}` && location.hash !== OLD_SECTION_HASH) || rows === null) return;
     if (typeof section.current?.scrollIntoView === "function") {
       section.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [location.hash, rows === null]);
 
   const name = user?.name || user?.username || "You";
+  const scopeLabel = filter === "all" ? "speaking" : taskLabel(filter);
   return (
-    <section className="panel my-recordings my-recordings--history" id="read-aloud-recordings" ref={section}
-      aria-label="Read Aloud recordings">
-      <h3 className="my-recordings__title">Read Aloud recordings</h3>
+    <section className="panel my-recordings my-recordings--history" id={RECORDINGS_SECTION_ID} ref={section}
+      aria-label="Speaking recordings">
+      {/* The section's old address, so a link to it still lands here. */}
+      <span id={OLD_SECTION_HASH.slice(1)} aria-hidden="true" />
+      <div className="my-recordings__head">
+        <h3 className="my-recordings__title">Speaking recordings</h3>
+        <div className="question-list-filters" role="tablist" aria-label="Filter recordings by task">
+          {FILTERS.map((f) => (
+            <button key={f} type="button" role="tab" aria-selected={filter === f}
+              className={filter === f ? "question-list-filter active" : "question-list-filter"}
+              onClick={() => selectFilter(f)}>
+              {f === "all" ? "All" : taskLabel(f)}
+            </button>
+          ))}
+        </div>
+      </div>
       {failed && <p className="my-recordings__error">Your recordings could not be loaded. Please reload the page.</p>}
       {!failed && rows && !rows.length && !loading && (
-        <p className="muted">{retentionDays > 0 ? `No Read Aloud recordings in the last ${retentionDays} days.` : "No Read Aloud recordings yet."}</p>
+        <p className="muted">{retentionDays > 0 ? `No ${scopeLabel} recordings in the last ${retentionDays} days.` : `No ${scopeLabel} recordings yet.`}</p>
       )}
       {rows && rows.length > 0 && (
         <ul className="my-recordings__list">
           {rows.map((r) => (
-            <RecordingItem key={r._id} row={r} name={name} questionTitle={r.question?.title || "Read Aloud"} onShare={setSharing} />
+            <RecordingItem key={r._id} row={r} name={name} questionTitle={r.question?.title || taskLabel(r.type)}
+              task={filter === "all" ? taskLabel(r.type) : null} onShare={setSharing} />
           ))}
         </ul>
       )}
       {totalPages > 1 && (
-        <Pager page={page} totalPages={totalPages} total={total} itemLabel={total === 1 ? "attempt" : "attempts"}
+        <Pager page={page} totalPages={totalPages} total={total} itemLabel={total === 1 ? "recording" : "recordings"}
           busy={loading} onPrevious={() => setPage(page - 1)} onNext={() => setPage(page + 1)} />
       )}
       {sharing && (

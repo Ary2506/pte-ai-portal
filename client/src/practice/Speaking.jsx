@@ -842,10 +842,11 @@ export default function Speaking({
             <p className="muted answer-toggle">No model answer available for this question yet.</p>
           )
         )}
-        {/* Read Aloud practice only: the student's own recorded attempts at this question, with
-            Share. Refetched when a new answer comes back so it appears straight away. */}
-        {question?.type === "read-aloud" && !testSessionId && (
-          <MyRecordings question={question} refreshKey={result?._id} />
+        {/* Every Speaking task, practice only: the student's own recorded attempts at this question,
+            with Share. Refetched when a new answer comes back, and when its score changes (a
+            retried evaluation keeps the same answer), so the list never shows a stale score. */}
+        {question?._id && !testSessionId && (
+          <MyRecordings question={question} refreshKey={`${result?._id || ""}:${result?.evaluationStatus || ""}`} />
         )}
       </section>
       <TaskTips type={question?.type} section="speaking" note={AI_SCORING_NOTE}/>

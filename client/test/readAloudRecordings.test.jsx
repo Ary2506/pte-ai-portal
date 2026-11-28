@@ -158,12 +158,14 @@ describe("Read Aloud — my recordings", () => {
     expect(document.querySelector(".my-recordings")).toBeNull();
   });
 
-  it("does not appear on other Speaking tasks", async () => {
+  it("appears on the other Speaking tasks too, listing that task's recordings", async () => {
     api.questions.mockResolvedValue({ questions: [{ ...RA, _id: "rs1", type: "repeat-sentence", title: "RS", passage: undefined, audioUrl: "/a.mp3" }] });
+    ownAttempts = [attempt("r1", "2026-11-17T09:30:00.000Z", { type: "repeat-sentence", question: { _id: "rs1", title: "RS" } })];
     renderAt("/speaking?type=repeat-sentence");
-    await screen.findByText("Repeat Sentence 1");
-    expect(api.history).not.toHaveBeenCalledWith(expect.objectContaining({ question: expect.anything() }));
-    expect(document.querySelector(".my-recordings")).toBeNull();
+    fireEvent.click(await screen.findByText("Repeat Sentence 1"));
+    await waitFor(() => expect(items()).toHaveLength(1));
+    expect(api.history).toHaveBeenCalledWith({ summary: 1, type: "repeat-sentence", question: "rs1", withAudio: 1, limit: 6 });
+    expect(api.ownRecordingSrc).not.toHaveBeenCalled(); // still nothing loaded until Play
   });
 });
 
@@ -183,7 +185,7 @@ describe("Read Aloud — latest 5 on the question page, all on My Results", () =
       expect(within(li).getByRole("button", { name: /^Share your recording/ })).toBeInTheDocument();
     }
     expect(screen.getByText("Showing your latest 5 recordings. To view and share your other recordings, visit My Results.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Go to My Results →" })).toHaveAttribute("href", "/history#read-aloud-recordings");
+    expect(screen.getByRole("link", { name: "Go to My Results →" })).toHaveAttribute("href", "/history?recordings=read-aloud#speaking-recordings");
   });
 
   it("shows no note when there are 5 recordings or fewer", async () => {
@@ -206,7 +208,7 @@ describe("Read Aloud — latest 5 on the question page, all on My Results", () =
     fireEvent.click(await screen.findByRole("link", { name: "Go to My Results →" }));
     expect(await screen.findByRole("heading", { name: "Practice History" })).toBeInTheDocument();
 
-    const history = await screen.findByRole("region", { name: "Read Aloud recordings" });
+    const history = await screen.findByRole("region", { name: "Speaking recordings" });
     await waitFor(() => expect(history.querySelectorAll(".my-recordings__item")).toHaveLength(7));
     expect(api.history).toHaveBeenCalledWith({ summary: 1, type: "read-aloud", withAudio: 1, limit: 10, page: 1 });
     const rows = [...history.querySelectorAll(".my-recordings__item")];
@@ -222,8 +224,8 @@ describe("Read Aloud — latest 5 on the question page, all on My Results", () =
       params?.withAudio ? { submissions: [], total: 0, page: 1, totalPages: 1, recordingRetentionDays: 7 } : { submissions: [] }
     ));
     renderAt("/history");
-    const history = await screen.findByRole("region", { name: "Read Aloud recordings" });
-    expect(await within(history).findByText("No Read Aloud recordings in the last 7 days.")).toBeInTheDocument();
+    const history = await screen.findByRole("region", { name: "Speaking recordings" });
+    expect(await within(history).findByText("No speaking recordings in the last 7 days.")).toBeInTheDocument();
     expect(history.querySelector(".my-recordings__intro")).toBeNull();
   });
 
@@ -244,15 +246,15 @@ describe("Read Aloud — latest 5 on the question page, all on My Results", () =
   it("pages through a long history, ten at a time", async () => {
     const pageRows = (page) => Array.from({ length: page === 1 ? 10 : 2 }, (_, i) => attempt(`p${page}-${i}`, new Date(Date.UTC(2026, 10, 17, 0, 60 - i - page * 10)).toISOString()));
     api.history.mockImplementation((params) => Promise.resolve(
-      params?.type === "read-aloud" && !params?.question
+      params?.withAudio && !params?.question
         ? { submissions: pageRows(params.page), total: 12, page: params.page, totalPages: 2 }
         : { submissions: SEVEN }
     ));
     renderAt("/history");
-    const history = await screen.findByRole("region", { name: "Read Aloud recordings" });
+    const history = await screen.findByRole("region", { name: "Speaking recordings" });
     await waitFor(() => expect(history.querySelectorAll(".my-recordings__item")).toHaveLength(10));
     fireEvent.click(within(history).getByText("Next"));
     await waitFor(() => expect(history.querySelectorAll(".my-recordings__item")).toHaveLength(2));
-    expect(api.history).toHaveBeenCalledWith({ summary: 1, type: "read-aloud", withAudio: 1, limit: 10, page: 2 });
+    expect(api.history).toHaveBeenCalledWith({ summary: 1, section: "speaking", withAudio: 1, limit: 10, page: 2 });
   });
 });

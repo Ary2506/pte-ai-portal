@@ -4,7 +4,7 @@ import { Share2 } from "lucide-react";
 import { Badge, ConfirmDialog, Empty, Page, Pager } from "../components/common.jsx";
 import { Button } from "../components/Button.jsx";
 import ShareAnswerDialog from "../components/ShareAnswerDialog.jsx";
-import { ReadAloudRecordingHistory } from "../practice/MyRecordings.jsx";
+import { SpeakingRecordingHistory } from "../practice/MyRecordings.jsx";
 import { useToast } from "../components/toast.jsx";
 import { ObjectiveResult, Result } from "../PracticeObjective.jsx";
 import { api } from "../api.js";
@@ -352,9 +352,9 @@ export default function History() {
         onPrevious={() => setPage(page - 1)}
         onNext={() => setPage(page + 1)}
       />
-      {/* Every Read Aloud recording with its player and Share; the question page shows the latest 5. */}
+      {/* Every Speaking recording with its player and Share; each question page shows its latest 5. */}
       <div style={{ marginTop: 30 }}>
-        <ReadAloudRecordingHistory />
+        <SpeakingRecordingHistory />
       </div>
       {sharing && <ShareAnswerDialog submission={sharing} onShared={onShared} onClose={() => setSharing(null)} />}
       <ConfirmDialog

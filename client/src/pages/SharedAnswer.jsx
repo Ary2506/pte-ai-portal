@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Play } from "lucide-react";
 import { publicApi } from "../api.js";
 import { API_ORIGIN } from "../apiBase.js";
+import { Button } from "../components/Button.jsx";
+import { fmtDuration } from "../audioDuration.js";
 
 // The page a shared-answer link opens: /shared-answer/:token. Standalone on purpose — no sidebar,
 // no navigation into the app, no sign-in. It reads one report and one recording through the token
@@ -40,16 +43,22 @@ function MarkedTranscript({ text, mistakes }) {
   return <p className="shared-report__transcript">{parts}</p>;
 }
 
-/** Plays the shared recording, fetching a fresh temporary URL whenever the current one lapses. */
-function SharedAudio({ token }) {
+/**
+ * Plays the shared recording. Nothing is fetched until Play: opening a link costs the report alone,
+ * and the recording's URL and audio are requested only by someone who actually listens. A fresh
+ * temporary URL is fetched whenever the current one lapses.
+ */
+function SharedAudio({ token, durationSeconds }) {
   const audio = useRef(null);
   const [src, setSrc] = useState(null);
   const [expiresAt, setExpiresAt] = useState(0);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   // Where to resume after swapping in a new URL, and whether it was playing.
   const resume = useRef(null);
   const retried = useRef(false);
+  // Set by the Play button: start the player as soon as it exists.
+  const playWhenReady = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,7 +76,21 @@ function SharedAudio({ token }) {
     }
   }, [token]);
 
-  useEffect(() => { load(); }, [load]);
+  async function start() {
+    playWhenReady.current = true;
+    await load();
+  }
+
+  // A browser that will not start audio after a network wait (Safari on iPhone can refuse) leaves
+  // the player showing, one more tap away.
+  useEffect(() => {
+    if (!src || !playWhenReady.current || !audio.current) return;
+    playWhenReady.current = false;
+    try {
+      const played = audio.current.play?.();
+      if (played && typeof played.catch === "function") played.catch(() => {});
+    } catch { /* the controls are there to start it by hand */ }
+  }, [src]);
 
   async function refresh() {
     const el = audio.current;
@@ -101,9 +124,17 @@ function SharedAudio({ token }) {
   }
 
   if (error) return <p className="shared-report__audio-error" role="alert">{error}</p>;
-  if (!src) return <p className="muted">{loading ? "Loading recording…" : ""}</p>;
+  if (!src) {
+    const duration = fmtDuration(durationSeconds);
+    return (
+      <Button variant="secondary" icon={<Play/>} className="shared-report__play" loading={loading}
+        loadingLabel="Loading…" onClick={start} aria-label="Play the recording">
+        Play{duration && <span className="play-duration">{duration}</span>}
+      </Button>
+    );
+  }
   return (
-    <audio ref={audio} className="shared-report__audio" controls preload="metadata" src={src}
+    <audio ref={audio} className="shared-report__audio" controls preload="auto" src={src}
       onLoadedMetadata={onLoadedMetadata} onPlay={onPlay} onError={onError}>
       Your browser cannot play this recording.
     </audio>
@@ -185,7 +216,7 @@ export default function SharedAnswer() {
         </div>
 
         <h2>Recording</h2>
-        <SharedAudio token={token} />
+        <SharedAudio token={token} durationSeconds={report.durationSeconds} />
 
         <h2>AI Speech Recognition</h2>
         {report.transcript

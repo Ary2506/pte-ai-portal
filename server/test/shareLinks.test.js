@@ -134,7 +134,7 @@ describe("opening a shared answer without signing in", () => {
     expect(res.headers["x-robots-tag"]).toContain("noindex");
     const { report } = res.body;
     expect(Object.keys(report).sort()).toEqual([
-      "answeredAt", "criteria", "expiresAt", "hasAudio", "improvements", "maxScore", "mistakes",
+      "answeredAt", "criteria", "durationSeconds", "expiresAt", "hasAudio", "improvements", "maxScore", "mistakes",
       "overall", "questionTitle", "score", "strengths", "taskLabel", "taskType", "transcript"
     ]);
     expect(report.questionTitle).toBe("Visit to Canada");

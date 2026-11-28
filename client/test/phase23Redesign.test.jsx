@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import App from "../src/App.jsx";
 import { api } from "../src/api.js";
@@ -82,13 +82,17 @@ describe("Phase 23 — header search is real, not decorative", () => {
 });
 
 describe("Phase 23 — Practice History section filter", () => {
-  // My Results also holds the Read Aloud recordings section, which asks for history with
-  // type=read-aloud. These tests are about the attempts table, so that request gets an empty
-  // answer and is left out when counting or checking the table's requests.
+  // My Results also holds the Speaking recordings section, which asks for history with
+  // withAudio=1 and has its own task tabs ("All", "Read Aloud", ...). These tests are about the
+  // attempts table, so that request gets an empty answer and is left out when counting or checking
+  // the table's requests, and text and tabs are looked up outside that section.
   const tableHistory = (value) => api.history.mockImplementation((params) => Promise.resolve(
-    params?.type === "read-aloud" ? { submissions: [], total: 0, page: 1, totalPages: 1 } : value));
-  const tableCalls = () => api.history.mock.calls.filter(([params]) => params?.type !== "read-aloud");
+    params?.withAudio ? { submissions: [], total: 0, page: 1, totalPages: 1 } : value));
+  const tableCalls = () => api.history.mock.calls.filter(([params]) => !params?.withAudio);
   const lastTableCall = () => tableCalls().at(-1)?.[0];
+  const sectionTab = (name) => within(screen.getByRole("tablist", { name: "Filter by section" })).getByRole("tab", { name });
+  const inTable = (text) => screen.queryAllByText(text).filter((el) => !el.closest(".my-recordings"));
+  const tableShows = (text) => waitFor(() => expect(inTable(text)).toHaveLength(1));
 
   const ROWS = [
     { _id: "s1", type: "read-aloud", section: "speaking", evaluationType: "subjective", score: 80, maxScore: 90, evaluationStatus: "COMPLETED", createdAt: "2026-01-01T00:00:00.000Z" },
@@ -103,20 +107,20 @@ describe("Phase 23 — Practice History section filter", () => {
   it("re-queries the server with the chosen section, and back to unfiltered for All", async () => {
     tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
-    await screen.findByText("Read Aloud");
+    await tableShows("Read Aloud");
     expect(screen.getByText("Multiple Choice Single")).toBeInTheDocument();
 
     // "Speaking"/"Writing"/etc. also appear as mock-table column headers on this same page —
     // the filter tabs are scoped by role to disambiguate.
     tableHistory({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
-    fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
+    fireEvent.click(sectionTab("Speaking"));
 
     await waitFor(() => expect(screen.queryByText("Multiple Choice Single")).not.toBeInTheDocument());
-    expect(screen.getByText("Read Aloud")).toBeInTheDocument();
+    expect(inTable("Read Aloud")).toHaveLength(1);
     expect(lastTableCall()).toEqual(expect.objectContaining({ section: "speaking", page: 1 }));
 
     tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
-    fireEvent.click(screen.getByRole("tab", { name: "All" }));
+    fireEvent.click(sectionTab("All"));
     expect(await screen.findByText("Multiple Choice Single")).toBeInTheDocument();
     expect(lastTableCall()).toEqual(expect.objectContaining({ section: undefined }));
   });
@@ -124,10 +128,10 @@ describe("Phase 23 — Practice History section filter", () => {
   it("shows an honest empty state distinct from 'no submissions at all' when a filter matches nothing", async () => {
     tableHistory({ submissions: ROWS, total: 2, page: 1, totalPages: 1 });
     renderAt("/history", studentAuthUser());
-    await screen.findByText("Read Aloud");
+    await tableShows("Read Aloud");
 
     tableHistory({ submissions: [], total: 0, page: 1, totalPages: 1 });
-    fireEvent.click(screen.getByRole("tab", { name: "Writing" }));
+    fireEvent.click(sectionTab("Writing"));
     expect(await screen.findByText("No attempts in this section")).toBeInTheDocument();
     expect(screen.getByText(/clear the filter/i)).toBeInTheDocument();
   });
@@ -135,7 +139,7 @@ describe("Phase 23 — Practice History section filter", () => {
   it("fetches the next page only when Next is clicked, and resets to page 1 on a filter change", async () => {
     tableHistory({ submissions: [ROWS[0]], total: 2, page: 1, totalPages: 2 });
     renderAt("/history", studentAuthUser());
-    await screen.findByText("Read Aloud");
+    await tableShows("Read Aloud");
 
     // One page fetched on load — the second is not prefetched.
     expect(tableCalls()).toHaveLength(1);
@@ -150,7 +154,7 @@ describe("Phase 23 — Practice History section filter", () => {
     // Switching section while on page 2 must not leave the student stranded on a page that
     // section may not have.
     tableHistory({ submissions: [ROWS[0]], total: 1, page: 1, totalPages: 1 });
-    fireEvent.click(screen.getByRole("tab", { name: "Speaking" }));
+    fireEvent.click(sectionTab("Speaking"));
     await waitFor(() =>
       expect(lastTableCall()).toEqual(expect.objectContaining({ section: "speaking", page: 1 }))
     );

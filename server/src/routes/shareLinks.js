@@ -218,6 +218,8 @@ export function publicReport(submission, share) {
     answeredAt: submission.createdAt,
     score: submission.score,
     maxScore: submission.maxScore,
+    // The recording's length, so the page can show it on Play before any audio is loaded.
+    durationSeconds: Number.isFinite(submission.durationSeconds) ? submission.durationSeconds : null,
     criteria,
     transcript: typeof submission.transcript === "string" ? submission.transcript : "",
     overall: typeof feedback.overall === "string" ? feedback.overall : null,
@@ -233,7 +235,7 @@ publicShareRoutes.get("/:token", publicLimiter(60), asyncRoute(async (req, res) 
   const share = await activeShare(req, res);
   if (!share) return;
   const submission = await Submission.findById(share.submission)
-    .select("type score maxScore transcript feedback createdAt question evaluationStatus")
+    .select("type score maxScore durationSeconds transcript feedback createdAt question evaluationStatus")
     .populate("question", "title")
     .lean();
   if (!submission || submission.evaluationStatus !== "COMPLETED") {
